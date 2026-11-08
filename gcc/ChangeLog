@@ -1,3 +1,72 @@
+2026-11-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* doc/install.texi (GM2): Add missing comma.
+
+2026-11-07  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	* defaults.h: Remove one #if.
+
+2026-11-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.md (load->store splitter): New splitter for capturing
+	narrowing loads in load -> shift -> narrow store sequence.
+
+2026-11-07  Roger Sayle  <roger@nextmovesofware.com>
+
+	PR tree-optimization/128135
+	PR middle-end/12838
+	* match.pd (pow(x,-1) -> 1/x); Only transform when !flag_errno_math
+	and let fold_const_pow handle cases where x is constant, including
+	appropriate checks for cases where errno may be updated.
+	* real.cc (real_isoddinteger): Fix mistakes.  Confirm bits after
+	the decimal point are zero, i.e. test for isoddinteger not isodd.
+
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* doc/extend.texi (__builtin_clmulg): Document.
+	* builtins.h (fold_build_builtin_clmulg): Declare.
+	* fold-const-call.cc (fold_const_call_sss): Handle CFN_CLMUL.
+	(fold_const_call): Handle CFN_CLMUL_WIDEN.
+	* internal-fn.h (expand_CLMUL, expand_CLMUL_WIDEN): Declare.
+	* fold-const.cc (tree_call_nonnegative_p): Handle CFN_CLMUL.
+	* wide-int.cc (wi::bit_repeat, wi::clmul): New functions.
+	* wide-int.h (wi::bit_repeat, wi::clmul): Declare.
+	* builtins.cc (fold_build_builtin_clmulg): New function.
+	* internal-fn.def (CLMUL, CLMUL_WIDEN): New internal functions.
+	* internal-fn.cc (commutative_binary_fn_p): Handle IFN_CLMUL
+	and IFN_CLMUL_WIDEN.
+	(expand_clmul, expand_CLMUL, expand_CLMUL_WIDEN): New functions.
+	* optabs.def (clmul_optab, clmul_widen_optab): New optabs.
+	* gimple-lower-bitint.cc (struct bitint_large_huge): Declare
+	lower_clmul method.
+	(bitint_large_huge::lower_clmul): New method.
+	(bitint_large_huge::lower_call): Handle IFN_CLMUL.
+	(bitint_large_huge::lower_stmt): Likewise.
+	(stmt_needs_operand_addr): Likewise.
+	(build_bitint_stmt_ssa_conflicts): Likewise.
+	(gimple_lower_bitint): Lower IFN_CLMUL_WIDEN to 2 IFN_CLMUL
+	calls, 3 IFN_BITREVERSE calls, one shift and one COMPLEX_EXPR.
+	Handle IFN_CLMUL.
+	* match.pd (.CLMUL (X, Y) for [0, 1] Y -> X * Y,
+	.CLMUL_WIDEN (X, Y) -> { .CLMUL (X, 0), 0 } if upper bits are
+	known to be zeros): New simplifications.
+	* genmatch.cc (genmatch_diag_selftests): CFN_CLMUL and CFN_CLMUL_WIDEN
+	are commutative.
+	(commutative_op): Handle CFN_CLMUL and CFN_CLMUL_WIDEN.
+	* config/i386/sse.md (clmuldi3, clmul_widendi3): New expanders.
+
+2026-11-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (expand_perm_as_a_vlbr_vstbr_candidate): Use
+	simplify_gen_subreg and expand_insn instead of gen_rtx_SUBREG.
+	(expand_perm_reverse_elements): Ditto.
+	(expand_perm_with_merge): Force input operands into registers.
+	* config/s390/vector.md (V_HW_H): New mode iterator for V8HI and V8HF.
+	(vec_2x_nelts): Add mappings for V1HF, V2HF, V4HF, and V8HF.
+	(*vmrhh, *vmrlh): Use V_HW_H and vec_2x_nelts.
+	(eltswapv8hi): Rename to eltswap<mode> and use V_HW_H.
+
 2026-11-06  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/gcn.cc (gcn_md_reorg): Break contents into ....

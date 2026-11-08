@@ -1,3 +1,9 @@
+2026-11-07  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* plugin/plugin-gcn.c (allocate_session_kernargs): Use
+	'kernargs_size' instead of 'sizeof (struct kernargs)'.
+	* testsuite/libgomp.c-c++-common/kernel-launch-many-vars.c: New test.
+
 2026-11-04  Tobias Burnus  <tburnus@baylibre.com>
 
 	* icv-device.c (omp_set_teams_thread_limit): Add comment.

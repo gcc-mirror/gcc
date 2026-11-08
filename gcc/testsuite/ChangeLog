@@ -1,3 +1,45 @@
+2026-11-07  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/load-no-shift.c: New test.
+
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/gfni-bitreverse-scalar.c: Add -msse2 to dg-options.
+
+2026-11-07  Roger Sayle  <roger@nextmovesofware.com>
+
+	PR tree-optimization/128135
+	PR middle-end/12838
+	* gcc.dg/errno-5.c: New test case.
+	* gcc.dg/pr128138.c: Likewise.
+
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* c-c++-common/builtin-clmulg-1.c: New test.
+	* c-c++-common/builtin-clmulg-2.c: New test.
+	* g++.dg/ext/builtin-clmulg-1.C: New test.
+	* gcc.target/i386/pclmul-builtin-clmulg-1.c: New test.
+
+2026-11-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vperm-rev-1.c: New test.
+
+2026-11-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug25.f90: New test.
+
+2026-11-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/coarray_lib_alloc_1.f90: Update the tree dump
+	check to cope with the change in the stat name.
+	* gfortran.dg/coarray_lib_alloc_2.f90: Likewise.
+	* gfortran.dg/coarray_lib_alloc_3.f90: Likewise.
+	* gfortran.dg/pdt_bug3.f90: New test.
+	* gfortran.dg/pdt_bug15.f90: New test.
+
 2026-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/128357

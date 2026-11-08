@@ -1,3 +1,9 @@
+2026-11-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* configure.ac (maintainer-mode): Remove AC_ARG_ENABLE
+	definition.
+
 2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

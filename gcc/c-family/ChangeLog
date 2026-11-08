@@ -1,3 +1,9 @@
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* c-common.h (enum rid): Add RID_BUILTIN_CLMULG enumerator.
+	* c-common.cc (c_common_reswords): Add __builtin_clmulg entry.
+
 2026-10-27  Jørgen Kvalsvik  <j@lambda.is>
 
 	* c-pragma.cc (handle_pragma_suppress_coverage): Don't warn on

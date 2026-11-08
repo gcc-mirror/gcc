@@ -1,3 +1,16 @@
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* parser.cc (cp_parser_postfix_expression): Handle RID_BUILTIN_CLMULG.
+	* typeck.cc (build_x_clmulg): New function.
+	* cp-tree.h (build_x_clmulg): Declare.
+	* pt.cc (tsubst_expr): Handle IFN_CLMUL.
+	* mangle.cc (write_expression): Likewise.
+	* cp-objcp-common.cc (names_builtin_p): Handle RID_BUILTIN_CLMULG.
+	* cp-gimplify.cc (cp_gimplify_expr): Handle IFN_CLMUL.
+	* constexpr.cc (cxx_eval_internal_function): Likewise.
+	(potential_constant_expression_1): Likewise.
+
 2026-11-03  Giuliano Belinassi  <giuliano.belinassi@gmail.com>
 
 	* decl.cc (duplicate_decls): Call symtab_node::get_create.

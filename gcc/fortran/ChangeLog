@@ -1,3 +1,59 @@
+2026-11-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* simplify.cc (gfc_simplify_len): Return NULL for paramterized
+	string components of nested PDTs.
+
+2026-11-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* expr.cc (gfc_pdt_requires_hidden_arg): New function to
+	determine if a dummy PDT needs an accompanying hidden argument.
+	* gfortran.h : Add prototype for gfc_pdt_requires_hidden_arg.
+	Add new fields 'hidden_pdt_dummy_decl' field to gfc_symbol and
+	'param_list' to gfc_code.
+	* match.cc (gfc_match_allocate): Copy the type_param_spec_list
+	from the typespec parsing and transfer it to the new field in
+	gfc_code.
+	* resolve.cc (gfc_resolve_finalizers): If finalizers clash void
+	an ICE by incrementing the refs for the offending finalizer.
+	* trans-decl.cc (create_function_arglist): A hidden scalar PDT
+	dummy is created for PDTs that return true for the new function
+	gfc_pdt_requires_hidden_arg.
+	(gfc_trans_deferred_vars): Clean up handling of PDT and class
+	PDT dummies, especially where optional.
+	* trans-expr.cc (gfc_conv_procedure_call): Pass a hidden PDT
+	scalar, if gfc_pdt_requires_hidden_arg is true, to pass the
+	callee's parameter values. Handle passing optional dummies if
+	the parameter list is not explicit. Pass NULL_TREE if the arg
+	is not explicit or optional.
+	* trans-stmt.cc (fixup_assumed_PDT_parameters): New function
+	than uses the hidden PDT dummy to supply values for assumed
+	dummy parameters.
+	(check_PDT_parameters): New function to verify that actual and
+	ALLOCATE LEN parameters are consistent. If 'stat' is present it
+	is set if they are inconsistent and 'errmsg' filled as well. If
+	'stat' is not present but 'rtcheck' is set  to any value, a
+	runtime error is emitted. Otherwise, the compilation is allowed
+	to proceed.
+	(gfc_trans_allocate): Put all the error messages at the top.
+	'label_finish' is now referenced unconditionally and so its
+	TREE_USED field should not be set to zero. If the allocate expr
+	is a dummy and gfc_pdt_requires_hidden_arg return true, skip
+	the first branch and proceed to the second.
+	Use the allocate tyespec derived type and parameter list when
+	there is a hidden PDT dummy and use it to fix up assumed PDT
+	parameters in the allocate typespec.
+	Call the new function check_PDT_parameters to ensure that the
+	PDT LEN parameters are consistent between the allocate values
+	and those of the the expression to be allocated. Insert a label
+	to jump to if the fixup of assumed parameters does not work.
+	Handle the new error stat and errmsg by deallocating the object
+	and emitting the values as required.
+	When done, if required, free the typespec parameter list.
+	* trans-types.cc (gfc_get_function_type): Generate the type for
+	hidden PDT dummies.
+
 2026-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/128357

@@ -1,3 +1,11 @@
+2026-11-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* c-parser.cc (c_parser_postfix_expression): Handle
+	RID_BUILTIN_CLMULG.  Use argument locations when reporting
+	problems with a single argument.
+	* c-decl.cc (names_builtin_p): Handle RID_BUILTIN_CLMULG.
+
 2026-10-07  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR analyzer/125265
