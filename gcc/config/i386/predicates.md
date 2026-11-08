@@ -822,6 +822,12 @@
        (match_code "unspec" "0")
        (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_GOT")))
 
+;; Return true if OP is a PLTOFF symbol operand.
+(define_predicate "pltoff_symbol_operand"
+  (and (match_code "const")
+       (match_code "unspec" "0")
+       (match_test "XINT (XEXP (op, 0), 1) == UNSPEC_PLTOFF")))
+
 ;; Match exactly zero.
 (define_predicate "const0_operand"
   (match_code "const_int,const_double,const_vector")
