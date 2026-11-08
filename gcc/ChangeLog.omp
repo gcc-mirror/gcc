@@ -1,3 +1,7 @@
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* omp-offload.c (oacc_xform_loop): Adjust loop lowering for AMD GCN.
+
 2026-10-15  Andrew Stubbs  <ams@baylibre.com>
 
 	Backported from master:
