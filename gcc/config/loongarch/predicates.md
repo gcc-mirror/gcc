@@ -87,10 +87,6 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 1, 4)")))
 
-(define_predicate "const_lsx_branch_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), -1024, 1023)")))
-
 (define_predicate "const_uimm3_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 7)")))

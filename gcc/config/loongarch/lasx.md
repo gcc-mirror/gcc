@@ -346,16 +346,6 @@
    (V16HI "exp_8")
    (V32QI "exp_16")])
 
-
-;; This attribute is used to form an immediate operand constraint using
-;; "const_<bitimm256>_operand".
-(define_mode_attr bitimm256
-  [(V32QI "uimm3")
-   (V16HI  "uimm4")
-   (V8SI  "uimm5")
-   (V4DI  "uimm6")])
-
-
 ;; Half modes of all LASX vector modes, in lower-case.
 (define_mode_attr lasxhalf [(V32QI "v16qi")  (V16HI "v8hi")
              (V8SI "v4si")  (V4DI  "v2di")
@@ -1156,7 +1146,7 @@
 (define_insn "lasx_xvbitclri_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
+		       (match_operand 2 "const_<bitimm>_operand" "")]
 		      UNSPEC_LASX_XVBITCLRI))]
   "ISA_HAS_LASX"
   "xvbitclri.<lasxfmt>\t%u0,%u1,%2"
@@ -1176,7 +1166,7 @@
 (define_insn "lasx_xvbitrevi_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
+		       (match_operand 2 "const_<bitimm>_operand" "")]
 		     UNSPEC_LASX_XVBITREVI))]
   "ISA_HAS_LASX"
   "xvbitrevi.<lasxfmt>\t%u0,%u1,%2"
@@ -1220,7 +1210,7 @@
 (define_insn "lasx_xvbitseti_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
+		       (match_operand 2 "const_<bitimm>_operand" "")]
 		      UNSPEC_LASX_XVBITSETI))]
   "ISA_HAS_LASX"
   "xvbitseti.<lasxfmt>\t%u0,%u1,%2"
@@ -2000,7 +1990,7 @@
 (define_insn "lasx_xvsat_s_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		      (match_operand 2 "const_<bitimm256>_operand" "")]
+		      (match_operand 2 "const_<bitimm>_operand" "")]
 		     UNSPEC_LASX_XVSAT_S))]
   "ISA_HAS_LASX"
   "xvsat.<lasxfmt>\t%u0,%u1,%2"
@@ -2010,7 +2000,7 @@
 (define_insn "lasx_xvsat_u_<lasxfmt_u>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")
-		       (match_operand 2 "const_<bitimm256>_operand" "")]
+		       (match_operand 2 "const_<bitimm>_operand" "")]
 		      UNSPEC_LASX_XVSAT_U))]
   "ISA_HAS_LASX"
   "xvsat.<lasxfmt_u>\t%u0,%u1,%2"
@@ -2512,7 +2502,7 @@
 (define_insn "lasx_xvsllwil_s_<dlasxfmt>_<lasxfmt>"
   [(set (match_operand:<VDMODE256> 0 "register_operand" "=f")
 	(unspec:<VDMODE256> [(match_operand:ILASX_WHB 1 "register_operand" "f")
-			     (match_operand 2 "const_<bitimm256>_operand" "")]
+			     (match_operand 2 "const_<bitimm>_operand" "")]
 			    UNSPEC_LASX_XVSLLWIL_S))]
   "ISA_HAS_LASX"
   "xvsllwil.<dlasxfmt>.<lasxfmt>\t%u0,%u1,%2"
@@ -2522,7 +2512,7 @@
 (define_insn "lasx_xvsllwil_u_<dlasxfmt_u>_<lasxfmt_u>"
   [(set (match_operand:<VDMODE256> 0 "register_operand" "=f")
 	(unspec:<VDMODE256> [(match_operand:ILASX_WHB 1 "register_operand" "f")
-			     (match_operand 2 "const_<bitimm256>_operand" "")]
+			     (match_operand 2 "const_<bitimm>_operand" "")]
 			    UNSPEC_LASX_XVSLLWIL_U))]
   "ISA_HAS_LASX"
   "xvsllwil.<dlasxfmt_u>.<lasxfmt_u>\t%u0,%u1,%2"
