@@ -945,8 +945,8 @@ package body System.Fat_Gen is
       function To_Address is
         new Ada.Unchecked_Conversion (Access_T, System.Address);
 
-      Rep : Float_Rep;
-      for Rep'Address use To_Address (Access_T (X));
+      Rep : constant Float_Rep
+        with Import, Address => To_Address (Access_T (X));
       --  Rep is a view of the input floating-point parameter. Note that we
       --  must avoid reading the actual bits of this parameter in float form
       --  since it may be a signalling NaN.
@@ -977,11 +977,11 @@ package body System.Fat_Gen is
          --  hardware may evaluate it to True for all denormalized numbers.
 
          else
-            --  First clear the sign bit (the exponent is already zero)
+            --  Ignore the sign bit (the exponent is already zero)
 
-            Rep (MSW) := Rep (MSW) and not Sign_Mask;
-
-            return (for all J in 0 .. Rep_Last => Rep (J) = 0);
+            return (Rep (MSW) and not Sign_Mask) = 0
+              and then
+                (for all J in 0 .. Rep_Last when J /= MSW => Rep (J) = 0);
          end if;
       end if;
    end Valid;

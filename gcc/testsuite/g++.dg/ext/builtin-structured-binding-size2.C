@@ -21,7 +21,7 @@ template <>
 struct std::tuple_size <C> { static constexpr double value = 42; };
 template <>
 struct std::tuple_size <D> { static constexpr int value = -1; };
-int a = __builtin_structured_binding_size (A);			// { dg-error "structured binding refers to incomplete class type 'A'" }
+int a = __builtin_structured_binding_size (A);			// { dg-error "invalid use of incomplete type 'struct A'" }
 int b = __builtin_structured_binding_size (A &);		// { dg-error "'__builtin_structured_binding_size' argument 'A\\\&' is a reference" }
 int c = __builtin_structured_binding_size (B[]);		// { dg-error "cannot decompose array of unknown bound 'B \\\[\\\]'" }
 int d = __builtin_structured_binding_size (C);			// { dg-error "'std::tuple_size<C>::value' is not an integral constant expression" }

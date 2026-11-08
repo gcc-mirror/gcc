@@ -6520,8 +6520,28 @@ package body Sem_Ch12 is
                   Inside_A_Generic := S_Inside_A_Generic;
                end;
 
+            --  If the scope is local, the instantiation must be fully analyzed
+            --  as well as expanded if the context is not a generic unit.
+
             else
-               Add_Local_Declaration (R, N, Scop => Scop);
+               declare
+                  S_Expander_Active : constant Boolean := Expander_Active;
+                  S_Full_Analysis   : constant Boolean := Full_Analysis;
+                  S_In_Spec_Expr    : constant Boolean := In_Spec_Expression;
+
+               begin
+                  Expander_Active :=
+                    Operating_Mode = Opt.Generate_Code
+                      and then not Inside_A_Generic;
+                  Full_Analysis := True;
+                  In_Spec_Expression := False;
+
+                  Add_Local_Declaration (R, N, Scop => Scop);
+
+                  Expander_Active := S_Expander_Active;
+                  Full_Analysis := S_Full_Analysis;
+                  In_Spec_Expression := S_In_Spec_Expr;
+               end;
             end if;
 
             Ent := Defining_Entity_Of_Instance (R);
@@ -17682,30 +17702,6 @@ package body Sem_Ch12 is
       ------------------
 
       procedure Reset_Entity (N : Node_Id) is
-         function Top_Ancestor (E : Entity_Id) return Entity_Id;
-         --  Find the ultimate ancestor of the current unit. If it is not a
-         --  generic unit, then the name of the current unit in the prefix of
-         --  an expanded name must be replaced with its generic homonym to
-         --  ensure that it will be properly resolved in an instance.
-
-         ------------------
-         -- Top_Ancestor --
-         ------------------
-
-         function Top_Ancestor (E : Entity_Id) return Entity_Id is
-            Par : Entity_Id;
-
-         begin
-            Par := E;
-            while Is_Child_Unit (Par) loop
-               Par := Scope (Par);
-            end loop;
-
-            return Par;
-         end Top_Ancestor;
-
-      --  Start of processing for Reset_Entity
-
       begin
          N2 := Get_Associated_Node (N);
          E  := Entity (N2);
@@ -17780,38 +17776,13 @@ package body Sem_Ch12 is
          elsif Nkind (Parent (N)) = N_Selected_Component
            and then Nkind (Parent (N2)) = N_Expanded_Name
          then
-            --  In case of previous errors, the tree might be malformed
-
-            if No (Entity (Parent (N2))) then
-               null;
-
-            elsif Is_Global (Entity (Parent (N2))) then
+            if Present (Entity (Parent (N2)))
+              and then Is_Global (Entity (Parent (N2)))
+            then
                Change_Selected_Component_To_Expanded_Name (Parent (N));
                Set_Associated_Node (Parent (N), Parent (N2));
                Set_Global_Type     (Parent (N), Parent (N2));
                Save_Entity_Descendants (N);
-
-            --  If this is a reference to the current generic entity, replace
-            --  by the name of the generic homonym of the current package. This
-            --  is because in an instantiation Par.P.Q will not resolve to the
-            --  name of the instance, whose enclosing scope is not necessarily
-            --  Par. We use the generic homonym rather that the name of the
-            --  generic itself because it may be hidden by a local declaration.
-
-            elsif In_Open_Scopes (Entity (Parent (N2)))
-              and then not
-                Is_Generic_Unit (Top_Ancestor (Entity (Prefix (Parent (N2)))))
-            then
-               if Ekind (Entity (Parent (N2))) = E_Generic_Package then
-                  Rewrite (Parent (N),
-                    Make_Identifier (Sloc (N),
-                      Chars =>
-                        Chars (Generic_Homonym (Entity (Parent (N2))))));
-               else
-                  Rewrite (Parent (N),
-                    Make_Identifier (Sloc (N),
-                      Chars => Chars (Selector_Name (Parent (N2)))));
-               end if;
             end if;
 
             if Nkind (Parent (Parent (N))) in N_Generic_Instantiation

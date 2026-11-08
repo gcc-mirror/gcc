@@ -715,6 +715,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       { _M_impl._M_move_data(std::move(__x._M_impl)); }
 #endif
 
+      // Caller must ensure the addition won't overflow.
       _GLIBCXX_CONSTEXPR
       static size_t
       _S_nword(size_t __n)
@@ -811,7 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
       : _Base(__a)
       {
-	_M_initialize(__n);
+	_M_check_and_initialize(__n);
 	_M_initialize_value(__value);
       }
 
@@ -909,7 +910,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      _M_initialize(size_type(ranges::distance(__rg)));
+	      _M_check_and_initialize(ranges::distance(__rg));
 	      ranges::copy(__rg, begin());
 	    }
 	  else
@@ -1553,6 +1554,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_initialize(size_type __n)
       {
+	// Caller must ensure this, to avoid overflow in _S_nword.
+	_GLIBCXX_DEBUG_ASSERT(__n <= (size_t)-_S_word_bit);
+
 	if (__n)
 	  {
 	    _Bit_pointer __q = this->_M_allocate(__n);
@@ -1562,6 +1566,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	    this->_M_impl._M_finish = __start + difference_type(__n);
 	  }
       }
+
+      template<typename _SizeT>
+	_GLIBCXX20_CONSTEXPR
+	void
+	_M_check_and_initialize(_SizeT __n)
+	{
+	  if (__n > max_size() || __n < 0)
+	    __throw_length_error(
+	      __N("Cannot create std::vector<bool> larger than max_size()"));
+	  _M_initialize(static_cast<size_type>(__n));
+	}
 
       _GLIBCXX20_CONSTEXPR
       void
@@ -1588,7 +1603,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	_M_initialize_dispatch(_Integer __n, _Integer __x, __true_type)
 	{
-	  _M_initialize(static_cast<size_type>(__n));
+	  _M_check_and_initialize(static_cast<size_type>(__n));
 	  _M_initialize_value(__x);
 	}
 
@@ -1616,8 +1631,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_M_initialize_range(_ForwardIterator __first, _ForwardIterator __last,
 			    std::forward_iterator_tag)
 	{
-	  const size_type __n = std::distance(__first, __last);
-	  _M_initialize(__n);
+	  _M_check_and_initialize(std::distance(__first, __last));
 	  std::copy(__first, __last, begin());
 	}
 

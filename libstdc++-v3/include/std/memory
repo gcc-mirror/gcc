@@ -97,7 +97,7 @@
 #  include <bits/out_ptr.h>
 #endif
 
-#if __cplusplus > 202302L
+#if __cplusplus > 202302L && _GLIBCXX_HOSTED
 #  include <bits/indirect.h>
 #endif
 

@@ -58,6 +58,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-lower-bitint.h"
 #include "attribs.h"
 #include "asan.h"
+#include "tree-outof-ssa.h"
 
 /* Split BITINT_TYPE precisions in 4 categories.  Small _BitInt, where
    target hook says it is a single limb, middle _BitInt which per ABI
@@ -7037,6 +7038,7 @@ gimple_lower_bitint (void)
   small_max_prec = mid_min_prec = large_min_prec = huge_min_prec = 0;
   limb_prec = abi_limb_prec = 0;
   bitint_big_endian = false;
+  bool loop_init_done = false;
 
   unsigned int i;
   for (i = 0; i < num_ssa_names; ++i)
@@ -7424,6 +7426,17 @@ gimple_lower_bitint (void)
 	      default:
 		break;
 	      }
+	  else if (gphi *phi = dyn_cast <gphi *> (stmt))
+	    {
+	      /* Remove PHIs with no uses, coalescing apparently
+		 relies on this.  */
+	      if (has_zero_uses (s))
+		{
+		  remove_gimple_phi_args (phi);
+		  gsi = gsi_for_stmt (stmt);
+		  remove_phi_node (&gsi, true);
+		}
+	    }
 	}
       /* We need to also rewrite stores of large/huge _BitInt INTEGER_CSTs
 	 into memory.  Such functions could have no large/huge SSA_NAMEs.  */
@@ -7730,7 +7743,7 @@ gimple_lower_bitint (void)
 	  bitmap_set_bit (large_huge.m_names, SSA_NAME_VERSION (s));
 	  if (has_single_use (s))
 	    {
-	      tree s2 = s;
+	      tree s2 = s, s3 = s;
 	      /* The coalescing hook special cases SSA_NAME copies.
 		 Make sure not to mark in m_single_use_names single
 		 use SSA_NAMEs copied from non-single use SSA_NAMEs.  */
@@ -7744,13 +7757,52 @@ gimple_lower_bitint (void)
 		      s2 = NULL_TREE;
 		      break;
 		    }
+		  s3 = s2;
 		}
 	      if (s2)
 		{
-		  if (!large_huge.m_single_use_names)
-		    large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
-		  bitmap_set_bit (large_huge.m_single_use_names,
-				  SSA_NAME_VERSION (s));
+		  /* Only set m_single_use_names for SSA_NAMEs where
+		     the definition and use are within the same loop,
+		     otherwise if the use could be executed more times
+		     than the def stmt, we can't emit clobbers.
+		     Or if irreducible loops are involved, only handle
+		     same bb definitions.  */
+		  gimple *def = SSA_NAME_DEF_STMT (s3), *use;
+		  use_operand_p use_p;
+		  single_imm_use (s, &use_p, &use);
+		  basic_block def_bb, use_bb;
+		  if (SSA_NAME_IS_DEFAULT_DEF (s3))
+		    def_bb = NULL;
+		  else
+		    def_bb = gimple_bb (def);
+		  use_bb = gimple_bb (use);
+		  if (def_bb != use_bb)
+		    {
+		      if (!loop_init_done)
+			{
+			  unsigned flags
+			    = (AVOID_CFG_MODIFICATIONS
+			       | LOOPS_HAVE_MARKED_IRREDUCIBLE_REGIONS);
+			  loop_optimizer_init (flags);
+			  loop_init_done = true;
+			}
+		      if ((use_bb->flags & BB_IRREDUCIBLE_LOOP) == 0)
+			{
+			  class loop *def_loop
+			    = def_bb ? def_bb->loop_father
+				     : get_loop (cfun, 0);
+			  class loop *use_loop = use_bb->loop_father;
+			  if (def_loop == use_loop)
+			    def_bb = use_bb;
+			}
+		    }
+		  if (def_bb == use_bb)
+		    {
+		      if (!large_huge.m_single_use_names)
+			large_huge.m_single_use_names = BITMAP_ALLOC (NULL);
+		      bitmap_set_bit (large_huge.m_single_use_names,
+				      SSA_NAME_VERSION (s));
+		    }
 		}
 	    }
 	  if (SSA_NAME_VAR (s)
@@ -8415,6 +8467,9 @@ gimple_lower_bitint (void)
 	  arg_stmts.truncate (0);
 	}
     }
+
+  if (loop_init_done)
+    loop_optimizer_finalize ();
 
   return ret;
 }

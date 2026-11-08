@@ -1,3 +1,572 @@
+2026-11-07  Kewen Lin  <linkewen@hygon.cn>
+
+	Backported from master:
+	2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+		    Zhizheng Yang  <yangzhizheng@hygon.cn>
+		    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Handle ix86_veclibabi_type_hvml case.
+	* config/i386/i386-options.h (ix86_veclibabi_hvml): New declare.
+	* config/i386/i386-opts.h (enum ix86_veclibabi): Add
+	ix86_veclibabi_type_hvml into the ix86_veclibabi enum.
+	* config/i386/i386.cc (ix86_veclibabi_hvml): New function.
+	* config/i386/i386.opt: Add the hvml type.
+	* doc/invoke.texi: Document -mveclibabi=hvml and clarify the 64-bit
+	restriction for ACML and AOCL.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128069
+	* tree-vect-slp.cc (vect_slp_function): Split region
+	at blocks with incoming abnormal edges.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128054
+	* gimple-ssa-isolate-paths.cc (find_implicit_erroneous_behavior):
+	Iterate over edges and then PHIs for NULL dereference discovery.
+	Duplicate each path exactly once and apply all transforms for
+	UB on that edge to that duplicate.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128051
+	* gimple-fold.cc (decode_field_reference): Use TYPE_SIGN of mask
+	operand when extending and_mask to prec_in.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128008
+	* gimple-ssa-pta-constraints.cc (create_variable_info_for_1):
+	Upon detecting recursion to the same structure type add
+	a constraint from nonlocal.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127978
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Simplify
+	vector CTOR filling accounting.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Disable
+	partial vectors if get_related_vectype_for_scalar_type returns
+	NULL_TREE for the mask.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-loop.cc (vect_verify_full_masking_avx512):
+	Require all loop masks to be integer mode masks.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127966
+	* tree-ssa-loop-niter.cc (loop_niter_by_eval): Perform
+	the comparison of the STRING_CST element with the
+	terminating constant in uint8_t type.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127924
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use the
+	mask part index M rather than the copy index J when getting the
+	loop mask for explicit mask arguments.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/127922
+	* tree.cc (type_with_interoperable_signedness): Return true
+	for BITINT_TYPE.
+	* gimple.cc (gimple_signed_or_unsigned_type): Properly
+	handle BITINT_TYPE.
+	(gimple_get_alias_set): Add comment about signed/unsigned
+	BITINT_TYPE.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127877
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Fix
+	shift count check.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127876
+	* tree-vect-loop.cc (vectorizable_reduction): For
+	conditional reduction assign then CONST_COND_REDUCTION mode
+	with explicit LT/GT checks.
+
+2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* config/bpf/bpf.cc (bpf_expand_cpymem): Fix offset used by the
+	backward memmove loop.
+
+2026-11-04  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-11-02  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/127274
+	* config/rs6000/emmintrin.h (_mm_movemask_pd): Reverse vector
+	element order on big-endian Power10 before calling vec_extractm().
+	(_mm_movemask_epi8): Likewise.
+	* config/rs6000/xmmintrin.h (_mm_movemask_ps): Likewise.
+
+2026-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/127899
+	* tree-object-size.cc (plus_stmt_object_size): Reset WHOLESIZE
+	if BYTES is unknown.
+	(dynamic_object_size): Return bool.
+	(cond_expr_object_size): Adjust calls and return REEXAMINE.
+	(collect_object_sizes_for): Add assert that size is unknown for
+	reexamined objects.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127475
+	* tree-vect-loop.cc (vectorizable_induction): Use
+	signed_or_unsigned_type_for to get the step vectype.
+
+2026-11-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128388
+	* config/i386/i386.cc (ix86_output_indirect_branch_via_reg):
+	Check REX2_INT_REGNO_P instead of REX_INT_REGNO_P twice.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128310
+	* config/i386/i386.md (UNSPEC_CRC32): Remove.
+	(UNSPEC_CRC32B, UNSPEC_CRC32W)
+	(UNSPEC_CRC32L, UNSPEC_CRC32Q): New.
+	(sse4_2_crc32qi): Rename from sse4_2_crc32<mode>.
+	Use UNSPEC_CRC32B.
+	(*sse4_2_crc32qi_zext): New insn.
+	(sse4_2_crc32hi): New insn.
+	(sse4_2_crc32si): Ditto.
+	(sse4_2_crc32di): Use UNSPEC_CRC32Q.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128270
+	* config/i386/i386.cc (ix86_add_cfa_restore_note): Do not skip
+	the note when stack_realign_drap.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128271
+	* config/i386/i386.md (rstorssp): Model
+	the memory operand as read and modified by the insn.
+	(clrssbsy): Ditto.  Clobber FLAGS_REG.
+	(@wrss<mode>, @wruss<mode>): Model
+	the memory operand as set by the insn.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128003
+	* tree-switch-conversion.cc (jump_table_cluster::emit): Cast to
+	unsigned_type_for whenever !TYPE_UNSIGNED rather than when
+	!TYPE_OVERFLOW_WRAPS.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127965
+	* gimple-isel.cc (optimize_atomic_bit_test_and): For the
+	< 0 and >= 0 cases, punt if TREE_TYPE (use_lhs) is unsigned.
+	Compute ibit from TYPE_PRECISION of TREE_TYPE (use_lhs)
+	rather than TYPE_SIZE_UNIT of TREE_TYPE (use_rhs).  Fix comment
+	pastos and other nits.  Formatting fix.
+	(gimple_isel_builtin_call): Formatting fix.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127905
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't add to
+	m_single_use_names versions of SSA_NAMEs where their single use
+	is within a different loop from the definition (or if use is
+	in irreducible loop, in a different bb than def).
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/128015
+	* config/i386/sgxintrin.h (__enclv_generic): Fix a typo.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127904
+	* tree-outof-ssa.h (remove_gimple_phi_args): Declare.
+	* tree-outof-ssa.cc (remove_gimple_phi_args): No longer static.
+	* gimple-lower-bitint.cc: Include tree-outof-ssa.h.
+	(gimple_lower_bitint): Remove zero uses large/huge _BitInt
+	PHI results.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127848
+	* tree-tailcall.cc: Include target.h.
+	(process_assignment): Punt if one of dest and src_var types
+	is BITINT_TYPE_P and the other is not.  If both are BITINT_TYPE_P,
+	punt if TYPE_SIZE is different, or for narrowing or same precision
+	conversions on != bitint_ext_undef targets, or for widening
+	conversions on != bitint_ext_full targets or if signedness differs.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR tree-optimization/127853
+	* tree-ssa-forwprop.cc (simplify_count_zeroes): Only pass the
+	value at zero to .CLZ/.CTZ when the target defines it.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR rtl-optimization/127852
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Don't merge two equal operands with side effects in the PLUS and
+	MINUS coefficient folds and in the (X - 1) * Y + Y and
+	(X + 1) * Y - Y folds.
+
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* config/i386/sse.md (avx_vec_concat_isa): New.
+	(avx_vec_concat<mode>): Allow 256 bit vinsert*64x2/32*4 when
+	AVX512VL is enabled.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127858
+	* tree-ssa-loop-im.cc (gather_mem_refs_stmt): When merging
+	accesses with differing access path always reset base and
+	offset to the canonical form by re-using the already canonical
+	ao_ref.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127814
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Emit
+	versioning for niter assumption conditions first and
+	split those to the separate BB together with the cost model
+	check after rewriting all of it to unconditional defined operations.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127764
+	* ipa-fnsummary.cc (set_switch_stmt_execution_predicate):
+	Use wi::to_widest to preserve sign when extending min to type.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127762
+	* gimple-fold.cc (decode_field_reference): Change psignbit to
+	int * and set it to 1 for sign extensions, -1 if all extension
+	bits are clear, or 0 otherwise.
+	(fold_truth_andor_for_ifcombine): Change ll_signbit, lr_signbit,
+	rl_signbit, and rr_signbit to int.  Check for signbit > 0 when
+	including sign bit in test, and signbit < 0 when checking for
+	zero-extension.  Only reject positive lr_signbit and
+	rr_signbit.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127601
+	* tree-vect-stmts.cc (get_load_store_type): Move overrun
+	flags and final handling to the relevant section, after
+	determining the step direction and the memory access type.
+	Only elide overrun with half-vector accesses for the
+	memory access types supporting that.  Do not claim
+	VMAT_STRIDED_SLP can handle overruns when the step is
+	negative.
+	(vectorizable_load): For the last memory access type group
+	analysis/transform assert what memory access type that covers.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127600
+	* tree-vect-loop.cc (vect_is_simple_iv_evolution): Explicitly
+	initialize STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE.
+	(is_nonwrapping_integer_induction): Bail out for alternate
+	induction types.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127588
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Use an unsigned type to compute the epilog start value.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127521
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Reject
+	non-constant compares that test the same bit in different ways.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127407
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_dependence):
+	Also call vect_preserves_scalar_order_p for negative dependence
+	distance.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127405
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop): Only
+	set nb_iterations_upper_bound of the epilogue loop and scale its
+	profile when the control IV is known not to wrap.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126563
+	* tree-ssa-ifcombine.cc (recognize_bits_test): Do not call
+	get_name_for_bit_test on rhs1.
+	(ifcombine_ifandif): Check all operands for abnormal PHIs.
+	Look through conversions via get_name_for_bit_test on the names
+	only when direct matching fails.
+
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-09  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/127784
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Pass a vector
+	of 1s as an all-true mask for a VOIDmode mask_mode.
+
+2026-10-27  Hugo Sales  <hugo@hsal.es>
+
+	Backported from master:
+	2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* ipa-cp.cc (cgraph_edge_brings_all_contexts_for_node): New function.
+	(perhaps_add_new_callers): Use it.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* config/i386/i386-expand.cc (ix86_expand_vector_move): Only
+	broadcast floating-point constants when a broadcast instruction
+	is available.  Guard integer broadcasts with
+	TARGET_PREFER_BCST_FROM_INTEGER.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* match.pd ((ordered @0 @1) & (ne @0 @1)): Only fold to LTGT
+	without trapping math or when NaNs are not honored.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_can_change_mode_class): Don't reject
+	cross-class mode changes when floating-point registers are
+	disabled.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/127843
+	* config/pa/pa.cc (pa_emit_move_sequence): Don't check constant
+	pool address.
+	(pa_legitimate_constant_p): Likewise.
+	(pa_legitimate_address_p): Likewise.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_emit_move_sequence): Handle SFmode and DFmode
+	symbolic, constant pool, or CONST memory references on both 32-bit
+	and 64-bit targets by emitting proper PIC, 14-bit HIGH/LO_SUM, or
+	1.x fallback move sequences using a scratch register.
+	(pa_secondary_reload): Strip SUBREG early. Update hard-float memory
+	displacement checks to account for 5-bit vs 14-bit constraints on
+	PA 1.x vs PA 2.0. Look through MEM wrappers when evaluating symbolic
+	address expressions. For symbolic address expressions under flag_pic
+	or non-readonly conditions, return R1_REGS for SImode and DImode, but
+	explicitly break out for SFmode and DFmode to let them safely fall
+	back to GENERAL_REGS. Return GENERAL_REGS instead of NO_REGS for shifted
+	and coprocessor/SAR reload fallbacks.
+	(pa_can_change_mode_class): Remove equal-size mode change shortcut.
+	Prevent cross-class type punning between integer and floating-point
+	modes within GENERAL_REGS or R1_REGS before reload is completed.
+	(pa_legitimate_constant_p): Reject out-of-range multi-word constants
+	in DImode on 32-bit targets. Reject naked symbolic or constant pool
+	SFmode and DFmode addresses unconditionally on 32-bit targets, while
+	intentionally allowing fully-formed LO_SUM expressions to preserve
+	PA 2.0 optimizations.
+	(pa_legitimate_address_p): Reject naked symbolic, constant pool, or
+	CONST expressions for SFmode and DFmode unconditionally on 32-bit
+	targets to force a proper HIGH/LO_SUM split or reload.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_spill_class): Declare.
+	(pa_legitimize_address_displacement): Declare.
+	(TARGET_SPILL_CLASS): Define.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+	(pa_secondary_reload): Handle 32 and 64-bit
+	float/integer type puns.  We need a secondary
+	reload for SImode/DImode REG+D moves to general
+	and float registers.
+	(pa_legitimate_address_p): Allow 14-bit displacements
+	when lra_in_progress is true.
+	(pa_spill_class): Implement.
+	(pa_legitimize_address_displacement): Implement.
+
+2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128105
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA_SSE2_UNSET):
+	Add OPTION_MASK_ISA_AES_UNSET, OPTION_MASK_ISA_SHA_UNSET and
+	OPTION_MASK_ISA_PCLMUL_UNSET.
+
+2026-10-23  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127692
+	* config/s390/s390.md: Fix bswap:HI reg-reg splitter.
+
+2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi: Correct arm_v8_1_lob_ok to
+	arm_v8_1m_lob_hw.
+
+2026-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+		    Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR target/127851
+	* config/i386/i386.md (@ccmp<mode>, *cmp<mode>_1)
+	(*cmp<mode>_minus_1): Reject operands that are both volatile
+	memory references.
+
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.cc (get_scratch_register_on_entry): Never return
+	the DRAP register.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* match.pd (signed_integer_sat_add): Require opposite signs
+	for the two constants of the single AND IMM form.
+
 2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* doc/extend.texi (Common Attributes): Fix typo in example.

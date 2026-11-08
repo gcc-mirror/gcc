@@ -2303,10 +2303,74 @@ intersect.
 @section Building a shared library
 
 This section describes building a tiny shared library implemented in
-Modula-2 and built with @file{libtool}.  Suppose a project consists of
-three definition modules and three implementation modules
-@file{a.def}, @file{a.mod}, @file{b.def}, @file{b.mod} and
-@file{c.mod}.  The first step is to compile the modules using position
+Modula-2 and built with @file{libtool}.  Consider a project consisting
+of three definition modules and three implementation modules
+@file{a.def}, @file{a.mod}, @file{b.def}, @file{b.mod}, @file{c.def}
+and @file{c.mod}.
+
+@example
+DEFINITION MODULE a ;
+
+END a.
+@end example
+
+@example
+IMPLEMENTATION MODULE a ;
+
+FROM libc IMPORT printf ;
+
+BEGIN
+   printf ("init: module a\n")
+FINALLY
+   printf ("finish: module a\n")
+END a.
+@end example
+
+Module @code{b} is almost identical, but it imports module @code{a}.
+
+@example
+DEFINITION MODULE b ;
+
+END b.
+@end example
+
+@example
+IMPLEMENTATION MODULE b ;
+
+IMPORT a ;
+FROM libc IMPORT printf ;
+
+
+BEGIN
+   printf ("init: module b\n")
+FINALLY
+   printf ("finish: module b\n")
+END b.
+@end example
+
+Likewise Module @code{c} is almost identical, but it imports from
+module @code{b}.
+
+@example
+DEFINITION MODULE c ;
+
+END c.
+@end example
+
+@example
+IMPLEMENTATION MODULE c ;
+
+IMPORT b ;
+FROM libc IMPORT printf ;
+
+BEGIN
+   printf ("init: module c\n")
+FINALLY
+   printf ("finish: module c\n")
+END c.
+@end example
+
+The first step is to compile the modules using position
 independent code.  This can be achieved by the following three
 commands:
 

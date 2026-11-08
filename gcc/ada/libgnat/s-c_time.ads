@@ -82,7 +82,6 @@ is
 
    function Milliseconds_To_Timeval (M : Interfaces.C.int) return timeval
      with Inline;
-   --  g-sothco.ads
    --  g-spogwa.adb
 
    function Nanoseconds_To_Timespec (N : Interfaces.C.int) return timespec

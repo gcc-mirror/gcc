@@ -1080,7 +1080,11 @@ namespace std::chrono
     sys_info info;
 
     if (i == infos.begin())
-      info.begin = sys_days(year::min()/January/1);
+      {
+	info.begin = sys_days(year::min()/January/1);
+	if (tp < info.begin)
+	  tp = info.begin;
+      }
     else
       info.begin = i[-1].until();
 
@@ -1100,9 +1104,16 @@ namespace std::chrono
     if (rules.empty())
       __throw_runtime_error("std::chrono::time_zone::get_info: invalid data");
 
+    // This will hold the sys_info objects expanded from the named rules.
     vector<pair<sys_info, string_view>> new_infos;
-    if (int n = ceil<years>(tp - info.begin).count())
-      new_infos.reserve(std::min(100, n * 2));
+
+    // Reserve space for two transitions per year, for each year between
+    // info.begin and tp, up to a maximum of 100.
+    // This is only an optimization to avoid too many reallocations
+    // and doesn't need to be exact.
+    if (size_t n = ceil<years>(tp - info.begin).count())
+      new_infos.reserve(std::min<size_t>(100, n * 2));
+
     long result_index = -1;
     int num_after = 4; // number of sys_info to generate past tp.
 
@@ -2304,7 +2315,7 @@ constinit tzdb_list::_Node::NumLeapSeconds tzdb_list::_Node::num_leap_seconds;
   {
     if (auto tz = do_locate_zone(zones, links, tz_name))
       return tz;
-    string_view err = "std::chrono::tzdb: cannot locate zone: ";
+    string_view err = "std::chrono::tzdb: cannot locate time zone: ";
     string str;
     str.reserve(err.size() + tz_name.size());
     str += err;

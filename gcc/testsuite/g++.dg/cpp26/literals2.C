@@ -21,7 +21,7 @@ char16_t j = u'abcd';					// { dg-error "multi-character literal cannot have an 
 char16_t k = u'\x61\x62\x63\x64';			// { dg-error "multi-character literal cannot have an encoding prefix" }
 char16_t l = u'á';
 char16_t m = u'😁';					// { dg-error "character not encodable in a single code unit" }
-char16_t n = u'\N{FACE WITH TEARS OF JOY}';		// { dg-error "character not encodable in a single code unit" { target c++23 } }
+char16_t n = u'\N{FACE WITH TEARS OF JOY}';		// { dg-error "character not encodable in a single code unit" }
 							// { dg-error "named universal character escapes are only valid in" "" { target c++20_down } .-1 }
 char16_t o = u'\U0001F602';				// { dg-error "character not encodable in a single code unit" }
 char32_t p = U'abcd';					// { dg-error "multi-character literal cannot have an encoding prefix" }

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mfpmath=sse -msse2" } */
+/* { dg-options "-O2 -fno-trapping-math -mfpmath=sse -msse2" } */
 /* { dg-additional-options "-fno-unwind-tables -fno-asynchronous-unwind-tables" { target *-*-darwin* } } */
 /* { dg-final { scan-assembler-times "comiss" 9 } } */
 /* { dg-final { scan-assembler-times "set" 9 } } */

@@ -2128,17 +2128,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
     }
   dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 
-  /* True if the vectorized statements would access beyond the last
-     statement in the group.  */
-  bool overrun_p = false;
-
-  /* True if we can cope with such overrun by peeling for gaps, so that
-     there is at least one final scalar iteration after the vector loop.  */
-  bool can_overrun_p = (!masked_p
-			&& vls_type == VLS_LOAD
-			&& loop_vinfo
-			&& !loop->inner);
-
   /* There can only be a gap at the end of the group if the stride is
      known at compile time.  */
   gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
@@ -2270,6 +2259,19 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       else
 	*memory_access_type = VMAT_CONTIGUOUS;
 
+      /* True if the vectorized statements would access beyond the last
+	 statement in the group.  */
+      bool overrun_p = false;
+
+      /* True if we can cope with such overrun by peeling for gaps, so that
+	 there is at least one final scalar iteration after the vector loop.  */
+      bool can_overrun_p = (!masked_p
+			    && vls_type == VLS_LOAD
+			    && loop_vinfo
+			    && !loop->inner
+			    && (*memory_access_type != VMAT_STRIDED_SLP
+				|| cmp > 0));
+
       /* If this is single-element interleaving with an element
 	 distance that leaves unused vector loads around fall back
 	 to elementwise access if possible - we otherwise least
@@ -2355,7 +2357,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       unsigned HOST_WIDE_INT tem, num;
       if (overrun_p
 	  && !masked_p
-	  && *memory_access_type != VMAT_LOAD_STORE_LANES
+	  && (*memory_access_type == VMAT_CONTIGUOUS
+	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	  && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
 						      vectype, misalign)))
 	      == dr_aligned
@@ -2435,6 +2438,16 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 				 "the end of the access\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
+	}
+
+      if (overrun_p)
+	{
+	  gcc_assert (can_overrun_p);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Data access with gaps requires scalar "
+			     "epilogue loop\n");
+	  LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
 	}
     }
 
@@ -2530,16 +2543,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  *alignment_support_scheme = dr_unaligned_supported;
 	  *misalignment = DR_MISALIGNMENT_UNKNOWN;
 	}
-    }
-
-  if (overrun_p)
-    {
-      gcc_assert (can_overrun_p);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Data access with gaps requires scalar "
-			 "epilogue loop\n");
-      LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
     }
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
@@ -4493,8 +4496,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  if (SCALAR_INT_MODE_P (bestn_inbranch->simdclone->mask_mode))
 		    {
 		      callee_nelements
-			  = exact_div (bestn_inbranch->simdclone->simdlen,
-				       bestn_inbranch->simdclone->args[i].linear_step);
+			= exact_div (bestn_inbranch->simdclone->simdlen,
+				     bestn_inbranch->simdclone->args[i].linear_step);
 		      masktype = get_related_vectype_for_scalar_type
 			  (vinfo->vector_mode, TREE_TYPE (vectype),
 			   callee_nelements);
@@ -4513,10 +4516,22 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			   TYPE_MODE (masktype));
 		      callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 		    }
-		  auto o = vector_unroll_factor (nunits, callee_nelements);
-		  vect_record_loop_mask (loop_vinfo,
-					 &LOOP_VINFO_MASKS (loop_vinfo),
-					 ncopies  * o, masktype, NULL_TREE);
+		  if (!masktype)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+					 "can't use a fully-masked loop because"
+					 " no suitable vector type was found for"
+					 " the mask.\n");
+		      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+		    }
+		  else
+		    {
+		      auto o = vector_unroll_factor (nunits, callee_nelements);
+		      vect_record_loop_mask (loop_vinfo,
+					     &LOOP_VINFO_MASKS (loop_vinfo),
+					     ncopies * o, masktype, NULL_TREE);
+		    }
 		}
 	    }
 	  else if ((bestn->simdclone->args[i].arg_type
@@ -4717,7 +4732,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
 						      loop_masks, ncopies_in,
-						      vectype, j);
+						      vectype, m);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
 						    TREE_TYPE (loop_mask),
@@ -4778,7 +4793,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
 						      loop_masks, ncopies_in,
-						      vectype, j);
+						      vectype, m);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
 						    TREE_TYPE (loop_mask),
@@ -4930,6 +4945,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 					     ncopies * o, mask_vectype, m);
 		}
+	      else if (bestn->simdclone->mask_mode == VOIDmode)
+		{
+		  /* All lanes are active: pass what the VEC_COND_EXPR below
+		     would select.  An all-ones floating-point MASK_ARGTYPE
+		     is not a valid condition.  */
+		  vargs.safe_push (build_one_cst (mask_argtype));
+		  continue;
+		}
 	      else
 		mask = vect_build_all_ones_mask (vinfo, stmt_info,
 						 mask_argtype);
@@ -5025,7 +5048,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 					TYPE_VECTOR_SUBPARTS (rtype), &k))
 		gcc_unreachable ();
 	      gcc_assert ((k & (k - 1)) == 0);
-	      if ((j & (k - 1)) == 0)
+	      if (!ret_ctor_elts)
 		vec_alloc (ret_ctor_elts, k);
 	      if (ratype)
 		{
@@ -5047,12 +5070,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		}
 	      else
 		CONSTRUCTOR_APPEND_ELT (ret_ctor_elts, NULL_TREE, new_temp);
-	      if ((j & (k - 1)) != k - 1)
+	      if (ret_ctor_elts->length () != k)
 		continue;
 	      vec_oprnd0 = build_constructor (vectype, ret_ctor_elts);
 	      new_stmt
 		= gimple_build_assign (make_ssa_name (vec_dest), vec_oprnd0);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      ret_ctor_elts = NULL;
 
 	      SLP_TREE_VEC_DEFS (slp_node)
 		.quick_push (gimple_assign_lhs (new_stmt));
@@ -11292,6 +11316,9 @@ vectorizable_load (vec_info *vinfo,
 			 inside_cost, prologue_cost);
       return true;
     }
+
+  gcc_assert (memory_access_type == VMAT_CONTIGUOUS
+	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE);
 
   aggr_type = vectype;
   if (!costing_p)

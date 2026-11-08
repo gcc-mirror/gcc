@@ -103,7 +103,7 @@
 
 #define __enclv_generic(leaf, b, c, d, retval)		\
   __asm__ __volatile__("enclv\n\t"			\
-	   : "=a" (retval), "=b" (b), "=c" (b), "=d" (d)\
+	   : "=a" (retval), "=b" (b), "=c" (c), "=d" (d)\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
 	   : "cc")
 

@@ -5794,10 +5794,12 @@ package body Exp_Ch6 is
 
       --  The same optimization: if the returned value is used to initialize a
       --  dynamically allocated object, then no need to copy/readjust/finalize,
-      --  we can initialize it in place.
+      --  we can initialize it in place, provided that the call does not return
+      --  on the secondary stack.
 
       if Nkind (Par) = N_Qualified_Expression
         and then Nkind (Parent (Par)) = N_Allocator
+        and then not Use_Sec_Stack
       then
          return;
       end if;

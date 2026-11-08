@@ -93,7 +93,7 @@ static_assert (!can_extract<const int &>(reflect_constant (i)));
 static_assert (!can_extract<int &>(^^i));
 
 int j;
-static_assert (extract<int &>(^^j)); // { dg-error "non-constant|not usable" }
+constexpr auto e = extract<int &>(^^j); // { dg-error "cannot be extracted" }
 
 consteval info
 bar ()

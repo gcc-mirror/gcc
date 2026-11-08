@@ -1,3 +1,11 @@
+2026-10-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-10-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Add a new option, --no-fetch.  If specified, run
+	git rebase rather than git pull.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

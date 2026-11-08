@@ -25892,7 +25892,7 @@ package body Sem_Util is
          if not Report then
             return False;
 
-         elsif not Within_Init_Proc then
+         elsif not Inside_Init_Proc then
             return True;
 
          elsif Is_Init_Proc (Entity (Name (N))) then
@@ -30550,26 +30550,6 @@ package body Sem_Util is
          end if;
       end if;
    end Warn_On_Hiding_Entity;
-
-   ----------------------
-   -- Within_Init_Proc --
-   ----------------------
-
-   function Within_Init_Proc return Boolean is
-      S : Entity_Id;
-
-   begin
-      S := Current_Scope;
-      while not Is_Overloadable (S) loop
-         if S = Standard_Standard then
-            return False;
-         else
-            S := Scope (S);
-         end if;
-      end loop;
-
-      return Is_Init_Proc (S);
-   end Within_Init_Proc;
 
    ---------------------------
    -- Within_Protected_Type --

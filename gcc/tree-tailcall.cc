@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "attribs.h"
 #include "asan.h"
+#include "target.h"
 
 /* The file implements the tail recursion elimination.  It is also used to
    analyze the tail calls in general, passing the results to the rtl level
@@ -369,11 +370,46 @@ process_assignment (gassign *stmt,
 	  if (TYPE_MODE (TREE_TYPE (dest)) != TYPE_MODE (TREE_TYPE (src_var)))
 	    return FAIL;
 
+	  /* While say unsigned short vs. unsigned _BitInt(16) can be
+	     returned the same on some targets, we don't have a guarantee
+	     that is the case on all targets, the ABI can differ, so just
+	     punt.  */
+	  if (BITINT_TYPE_P (TREE_TYPE (dest))
+	      != BITINT_TYPE_P (TREE_TYPE (src_var)))
+	    return FAIL;
+
+	  if (BITINT_TYPE_P (TREE_TYPE (dest)))
+	    {
+	      /* For _BitInt <-> _BitInt we have more target information.
+		 For BLKmode we need to punt if it has different size.  */
+	      if (wi::to_widest (TYPE_SIZE (TREE_TYPE (dest)))
+		  != wi::to_widest (TYPE_SIZE (TREE_TYPE (src_var))))
+		return FAIL;
+	      struct bitint_info info;
+	      unsigned dest_prec = TYPE_PRECISION (TREE_TYPE (dest));
+	      bool ok = targetm.c.bitint_type_info (dest_prec, &info);
+	      gcc_assert (ok);
+	      if (TYPE_PRECISION (TREE_TYPE (dest))
+		  <= TYPE_PRECISION (TREE_TYPE (src_var)))
+		{
+		  /* Narrowing conversion or possibly same precision
+		     different sign.  This is fine on bitint_ext_undef
+		     targets only.  */
+		  if (info.extended != bitint_ext_undef)
+		    return FAIL;
+		}
+	      /* Widening conversion.  This is fine on bitint_ext_full
+		 target if signedness is the same.  */
+	      else if (info.extended != bitint_ext_full
+		       || (TYPE_UNSIGNED (TREE_TYPE (dest))
+			   != TYPE_UNSIGNED (TREE_TYPE (src_var))))
+		return FAIL;
+	    }
 	  /* Even if the type modes are the same, if the precision of the
 	     type is smaller than mode's precision,
 	     reduce_to_bit_field_precision would generate additional code.  */
-	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	      && !type_has_mode_precision_p (TREE_TYPE (dest)))
+	  else if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
+		   && !type_has_mode_precision_p (TREE_TYPE (dest)))
 	    return FAIL;
 	}
 

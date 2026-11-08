@@ -561,11 +561,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             }
 	  if (this->pbase() < this->pptr())
 	    {
+	      struct _Guard {
+		~_Guard() { if (_M_p) _M_p->pbump(-1); }
+		basic_filebuf* _M_p;
+	      };
+	      _Guard __g = { };
+
 	      // If appropriate, append the overflow char.
 	      if (!__testeof)
 		{
 		  *this->pptr() = traits_type::to_char_type(__c);
 		  this->pbump(1);
+		  __g._M_p = this;
 		}
 
 	      // Convert pending sequence to external representation,
@@ -573,6 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_convert_to_external(this->pbase(),
 					 this->pptr() - this->pbase()))
 		{
+		  __g._M_p = 0;
 		  _M_set_buffer(0);
 		  __ret = traits_type::not_eof(__c);
 		}

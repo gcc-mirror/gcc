@@ -4576,26 +4576,13 @@ conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
 					(*expr)->value.character.string[0]);
       gfc_replace_expr (*expr, tmp);
     }
-  else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
+  else if (se != NULL)
     {
-      if ((*expr)->ref == NULL)
-	{
-	  se->expr = gfc_string_to_single_character
-	    (integer_one_node,
-	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				  gfc_get_symbol_decl
-				  ((*expr)->symtree->n.sym)),
-	      (*expr)->ts.kind);
-	}
-      else
-	{
-	  gfc_conv_variable (se, *expr);
-	  se->expr = gfc_string_to_single_character
-	    (integer_one_node,
-	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				  se->expr),
-	      (*expr)->ts.kind);
-	}
+      gfc_conv_expr (se, *expr);
+      gfc_conv_string_parameter (se);
+      se->expr = gfc_string_to_single_character (integer_one_node,
+						 se->expr, (*expr)->ts.kind);
+      se->string_length = integer_one_node;
     }
 }
 

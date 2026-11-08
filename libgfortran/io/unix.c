@@ -1794,10 +1794,10 @@ retry:
       LOCK_UNIT (u);
       if (u->closed)
 	{
-	  RDLOCK (&unit_rwlock);
+	  WRLOCK (&unit_rwlock);
 	  UNLOCK_UNIT (u);
 	  if (predec_waiting_locked (u) == 0)
-	    free (u);
+	    recycle_unit (u);
 	  goto retry;
 	}
 
@@ -1864,7 +1864,7 @@ flush_all_units (void)
 	  WRLOCK (&unit_rwlock);
 	  UNLOCK_UNIT (u);
 	  if (predec_waiting_locked (u) == 0)
-	    free (u);
+	    recycle_unit (u);
 	}
     }
   while (1);

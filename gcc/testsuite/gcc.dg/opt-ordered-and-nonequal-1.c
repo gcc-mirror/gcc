@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-forwprop1-details" } */
+/* { dg-options "-O2 -fno-trapping-math -fdump-tree-optimized" } */
 /* Make this work for default 'LOGICAL_OP_NON_SHORT_CIRCUIT == false' configurations:
    { dg-additional-options "--param logical-op-non-short-circuit=1" } */
 
@@ -48,4 +48,4 @@ int is_ordered_or_nonequal_sh_9 (float a, float b)
   return !((a == b) || __builtin_isunordered (b, a));
 }
 
-/* { dg-final { scan-tree-dump-times "gimple_simplified to\[^\n\r]*<>" 9 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "<>" 9 "optimized" } } */

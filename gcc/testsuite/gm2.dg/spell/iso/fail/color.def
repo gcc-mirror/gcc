@@ -1,0 +1,5 @@
+DEFINITION MODULE color ;
+
+PROCEDURE Clear ;
+
+END color.

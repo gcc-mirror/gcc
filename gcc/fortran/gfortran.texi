@@ -2622,6 +2622,7 @@ The following intrinsics take unsigned arguments:
 @item @code{IPARITY}, @pxref{IPARITY}
 @item @code{ISHFT}, @pxref{ISHFT}
 @item @code{ISHFTC}, @pxref{ISHFTC}
+@item @code{LEADZ}, @pxref{LEADZ}
 @item @code{MATMUL}, @pxref{MATMUL}
 @item @code{MAX}, @pxref{MAX}
 @item @code{MAXLOC}, @pxref{MAXLOC}
@@ -2636,6 +2637,8 @@ The following intrinsics take unsigned arguments:
 @item @code{MVBITS}, @pxref{MVBITS}
 @item @code{NOT}, @pxref{NOT}
 @item @code{OUT_OF_RANGE}, @pxref{OUT_OF_RANGE}
+@item @code{POPCNT}, @pxref{POPCNT}
+@item @code{POPPAR}, @pxref{POPPAR}
 @item @code{PRODUCT}, @pxref{PRODUCT}
 @item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
 @item @code{RANGE}, @pxref{RANGE}
@@ -2644,6 +2647,7 @@ The following intrinsics take unsigned arguments:
 @item @code{SHIFTL}, @pxref{SHIFTL}
 @item @code{SHIFTR}, @pxref{SHIFTR}
 @item @code{SUM}, @pxref{SUM}
+@item @code{TRAILZ}, @pxref{TRAILZ}
 @item @code{TRANSPOSE}, @pxref{TRANSPOSE}
 @item @code{TRANSFER}, @pxref{TRANSFER}
 @end itemize

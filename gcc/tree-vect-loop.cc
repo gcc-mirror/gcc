@@ -198,6 +198,7 @@ vect_is_simple_iv_evolution (unsigned loop_nb, tree access_fn,
 
   STMT_VINFO_LOOP_PHI_EVOLUTION_BASE_UNCHANGED (stmt_info) = init_expr;
   STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info) = step_expr;
+  STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_info) = vect_step_op_add;
 
   if (TREE_CODE (step_expr) != INTEGER_CST
       && (TREE_CODE (step_expr) != SSA_NAME
@@ -1145,6 +1146,8 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
   if (!iv_type)
     return false;
 
+  bool ok = true;
+
   /* Produce the rgroup controls.  */
   for (auto const &mask : LOOP_VINFO_MASKS (loop_vinfo).mask_set)
     {
@@ -1165,14 +1168,29 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
 	masks->rgc_vec.safe_grow_cleared (nscalars_per_iter, true);
       rgroup_controls *rgm = &(*masks).rgc_vec[nscalars_per_iter - 1];
 
+      /* For now vect_get_loop_mask only supports integer mode masks
+	 when we need to split it.  */
+      tree mask_type = truth_type_for (vectype);
+      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_INT
+	  || TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
+	{
+	  ok = false;
+	  break;
+	}
+
       if (!rgm->type || rgm->factor > nvectors)
 	{
-	  rgm->type = truth_type_for (vectype);
+	  rgm->type = mask_type;
 	  rgm->compare_type = NULL_TREE;
 	  rgm->max_nscalars_per_iter = nscalars_per_iter;
 	  rgm->factor = nvectors;
 	  rgm->bias_adjusted_ctrl = NULL_TREE;
 	}
+    }
+  if (!ok)
+    {
+      release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo).rgc_vec);
+      return false;
     }
 
   /* There is no fixed compare type we are going to use but we have to
@@ -1180,21 +1198,11 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
   unsigned int min_ni_width
     = wi::min_precision (vect_max_vf (loop_vinfo), UNSIGNED);
 
-  bool ok = true;
   for (auto &rgc : LOOP_VINFO_MASKS (loop_vinfo).rgc_vec)
     {
       tree mask_type = rgc.type;
       if (!mask_type)
 	continue;
-
-      /* For now vect_get_loop_mask only supports integer mode masks
-	 when we need to split it.  */
-      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_INT
-	  || TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
-	{
-	  ok = false;
-	  break;
-	}
 
       /* If iv_type is usable as compare type use that - we can elide the
 	 saturation in that case.   */
@@ -6608,7 +6616,7 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
 
 /* Function is_nonwrapping_integer_induction.
 
-   Check if STMT_VINO (which is part of loop LOOP) both increments and
+   Check if STMT_VINFO (which is part of loop LOOP) both increments and
    does not cause overflow.  */
 
 static bool
@@ -6620,6 +6628,10 @@ is_nonwrapping_integer_induction (stmt_vec_info stmt_vinfo, class loop *loop)
   tree lhs_type = TREE_TYPE (gimple_phi_result (phi));
   widest_int ni, max_loop_value, lhs_max;
   wi::overflow_type overflow = wi::OVF_NONE;
+
+  /* Make sure this is a regular induction.  */
+  if (STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (stmt_vinfo) != vect_step_op_add)
+    return false;
 
   /* Make sure the loop is integer based.  */
   if (TREE_CODE (base) != INTEGER_CST
@@ -7382,17 +7394,24 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
 				     TREE_TYPE (cond_reduc_val)))
 	    {
-	      tree e = fold_binary (LE_EXPR, boolean_type_node,
-				    cond_initial_val, cond_reduc_val);
-	      if (e && (integer_onep (e) || integer_zerop (e)))
+	      tree lt, gt;
+	      enum tree_code cond_reduc_code = ERROR_MARK;
+	      if ((lt = fold_binary (LT_EXPR, boolean_type_node,
+				     cond_initial_val, cond_reduc_val))
+		  && integer_onep (lt))
+		cond_reduc_code = MAX_EXPR;
+	      else if ((gt = fold_binary (GT_EXPR, boolean_type_node,
+					  cond_initial_val, cond_reduc_val))
+		       && integer_onep (gt))
+		cond_reduc_code = MIN_EXPR;
+	      if (cond_reduc_code != ERROR_MARK)
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "condition expression based on "
 				     "compile time constant.\n");
 		  /* Record reduction code at analysis stage.  */
-		  VECT_REDUC_INFO_CODE (reduc_info)
-		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
+		  VECT_REDUC_INFO_CODE (reduc_info) = cond_reduc_code;
 		  VECT_REDUC_INFO_TYPE (reduc_info) = CONST_COND_REDUCTION;
 		}
 	    }
@@ -9353,9 +9372,9 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (RSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
       break;
@@ -9365,12 +9384,11 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (LSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
-
       break;
 
     default:
@@ -9679,7 +9697,9 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       return false;
     }
   tree stept = TREE_TYPE (step_expr);
-  tree step_vectype = get_same_sized_vectype (stept, vectype);
+  tree step_vectype
+    = (!INTEGRAL_TYPE_P (stept) ? vectype
+       : signed_or_unsigned_type_for (TYPE_UNSIGNED (stept), vectype));
   stept = TREE_TYPE (step_vectype);
 
   /* Check for target support of the vectorized arithmetic used here.  */
