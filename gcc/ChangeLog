@@ -1,3 +1,361 @@
+2026-11-07  Kewen Lin  <linkewen@hygon.cn>
+
+	Backported from master:
+	2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+		    Zhizheng Yang  <yangzhizheng@hygon.cn>
+		    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Handle ix86_veclibabi_type_hvml case.
+	* config/i386/i386-options.h (ix86_veclibabi_hvml): New declare.
+	* config/i386/i386-opts.h (enum ix86_veclibabi): Add
+	ix86_veclibabi_type_hvml into the ix86_veclibabi enum.
+	* config/i386/i386.cc (ix86_veclibabi_hvml): New function.
+	* config/i386/i386.opt: Add the hvml type.
+	* doc/invoke.texi: Document -mveclibabi=hvml and clarify the 64-bit
+	restriction for ACML and AOCL.
+
+2026-11-07  Xin Liu  <liulxx@hygon.cn>
+
+	Backported from master:
+	2026-06-23  Xin Liu  <liulxx@hygon.cn>
+
+	* common/config/i386/cpuinfo.h (get_hygon_cpu): Detect HYGON
+	Family 18h model 8 as c86-4g-m8.
+	* common/config/i386/i386-common.cc (processor_names): Add
+	c86-4g-m8.
+	(processor_alias_table): Likewise.
+	* common/config/i386/i386-cpuinfo.h (enum processor_subtypes): Add
+	HYGONFAM18H_C86_4G_M8.
+	* config.gcc: Add c86-4g-m8 to supported x86 CPUs and handle
+	c86_4g_m8 target triples.
+	* config/i386/c86-4g-m7.md: Rename to ...
+	* config/i386/c86-4g-m7m8.md: ... this and extend shared c86-4g-m7
+	scheduling reservations to c86-4g-m8.
+	(c86_4g_m8_imovx_cwde): New reservation.
+	(c86_4g_m7_imov_xchg): Add c86_4g_m8 to CPU attribute.
+	(c86_4g_m7_imov_xchg_load): Ditto.
+	(c86_4g_m7_imov): Ditto.
+	(c86_4g_m7_imov_load): Ditto.
+	(c86_4g_m7_imov_store): Ditto.
+	(c86_4g_m7_push): Ditto.
+	(c86_4g_m7_push_mem): Ditto.
+	(c86_4g_m7_pop): Ditto.
+	(c86_4g_m7_pop_mem): Ditto.
+	(c86_4g_m7_imul): Ditto.
+	(c86_4g_m7_imul_load): Ditto.
+	(c86_4g_m7_idiv): Ditto.
+	(c86_4g_m7_idiv_QI): Ditto.
+	(c86_4g_m7_idiv_load): Ditto.
+	(c86_4g_m7_idiv_QI_load): Ditto.
+	(c86_4g_m7_insn): Ditto.
+	(c86_4g_m7_insn_load): Ditto.
+	(c86_4g_m7_insn_store): Ditto.
+	(c86_4g_m7_insn2_store): Ditto.
+	(c86_4g_m7_insn_both): Ditto.
+	(c86_4g_m7_setcc): Ditto.
+	(c86_4g_m7_setcc_load): Ditto.
+	(c86_4g_m7_setcc_store): Ditto.
+	(c86_4g_m7_alu1_double): Ditto.
+	(c86_4g_m7_alu1_double_load): Ditto.
+	(c86_4g_m7_alu1_vector): Ditto.
+	(c86_4g_m7_alu1_vector_load): Ditto.
+	(c86_4g_m7_alu1_direct): Ditto.
+	(c86_4g_m7_alu1_direct_load): Ditto.
+	(c86_4g_m7_call): Ditto.
+	(c86_4g_m7_branch): Ditto.
+	(c86_4g_m7_branch_load): Ditto.
+	(c86_4g_m7_lea): Ditto.
+	(c86_4g_m7_leave): Ditto.
+	(c86_4g_m7_str): Ditto.
+	(c86_4g_m7_str_load): Ditto.
+	(c86_4g_m7_ieu_vector): Ditto.
+	(c86_4g_m7_ieu_vector_load): Ditto.
+	(c86_4g_m7_sse_insertimm): Ditto.
+	(c86_4g_m7_sse_insert): Ditto.
+	(c86_4g_m7_fp_cmov): Ditto.
+	(c86_4g_m7_fp_mov_direct_load): Ditto.
+	(c86_4g_m7_fp_mov_direct_store): Ditto.
+	(c86_4g_m7_fp_mov_double_load): Ditto.
+	(c86_4g_m7_fp_mov_double_store): Ditto.
+	(c86_4g_m7_fp_mov_direct): Ditto.
+	(c86_4g_m7_fp_sqrt): Ditto.
+	(c86_4g_m7_fp_spc_direct): Ditto.
+	(c86_4g_m7_fp_spc): Ditto.
+	(c86_4g_m7_fp_op_mul): Ditto.
+	(c86_4g_m7_fp_op_mul_load): Ditto.
+	(c86_4g_m7_fp_op_imul_load): Ditto.
+	(c86_4g_m7_fp_div): Ditto.
+	(c86_4g_m7_fp_div_load): Ditto.
+	(c86_4g_m7_fp_idiv_load): Ditto.
+	(c86_4g_m7_fp_fsgn): Ditto.
+	(c86_4g_m7_fp_fcmp): Ditto.
+	(c86_4g_m7_fp_fcmp_load): Ditto.
+	(c86_4g_m7_fp_mmx): Ditto.
+	(c86_4g_m7_mmx_add_cmp): Ditto.
+	(c86_4g_m7_mmx_add_cmp_load): Ditto.
+	(c86_4g_m7_mmx_cvt): Ditto.
+	(c86_4g_m7_mmx_cvt_load): Ditto.
+	(c86_4g_m7_mmx_shift): Ditto.
+	(c86_4g_m7_mmx_shift_load): Ditto.
+	(c86_4g_m7_mmx_shift_avg): Ditto.
+	(c86_4g_m7_mmx_shift_avg_load): Ditto.
+	(c86_4g_m7_mmx_shift_sadbw): Ditto.
+	(c86_4g_m7_mmx_shift_sadbw_load): Ditto.
+	(c86_4g_m7_mmx_mov): Ditto.
+	(c86_4g_m7_mmx_mov_store): Ditto.
+	(c86_4g_m7_mmx_mov_load): Ditto.
+	(c86_4g_m7_mmx_mul): Ditto.
+	(c86_4g_m7_mmx_mul_load): Ditto.
+	(c86_4g_m7_sse_pinsr_reg): Ditto.
+	(c86_4g_m7_sse_pinsr_reg_load): Ditto.
+	(c86_4g_m7_avx_vpinsr_reg): Ditto.
+	(c86_4g_m7_avx_vpinsr_reg_load): Ditto.
+	(c86_4g_m7_avx512_perm_xmm): Ditto.
+	(c86_4g_m7_avx512_perm_xmm_opload): Ditto.
+	(c86_4g_m7_avx512_permi2_ymm): Ditto.
+	(c86_4g_m7_avx512_permi2_zmm): Ditto.
+	(c86_4g_m7_avx512_permi2_ymm_load): Ditto.
+	(c86_4g_m7_avx512_permi2_zmm_load): Ditto.
+	(c86_4g_m7_avx512_perm_zmm_imm): Ditto.
+	(c86_4g_m7_avx512_perm_zmm_imm_load): Ditto.
+	(c86_4g_m7_avx512_perm_zmm_noimm): Ditto.
+	(c86_4g_m7_sse_perm_zmm_noimm_load): Ditto.
+	(c86_4g_m7_avx512_insertx_ymm): Ditto.
+	(c86_4g_m7_avx512_insertx_ymem): Ditto.
+	(c86_4g_m7_avx512_insertx_zxmm): Ditto.
+	(c86_4g_m7_avx512_insertx_zxmem): Ditto.
+	(c86_4g_m7_avx512_insertx_zymm): Ditto.
+	(c86_4g_m7_avx512_insertx_zymem): Ditto.
+	(c86_4g_m7_avx_insertx_ymm): Ditto.
+	(c86_4g_m7_avx_insertx_ymem): Ditto.
+	(c86_4g_m7_avx512_shuf_xymm): Ditto.
+	(c86_4g_m7_avx512_shuf_zmm): Ditto.
+	(c86_4g_m7_avx512_shuf_xymem): Ditto.
+	(c86_4g_m7_avx512_shuf_zmem): Ditto.
+	(c86_4g_m7_sselogic_xymm): Ditto.
+	(c86_4g_m7_sselogic_xymm_load): Ditto.
+	(c86_4g_m7_avx512_cmpestr): Ditto.
+	(c86_4g_m7_avx512_cmpestr_load): Ditto.
+	(c86_4g_m7_avx512_log): Ditto.
+	(c86_4g_m7_avx512_log_load): Ditto.
+	(c86_4g_m7_avx512_vdbpsadbw_xymm): Ditto.
+	(c86_4g_m7_avx512_vdbpsadbw_xymem): Ditto.
+	(c86_4g_m7_avx512_vdbpsadbw_zmm): Ditto.
+	(c86_4g_m7_avx512_vdbpsadbw_zmem): Ditto.
+	(c86_4g_m7_avx512_abs): Ditto.
+	(c86_4g_m7_avx512_abs_load): Ditto.
+	(c86_4g_m7_avx_sign): Ditto.
+	(c86_4g_m7_avx_sign_load): Ditto.
+	(c86_4g_m7_avx_blend): Ditto.
+	(c86_4g_m7_avx_blend_load): Ditto.
+	(c86_4g_m7_avx512_aes): Ditto.
+	(c86_4g_m7_avx512_aes_load): Ditto.
+	(c86_4g_m7_avx_aes): Ditto.
+	(c86_4g_m7_avx_aes_load): Ditto.
+	(c86_4g_m7_extr): Ditto.
+	(c86_4g_m7_extr_store): Ditto.
+	(c86_4g_m7_avx_ssecomi_comi): Ditto.
+	(c86_4g_m7_avx_ssecomi_comi_load): Ditto.
+	(c86_4g_m7_avx_ssecomi_test): Ditto.
+	(c86_4g_m7_avx_ssecomi_test_load): Ditto.
+	(c86_4g_m7_avx512_imul): Ditto.
+	(c86_4g_m7_avx512_imul_mem): Ditto.
+	(c86_4g_m7_avx_imul): Ditto.
+	(c86_4g_m7_avx_imul_mem): Ditto.
+	(c86_4g_m7_avx512_mov_vmov): Ditto.
+	(c86_4g_m7_avx512_mov_vmov_store): Ditto.
+	(c86_4g_m7_avx512_mov_vmov_load): Ditto.
+	(c86_4g_m7_avx512_vpmovx_y): Ditto.
+	(c86_4g_m7_avx512_vpmovx_y_load): Ditto.
+	(c86_4g_m7_avx512_vpmovx_z): Ditto.
+	(c86_4g_m7_avx512_vpmovx_z_load): Ditto.
+	(c86_4g_m7_avx512_vpmovx_x): Ditto.
+	(c86_4g_m7_avx512_vpmovx_x_load): Ditto.
+	(c86_4g_m7_avx_vpmovx_xx): Ditto.
+	(c86_4g_m7_avx_vpmovx_xx_load): Ditto.
+	(c86_4g_m7_avx512_expand): Ditto.
+	(c86_4g_m7_avx512_expand_load): Ditto.
+	(c86_4g_m7_avx512_expand_z): Ditto.
+	(c86_4g_m7_avx512_expand_z_load): Ditto.
+	(c86_4g_m7_avx512_movnt_load): Ditto.
+	(c86_4g_m7_avx512_movnt_store): Ditto.
+	(c86_4g_m7_sse_movnt_store): Ditto.
+	(c86_4g_m7_sse_movnt): Ditto.
+	(c86_4g_m7_avx512_blendv): Ditto.
+	(c86_4g_m7_avx512_blendv_load): Ditto.
+	(c86_4g_m7_sse_mov2): Ditto.
+	(c86_4g_m7_sse_mov2_load): Ditto.
+	(c86_4g_m7_avx512_sseishft_aligr): Ditto.
+	(c86_4g_m7_avx512_sseishft_aligr_load): Ditto.
+	(c86_4g_m7_avx512_sseishft_vshift): Ditto.
+	(c86_4g_m7_avx512_sseishft_vshift_load): Ditto.
+	(c86_4g_m7_avx512_sseadd_maxmin): Ditto.
+	(c86_4g_m7_avx512_sseadd_maxmin_load): Ditto.
+	(c86_4g_m7_avx_sseadd_maxmin): Ditto.
+	(c86_4g_m7_avx_sseadd_maxmin_load): Ditto.
+	(c86_4g_m7_sse_sseadd_maxmin): Ditto.
+	(c86_4g_m7_sse_sseadd_maxmin_load): Ditto.
+	(c86_4g_m7_avx512_sseadd): Ditto.
+	(c86_4g_m7_avx512_sseadd_load): Ditto.
+	(c86_4g_m7_avx_sseadd_hplus): Ditto.
+	(c86_4g_m7_avx_sseadd_hplus_load): Ditto.
+	(c86_4g_m7_avx512_sseiadd_madd): Ditto.
+	(c86_4g_m7_avx512_sseiadd_madd_mem): Ditto.
+	(c86_4g_m7_avx_sseiadd_sadbw): Ditto.
+	(c86_4g_m7_avx_sseiadd_sadbw_mem): Ditto.
+	(c86_4g_m7_sse_sseiadd_sadbw): Ditto.
+	(c86_4g_m7_sse_sseiadd_sadbw_mem): Ditto.
+	(c86_4g_m7_sse_sseiadd_madd): Ditto.
+	(c86_4g_m7_sse_sseiadd_madd_mem): Ditto.
+	(c86_4g_m7_avx512_sseiadd_avg): Ditto.
+	(c86_4g_m7_avx512_sseiadd_avg_load): Ditto.
+	(c86_4g_m7_avx_sseiadd_hplus): Ditto.
+	(c86_4g_m7_avx_sseiadd_hplus_load): Ditto.
+	(c86_4g_m7_sse_sseiadd_hplus): Ditto.
+	(c86_4g_m7_sse_sseiadd_hplus_load): Ditto.
+	(c86_4g_m8_avx512_ssemul): New reservation.
+	(c86_4g_m8_avx512_ssemul_load): Ditto.
+	(c86_4g_m7_avx512_ssediv_x): Add c86_4g_m8 to CPU attribute.
+	(c86_4g_m7_avx512_ssediv_xmem): Ditto.
+	(c86_4g_m7_avx512_ssediv_y): Ditto.
+	(c86_4g_m7_avx512_ssediv_ymem): Ditto.
+	(c86_4g_m7_avx512_ssediv_z): Ditto.
+	(c86_4g_m7_avx512_ssediv_zmem): Ditto.
+	(c86_4g_m7_avx512_ssecmp): Ditto.
+	(c86_4g_m7_avx512_ssecmp_load): Ditto.
+	(c86_4g_m7_avx512_ssecmp_z): Ditto.
+	(c86_4g_m7_avx512_ssecmp_z_load): Ditto.
+	(c86_4g_m7_avx512_ssecmp_vp): Ditto.
+	(c86_4g_m7_avx512_ssecmp_vp_load): Ditto.
+	(c86_4g_m7_avx512_ssecmp_vp_z): Ditto.
+	(c86_4g_m7_avx512_ssecmp_vp_z_load): Ditto.
+	(c86_4g_m7_avx_ssecmp_vp): Ditto.
+	(c86_4g_m7_avx_ssecmp_vp_load): Ditto.
+	(c86_4g_m7_avx512_ssecmp_test): Ditto.
+	(c86_4g_m7_avx512_ssecmp_test_load): Ditto.
+	(c86_4g_m7_avx512_ssecvt_xy): Ditto.
+	(c86_4g_m7_avx512_ssecvt_xy_load): Ditto.
+	(c86_4g_m7_avx512_ssecvt_y_z): Ditto.
+	(c86_4g_m7_avx512_ssecvt_y_z_load): Ditto.
+	(c86_4g_m7_avx512_ssecvt_z): Ditto.
+	(c86_4g_m7_avx512_ssecvt_z_load): Ditto.
+	(c86_4g_m7_avx_ssecvt): Ditto.
+	(c86_4g_m7_avx_ssecvt_load): Ditto.
+	(c86_4g_m7_sse_ssecvt_pspi): Ditto.
+	(c86_4g_m7_sse_ssecvt_pspi_load): Ditto.
+	(c86_4g_m7_sse_ssecvt_pi): Ditto.
+	(c86_4g_m7_sse_ssecvt_pi_load): Ditto.
+	(c86_4g_m8_avx512_muladd): New reservation.
+	(c86_4g_m8_avx512_muladd_load): Ditto.
+	(c86_4g_m7_avx512_muladd_madd): Add c86_4g_m8 to CPU attribute.
+	(c86_4g_m7_avx512_muladd_madd_load): Ditto.
+	(c86_4g_m7_avx512_sse_range): Ditto.
+	(c86_4g_m7_avx512_sse_range_load): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_x): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_x_load): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_y): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_y_load): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_z): Ditto.
+	(c86_4g_m7_avx512_sse_conflict_z_load): Ditto.
+	(c86_4g_m7_avx512_sse_class): Ditto.
+	(c86_4g_m7_avx512_sse_class_load): Ditto.
+	(c86_4g_m7_avx512_sse_class_z): Ditto.
+	(c86_4g_m7_avx512_sse_class_z_load): Ditto.
+	(c86_4g_m7_avx_sse): Ditto.
+	(c86_4g_m7_avx_sse_load): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_x): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_xload): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_y): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_yload): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_z): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_sf_zload): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_x): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_xload): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_y): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_yload): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_z): Ditto.
+	(c86_4g_m7_avx512_sse_sqrt_df_zload): Ditto.
+	(c86_4g_m7_avx512_msklog): Ditto.
+	(c86_4g_m7_avx512_msklog_vector): Ditto.
+	(c86_4g_m7_avx512_mskmov_reg_k): Ditto.
+	(c86_4g_m7_avx512_mskmov_xy_k): Ditto.
+	(c86_4g_m7_avx512_mskmov_z_k): Ditto.
+	(c86_4g_m7_avx512_mskmov_k_k): Ditto.
+	(c86_4g_m7_avx512_mskmov_k_reg): Ditto.
+	(c86_4g_m7_avx512_mskmov_k_m): Ditto.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Detect
+	c86-4g-m8.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Define
+	c86-4g-m8 arch and tune macros.
+	* config/i386/i386-options.cc (m_C86_4G_M8): New macro.
+	(m_C86_4G): Include m_C86_4G_M8.
+	(processor_cost_table): Add c86_4g_m8_cost.
+	* config/i386/i386.cc (ix86_reassociation_width): Handle
+	PROCESSOR_C86_4G_M8.
+	* config/i386/i386.h (enum processor_type): Add
+	PROCESSOR_C86_4G_M8.
+	(PTA_C86_4G_M8): New.
+	* config/i386/i386.md: Add c86_4g_m8 to cpu attribute.
+	* config/i386/x86-tune-costs.h (c86_4g_m8_cost): New.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Handle
+	PROCESSOR_C86_4G_M8.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_USE_SCATTER_2PARTS): Include
+	m_C86_4G_M8.
+	(X86_TUNE_USE_SCATTER_4PARTS): Likewise.
+	(X86_TUNE_USE_SCATTER_8PARTS): Likewise.
+	(X86_TUNE_AVX512_SPLIT_REGS): Likewise.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Likewise.
+	(X86_TUNE_AVX512_STORE_BY_PIECES): Likewise.
+	* doc/extend.texi: Document c86-4g-m8 for __builtin_cpu_is.
+	* doc/invoke.texi: Document c86-4g-m8.
+
+2026-11-07  Xin Liu  <liulxx@hygon.cn>
+
+	Backported from master:
+	2026-06-17  Xin Liu  <liulxx@hygon.cn>
+
+	* config/i386/c86-4g-m7.md (c86_4g_m7_imov_xchg): Adjust
+	reservation units.
+	(c86_4g_m7_imov_xchg_load): Ditto.
+	(c86_4g_m7_call): Ditto.
+	(c86_4g_m7_branch): Ditto.
+	(c86_4g_m7_branch_load): Ditto.
+	(c86_4g_m7_fp_spc_direct): Add missing store unit.
+	(c86_4g_m7_sse_pinsr_reg): Adjust reservation units.
+	(c86_4g_m7_avx512_insertx_ymm): Ditto.
+	(c86_4g_m7_avx512_insertx_ymem): Ditto.
+	(c86_4g_m7_avx512_insertx_zxmm): Ditto.
+	(c86_4g_m7_avx512_insertx_zxmem): Ditto.
+	(c86_4g_m7_avx512_abs_load): Add missing store unit.
+	(c86_4g_m7_avx_sign): Use combined FPU reservation.
+	(c86_4g_m7_avx_sign_load): Ditto.
+	(c86_4g_m7_avx_aes): Ditto.
+	(c86_4g_m7_avx_aes_load): Ditto.
+	(c86_4g_m7_extr_load): Rename to ...
+	(c86_4g_m7_extr_store): ... this and restrict to store memory.
+	(c86_4g_m7_avx_imul): Use combined FPU reservation.
+	(c86_4g_m7_avx_imul_mem): Ditto.
+	(c86_4g_m7_avx512_vpmovx_y_load): Add missing store unit.
+	(c86_4g_m7_avx_vpmovx_xx_load): Ditto.
+	(c86_4g_m7_avx512_sseadd_maxmin_xy): Rename to ...
+	(c86_4g_m7_avx512_sseadd_maxmin): ... this and simplify
+	memory attribute check.
+	(c86_4g_m7_avx512_sseadd_maxmin_xy_load): Rename to ...
+	(c86_4g_m7_avx512_sseadd_maxmin_load): ... this and simplify
+	memory attribute check.
+	(c86_4g_m7_avx512_sseadd_xy): Rename to ...
+	(c86_4g_m7_avx512_sseadd): ... this.
+	(c86_4g_m7_avx512_sseadd_xy_load): Rename to ...
+	(c86_4g_m7_avx512_sseadd_load): ... this.
+	(c86_4g_m7_sse_sseiadd_sadbw): Use combined FPU reservation.
+	(c86_4g_m7_sse_sseiadd_sadbw_mem): Ditto.
+	(c86_4g_m7_avx512_ssecmp_vp_z): Adjust reservation units.
+	(c86_4g_m7_avx512_ssecmp_vp_z_load): Ditto.
+	(c86_4g_m7_avx512_ssecmp_test_load): Ditto.
+	(c86_4g_m7_avx512_mskmov_k_m): Adjust latency.
+
 2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:
