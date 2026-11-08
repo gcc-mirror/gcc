@@ -1583,9 +1583,18 @@ jump_table_for_label (const rtx_code_label *label)
   (RTL_FLAG_CHECK6 ("RTX_FRAME_RELATED_P", (RTX), DEBUG_INSN, INSN,	\
 		    CALL_INSN, JUMP_INSN, BARRIER, SET)->frame_related)
 
-/* 1 if JUMP RTX is a crossing jump.  */
-#define CROSSING_JUMP_P(RTX) \
-  (RTL_FLAG_CHECK1 ("CROSSING_JUMP_P", (RTX), JUMP_INSN)->jump)
+/* If JUMP RTX is a crossing jump.  */
+inline bool
+CROSSING_JUMP_P (const rtx_insn *insn)
+{
+  return RTL_FLAG_CHECK1 ("CROSSING_JUMP_P", insn, JUMP_INSN)->jump;
+}
+
+inline void
+set_crossing_jump (rtx_insn *insn, bool set)
+{
+  RTL_FLAG_CHECK1 ("CROSSING_JUMP_P", insn, JUMP_INSN)->jump = set;
+}
 
 /* 1 if RTX is a call to a const function.  Built from ECF_CONST and
    TREE_READONLY.  */

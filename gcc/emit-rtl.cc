@@ -4051,7 +4051,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
       if (JUMP_P (insn))
 	{
 	  if (JUMP_P (trial))
-	    CROSSING_JUMP_P (insn) = CROSSING_JUMP_P (trial);
+	    set_crossing_jump (insn, CROSSING_JUMP_P (trial));
 	  mark_jump_label (PATTERN (insn), insn, 0);
 	  njumps++;
 	  if (probability.initialized_p ()
@@ -6664,7 +6664,7 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
 
     case JUMP_INSN:
       new_rtx = emit_jump_insn_after (copy_insn (PATTERN (insn)), after);
-      CROSSING_JUMP_P (new_rtx) = CROSSING_JUMP_P (insn);
+      set_crossing_jump (new_rtx, CROSSING_JUMP_P (insn));
       break;
 
     case DEBUG_INSN:

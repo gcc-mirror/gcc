@@ -1552,7 +1552,7 @@ redirect_jump_2 (rtx_jump_insn *jump, rtx olabel, rtx nlabel, int delete_unused,
      label and are now changing it into a direct conditional return.
      The jump is no longer crossing in that case.  */
   if (ANY_RETURN_P (nlabel))
-    CROSSING_JUMP_P (jump) = 0;
+    set_crossing_jump (jump, false);
 
   if (!ANY_RETURN_P (olabel)
       && --LABEL_NUSES (olabel) == 0 && delete_unused > 0

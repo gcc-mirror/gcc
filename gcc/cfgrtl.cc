@@ -1498,7 +1498,7 @@ fixup_partition_crossing (edge e)
     {
       e->flags |= EDGE_CROSSING;
       if (JUMP_P (BB_END (e->src)))
-	CROSSING_JUMP_P (BB_END (e->src)) = 1;
+	set_crossing_jump (BB_END (e->src), true);
     }
   else if (BB_PARTITION (e->src) == BB_PARTITION (e->dest))
     {
@@ -1518,7 +1518,7 @@ fixup_partition_crossing (edge e)
                 break;
             }
           if (!has_crossing_succ)
-	    CROSSING_JUMP_P (BB_END (e->src)) = 0;
+	    set_crossing_jump (BB_END (e->src), false);
         }
     }
 }

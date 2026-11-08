@@ -8330,7 +8330,7 @@ sched_create_recovery_edges (basic_block first_bb, basic_block rec,
 	{
 	  /* We don't need the same note for the check because
 	     any_condjump_p (check) == true.  */
-	  CROSSING_JUMP_P (jump) = 1;
+	  set_crossing_jump (jump, true);
 	}
       edge_flags = EDGE_CROSSING;
     }

@@ -2747,7 +2747,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	{
 	  reorg_redirect_jump (insn, label);
 	  if (crossing)
-	    CROSSING_JUMP_P (insn) = 1;
+	    set_crossing_jump (insn, true);
 	}
     }
 }
@@ -3125,7 +3125,7 @@ relax_delay_slots (rtx_insn *first)
 	    {
 	      reorg_redirect_jump (jump_insn, target_label);
 	      if (crossing)
-		CROSSING_JUMP_P (jump_insn) = 1;
+		set_crossing_jump (jump_insn, true);
 	    }
 
 	  /* See if this jump conditionally branches around an unconditional
@@ -3282,7 +3282,7 @@ relax_delay_slots (rtx_insn *first)
 	  reorg_redirect_jump (delay_jump_insn, trial);
 	  target_label = trial;
 	  if (crossing)
-	    CROSSING_JUMP_P (delay_jump_insn) = 1;
+	    set_crossing_jump (delay_jump_insn, true);
 	}
 
       /* If the first insn at TARGET_LABEL is redundant with a previous

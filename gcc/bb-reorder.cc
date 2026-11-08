@@ -2334,7 +2334,7 @@ update_crossing_jump_flags (void)
       if (e->flags & EDGE_CROSSING)
 	{
 	  if (JUMP_P (BB_END (bb)))
-	    CROSSING_JUMP_P (BB_END (bb)) = 1;
+	    set_crossing_jump (BB_END (bb), true);
 	  break;
 	}
 }
