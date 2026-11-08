@@ -5282,7 +5282,7 @@ loongarch_output_move (rtx *operands)
   if ((lsx_p || lasx_p)
       && dest_code == REG && FP_REG_P (REGNO (dest))
       && src_code == CONST_VECTOR
-      && CONST_INT_P (CONST_VECTOR_ELT (src, 0)))
+      && CONST_SCALAR_INT_P (CONST_VECTOR_ELT (src, 0)))
     {
       operands[1] = loongarch_const_vector_vldi (src, mode);
       gcc_assert (operands[1]);
