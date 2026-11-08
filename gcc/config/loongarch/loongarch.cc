@@ -4153,6 +4153,10 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
   switch (code)
     {
+    case IF_THEN_ELSE:
+      *total = COSTS_N_INSNS (1);
+      return true;
+
     case CONST_INT:
       if (TARGET_64BIT && outer_code == AND && UINTVAL (x) == 0xffffffff)
 	{
