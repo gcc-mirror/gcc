@@ -425,6 +425,11 @@
   (and (match_code "const_int")
        (match_test "SINGLE_BIT_MASK_OPERAND (~UINTVAL (op))")))
 
+(define_predicate "arith_or_single_bit_operand"
+  (ior (match_operand 0 "arith_operand")
+       (and (match_test "TARGET_ZBS")
+	    (match_operand 0 "single_bit_mask_operand"))))
+
 (define_predicate "arith_or_mode_mask_or_zbs_operand"
   (ior (match_operand 0 "arith_operand")
        (and (match_test "TARGET_ZBS")

@@ -1651,3 +1651,53 @@
    (set (match_dup 0) (ior:DI (match_dup 0) (match_dup 3)))]
   { operands[2] = GEN_INT (UINTVAL (operands[2]) | UINTVAL (operands[3])); })
   
+;; Combine splits this at the inner operation.  But RISC-V would prefer the
+;; split happen at the SIGN_EXTEND since it has instrutions for those forms.
+;;
+;; I suspect there are AND forms we should be supporting here.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(any_or:DI (sign_extend:DI
+		    (sext_w_binop:SI (match_operand:SI 1 "register_operand")
+				     (match_operand:SI 2 "arith_operand")))
+		   (match_operand:DI 3 "single_bit_mask_operand")))]
+  "TARGET_64BIT && TARGET_ZBS && (UINTVAL (operands[3]) >> 31) == 0"
+  [(set (match_dup 0)
+	(sign_extend:DI (sext_w_binop:SI (match_dup 1) (match_dup 2))))
+   (set (match_dup 0) (any_or:DI (match_dup 0) (match_dup 3)))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(any_or:DI (sign_extend:DI
+		    (neg:SI (match_operand:SI 1 "register_operand")))
+		   (match_operand:DI 2 "single_bit_mask_operand")))]
+  "TARGET_64BIT && TARGET_ZBS && (UINTVAL (operands[2]) >> 31) == 0"
+  [(set (match_dup 0) (sign_extend:DI (neg:SI (match_dup 1))))
+   (set (match_dup 0) (any_or:DI (match_dup 0) (match_dup 2)))])
+
+;; Shifts and rotates take their count in QImode, so separate pattern.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(any_or:DI (sign_extend:DI
+		    (any_shift_rotate:SI (match_operand:SI 1 "register_operand")
+					 (match_operand:QI 2 "arith_operand")))
+		   (match_operand:DI 3 "single_bit_mask_operand")))]
+  "TARGET_64BIT && TARGET_ZBS && (UINTVAL (operands[3]) >> 31) == 0"
+  [(set (match_dup 0)
+	(sign_extend:DI (any_shift_rotate:SI (match_dup 1) (match_dup 2))))
+   (set (match_dup 0) (any_or:DI (match_dup 0) (match_dup 3)))])
+
+;; A logical right shift by N clears the top N bits.  Adding a single bit
+;; constant that lies in those bits cannot carry, so the add is an IOR and
+;; can be a bseti.  Constants that fit an addi are already handled.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (lshiftrt:DI (match_operand:DI 1 "register_operand")
+			      (match_operand 2 "const_int_operand"))
+		 (match_operand:DI 3 "single_bit_mask_operand")))]
+  "TARGET_64BIT && TARGET_ZBS
+   && IN_RANGE (INTVAL (operands[2]), 1, 63)
+   && !SMALL_OPERAND (INTVAL (operands[3]))
+   && exact_log2 (UINTVAL (operands[3])) >= 64 - INTVAL (operands[2])"
+  [(set (match_dup 0) (lshiftrt:DI (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ior:DI (match_dup 0) (match_dup 3)))])

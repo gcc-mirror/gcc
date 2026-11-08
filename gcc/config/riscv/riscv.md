@@ -5501,12 +5501,22 @@
 (define_expand "aop<mode>3"
   [(set (match_operand:GPR 0 "register_operand")
         (ior:GPR (match_operand:GPR 1 "register_operand")
-                 (match_operand:GPR 2 "arith_operand")))]
+                 (match_operand:GPR 2 "arith_or_single_bit_operand")))]
   ""          
   {
     /* If we have shift-add insns and arguments are all registers, steer
        towards PLUS, otherwise steer towards IOR.  */
-    if ((TARGET_ZBA && REG_P (operands[2]))
+    if (TARGET_64BIT && TARGET_ZBS
+	&& single_bit_mask_operand (operands[2], VOIDmode))
+      {
+	if (<MODE>mode != word_mode)
+	  {
+	    operands[0] = gen_lowpart (word_mode, operands[0]);
+	    operands[1] = gen_lowpart (word_mode, operands[1]);
+	  }
+	emit_insn (gen_iordi3 (operands[0], operands[1], operands[2]));
+      }
+    else if ((TARGET_ZBA && REG_P (operands[2]))
 	|| (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
       emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
     else

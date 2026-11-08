@@ -221,6 +221,11 @@
 					  ashiftrt rotatert rotate])
 (define_code_iterator zero_is_neutral_op_c [plus ior xor])
 
+;; Iterator for all the basic binary operations that have W forms except
+;; shifts/rotates.  Shifts/rotates have mismatched operand modes and
+;; thus are painful to handle in a single pattern
+(define_code_iterator sext_w_binop [plus minus mult div udiv])
+
 ;; These code iterators allow unsigned and signed extraction to be generated
 ;; from the same template.
 (define_code_iterator any_extract [sign_extract zero_extract])
