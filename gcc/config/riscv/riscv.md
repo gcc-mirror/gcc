@@ -3336,6 +3336,25 @@
   operands[6] = GEN_INT (leading);
 })
 
+;; The low 32 bits of a zero_extract of at least 32 bits are the low 32 bits
+;; of a right shift, which addiw consumes directly.  This arises when a shift
+;; left followed by a logical shift right feeds a 32-bit add.  Narrower fields
+;; do not qualify as the bits above the field must read as zero.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(sign_extend:DI
+	  (plus:SI
+	    (subreg:SI
+	      (zero_extract:DI (match_operand:DI 1 "register_operand")
+			       (match_operand 2 "const_int_operand")
+			       (match_operand 3 "const_int_operand")) 0)
+	    (match_operand:SI 4 "arith_operand"))))
+   (clobber (match_operand:DI 5 "register_operand"))]
+  "TARGET_64BIT && INTVAL (operands[2]) >= 32 && INTVAL (operands[3]) >= 1"
+  [(set (match_dup 5) (lshiftrt:DI (match_dup 1) (match_dup 3)))
+   (set (match_dup 0)
+	(sign_extend:DI (plus:SI (subreg:SI (match_dup 5) 0) (match_dup 4))))])
+
 ;; Handle logical AND feeding an equality test against zero where an operand
 ;; to the AND is a constant requiring synthesis.  Because we only care about
 ;; zero/nonzero state after the AND, we may be able to shift both operands
