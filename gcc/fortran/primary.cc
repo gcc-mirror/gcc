@@ -3180,20 +3180,39 @@ gfc_variable_attr (gfc_expr *expr)
   if (pointer || attr.proc_pointer)
     target = 1;
 
-  /* F2018:11.1.3.3: Other attributes of associate names
+  /* F2023:11.1.3.3: Other attributes of associate names
      "The associating entity does not have the ALLOCATABLE or POINTER
      attributes; it has the TARGET attribute if and only if the selector is
      a variable and has either the TARGET or POINTER attribute."  */
   if (sym->attr.associate_var && sym->assoc && sym->assoc->target)
     {
-      if (sym->assoc->target->expr_type == EXPR_VARIABLE)
+      gfc_expr *tgt = sym->assoc->target;
+
+      if (tgt->expr_type == EXPR_VARIABLE)
 	{
 	  symbol_attribute tgt_attr;
-	  tgt_attr = gfc_expr_attr (sym->assoc->target);
+
+	  /* The _data reference that narrows a SELECT TYPE selector is a
+	     pointer whatever the selector is, so query the selector.  */
+	  if (tgt->ref && !tgt->ref->next && tgt->ref->type == REF_COMPONENT
+	      && tgt->ref->u.c.component
+	      && strcmp (tgt->ref->u.c.component->name, "_data") == 0)
+	    {
+	      gfc_expr *bare = gfc_get_variable_expr (tgt->symtree);
+	      tgt_attr = gfc_expr_attr (bare);
+	      gfc_free_expr (bare);
+	    }
+	  else
+	    tgt_attr = gfc_expr_attr (tgt);
 	  target = (tgt_attr.pointer || tgt_attr.target);
 	}
       else
 	target = 0;
+
+      /* SELECT RANK's associating entity has the selector's ALLOCATABLE
+	 and POINTER attributes (F2023:11.1.10.3).  */
+      if (!sym->attr.select_rank_temporary)
+	pointer = allocatable = 0;
     }
 
   for (ref = expr->ref; ref; ref = ref->next)

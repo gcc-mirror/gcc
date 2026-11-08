@@ -22,8 +22,8 @@ contains
         type is (character(*))
           if (any (point .ne. tgt1)) stop 1
       end select
-      point => tgt2
     end associate
+    obj%p => tgt2
 
     select type (z => obj%p)
       type is (character(*))

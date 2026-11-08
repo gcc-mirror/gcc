@@ -22,7 +22,7 @@
 contains
 
   subroutine DestroyNode( theNode, lstatus )
-    type(treeNode), pointer :: theNode
+    type(treeNode), pointer, intent(in) :: theNode
     logical, intent(out) :: lstatus
   end subroutine
   
