@@ -28,7 +28,8 @@ PROCEDURE DEALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL);
   *)
 
 PROCEDURE REALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL);
-  (* Attempts to reallocate, amount of storage.  Effectively it
+  (* If addr is NIL then ALLOCATE is called otherwise it
+     attempts to reallocate amount of storage.  Effectively it
      calls ALLOCATE, copies the amount of data pointed to by
      addr into the new space and DEALLOCATES the addr.
      This procedure is a GNU extension.

@@ -89,17 +89,18 @@ BEGIN
 END DEALLOCATE ;
 
 
-PROCEDURE REALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL);
-  (* Attempts to reallocate, amount of storage.  Effectively it
-     calls ALLOCATE, copies the amount of data pointed to by
-     addr into the new space and DEALLOCATES the addr.
-     This procedure is a GNU extension.
-  *)
+(*
+   LowerReallocate - attempts to reallocate amount of storage by
+                     calling ALLOCATE and then coping the amount of data
+                     pointed to by addr into the new space.
+                     Lastly the original addr is deallocated.
+*)
+
+PROCEDURE LowerReallocate (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL) ;
 VAR
    newa: SYSTEM.ADDRESS ;
    n   : CARDINAL ;
 BEGIN
-   assert (initialized) ;
    IF NOT IsIn (storageTree, addr)
    THEN
       RAISE (storageException, ORD(pointerToUnallocatedStorage),
@@ -115,6 +116,24 @@ BEGIN
    END ;
    DEALLOCATE(addr, n) ;
    addr := newa
+END LowerReallocate ;
+
+
+PROCEDURE REALLOCATE (VAR addr: SYSTEM.ADDRESS; amount: CARDINAL);
+  (* If addr is NIL then ALLOCATE is called otherwise it
+     attempts to reallocate amount of storage.  Effectively it
+     calls ALLOCATE, copies the amount of data pointed to by
+     addr into the new space and DEALLOCATES the addr.
+     This procedure is a GNU extension.
+  *)
+BEGIN
+   assert (initialized) ;
+   IF addr = NIL
+   THEN
+      ALLOCATE (addr, amount)
+   ELSE
+      LowerReallocate (addr, amount)
+   END
 END REALLOCATE ;
 
 
