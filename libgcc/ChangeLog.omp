@@ -1,0 +1,8 @@
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/amdgcn_veclib.h: Do not define anything when __SIMT__ is
+	defined.
+	* config/gcn/lib2-vec_divmod-di.c: Likewise.
+	* config/gcn/lib2-vec_divmod-hi.c: Likewise.
+	* config/gcn/lib2-vec_divmod-qi.c: Likewise.
+	* config/gcn/lib2-vec_divmod.c: Likewise.

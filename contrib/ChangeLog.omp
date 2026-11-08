@@ -1,3 +1,8 @@
+2026-11-08  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gcc-changelog/git_update_version.py: Add
+	183f71ca629b737344c281 to ignored_commits.
+
 2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gcc-changelog/git_update_version.py: Add

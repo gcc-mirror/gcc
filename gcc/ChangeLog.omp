@@ -1,3 +1,310 @@
+2026-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_gimplify_va_arg_expr): Add SIMT support.
+
+2026-10-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/gcn/gcn.h (SWITCHABLE_TARGET): Define.
+	* config/gcn/gcn.cc: Include target-globals.h.
+	(normal_function_globals, old_is_kernel): New static variables.
+	(gcn_is_kernel): New function.
+	(gcn_set_current_function): New function.
+	(gcn_prepare_pch_save): New function.
+	(gcn_conditional_register_usage): Use gcn_is_kernel to detect
+	non-kernel functions and do not require cfun->machine for them.
+	(TARGET_SET_CURRENT_FUNCTION, TARGET_PREPARE_PCH_SAVE): Define.
+
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-protos.h (gcn_local_decl_alignment): New prototype.
+	* config/gcn/gcn.cc (GCN_VECTOR_STACK_ALIGNMENT): New define.
+	(gcn_vector_alignment): New function.
+	(gcn_local_decl_alignment): New function.
+	(TARGET_VECTOR_ALIGNMENT): Define.
+	* config/gcn/gcn.h (LOCAL_DECL_ALIGNMENT): Define.
+
+2026-10-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-tree.cc (struct oacc_attrs): New.
+	(gcn_goacc_reduction_init): Add SIMT vector reduction case.
+	(gcn_goacc_reduction_fini): Likewise, using IFN_GOMP_SIMT_REDUCE.
+	(gcn_goacc_reduction_teardown): Read the worker reduction buffer for
+	SIMT vector reductions where the vector length is not 64.
+	(gcn_goacc_reduction): Don't use default_goacc_reduction for vector
+	reductions.
+	* config/gcn/gcn.cc (gcn_oacc_dim_size): Return 64 for the vector
+	dimension in SIMT mode.
+	* config/gcn/gcn.md (UNSPECV_SIMT_FORK, UNSPECV_SIMT_JOIN): Delete.
+	(oacc_fork): Emit omp_simt_enter for the vector dimension in SIMT mode.
+	(oacc_join): Emit omp_simt_exit for the vector dimension in SIMT mode.
+	(*oacc_fork_insn, *oacc_join_insn): Delete.
+	(omp_simt_exit): Remove predicate and constraint from operand 0.
+	(omp_simt_vote_any, omp_simt_xchg_idx): Output "sorry, unimplemented".
+
+2026-10-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* cfghooks.cc (make_forwarder_block): New data argument,
+	pass it down to redirect_edge_p.
+	* cfghooks.h (make_forwarder_block): Add void* argument.
+	* cfgloop.cc (mfb_reis_set): Remove.
+	(mfb_redirect_edges_in_set): Add new data argument.
+	Use it instead of mfb_reis_set.
+	(form_subloop): Create a local variable instead of
+	mfb_areis_set. Update call to make_forwarder_block.
+	(merge_latch_edges): Likewise.
+	* cfgloopmanip.cc (mfb_kj_edge): Remove.
+	(mfb_keep_just):  Add new data argument.
+	Use it instead of mfb_kj_edge.
+	(create_preheader): Use local variable instead of
+	mfb_kj_edge. Update call to make_forwarder_block.
+	* cfgloopmanip.h (mfb_keep_just): Add void* argument.
+	* tree-cfgcleanup.cc (mfb_keep_latches): Add unused void* arugment.
+	(cleanup_tree_cfg_noloop): Update call to make_forwarder_block.
+	* tree-ssa-threadupdate.cc
+	(fwd_jt_path_registry::thread_through_loop_header): Use local
+	variable instead of mfb_kj_edge. Update call to make_forwarder_block.
+
+2026-10-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* cfghooks.cc (make_forwarder_block): Remove new_bb_cbk argument.
+	* cfghooks.h (make_forwarder_block): Remove last argument.
+	* cfgloop.cc (form_subloop): Update call to make_forwarder_block.
+	(merge_latch_edges): Likewise.
+	* cfgloopmanip.cc (create_preheader): Likewise.
+	* tree-cfgcleanup.cc (cleanup_tree_cfg_noloop): Likewise.
+	* tree-ssa-threadupdate.cc
+	(fwd_jt_path_registry::thread_through_loop_header): Likewise.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (UNSPECV_SIMT_REDUCE): New unspecv value.
+	(UNSPEC_SIMT_XCHG_BFLY): Remove.
+	(SIMT_REDUCE_MODE): New mode iterator.
+	(omp_simt_xchg_bfly): Delete.
+	(omp_simt_reduce): New.
+	(@omp_simt_xchg_bfly<mode>): Delete.
+	(@omp_simt_reduce<mode>): New.
+	* config/gcn/gcn-valu.md (V64_SIMT_REDUCE_MODE): New mode iterator.
+	(omp_simt_xchg_bfly<mode>): Delete.
+	(omp_simt_reduce<mode>): New.
+	* config/gcn/gcn-simt-vectorize.cc (pass_gcn_simt_vectorize::execute):
+	Remove the UNSPEC_SIMT_XCHG_BFLY special case. Add new
+	UNSPEC_VOLATILE case for UNSPECV_SIMT_REDUCE.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/nvptx/nvptx-protos.h (nvptx_expand_simt_reduce): New
+	prototype.
+	* config/nvptx/nvptx.cc (nvptx_expand_simt_reduce): New function.
+	* config/nvptx/nvptx.md (omp_simt_xchg_bfly): Delete.
+	(omp_simt_reduce): New.
+	* doc/ifn.texi: Delete IFN_GOMP_SIMT_XCHG_BFLY.
+	Add IFN_GOMP_SIMT_REDUCE.
+	* internal-fn.def (GOMP_SIMT_XCHG_BFLY): Delete.
+	(GOMP_SIMT_REDUCE): New.
+	* internal-fn.cc (expand_GOMP_SIMT_XCHG_BFLY): Delete.
+	(expand_GOMP_SIMT_REDUCE): New.
+	* omp-low.cc (lower_rec_input_clauses): Replace
+	IFN_GOMP_SIMT_XCHG_BFLY algorithm with IFN_GOMP_SIMT_REDUCE call.
+	Remove the now-unused simt_lane temporary.
+	* omp-offload.cc (execute_omp_device_lower): Update for the
+	IFN_GOMP_SIMT_XCHG_BFLY to IFN_GOMP_SIMT_REDUCE change.
+	* target-insns.def (omp_simt_xchg_bfly): Delete.
+	(omp_simt_reduce): New.
+	* tree-cfg.cc (gimple_can_duplicate_bb_p): Update for the
+	IFN_GOMP_SIMT_XCHG_BFLY to IFN_GOMP_SIMT_REDUCE change.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* timevar.def (TV_SIMT): New timevar.
+	* config/gcn/gcn-simt-vectorize.cc (pass_data_gcn_simt_vectorize):
+	Use TV_SIMT.
+	* config/gcn/gcn-simt-cbranch.cc (pass_data_gcn_simt_cbranch):
+	Likewise.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config.gcc (amdgcn-*-amdhsa): Add gcn-simt-cbranch.o to extra_objs.
+	* config/gcn/gcn-simt-cbranch.cc: New file.
+	* config/gcn/gcn-passes.def: Insert pass_gcn_simt_cbranch before
+	pass_outof_cfg_layout_mode.
+	* config/gcn/gcn-protos.h (make_pass_gcn_simt_cbranch): New
+	prototype.
+	* config/gcn/t-gcn-hsa (gcn-simt-cbranch.o): New rule.
+	(ALL_HOST_OBJS): Add gcn-simt-cbranch.o.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config.gcc (amdgcn-*-amdhsa): Add gcn-simt-vectorize.o to
+	extra_objs.
+	* config/gcn/gcn-passes.def: New file.
+	* config/gcn/gcn-simt-vectorize.cc: New file.
+	* config/gcn/gcn-protos.h (make_pass_gcn_simt_vectorize): New
+	prototype.
+	* config/gcn/t-gcn-hsa (gcn-simt-vectorize.o): New rule.
+	(ALL_HOST_OBJS): Add gcn-simt-vectorize.o.
+	(PASSES_EXTRA): Add config/gcn/gcn-passes.def.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/constraints.md (Sa): New register constraint for
+	AFP_REGS.
+	* config/gcn/predicates.md (gcn_conditional_register_operand): Accept
+	DImode condition registers as well as BImode.
+	* config/gcn/gcn-builtins.def (SIMT_ENTER, SIMT_EXIT): New builtins.
+	* config/gcn/gcn-protos.h (gcn_output_ensure_scalar): Declare.
+	* config/gcn/gcn.h: Include gomp-constants.h.
+	(SCALAR_HARDREG_P, VECTOR_HARDREG_P): New macros.
+	(struct machine_function): Add vectors_enabled.
+	* config/gcn/gcn.cc (gcn_init_machine_status): Initialize
+	vectors_enabled.
+	(gcn_option_override): Disable variable tracking in SIMT mode.
+	(gcn_conditional_register_usage): Make EXEC fixed in SIMT mode.
+	(gcn_function_arg): Pass all arguments in vector registers in SIMT
+	mode.
+	(gcn_function_arg_advance): Likewise.
+	(move_callee_saved_registers_simt): New function.
+	(move_callee_saved_registers): Use it in SIMT mode.
+	(gcn_expand_prologue): Mark the addcsi3_scalar_zero insn frame
+	related, instead of the addsi3_scalar_carry insn, and add a
+	prologue_use of the stack pointer high part.  Initialize EXEC in
+	kernels in SIMT mode.
+	(gcn_expand_epilogue): Add a use of EXEC in SIMT mode.
+	(gcn_expand_builtin_1): Expand GCN_BUILTIN_SIMT_ENTER and
+	GCN_BUILTIN_SIMT_EXIT.
+	(gcn_simt_vf): New function.
+	(gcn_extra_live_on_entry): New function.
+	(gcn_md_asm_adjust): New function.
+	(gcn_md_reorg): Skip the EXEC fixup pass in SIMT mode.
+	(GCN_DEFAULT_VECTORS): Rename to ...
+	(GCN_DEFAULT_SIMD_VECTORS): ... this.
+	(GCN_DEFAULT_SIMT_VECTORS): New define.
+	(gcn_goacc_validate_dims): Honour the OpenACC vector length, up to 64
+	lanes, in SIMT mode.
+	(gcn_fork_join): Keep all fork/join calls in SIMT modes.
+	(print_operand_address): Assert that the implied zero offset in v1 is
+	not used in SIMT mode.
+	(print_operand): Handle EXEC_REG, and invert the condition for VCCZ
+	and EXECZ.
+	(gcn_output_ensure_scalar): New function.
+	(TARGET_EXTRA_LIVE_ON_ENTRY, TARGET_MD_ASM_ADJUST, TARGET_SIMT_VF):
+	Define.
+	* config/gcn/gcn.md (LANE_ID_REG): New constant.
+	(UNSPECV_SIMT_FORK, UNSPECV_SIMT_JOIN, UNSPECV_SIMT_ENTER)
+	(UNSPECV_SIMT_EXIT, UNSPECV_SIMT_EXEC_BARRIER): New unspecv values.
+	(UNSPEC_SIMT_XCHG_BFLY, UNSPEC_SIMT_VOTE_ANY, UNSPEC_SIMT_LAST_LANE)
+	(UNSPEC_SIMT_XCHG_IDX, UNSPEC_VSUBREG_WRITE, UNSPEC_VSUBREG_READ)
+	(UNSPEC_ENSURE_SCALAR): New unspec values.
+	(simt, simt_clobber, simt_const, simt_special): New attributes.
+	(enabled): Take the simt attribute into account.
+	(*movbi): Add the simt attribute, and use v_readfirstlane_b32 in SIMT
+	mode.
+	(*mov<mode>_insn): Likewise, for SISF and QIHI, plus a v_mov_b32
+	alternative for scalar-to-vector moves in SIMT mode.
+	(*mov<mode>_insn): Rename to ...
+	(mov<mode>_insn): ... this, for DIDF.
+	(*movti_insn): Rename to ...
+	(movti_insn): ... this.
+	(cjump): Set simt_special.
+	(*cjump_vcc): New insn.
+	(gcn_simple_call, gcn_indirect_call, gcn_call_value)
+	(gcn_call_value_indirect, movdi_symbol, cstoresi4)
+	(cstoredi4_vec_and_scalar, cstoredi4_vector, cstore<mode>4, addsi3)
+	(adddi3, subsi3, mulsi3, <su>mulsi3_highpart_reg)
+	(<su>mulsi3_highpart_imm, <su>mulsidi3_imm, muldi3, <expander>si2)
+	(<expander>di2, <expander>si3, <expander>di3, one_cmpldi2): Set the
+	new SIMT attributes.
+	(subdi3): Turn into a define_expand, and clobber a scratch rather
+	than SCC.
+	(*subdi3_insn): New insn, split out of subdi3.
+	(@cselect<mode>): New insn.
+	(oacc_fork): Expand to UNSPECV_SIMT_FORK in SIMT mode.
+	(oacc_join): Expand to UNSPECV_SIMT_JOIN in SIMT mode, and keep the
+	wavefront barrier for the worker dimension only.
+	(*oacc_fork_insn, *oacc_join_insn, omp_simt_enter, omp_simt_exit)
+	(omp_simt_lane, omp_simt_xchg_bfly, @omp_simt_xchg_bfly<mode>)
+	(omp_simt_vote_any, omp_simt_last_lane, omp_simt_xchg_idx)
+	(@ensure_scalar<mode>, exec_barrier, saveexec, setexec)
+	(setexec_<expander>, setexec_<expander>_with_save): New patterns.
+	(execop): New code iterator.
+	* config/gcn/gcn-valu.md (V64_MOV, V64_MOV_ALT, VSUBREG_ALL)
+	(VSUBREG_ALT, V64SIDI, V64SIDITI, V64DITI): New mode iterators.
+	(vec_duplicate<mode><exec>): Disable in SIMT mode until vectors are
+	enabled, so that the middle-end does not use vectors for memcpy.
+	(@extract_first_<mode>): New patterns for V_1REG and V_2REG.
+	(add<mode>3, sub<mode>3): Clobber a scratch rather than VCC.
+	(<su>mul<vnsi><mode>3): New pattern.
+	(div_scale<mode><exec_vcc>): Set simt_special.
+	(vec_cmp<mode>di): Rename to ...
+	(@vec_cmp<mode>di): ... this, and relax operand 3 to
+	gcn_alu_operand.
+	(@vsubreg_write<VSUBREG_ALL:mode><VSUBREG_ALT:mode>)
+	(@vsubreg_read<VSUBREG_ALL:mode><VSUBREG_ALT:mode>)
+	(*vsubreg_write<V64_MOV:mode><V64_MOV_ALT:mode>_insn)
+	(*vsubreg_read<V64_MOV:mode><V64_MOV_ALT:mode>_insn)
+	(*vsubreg_read<V64_MOV:mode>di_insn): New patterns.
+	(omp_simt_xchg_bfly<mode>, omp_simt_vote_any_v64si)
+	(omp_simt_last_lane_v64si, omp_simt_xchg_idx_<mode>): New patterns,
+	vector counterparts of the corresponding gcn.md patterns.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* target.def (TARGET_SIMT_STACK_VARIABLE_PADDING)
+	(TARGET_SIMT_STACK_VARIABLE_OFFSET): New target hooks.
+	* doc/tm.texi.in (TARGET_SIMT_STACK_VARIABLE_PADDING)
+	(TARGET_SIMT_STACK_VARIABLE_OFFSET): Add hook placeholders.
+	* doc/tm.texi: Regenerate.
+	* cfgexpand.cc (add_stack_var): Adjust the variable size using
+	TARGET_SIMT_STACK_VARIABLE_PADDING.
+	(expand_one_stack_var_at): Offset the variable address using
+	TARGET_SIMT_STACK_VARIABLE_OFFSET.
+	(expand_one_stack_var_1): Adjust the variable size using
+	TARGET_SIMT_STACK_VARIABLE_PADDING.
+	* expr.cc (emit_push_insn): Offset the destination address using
+	TARGET_SIMT_STACK_VARIABLE_OFFSET.
+	* function.cc (assign_parm_find_stack_rtl): Likewise, for incoming
+	stack parameters.
+	(locate_and_pad_parm): Adjust the parameter size using
+	TARGET_SIMT_STACK_VARIABLE_PADDING.
+	* config/gcn/gcn.cc (gcn_simt_stack_variable_padding): New function.
+	(gcn_simt_stack_variable_offset): New function.
+	(TARGET_SIMT_STACK_VARIABLE_PADDING): Define.
+	(TARGET_SIMT_STACK_VARIABLE_OFFSET): Define.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.opt (msimt): New option.
+	* config/gcn/gcn.cc (gcn_parse_amdgpu_hsa_kernel_attribute): Diagnose
+	disagreement between -msimt and --param=offload-gpu-mode.
+	(gcn_vector_mode_supported_p): Return false in SIMT mode.
+	(gcn_vectorize_preferred_simd_mode): Return word_mode in SIMT mode.
+	* config/gcn/gcn.h (TARGET_CPU_CPP_BUILTINS): Define __SIMT__ in SIMT
+	mode.
+	* config/gcn/mkoffload.cc (main): Detect
+	--param=offload-gpu-mode=simt* in COLLECT_GCC_OPTIONS, and pass
+	-msimt to both the offload compiler and the linker.
+	* config/gcn/t-gcn-hsa (MULTILIB_OPTIONS): Add msimt.
+	(MULTILIB_DIRNAMES): Add simt.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* doc/params.texi: Document --param=offload-gpu-mode.
+	* flag-types.h (enum offload_gpu_modes): New type.
+	* omp-general.cc (omp_max_simt_vf): Do SIMT for amdgcn, optionally.
+	* params.opt: Add --param=offload-gpu-mode and the enum.
+
+2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/128001
+	* tree.cc (walk_tree_1): Add comment; handle
+	OMP_METADIRECTIVE explicitly.
+
 2026-10-21  Andrew Stubbs  <ams@baylibre.com>
 
 	* omp-offload.c (oacc_xform_loop): Adjust loop lowering for AMD GCN.

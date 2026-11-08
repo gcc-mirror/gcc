@@ -1,3 +1,39 @@
+2026-11-08  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	Backported from master:
+	2026-11-07  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* plugin/plugin-gcn.c (allocate_session_kernargs): Use
+	'kernargs_size' instead of 'sizeof (struct kernargs)'.
+	* testsuite/libgomp.c-c++-common/kernel-launch-many-vars.c: New test.
+
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi (AMD Radeon (GCN)): Document stack size rounding.
+	* plugin/plugin-gcn.c (init_environment_variables): Round stack_size
+	up to an odd multiple of 4 kiB.
+
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-10-29  Andrew Stubbs  <ams@baylibre.com>
+
+	* plugin/plugin-gcn.c (drain_queue): Execute placeholder entries
+	with the queue lock held.
+
+2026-10-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-1.c: New test.
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-2.c: New
+	test.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.h (team_malloc): Add SIMT variant of the asm.
+
 2026-10-19  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,314 @@
+2026-10-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/gcn/ivopts-reg-budget-1.c: New test.
+
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/simd-array-align-1.c: New test.
+	* gcc.target/gcn/vector-align-1.c: New test.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* lib/target-supports.exp (check_effective_target_amdgcn_simd): New
+	procedure.
+	(check_effective_target_amdgcn_simt): New procedure.
+	(check_effective_target_vect_int): Use
+	check_effective_target_amdgcn_simd instead of testing for amdgcn
+	directly, because the vector modes only exist in SIMD mode.
+	(check_effective_target_vect_early_break): Likewise.
+	(check_effective_target_vect_early_break_hw): Likewise.
+	(check_effective_target_vect_intfloat_cvt): Likewise.
+	(check_effective_target_vect_uintfloat_cvt): Likewise.
+	(check_effective_target_vect_floatint_cvt): Likewise.
+	(check_effective_target_vect_floatuint_cvt): Likewise.
+	(check_effective_target_vect_simd_clones): Likewise.
+	(check_effective_target_vect_shift): Likewise.
+	(check_effective_target_whole_vector_shift): Likewise.
+	(check_effective_target_vect_bswap): Likewise.
+	(check_effective_target_vect_char_add): Likewise.
+	(check_effective_target_vect_shift_char): Likewise.
+	(check_effective_target_vect_long): Likewise.
+	(check_effective_target_vect_float): Likewise.
+	(check_effective_target_vect_double): Likewise.
+	(check_effective_target_vect_long_long): Likewise.
+	(check_effective_target_vect_perm): Likewise.
+	(check_effective_target_vect_perm_byte): Likewise.
+	(check_effective_target_vect_perm_short): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si): Likewise.
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern): Likewise.
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern): Likewise.
+	(check_effective_target_vect_pack_trunc): Likewise.
+	(check_effective_target_vect_unpack): Likewise.
+	(check_effective_target_vect_hw_misalign): Likewise.
+	(check_effective_target_vect_natural_alignment): Likewise.
+	(check_effective_target_vect_fully_masked): Likewise.
+	(check_effective_target_vect_masked_load): Likewise.
+	(check_effective_target_vect_masked_store): Likewise.
+	(check_effective_target_vect_gather_load_ifn): Likewise.
+	(check_effective_target_vect_scatter_store): Likewise.
+	(check_effective_target_vect_condition): Likewise.
+	(check_effective_target_vect_cond_mixed): Likewise.
+	(check_effective_target_vect_char_mult): Likewise.
+	(check_effective_target_vect_short_mult): Likewise.
+	(check_effective_target_vect_int_mult): Likewise.
+	(check_effective_target_vect_long_mult): Likewise.
+	(check_effective_target_vect_call_copysignf): Likewise.
+	(check_effective_target_vect_call_sqrtf): Likewise.
+	(check_effective_target_vect_call_lrint): Likewise.
+	(check_effective_target_vect_call_btrunc): Likewise.
+	(check_effective_target_vect_call_btruncf): Likewise.
+	(check_effective_target_vect_call_ceil): Likewise.
+	(check_effective_target_vect_call_ceilf): Likewise.
+	(check_effective_target_vect_call_floor): Likewise.
+	(check_effective_target_vect_call_floorf): Likewise.
+	(check_effective_target_vect_logical_reduc): Likewise.
+	(check_effective_target_vect_fold_extract_last): Likewise.
+	(check_vect_support_and_set_flags): Do not run the vectorizer tests
+	on amdgcn in SIMT mode.
+	* gcc.target/gcn/avgpr-spill-double.c: Require vect_double.
+	* gcc.target/gcn/avgpr-spill-int.c: Require vect_int.
+	* gcc.target/gcn/avgpr-spill-long.c: Likewise.
+	* gcc.target/gcn/avgpr-spill-short.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_1.c: Require vect_float and vect_double.
+	* gcc.target/gcn/cond_fmaxnm_1_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_2.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_2_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_3.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_3_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_4.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_4_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_5.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_5_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_6.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_6_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_7.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_7_run.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_8.c: Likewise.
+	* gcc.target/gcn/cond_fmaxnm_8_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_1.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_1_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_2.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_2_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_3.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_3_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_4.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_4_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_5.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_5_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_6.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_6_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_7.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_7_run.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_8.c: Likewise.
+	* gcc.target/gcn/cond_fminnm_8_run.c: Likewise.
+	* gcc.target/gcn/cond_shift_3.c: Require vect_int.
+	* gcc.target/gcn/cond_shift_3_run.c: Likewise.
+	* gcc.target/gcn/cond_shift_4.c: Likewise.
+	* gcc.target/gcn/cond_shift_4_run.c: Likewise.
+	* gcc.target/gcn/cond_shift_8.c: Likewise.
+	* gcc.target/gcn/cond_shift_8_run.c: Likewise.
+	* gcc.target/gcn/cond_shift_9.c: Likewise.
+	* gcc.target/gcn/cond_shift_9_run.c: Likewise.
+	* gcc.target/gcn/cond_smax_1.c: Likewise.
+	* gcc.target/gcn/cond_smax_1_run.c: Likewise.
+	* gcc.target/gcn/cond_smin_1.c: Likewise.
+	* gcc.target/gcn/cond_smin_1_run.c: Likewise.
+	* gcc.target/gcn/cond_umax_1.c: Likewise.
+	* gcc.target/gcn/cond_umax_1_run.c: Likewise.
+	* gcc.target/gcn/cond_umin_1.c: Likewise.
+	* gcc.target/gcn/cond_umin_1_run.c: Likewise.
+	* gcc.target/gcn/math-builtins-1.c: Require vect_float and vect_double.
+	* gcc.target/gcn/sgpr-spill-double.c: Require amdgcn_simd, and say
+	why.
+	* gcc.target/gcn/sgpr-spill-int.c: Likewise.
+	* gcc.target/gcn/sgpr-spill-long.c: Likewise.
+	* gcc.target/gcn/sgpr-spill-short.c: Likewise.
+	* gcc.target/gcn/simd-math-1.c: Require vect_float and vect_double.
+	* gcc.target/gcn/simd-math-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-16.c: Require vect_int.
+	* gcc.target/gcn/simd-math-3-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char-run.c: Likewise.
+	* gcc.target/gcn/simd-math-3-char.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long-run.c: Likewise.
+	* gcc.target/gcn/simd-math-3-long.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-run.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run-2.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short-run.c: Likewise.
+	* gcc.target/gcn/simd-math-3-short.c: Likewise.
+	* gcc.target/gcn/simd-math-3.c: Likewise.
+	* gcc.target/gcn/simd-math-4-char-run.c: Likewise.
+	* gcc.target/gcn/simd-math-4-char.c: Likewise.
+	* gcc.target/gcn/simd-math-4-long-run.c: Likewise.
+	* gcc.target/gcn/simd-math-4-long.c: Likewise.
+	* gcc.target/gcn/simd-math-4-run.c: Likewise.
+	* gcc.target/gcn/simd-math-4-short-run.c: Likewise.
+	* gcc.target/gcn/simd-math-4-short.c: Likewise.
+	* gcc.target/gcn/simd-math-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char-run.c: Likewise.
+	* gcc.target/gcn/simd-math-5-char.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long-run.c: Likewise.
+	* gcc.target/gcn/simd-math-5-long.c: Likewise.
+	* gcc.target/gcn/simd-math-5-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-run.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-run-16.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-run-32.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-run-4.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-run-8.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short-run.c: Likewise.
+	* gcc.target/gcn/simd-math-5-short.c: Likewise.
+	* gcc.target/gcn/simd-math-5.c: Likewise.
+	* gcc.target/gcn/smax_1.c: Likewise.
+	* gcc.target/gcn/smax_1_run.c: Likewise.
+	* gcc.target/gcn/smin_1.c: Likewise.
+	* gcc.target/gcn/smin_1_run.c: Likewise.
+	* gcc.target/gcn/sram-ecc-3.c: Likewise.
+	* gcc.target/gcn/sram-ecc-4.c: Likewise.
+	* gcc.target/gcn/sram-ecc-7.c: Likewise.
+	* gcc.target/gcn/sram-ecc-8.c: Likewise.
+	* gcc.target/gcn/umax_1.c: Likewise.
+	* gcc.target/gcn/umax_1_run.c: Likewise.
+	* gcc.target/gcn/umin_1.c: Likewise.
+	* gcc.target/gcn/umin_1_run.c: Likewise.
+	* gcc.target/gcn/vcc-clobber.c: Likewise.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/simt-cond-1.c: New test.
+	* gcc.target/gcn/simt-cond-1b.c: Likewise.
+	* gcc.target/gcn/simt-cond-2.c: Likewise.
+	* gcc.target/gcn/simt-cond-2b.c: Likewise.
+	* gcc.target/gcn/simt-cond-3.c: Likewise.
+	* gcc.target/gcn/simt-cond-3b.c: Likewise.
+	* gcc.target/gcn/simt-cond-4.c: Likewise.
+	* gcc.target/gcn/simt-cond-4b.c: Likewise.
+	* gcc.target/gcn/simt-cond-5.c: Likewise.
+	* gcc.target/gcn/simt-cond-5b.c: Likewise.
+	* gcc.target/gcn/simt-cond-6.c: Likewise.
+	* gcc.target/gcn/simt-cond-6b.c: Likewise.
+	* gcc.target/gcn/simt-cond-7.c: Likewise.
+	* gcc.target/gcn/simt-cond-7b.c: Likewise.
+	* gcc.target/gcn/simt-cond-8.c: Likewise.
+	* gcc.target/gcn/simt-cond-8b.c: Likewise.
+	* gcc.target/gcn/simt-cond-9.c: Likewise.
+	* gcc.target/gcn/simt-cond-9b.c: Likewise.
+	* gcc.target/gcn/simt-cond-10.c: Likewise.
+	* gcc.target/gcn/simt-cond-10b.c: Likewise.
+	* gcc.target/gcn/simt-cond-11.c: Likewise.
+	* gcc.target/gcn/simt-cond-11b.c: Likewise.
+	* gcc.target/gcn/simt-cond-12.c: Likewise.
+	* gcc.target/gcn/simt-cond-12b.c: Likewise.
+	* gcc.target/gcn/simt-cond-13.c: Likewise.
+	* gcc.target/gcn/simt-cond-13b.c: Likewise.
+	* gcc.target/gcn/simt-cond-14.c: Likewise.
+	* gcc.target/gcn/simt-cond-14b.c: Likewise.
+	* gcc.target/gcn/simt-cond-15.c: Likewise.
+	* gcc.target/gcn/simt-cond-15b.c: Likewise.
+	* gcc.target/gcn/simt-cond-16.c: Likewise.
+	* gcc.target/gcn/simt-cond-17.c: Likewise.
+	* gcc.target/gcn/simt-cond-18.c: Likewise.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/simt-ensure-scalar-1.c: New test.
+	* gcc.target/gcn/simt-stackparams-1.c: Likewise.
+	* gcc.target/gcn/simt-stackparams-2.c: Likewise.
+	* gcc.target/gcn/simt-stackparams-3.c: Likewise.
+	* gcc.target/gcn/simt-stackvar-1.c: Likewise.
+	* gcc.target/gcn/simt-stackvar-2.c: Likewise.
+	* gcc.target/gcn/simt-stackvar-3.c: Likewise.
+
+2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/simt-asm-g-1.c: New test, checking that a "g" asm
+	operand can hold a per-lane value in SIMT mode.
+	* gcc.target/gcn/simt-asm-r-1.c: New test, likewise for an "r" asm
+	operand.
+	* gcc.target/gcn/simt-avgpr-spill-int.c: New test, checking that
+	spills inside a SIMT region go to the AVGPRs rather than through
+	v_readlane.
+	* gcc.target/gcn/simt-avgpr-spill-double.c: New test.
+	* gcc.target/gcn/simt-avgpr-spill-long.c: New test.
+	* gcc.target/gcn/simt-avgpr-spill-short.c: New test.
+	* gcc.target/gcn/simt-avgpr-spill-run.c: New test, checking that the
+	values spilled by simt-avgpr-spill-int.c keep their per-lane values
+	across a spill/reload.
+
+2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/128001
+	* gfortran.dg/gomp/metadirective-14.f90: New test.
+
 2026-10-14  Andrew Stubbs  <ams@baylibre.com>
 
 	Backported from master:
