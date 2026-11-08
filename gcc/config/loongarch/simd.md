@@ -743,7 +743,7 @@
 	    (vec_select:<VEC_HALF>
 	      (match_operand:IVEC 1 "register_operand" "f")
 	      (match_operand:IVEC 3 "vect_par_cnst_even_or_odd_half")))
-	  (sign_extend:<WVEC>
+	  (sign_extend:<WVEC_HALF>
 	    (vec_select:<VEC_HALF>
 	      (match_operand:IVEC 2 "register_operand" "f")
 	      (match_dup 3)))))]
