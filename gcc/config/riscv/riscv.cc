@@ -10687,7 +10687,8 @@ riscv_expand_prologue (void)
   unsigned mask = frame->mask;
   unsigned fmask = frame->fmask;
   int spimm, multi_push_additional, stack_adj;
-  rtx insn, dwarf = NULL_RTX;
+  rtx dwarf = NULL_RTX;
+  rtx_insn *insn;
   unsigned th_int_mask = 0;
 
   if (flag_stack_usage_info)

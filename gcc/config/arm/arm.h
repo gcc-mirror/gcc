@@ -1577,13 +1577,13 @@ typedef struct GTY(()) machine_function
   /* Labels for per-function Thumb call-via stubs.  One per potential calling
      register.  We can never call via LR or PC.  We can call via SP if a
      trampoline happens to be on the top of the stack.  */
-  rtx call_via[14];
+  rtx_code_label *call_via[14];
   /* Set to 1 when a return insn is output, this means that the epilogue
      is not needed.  */
   int return_used_this_function;
   /* When outputting Thumb-1 code, record the last insn that provides
      information about condition codes, and the comparison operands.  */
-  rtx thumb1_cc_insn;
+  rtx_insn *thumb1_cc_insn;
   rtx thumb1_cc_op0;
   rtx thumb1_cc_op1;
   /* Also record the CC mode that is supported.  */
@@ -1605,7 +1605,7 @@ machine_function;
 
 /* As in the machine_function, a global set of call-via labels, for code
    that is in text_section.  */
-extern GTY(()) rtx thumb_call_via_label[14];
+extern GTY(()) rtx_code_label *thumb_call_via_label[14];
 
 /* The number of potential ways of assigning to a co-processor.  */
 #define ARM_NUM_COPROC_SLOTS 1
@@ -2213,7 +2213,7 @@ extern int making_const_table;
   ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)
 
 #define CC_STATUS_INIT \
-  do { cfun->machine->thumb1_cc_insn = NULL_RTX; } while (0)
+  do { cfun->machine->thumb1_cc_insn = nullptr; } while (0)
 
 #undef ASM_APP_ON
 #define ASM_APP_ON (inline_asm_unified ? "\t.syntax unified\n" : \

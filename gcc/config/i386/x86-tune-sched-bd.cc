@@ -114,7 +114,7 @@ enum insn_path {
    Windows are allocated for each basic block and are linked
    together.  */
 typedef struct sched_insn_info_s {
-  rtx insn;
+  rtx_insn *insn;
   enum dispatch_group group;
   enum insn_path path;
   int byte_len;

@@ -5848,11 +5848,12 @@ hwloop_fail (hwloop_info loop)
     emit_insn_before (gen_movsi (testreg, loop->iter_reg), loop->loop_end);
 
   test = gen_rtx_NE (VOIDmode, testreg, const0_rtx);
-  insn = emit_jump_insn_before (gen_cbranchsi4 (test, testreg, const0_rtx,
+  rtx_jump_insn *jump;
+  jump = emit_jump_insn_before (gen_cbranchsi4 (test, testreg, const0_rtx,
 						loop->start_label),
 				loop->loop_end);
 
-  JUMP_LABEL (insn) = loop->start_label;
+  JUMP_LABEL (jump) = loop->start_label;
   LABEL_NUSES (loop->start_label)++;
   delete_insn (loop->loop_end);
 }

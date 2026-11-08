@@ -6635,7 +6635,7 @@ struct _sched_ib
   } records;
 
   /* An insn that reserves (marks empty) one word in the instruction buffer.  */
-  rtx insn;
+  rtx_insn *insn;
 };
 
 static struct _sched_ib sched_ib;

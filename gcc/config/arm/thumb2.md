@@ -1683,13 +1683,14 @@
 	}
 
 	/* Otherwise, try standard decrement-by-one dls/le looping.  */
+	rtx_insn *add;
 	if (TARGET_THUMB2)
-	  insn = emit_insn (gen_thumb2_addsi3_compare0 (s0, s0,
+	  add = emit_insn (gen_thumb2_addsi3_compare0 (s0, s0,
 							GEN_INT (-1)));
 	else
-	  insn = emit_insn (gen_addsi3_compare0 (s0, s0, GEN_INT (-1)));
+	  add = emit_insn (gen_addsi3_compare0 (s0, s0, GEN_INT (-1)));
 
-	cmp = XVECEXP (PATTERN (insn), 0, 0);
+	cmp = XVECEXP (PATTERN (add), 0, 0);
 	cc_reg = SET_DEST (cmp);
 	bcomp = gen_rtx_NE (VOIDmode, cc_reg, const0_rtx);
 	loc_ref = gen_rtx_LABEL_REF (VOIDmode, operands[1]);

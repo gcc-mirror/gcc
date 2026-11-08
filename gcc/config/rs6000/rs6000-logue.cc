@@ -1252,11 +1252,11 @@ rs6000_emit_load_toc_table (int fromprolog)
   if (TARGET_ELF && TARGET_SECURE_PLT && DEFAULT_ABI == ABI_V4 && flag_pic)
     {
       char buf[30];
-      rtx lab, tmp1, tmp2, got;
+      rtx tmp1, tmp2, got;
 
-      lab = gen_label_rtx ();
+      rtx_code_label *lab = gen_label_rtx ();
       ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (lab));
-      lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
+      rtx sym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
       if (flag_pic == 2)
 	{
 	  got = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
@@ -1270,10 +1270,10 @@ rs6000_emit_load_toc_table (int fromprolog)
 	  tmp1 = gen_reg_rtx (Pmode);
 	  tmp2 = gen_reg_rtx (Pmode);
 	}
-      emit_insn (gen_load_toc_v4_PIC_1 (lab));
+      emit_insn (gen_load_toc_v4_PIC_1 (sym));
       emit_move_insn (tmp1, gen_rtx_REG (Pmode, LR_REGNO));
-      emit_insn (gen_load_toc_v4_PIC_3b (tmp2, tmp1, got, lab));
-      emit_insn (gen_load_toc_v4_PIC_3c (dest, tmp2, got, lab));
+      emit_insn (gen_load_toc_v4_PIC_3b (tmp2, tmp1, got, sym));
+      emit_insn (gen_load_toc_v4_PIC_3c (dest, tmp2, got, sym));
     }
   else if (TARGET_ELF && DEFAULT_ABI == ABI_V4 && flag_pic == 1)
     {

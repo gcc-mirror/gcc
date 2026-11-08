@@ -853,7 +853,7 @@ const struct tune_params *current_tune;
 int arm_fpu_attr;
 
 /* Used for Thumb call_via trampolines.  */
-rtx thumb_call_via_label[14];
+rtx_code_label *thumb_call_via_label[14];
 static int thumb_call_reg_needed;
 
 /* The bits in this mask specify which instruction scheduling options should
@@ -21008,7 +21008,7 @@ arm_output_function_epilogue (FILE *)
 	 of call_reg and call_value_reg type insns.  */
       for (regno = 0; regno < LR_REGNUM; regno++)
 	{
-	  rtx label = cfun->machine->call_via[regno];
+	  rtx_insn *label = cfun->machine->call_via[regno];
 
 	  if (label != NULL)
 	    {
@@ -25685,7 +25685,7 @@ thumb1_final_prescan_insn (rtx_insn *insn)
 	    }
 	}
       else if (conds != CONDS_NOCOND)
-	cfun->machine->thumb1_cc_insn = NULL_RTX;
+	cfun->machine->thumb1_cc_insn = nullptr;
     }
 
     /* Check if unexpected far jump is used.  */
@@ -27411,7 +27411,7 @@ const char *
 thumb_call_via_reg (rtx reg)
 {
   int regno = REGNO (reg);
-  rtx *labelp;
+  rtx_code_label **labelp;
 
   gcc_assert (regno < LR_REGNUM);
 
@@ -27433,7 +27433,8 @@ thumb_call_via_reg (rtx reg)
       labelp = cfun->machine->call_via + regno;
     }
 
-  output_asm_insn ("bl\t%a0", labelp);
+  rtx temp = *labelp;
+  output_asm_insn ("bl\t%a0", &temp);
   return "";
 }
 
@@ -27834,7 +27835,7 @@ arm_file_end (void)
 
   for (regno = 0; regno < LR_REGNUM; regno++)
     {
-      rtx label = thumb_call_via_label[regno];
+      rtx_code_label *label = thumb_call_via_label[regno];
 
       if (label != 0)
 	{

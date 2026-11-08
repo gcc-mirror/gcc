@@ -4491,7 +4491,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru,
       /* We need to emit a copy of the asan_epilog_seq before
 	 the insns emitted by expand_gimple_stmt above.  The sequence
 	 can contain labels, which need to be remapped.  */
-      hash_map<rtx, rtx> label_map;
+      hash_map<rtx, rtx_code_label *> label_map;
       start_sequence ();
       emit_note (NOTE_INSN_DELETED);
       for (rtx_insn *insn = asan_epilog_seq; insn; insn = NEXT_INSN (insn))
@@ -4503,7 +4503,7 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru,
 	    emit_copy_of_insn_after (insn, get_last_insn ());
 	    break;
 	  case CODE_LABEL:
-	    label_map.put ((rtx) insn, (rtx) emit_label (gen_label_rtx ()));
+	    label_map.put ((rtx) insn, emit_label (gen_label_rtx ()));
 	    break;
 	  case BARRIER:
 	    emit_barrier ();
@@ -4520,14 +4520,15 @@ expand_gimple_tailcall (basic_block bb, gcall *stmt, bool *can_fallthru,
 		rtx *loc = *iter;
 		if (LABEL_REF_P (*loc))
 		  {
-		    rtx *lab = label_map.get ((rtx) label_ref_label (*loc));
+		    rtx_code_label **lab
+		      = label_map.get ((rtx) label_ref_label (*loc));
 		    gcc_assert (lab);
-		    set_label_ref_label (*loc, as_a <rtx_insn *> (*lab));
+		    set_label_ref_label (*loc, *lab);
 		  }
 	      }
 	    if (JUMP_LABEL (insn))
 	      {
-		rtx *lab = label_map.get (JUMP_LABEL (insn));
+		rtx_code_label **lab = label_map.get (JUMP_LABEL (insn));
 		gcc_assert (lab);
 		JUMP_LABEL (insn) = *lab;
 	      }

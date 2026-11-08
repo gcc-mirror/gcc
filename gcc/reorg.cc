@@ -1397,7 +1397,7 @@ static rtx_insn *
 redundant_insn (rtx_insn *insn, rtx_insn *target,
 		const vec<rtx_insn *> &delay_list)
 {
-  rtx target_main = target;
+  rtx_insn *target_main = target;
   rtx ipat = PATTERN (insn);
   rtx_insn *trial;
   rtx pat;

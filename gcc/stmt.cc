@@ -1196,7 +1196,7 @@ conditional_probability (profile_probability target_prob,
 static void
 emit_case_dispatch_table (tree index_expr, tree index_type,
 			  auto_vec<simple_case_node> &case_list,
-			  rtx default_label,
+			  rtx_code_label *default_label,
 			  edge default_edge,  tree minval, tree maxval,
 			  tree range, basic_block stmt_bb)
 {
@@ -1260,7 +1260,7 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
      dispatch table slots associated with the gaps with the default case label.
      However, in the event the default case is unreachable, we then use
      any label from one of the case statements.  */
-  rtx gap_label = (default_label) ? default_label : fallback_label;
+  rtx_insn *gap_label = (default_label) ? default_label : fallback_label;
 
   for (i = 0; i < ncases; i++)
     if (labelvec[i] == 0)

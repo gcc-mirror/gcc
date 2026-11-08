@@ -81,7 +81,7 @@ struct GTY (()) hwloop_info_d
   rtx_insn *start_label;
 
   /* The new label placed at the end of the loop. */
-  rtx end_label;
+  rtx_code_label *end_label;
 
   /* The length of the loop.  */
   int length;

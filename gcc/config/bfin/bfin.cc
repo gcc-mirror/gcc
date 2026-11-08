@@ -3842,8 +3842,7 @@ hwloop_optimize (hwloop_info loop)
 
   delete_insn (loop->loop_end);
   /* Insert the loop end label before the last instruction of the loop.  */
-  emit_label_before (as_a <rtx_code_label *> (loop->end_label),
-		     loop->last_insn);
+  emit_label_before (loop->end_label, loop->last_insn);
 
   return true;
 }
@@ -3860,8 +3859,8 @@ hwloop_fail (hwloop_info loop)
     {
       /* If loop->iter_reg is a DREG or PREG, we can split it here
 	 without scratch register.  */
-      rtx_insn *insn;
       rtx test;
+      rtx_jump_insn *insn;
 
       emit_insn_before (gen_addsi3 (loop->iter_reg,
 				    loop->iter_reg,

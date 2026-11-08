@@ -2234,7 +2234,7 @@ mcore_expand_epilog (void)
 typedef struct
 {
   rtx value;			/* Value in table.  */
-  rtx label;			/* Label of value.  */
+  rtx_insn *label;			/* Label of value.  */
 } pool_node;
 
 /* The maximum number of constants that can fit into one pool, since

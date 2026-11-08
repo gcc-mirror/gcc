@@ -244,7 +244,7 @@ static unsigned int last_address;
    output time.  They are output after the current function.  */
 struct GTY(()) deferred_plabel
 {
-  rtx internal_label;
+  rtx_code_label *internal_label;
   rtx symbol;
 };
 static GTY((length ("n_deferred_plabels"))) struct deferred_plabel *
