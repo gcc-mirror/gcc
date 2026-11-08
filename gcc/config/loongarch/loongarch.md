@@ -2814,7 +2814,8 @@
 			   (match_operand:ANYF 3 "reg_or_0_operand")])))]
   "TARGET_COND_MOVE_FLOAT"
 {
-  if (!FLOAT_MODE_P (GET_MODE (XEXP (operands[1], 0))))
+  if (!INTEGRAL_MODE_P (GET_MODE (XEXP (operands[1], 0)))
+      && !FLOAT_MODE_P (GET_MODE (XEXP (operands[1], 0))))
     FAIL;
 
   loongarch_expand_conditional_move (operands);
