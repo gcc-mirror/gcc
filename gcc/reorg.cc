@@ -600,7 +600,7 @@ delete_from_delay_slot (rtx_insn *insn)
   else if (JUMP_P (trial))
     INSN_ANNULLED_BRANCH_P (trial) = 0;
 
-  INSN_FROM_TARGET_P (insn) = 0;
+  set_insn_from_target (insn, false);
 
   /* Show we need to fill this insn again.  */
   obstack_ptr_grow (&unfilled_slots_obstack, trial);
@@ -702,7 +702,7 @@ optimize_skip (rtx_jump_insn *insn, vec<rtx_insn *> *delay_list)
       if (eligible_for_annul_false (insn, 0, trial, flags))
 	{
 	  if (invert_jump (insn, JUMP_LABEL (insn), 1))
-	    INSN_FROM_TARGET_P (trial) = 1;
+	    set_insn_from_target (trial, true);
 	  else if (! eligible_for_annul_true (insn, 0, trial, flags))
 	    return;
 	}
@@ -1081,7 +1081,7 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
 	      used_annul = true;
 	    }
 	  rtx_insn *temp = copy_delay_slot_insn (trial);
-	  INSN_FROM_TARGET_P (temp) = 1;
+	  set_insn_from_target (temp, true);
 	  add_to_delay_list (temp, &new_delay_list);
 	  total_slots_filled++;
 
@@ -1260,7 +1260,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 		thread = next_active_insn (thread);
 
 	      delete_related_insns (trial);
-	      INSN_FROM_TARGET_P (next_to_match) = 0;
+	      set_insn_from_target (next_to_match, false);
 	    }
 	  else
 	    merged_insns.safe_push (std::pair<rtx_insn *, bool> (trial, false));
@@ -1324,7 +1324,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
 		  new_rtx = delete_from_delay_slot (dtrial);
 	          if (thread->deleted ())
 		    thread = new_rtx;
-		  INSN_FROM_TARGET_P (next_to_match) = 0;
+		  set_insn_from_target (next_to_match, false);
 		}
 	      else
 		merged_insns.safe_push (std::pair<rtx_insn *, bool> (dtrial,
@@ -1370,7 +1370,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
       INSN_ANNULLED_BRANCH_P (delay_insn) = 0;
 
       for (int i = 0; i < insn_pat->len (); i++)
-	INSN_FROM_TARGET_P (insn_pat->insn (i)) = 0;
+	set_insn_from_target (insn_pat->insn (i), false);
     }
 }
 
@@ -1560,7 +1560,7 @@ redundant_insn (rtx_insn *insn, rtx_insn *target,
 		  && ! (annul_p && INSN_FROM_TARGET_P (candidate)))
 		{
 		  /* Show that this insn will be used in the sequel.  */
-		  INSN_FROM_TARGET_P (candidate) = 0;
+		  set_insn_from_target (candidate, false);
 		  return candidate;
 		}
 
@@ -2513,7 +2513,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 
 		  temp = own_thread ? trial : copy_delay_slot_insn (trial);
 		  if (thread_if_true)
-		    INSN_FROM_TARGET_P (temp) = 1;
+		    set_insn_from_target (temp, true);
 
 		  add_to_delay_list (temp, delay_list);
 
@@ -2706,7 +2706,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 
 	  ninsn = own_thread ? trial : copy_delay_slot_insn (trial);
 	  if (thread_if_true)
-	    INSN_FROM_TARGET_P (ninsn) = 1;
+	    set_insn_from_target (ninsn, true);
 
 	  add_to_delay_list (ninsn, delay_list);
 	  (*pslots_filled)++;
@@ -3244,7 +3244,7 @@ relax_delay_slots (rtx_insn *first)
 	     Clear the from target bit, since these insns are no longer
 	     in delay slots.  */
 	  for (i = 0; i < pat->len (); i++)
-	    INSN_FROM_TARGET_P (pat->insn (i)) = 0;
+	    set_insn_from_target (pat->insn (i), false);
 
 	  rtx_insn *prev = PREV_INSN (insn);
 	  delete_related_insns (insn);
@@ -3370,7 +3370,7 @@ relax_delay_slots (rtx_insn *first)
 	     Clear the from target bit, since these insns are no longer
 	     in delay slots.  */
 	  for (i = 0; i < pat->len (); i++)
-	    INSN_FROM_TARGET_P (pat->insn (i)) = 0;
+	    set_insn_from_target (pat->insn (i), false);
 
 	  rtx_insn *prev = PREV_INSN (insn);
 	  delete_related_insns (insn);
@@ -3435,7 +3435,7 @@ relax_delay_slots (rtx_insn *first)
 		  for (int i = 1; i < pat->len (); i++)
 		    {
 		      rtx_insn *slot = pat->insn (i);
-		      INSN_FROM_TARGET_P (slot) = ! INSN_FROM_TARGET_P (slot);
+		      set_insn_from_target (slot, ! INSN_FROM_TARGET_P (slot));
 		    }
 
 		  /* We have just removed a BARRIER, which means that the block
@@ -3666,7 +3666,7 @@ dbr_schedule (rtx_insn *first)
 
       if (JUMP_P (insn))
         INSN_ANNULLED_BRANCH_P (insn) = 0;
-      INSN_FROM_TARGET_P (insn) = 0;
+      set_insn_from_target (insn, false);
 
       if (num_delay_slots (insn) > 0)
 	obstack_ptr_grow (&unfilled_slots_obstack, insn);

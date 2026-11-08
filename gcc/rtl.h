@@ -1614,13 +1614,24 @@ jump_table_for_label (const rtx_code_label *label)
 #define INSN_ANNULLED_BRANCH_P(RTX)					\
   (RTL_FLAG_CHECK1 ("INSN_ANNULLED_BRANCH_P", (RTX), JUMP_INSN)->unchanging)
 
-/* 1 if RTX is an insn in a delay slot and is from the target of the branch.
+/* If RTX is an insn in a delay slot and is from the target of the branch.
    If the branch insn has INSN_ANNULLED_BRANCH_P set, this insn should only be
    executed if the branch is taken.  For annulled branches with this bit
    clear, the insn should be executed only if the branch is not taken.  */
-#define INSN_FROM_TARGET_P(RTX)						\
-  (RTL_FLAG_CHECK3 ("INSN_FROM_TARGET_P", (RTX), INSN, JUMP_INSN, \
-		    CALL_INSN)->in_struct)
+
+inline bool
+INSN_FROM_TARGET_P (const rtx_insn *insn)
+{
+  return RTL_FLAG_CHECK3 ("INSN_FROM_TARGET_P", insn, INSN, JUMP_INSN,
+		    CALL_INSN)->in_struct;
+}
+
+inline void
+set_insn_from_target (rtx_insn *insn, bool set)
+{
+  RTL_FLAG_CHECK3 ("INSN_FROM_TARGET_P", insn, INSN, JUMP_INSN,
+		    CALL_INSN)->in_struct = set;
+}
 
 /* In an ADDR_DIFF_VEC, the flags for RTX for use by branch shortening.
    See the comments for ADDR_DIFF_VEC in rtl.def.  */
