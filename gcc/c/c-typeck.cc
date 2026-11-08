@@ -3816,8 +3816,12 @@ mark_decl_used (tree ref, bool address)
     DECL_NONLOCAL (ref) = 1;
 
   /* Nothing to do anymore.  */
-  if (!nonloc_p || C_FUNC_NONLOCAL_CONTEXT (current_function_decl))
+  if (!nonloc_p)
     return;
+
+  /* Even when this function is already marked as requiring a non-local
+     context we need to do the check because we may need to mark more
+     parents.  */
 
   /* Filter out the cases where referencing a non-local variable does not
      require a non-local context passed via the static chain.  */
