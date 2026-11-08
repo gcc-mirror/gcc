@@ -20,24 +20,8 @@ AC_ARG_WITH(cross-host,
 AC_ARG_WITH(newlib,
 [  --with-newlib                    Configuring with newlib])
 
-if test "${srcdir}" = "."; then
-  if test -n "${with_build_subdir}"; then
-    libiberty_topdir="${srcdir}/../.."
-    with_target_subdir=
-  elif test -z "${with_target_subdir}"; then
-    libiberty_topdir="${srcdir}/.."
-  else
-    if test "${with_target_subdir}" != "."; then
-      libiberty_topdir="${srcdir}/${with_multisrctop}../.."
-    else
-      libiberty_topdir="${srcdir}/${with_multisrctop}.."
-    fi
-  fi
-else
-  libiberty_topdir="${srcdir}/.."
-fi
+libiberty_topdir="${srcdir}/.."
 AC_SUBST(libiberty_topdir)
-AC_CONFIG_AUX_DIR($libiberty_topdir)
 
 dnl Very limited version of automake's enable-maintainer-mode
 
