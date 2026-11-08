@@ -1,3 +1,14 @@
+2026-11-07  Kewen Lin  <linkewen@hygon.cn>
+
+	Backported from master:
+	2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+		    Zhizheng Yang  <yangzhizheng@hygon.cn>
+		    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* gcc.target/i386/vectorize-hvml-1.c: New test.
+	* gcc.target/i386/vectorize-hvml-2.c: Likewise.
+	* gcc.target/i386/vectorize-hvml-3.c: Likewise.
+
 2026-11-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

@@ -1,3 +1,20 @@
+2026-11-07  Kewen Lin  <linkewen@hygon.cn>
+
+	Backported from master:
+	2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+		    Zhizheng Yang  <yangzhizheng@hygon.cn>
+		    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Handle ix86_veclibabi_type_hvml case.
+	* config/i386/i386-options.h (ix86_veclibabi_hvml): New declare.
+	* config/i386/i386-opts.h (enum ix86_veclibabi): Add
+	ix86_veclibabi_type_hvml into the ix86_veclibabi enum.
+	* config/i386/i386.cc (ix86_veclibabi_hvml): New function.
+	* config/i386/i386.opt: Add the hvml type.
+	* doc/invoke.texi: Document -mveclibabi=hvml and clarify the 64-bit
+	restriction for ACML and AOCL.
+
 2026-11-06  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
