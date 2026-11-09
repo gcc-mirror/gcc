@@ -170,7 +170,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 5.1:: Feature completion status to 5.1 specification
 * OpenMP 5.2:: Feature completion status to 5.2 specification
 * OpenMP 6.0:: Feature completion status to 6.0 specification
-* OpenMP Technical Report 15:: Feature completion status to second 6.1 preview
+* OpenMP 6.1:: Feature completion status to 6.1 specification
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -656,16 +656,14 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @end multitable
 
 
-@node OpenMP Technical Report 15
-@section OpenMP Technical Report 15
-
-Technical Report (TR) 15 is the second preview for OpenMP 6.1.
+@node OpenMP 6.1
+@section OpenMP 6.1
 
 @unnumberedsubsec New features listed in Appendix B of the OpenMP specification
 @multitable @columnfractions .60 .10 .25
-@item Spatial ICVs and the @code{dim} modifier for spatial dimensions @tab N @tab
+@item Spatial ICVs and the @code{dims} modifier for spatial dimensions @tab N @tab
 @item Spatial-dimension API routines @tab Y
-      @tab Single active dimension until @code{dim} modifier is supported
+      @tab Single active dimension until @code{dims} modifier is supported
 @item In the @code{OMP_PLACES} env var, support extended syntax with abstract names
       @tab N @tab
 @item In the @code{OMP_PLACES} env var, support hierarchical place groups
@@ -674,14 +672,20 @@ Technical Report (TR) 15 is the second preview for OpenMP 6.1.
       @tab N @tab
 @item @code{reset} and @code{noreset} modifiers to the @code{OMP_PROC_BIND}
       env var @tab N @tab
+@item C++ handing of ::: regarding scope id and separator was specified
+      @tab P @tab Initial support
 @item @code{optional} modifier to the @code{default} and @code{defaultmap}
       clauses for Fortran @tab N @tab
-@item @code{implicit} modifier to the @code{default} and @code{defaultmap}
-      clauses @tab N @tab
 @item Type conversion in atomic structured blocks @tab N @tab
 @item The @code{depth} clause to @code{fuse} directive @tab N @tab
+@item @code{implicit} and @code{default} behavior to the @code{default}
+      and @code{defaultmap} clauses @tab N @tab
+@item @code{reduction_kind} clause and the @code{noncommutative} modifier
+      to @code{reduction} clause @tab N @tab
 @item The @code{per_thread} modifier to the @code{reduction} clause @tab N @tab
 @item Mapping polymorphic variables in Fortran @tab N @tab
+@item Error termination for @code{present} but unmapped assumed-size
+      arrays @tab N @tab
 @item The @code{attach} modifier to the @code{map} clause @tab N @tab
 @item The @code{dyn_groupprivate} clause and the
       @code{omp_get_dyn_groupprivate_ptr}, @code{omp_get_dyn_groupprivate_size},
@@ -692,6 +696,10 @@ Technical Report (TR) 15 is the second preview for OpenMP 6.1.
 @item @code{shift} clause to the @code{tile} construct @tab N @tab
 @item @code{grid} and @code{tile} modifier to the @code{size} clause @tab N @tab
 @item New @code{flatten} loop-transforming directive @tab N @tab
+@item @code{relaxed} modifier to @code{num_threads} @tab N @tab
+@item @code{relaxed} modifier to @code{grainsize} and @code{num_tasks} @tab N @tab
+@item @code{relaxed} and @code{strict} modifier to @code{thread_limit} @tab N @tab
+@item @code{message} clause to @code{target} and @code{teams} @tab N @tab
 @item @code{scaled} modifier to @code{simdlen} clause @tab N @tab
       (@uref{https://gcc.gnu.org/PR127723,PR127723})
 @item Lifted restriction on the first chunk size for the @code{schedule} clause
@@ -700,6 +708,8 @@ Technical Report (TR) 15 is the second preview for OpenMP 6.1.
       specified @var{chunk_size} @tab N @tab
 @item Clarified behavior of Fortran type-bound procedures inside @code{target}
       regions @tab N @tab
+@item @code{taskwait} being an explicit-task-generating construct
+      @tab N @tab
 @item @code{taskwait} construct's implicit task-dependencies rules update
       @tab N @tab
 @item @code{depobj} and @code{loc} modifiers to the @code{depend} clause
@@ -707,6 +717,8 @@ Technical Report (TR) 15 is the second preview for OpenMP 6.1.
 @item New @code{omp_default_device} identifier as conforming device number
       @tab Y @tab
 @item @code{user_mem} class template added to the @code{omp::allocator} namespace
+      @tab N @tab
+@item @code{omp-tools.h} providing types to avoid @code{omp.h} for tools
       @tab N @tab
 @item @code{omp_get_filtered_devices} API routines @tab N @tab
 @item @code{omp_get_device_distances} API routines @tab Y @tab
@@ -1687,8 +1699,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_supported_active_league_dims}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.1
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.1
 @end table
 
 
@@ -1724,8 +1735,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_thread_num}, @ref{omp_get_num_threads_dim}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.2
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.2
 @end table
 
 
@@ -1759,8 +1769,7 @@ arguments with @code{-fdefault-integer-8}.
 
 
 @item @emph{reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.3
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.3
 @end table
 
 
@@ -1796,8 +1805,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_team_num_dim}, @ref{OMP_NUM_TEAMS}, @ref{omp_get_num_teams_dim}
 
 @item @emph{reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.4
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.4
 @end table
 
 
@@ -1831,8 +1839,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_max_threads}, @ref{OMP_THREAD_LIMIT}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.5
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.5
 @end table
 
 
@@ -1867,8 +1874,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_supported_teams_dim}, @ref{omp_get_num_teams_dim}, @ref{OMP_NUM_TEAMS}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.6
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.6
 @end table
 
 
@@ -1905,8 +1911,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_num_teams_dim}, @ref{OMP_THREAD_LIMIT}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.7
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.7
 @end table
 
 
@@ -1946,8 +1951,7 @@ arguments with @code{-fdefault-integer-8}.
 
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.8
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.8
 @end table
 
 
@@ -1984,8 +1988,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_supported_active_team_dims}, @ref{omp_get_num_teams_dim}, @ref{OMP_NUM_TEAMS}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 29.9
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 29.9
 @end table
 
 
@@ -2643,8 +2646,7 @@ arguments with @code{-fdefault-integer-8}.
 @ref{omp_get_num_devices}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 31.16
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 31.16
 @end table
 
 
@@ -4613,8 +4615,7 @@ effect of running this routine in a @code{target} region is unspecified.
 @c @ref{omp_aligned_calloc}, @ref{omp_realloc}
 
 @item @emph{Reference}:
-@c TODO: Update once OpenMP 6.1 is released
-@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 34.13.5
+@uref{https://www.openmp.org, OpenMP specification v6.1}, Section 34.13.5
 @end table
 
 
