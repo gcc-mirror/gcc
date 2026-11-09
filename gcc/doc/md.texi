@@ -5363,6 +5363,47 @@ Reverse the order of bytes of operand 1 and store the result in operand 0.
 @item @samp{bitreverse@var{m}2}
 Reverse the order of bits of operand 1 and store the result in operand 0.
 
+@mdindex clmul@var{m}3
+@item @samp{clmul@var{m}3}
+Perform carry-less multiplication of operands 1 and 2 and store the
+least significant bits of the result, which have the same width as
+the operands, in operand 0.  All three operands have the same scalar
+integer mode @var{m}, and the operands are treated as unsigned.
+This is equivalent to the C code:
+@smallexample
+unsigned_type r = 0;
+for (int i = 0; i < width; i++)
+  if ((op2 >> i) & 1)
+    r ^= op1 << i;
+op0 = r;
+@end smallexample
+where @code{width} is the bit size of mode @var{m}.  A pattern in
+mode @var{m} is also used for narrower operations, by zero extending
+the operands to mode @var{m}.
+
+@mdindex clmul_widen@var{m}3
+@item @samp{clmul_widen@var{m}3}
+Perform carry-less multiplication of operands 2 and 3, which have
+mode @var{m}, and store the least significant half of the full
+product in operand 0 and the most significant half in operand 1.
+All four operands have the same scalar integer mode @var{m}, and the
+inputs are treated as unsigned.  This is equivalent to the C code:
+@smallexample
+wide_type r = 0;
+for (int i = 0; i < width; i++)
+  if ((op3 >> i) & 1)
+    r ^= (wide_type) op2 << i;
+op0 = (narrow_type) r;
+op1 = (narrow_type) (r >> width);
+@end smallexample
+where @code{wide_type} has twice the precision of @code{narrow_type}
+and @code{width} is the bit size of mode @var{m}.  This is used to
+expand the three argument form of @code{__builtin_clmulg}.
+
+Neither @samp{clmul@var{m}3} nor @samp{clmul_widen@var{m}3} has to
+handle all operand values.  They may @code{FAIL}, in which case the
+compiler falls back to another expansion.
+
 @mdindex neg@var{m}2
 @mdindex ssneg@var{m}2
 @mdindex usneg@var{m}2
