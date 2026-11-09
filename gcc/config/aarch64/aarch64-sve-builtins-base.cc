@@ -2328,12 +2328,10 @@ public:
       }
     else
       {
-	if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
-	  icode = code_for_aarch64_sve (UNSPEC_FMMLA, e.vector_mode (0));
-	else
-	  icode = code_for_aarch64_sve2 (UNSPEC_FMMLA,
-					e.vector_mode (0),
-					e.vector_mode (1));
+	machine_mode omode = e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES
+				 ? e.vector_mode (0)
+				 : e.vector_mode (1);
+	icode = code_for_aarch64_sve (UNSPEC_FMMLA, e.vector_mode (0), omode);
       }
     return e.use_exact_insn (icode);
   }

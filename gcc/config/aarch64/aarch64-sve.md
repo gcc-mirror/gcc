@@ -8555,7 +8555,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; The mode iterator enforces the target requirements.
-(define_insn "@aarch64_sve_<sve_fp_op><mode>"
+(define_insn "@aarch64_sve_<sve_fp_op><mode><mode>"
   [(set (match_operand:SVE_MATMULF 0 "register_operand")
 	(unspec:SVE_MATMULF
 	  [(match_operand:SVE_MATMULF 2 "register_operand")

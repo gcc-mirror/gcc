@@ -5062,7 +5062,7 @@
 ;; -------------------------------------------------------------------------
 
 
-(define_insn "@aarch64_sve2_<sve_fp_op><SVE_FULL_HSF_FMMLA:mode><VNx16QI_ONLY:mode>"
+(define_insn "@aarch64_sve_<sve_fp_op><SVE_FULL_HSF_FMMLA:mode><VNx16QI_ONLY:mode>"
   [(set (match_operand:SVE_FULL_HSF_FMMLA 0 "register_operand")
 	(unspec:SVE_FULL_HSF_FMMLA
 	  [(match_operand:VNx16QI_ONLY 2 "register_operand")
@@ -5078,7 +5078,7 @@
   [(set_attr "sve_type" "sve_fp_mul")]
 )
 
-(define_insn "@aarch64_sve2_<sve_fp_op><VNx4SF_ONLY:mode><VNx8HF_ONLY:mode>"
+(define_insn "@aarch64_sve_<sve_fp_op><VNx4SF_ONLY:mode><VNx8HF_ONLY:mode>"
   [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
 	(unspec:VNx4SF_ONLY
 	 [(match_operand:VNx8HF_ONLY 2 "register_operand")
