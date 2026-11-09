@@ -1,3 +1,15 @@
+2026-11-08  Andrea Boido  <andrea.boido@vector.com>
+
+	PR ada/128457
+	* sem_res.adb (Resolve_Membership_Op): Only perform the special
+	resolution if the left operand is of type universal_integer and
+	the right operand is of a smaller integer type.
+
+2026-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Add guard for generic type
+	to the test on the RM size.
+
 2026-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not return early for

@@ -1,3 +1,65 @@
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128409
+	* config/i386/i386.cc (ix86_expand_epilogue): Check
+	flag_cf_protection & CF_RETURN instead of flag_cf_protection.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* config/i386/i386-c.cc (ix86_target_macros):
+	Define __CET__ only when CF_BRANCH or CF_RETURN is set.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128360
+	* config/i386/i386-features.cc
+	(rest_of_insert_endbr_and_patchable_area): Emit ENDBR for
+	functions with cf_check attribute even when they are only
+	called directly.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/pconfigintrin.h (_pconfig_u32):
+	Change the value of __PCONFIG_KEY_PROGRAM to 0x00.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128283
+	* config/i386/sgxintrin.h (__encls_bc, __encls_bcd, __encls_c)
+	(__encls_edbgrd, __encls_generic, __enclu_bc, __enclu_bcd)
+	(__enclu_eenter, __enclu_eexit, __enclu_generic, __enclv_bc)
+	(__enclv_cd, __enclv_generic): Add "memory" clobber.
+	Remove "\n\t" from asm template.
+	(__encls_edbgrd): Also add "cc" clobber.
+	* config/i386/pconfigintrin.h (__pconfig_b, __pconfig_generic):
+	Add "memory" clobber.  Remove "\n\t" from asm template.
+
+2026-11-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-05-05  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120189
+	* doc/gm2.texi (Building a shared library): Rewrite the
+	description of the shared library and include complete code into
+	the example.
+
 2026-11-07  Kewen Lin  <linkewen@hygon.cn>
 
 	Backported from master:
