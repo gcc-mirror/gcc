@@ -147,8 +147,19 @@ main ()
   /* For each device, including host fallback.  */
   for (int dev = 0; dev <= omp_get_num_devices (); dev++)
     {
-      #pragma omp target device(dev) firstprivate(dev)
-	omp_set_num_teams (7 + dev);
+      /* The following is required per OpenMP semantic:
+
+	 An omp_set_num_teams region must be a strictly nested region of the
+	 implicit parallel region that surrounds the whole OpenMP program.
+
+	 That's not the case inside 'target' and GCC fails unless the device ICVs
+	 are copied back to the host at the beginning or end of GOMP_target_ext.
+
+	 Hence set it on the host:  */
+
+      omp_set_device_num_teams (7 + dev, dev);
+      // #pragma omp target device(dev) firstprivate(dev)
+	// invalid: omp_set_num_teams (7 + dev);
 
       #pragma omp target device(dev) map(from: nteams)
 	nteams = omp_get_max_teams ();
