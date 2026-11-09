@@ -5192,6 +5192,18 @@ lower_rec_simd_input_clauses (tree new_var, omp_context *ctx,
 		  sctx->max_vf = 1;
 		  break;
 	      }
+
+	      tree type = TREE_TYPE (OMP_CLAUSE_DECL (c));
+	      if (omp_privatize_by_reference (OMP_CLAUSE_DECL (c)))
+		type = TREE_TYPE (type);
+	      if (OMP_CLAUSE_REDUCTION_CODE (c) == MULT_EXPR
+		  && TREE_CODE (type) == COMPLEX_TYPE)
+		{
+		  /* IFN_GOMP_SIMT_REDUCE combines the parts of a complex
+		     value separately, which is wrong for multiplication.  */
+		  sctx->max_vf = 1;
+		  break;
+		}
 	    }
 	}
       if (maybe_gt (sctx->max_vf, 1U))
@@ -7283,9 +7295,29 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 		      if (sctx.is_simt)
 			{
 			  tree op = build_int_cst (unsigned_type_node, code);
-			  x = build_call_expr_internal_loc
-			    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_REDUCE,
-			     TREE_TYPE (ivar), 2, ivar, op);
+			  tree type = TREE_TYPE (ivar);
+			  if (TREE_CODE (type) == COMPLEX_TYPE)
+			    {
+			      /* Reduce the real and imaginary parts
+				 separately.  Only addition gets here; see
+				 lower_rec_simd_input_clauses.  */
+			      gcc_checking_assert (code == PLUS_EXPR);
+			      tree ptype = TREE_TYPE (type);
+			      tree re = build1 (REALPART_EXPR, ptype, ivar);
+			      tree im = build1 (IMAGPART_EXPR, ptype,
+						unshare_expr (ivar));
+			      re = build_call_expr_internal_loc
+				(UNKNOWN_LOCATION, IFN_GOMP_SIMT_REDUCE,
+				 ptype, 2, re, op);
+			      im = build_call_expr_internal_loc
+				(UNKNOWN_LOCATION, IFN_GOMP_SIMT_REDUCE,
+				 ptype, 2, im, op);
+			      x = build2 (COMPLEX_EXPR, type, re, im);
+			    }
+			  else
+			    x = build_call_expr_internal_loc
+			      (UNKNOWN_LOCATION, IFN_GOMP_SIMT_REDUCE,
+			       type, 2, ivar, op);
 			  gimplify_assign (ivar, x, &llist[2]);
 			}
 		      tree ivar2 = ivar;
@@ -8562,6 +8594,22 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	    break;
 	  }
 	count++;
+	if (!omp_simt_threads_p (ctx))
+	  continue;
+	/* The OpenMP threads may be the lanes of a wavefront.  OMP_ATOMIC of
+	   a complex value uses a lock, which the lanes would hold together,
+	   so merge them one lane at a time instead, unless they are combined
+	   across the wavefront first.  */
+	tree type = TREE_TYPE (OMP_CLAUSE_DECL (c));
+	if (omp_privatize_by_reference (OMP_CLAUSE_DECL (c)))
+	  type = TREE_TYPE (type);
+	if (TREE_CODE (type) == COMPLEX_TYPE
+	    && !omp_simt_threads_reduction_p (OMP_CLAUSE_REDUCTION_CODE (c),
+					      type, ctx))
+	  {
+	    count = -1;
+	    break;
+	  }
       }
 
   if (count == 0)
