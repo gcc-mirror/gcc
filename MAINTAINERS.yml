@@ -5677,6 +5677,15 @@ users:
   roles:
   - WriteAfter
   account: sirl
+- sn: Sitorus
+  cn: Ezra Sitorus
+  email:
+  - ezra.sitorus@arm.com
+  - ezrasitorus@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: ezrasitorus
+  forgeid: ezrasitorus
 - sn: Sjodin
   cn: Jan Sjodin
   email:
