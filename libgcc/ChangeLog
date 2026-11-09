@@ -1,3 +1,20 @@
+2026-11-08  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/gthr-vxworks-thread.c (ENTRYPTR): Rename to...
+	(__gthread_entry_point_t): ... this.  Use gthread
+	conventions.  Drop indirection.
+	(__task_wrapper): Use VxWorks conventions for its formals,
+	and convert to the gthread types.  Drop extraneous and risky
+	double-underscore prefixes.  Add indirection to entry point
+	pointer.
+	(__gthread_create): Use __gthread_entry_point_t.
+
+2026-11-08  Douglas Rupp  <rupp@adacore.com>
+
+	* config/rs6000/vxworks-unwind.h: New file.
+	* config.host (powerpc*-wrs-vxworks7*): Set md_unwind_header
+	to use it.
+
 2026-11-04  Sam Price  <thesamprice@gmail.com>
 
 	* config/microblaze/moddi3.S: Name the register-pair halves by

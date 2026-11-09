@@ -1,3 +1,9 @@
+2026-11-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/127940
+	* files.cc (_cpp_stack_include): Use _cpp_FFK_HAS_INCLUDE
+	to check for an alternate header.
+
 2026-10-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* lex.cc (search_line_neon): Use ULL instead of UL.

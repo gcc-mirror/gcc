@@ -1,3 +1,37 @@
+2026-11-08  Andrea Boido  <andrea.boido@vector.com>
+
+	* gnat.dg/membership_real1.adb: New test.
+
+2026-11-08  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128335
+	* gcc.dg/pr128335.c: New test.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/cross-term-1.a68: New test.
+	* algol68/compile/plusab-real-int-1.a68: Expanded.
+
+2026-11-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/shift-shift-8.c: New test.
+
+2026-11-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/zbs-bseti-disjoint-add.c: New test.
+
+2026-11-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/127940
+	* g++.dg/modules/inc-xlate-5.C: New test.
+	* g++.dg/modules/dummy-stdlib/stdexcept: For new test.
+	* g++.dg/modules/modules.exp: Override ALWAYS_CXXFLAGS for it.
+
+2026-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128509
+	* gfortran.dg/asan/paren_array_ctor_alloc_comp_1.f90: New test.
+
 2026-11-07  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* gcc.target/riscv/load-no-shift.c: New test.

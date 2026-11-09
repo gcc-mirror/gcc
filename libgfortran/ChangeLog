@@ -1,3 +1,19 @@
+2026-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/118935
+	* io/io.h (gfc_unit): Add file_dev and file_ino.
+	(set_unit_stream, get_unit_stream, set_unit_file_id)
+	(unit_file_id_matches): New functions.
+	* io/open.c (new_unit): Use connect_unit_stream.
+	(already_open): Use set_unit_stream.
+	* io/transfer.c (finalize_transfer): Likewise.
+	* io/unit.c (set_internal_unit): Use connect_unit_stream.
+	(init_units): Likewise.
+	* io/unix.c (connect_unit_stream): New function.
+	(find_file0): Use get_unit_stream and unit_file_id_matches
+	instead of dereferencing the stream.
+	* io/unix.h (connect_unit_stream): Declare.
+
 2026-11-04  Richard Biener  <rguenther@suse.de>
 
 	PR libfortran/103886

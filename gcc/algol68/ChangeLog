@@ -1,3 +1,36 @@
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (gnu_moids): New function.
+	(stand_prelude): Move extended moids definition to gnu_moids.
+	(gnu_prelude): Load Algol 68 parts from gnu.a68.
+	Call gnu_moids.
+	* a68-imports.cc (SET_MOID): Define.
+	(complete_encoded_mode): Use SET_MOID.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-moids-check.cc (find_operator): Fix handling of
+	standard pow operators.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68.h: Add prototypes for a68_lower_wordenint2 and
+	a68_lower_wordenreal2.
+	* a68-parser-prelude.cc (gnu_prelude): Define WORDEN for SIZETY
+	int, SIZETY real and SIZETY bits.
+	* a68-low-prelude.cc (a68_lower_wordenint2): New function.
+	(a68_lower_wordenreal2): Likewise.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (a68_open_packet): Set better error message in
+	case of decod error.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68-exports.pk (ga68_mode_64): kind can be GA68_MODE_BOOL.
+	(ga68_mode_32): Likewise.
+
 2026-11-06  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-moids-misc.cc (a68_widens_to): Add two missing indirect

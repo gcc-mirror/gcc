@@ -1,3 +1,8 @@
+2026-11-08  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128335
+	* c-decl.cc (build_enumerator): Fix logic.
+
 2026-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/128111

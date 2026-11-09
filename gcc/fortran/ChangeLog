@@ -1,3 +1,11 @@
+2026-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128509
+	* trans-array.cc (gfc_conv_expr_descriptor): Copy the temporary for
+	a parenthesized array constructor deeply, as for the constructor.
+	* trans-expr.cc (expr_may_alias_variables): Look through the
+	parentheses around an array constructor.
+
 2026-11-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173

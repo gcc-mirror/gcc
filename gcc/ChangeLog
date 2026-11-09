@@ -1,3 +1,60 @@
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (find_first_parameter_load): Take an rtx_call_insn *.
+	* rtlanal.cc (find_first_parameter_load): Likewise.
+	* except.cc (sjlj_mark_call_sites): Cast the call.
+	* gcse.cc (insert_insn_end_basic_block): Likewise.
+
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (memory_modified_in_insn_p): Take a const rtx_insn *.
+	* alias.cc (memory_modified_in_insn_p): Likewise.
+	* rtlanal.cc (modified_in_p): Cast to a const rtx_insn * first.
+
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reorg.cc (get_branch_condition): Take a const rtx_jump_insn *.
+	(condition_dominates_p): Likewise.
+	(steal_delay_list_from_target): Cast the sequence's first insn.
+
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (redirect_jump_1): Take an rtx_jump_insn *.
+	* jump.cc (redirect_jump_1, invert_exp_1): Likewise.
+	* reorg.cc (redirect_with_delay_slots_safe_p,
+	redirect_with_delay_list_safe_p): Likewise.
+
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* except.h (for_each_eh_label): Pass an rtx_code_label * to the
+	callback.
+	* except.cc (for_each_eh_label): Likewise.
+	* reload1.cc (set_initial_eh_label_offset): Take an
+	rtx_code_label *.
+
+2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (emit_jump): Take an rtx_code_label *.
+	* stmt.cc (emit_jump): Likewise.
+	* explow.h (emit_stack_clash_protection_probe_loop_end): Take an
+	rtx_code_label * for the loop label.
+	* explow.cc (emit_stack_clash_protection_probe_loop_end): Likewise.
+
+2026-11-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.md (bitfield extraction splitter): New splitter
+	for cases when high bits of a bitfield extraction are never read.
+
+2026-11-08  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/iterators.md (sext_w_binop): New iterator.
+	* config/riscv/predicates.md (arith_or_single_bit_operand): New.
+	* config/riscv/riscv.md (aop<mode>3): Steer more single bit sets
+	towards IOR.
+	* config/riscv/bitmanip.md (ior of sign extended operation): New
+	splitters.  Add splitter for setting a single bit via bseti when
+	the object being modified has a zero at that bit.
+
 2026-11-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* doc/install.texi (GM2): Add missing comma.

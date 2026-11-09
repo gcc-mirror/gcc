@@ -1,3 +1,17 @@
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/128378
+	* ga68.map: Fix typo for POSIX_fileodefault.
+
+2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* gnu.a68.in: New file.
+	* Makefile.am (gnu.a68): New rule.
+	(BUILT_SOURCES): Add gnu.a68.
+	(libga68_la_DEPENDENCIES): Add gnu.lo
+	(libga68_la_LIBADD): Likewise.
+	* Makefile.in: Regenerate.
+
 2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459
