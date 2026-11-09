@@ -97,18 +97,24 @@ namespace __detail
   // and to_chars<unsigned> will all use the same code, and so will
   // to_chars<long> when sizeof(int) == sizeof(long).
   template<typename _Tp>
-    struct __to_chars_unsigned_type : __make_unsigned_selector_base
+    constexpr auto
+    __to_chars_unsigned_type()
     {
-      using _UInts = _List<unsigned int, unsigned long, unsigned long long
+      if constexpr (sizeof(_Tp) <= sizeof(unsigned int))
+	return __type_identity<unsigned int>{};
+      else if constexpr (sizeof(_Tp) <= sizeof(unsigned long))
+	return __type_identity<unsigned long>{};
+      else if constexpr (sizeof(_Tp) <= sizeof(unsigned long long))
+	return __type_identity<unsigned long long>{};
 #if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
-	, unsigned __int128
+      else if constexpr (sizeof(_Tp) <= sizeof(unsigned __int128))
+	return __type_identity<unsigned __int128>{};
 #endif
-	>;
-      using type = typename __select<sizeof(_Tp), _UInts>::__type;
-    };
+    }
 
   template<typename _Tp>
-    using __unsigned_least_t = typename __to_chars_unsigned_type<_Tp>::type;
+    using __unsigned_least_t
+      = typename decltype(__to_chars_unsigned_type<_Tp>())::type;
 
   // Generic implementation for arbitrary bases.
   // Defined in <bits/charconv.h>.
