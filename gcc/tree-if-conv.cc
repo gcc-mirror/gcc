@@ -4039,11 +4039,13 @@ bitfields_to_lower_p (class loop *loop,
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
 
-	      if (TREE_THIS_VOLATILE (op))
+	      if (TREE_THIS_VOLATILE (op)
+		  || reverse_storage_order_for_component_p (op))
 		{
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "\t Bitfield NO OK to lower,"
-					" the access is volatile.\n");
+					" the access is volatile or"
+					" has reverse storage-order.\n");
 		  return false;
 		}
 
