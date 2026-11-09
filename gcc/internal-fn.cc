@@ -6173,6 +6173,56 @@ expand_clmul (machine_mode mode, machine_mode op_mode, rtx op0, rtx op1,
 	  delete_insns_since (start);
 	}
     }
+  if (CONST_SCALAR_INT_P (op1))
+    {
+      wide_int wop1 = rtx_mode_t (op1, op_mode);
+      unsigned lz = wi::clz (wop1);
+      unsigned tz = wi::ctz (wop1);
+      unsigned cnt = wi::popcount (wop1);
+      if (lz + cnt + tz == op_prec
+	  && (pow2p_hwi (cnt) || (lz == 0 && prec == op_prec)))
+	{
+	  /* Optimize the cases where one argument is a constant
+	     equal to ((((T) 1) << M) - 1) << N for some M and N
+	     constants.
+	     In this case the clmul (x, ((((T) 1) << M) - 1) << N)
+	     result can be computed as
+	     T r = x;
+	     for (unsigned i = 1; i < M; i = i + i)
+	       r ^= r << i;
+	     return r << N;
+	     If M is not a power of two, it shouldn't be a widening
+	     shift and most significant bit of the constant should be
+	     set.  */
+	  rtx x = convert_modes (mode, op_mode, op0, 1);
+	  rtx res = gen_reg_rtx (mode);
+	  emit_move_insn (res, x);
+	  rtx i = gen_reg_rtx (TYPE_MODE (integer_type_node));
+	  emit_move_insn (i, const1_rtx);
+	  rtx_code_label *loop_label = gen_label_rtx ();
+	  emit_label (loop_label);
+	  rtx tem = expand_variable_shift (LSHIFT_EXPR, mode, res,
+					   make_tree (integer_type_node, i),
+					   NULL_RTX, 1);
+	  tem = expand_binop (mode, xor_optab, res, tem, res, 1, olw);
+	  if (tem != res)
+	    emit_move_insn (res, tem);
+	  tem = expand_binop (GET_MODE (i), add_optab, i, i, i, 1, olw);
+	  if (tem != res)
+	    emit_move_insn (i, tem);
+	  do_compare_rtx_and_jump (i, gen_int_mode (cnt, GET_MODE (i)),
+				   LTU, true, GET_MODE (i), NULL_RTX, NULL,
+				   loop_label,
+				   profile_probability::very_likely ());
+	  if (tz)
+	    {
+	      tem = expand_shift (LSHIFT_EXPR, mode, res, tz, res, 1);
+	      if (tem != res)
+		emit_move_insn (res, tem);
+	    }
+	  return res;
+	}
+    }
   /* Fallback using Kronecker substitution.
      Depending on the number of active bits in the operand with smaller
      number of those and the result precision we choose smallest spacing
