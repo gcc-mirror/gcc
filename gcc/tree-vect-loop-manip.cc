@@ -3939,8 +3939,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       LOOP_VINFO_MAIN_EXIT (epilogue_vinfo)
 	= LOOP_VINFO_EPILOGUE_MAIN_EXIT (loop_vinfo);
 
-      loop_constraint_clear (epilog, LOOP_C_INFINITE);
-
       /* We now must calculate the number of NITERS performed by the previous
 	 loop and EPILOGUE_NITERS to be performed by the epilogue.  */
       tree niters = fold_build2 (PLUS_EXPR, TREE_TYPE (niters_vector_mult_vf),
