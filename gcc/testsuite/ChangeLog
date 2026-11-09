@@ -1,3 +1,52 @@
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128409
+	* gcc.target/i386/pr128409-1.c: New test.
+	* gcc.target/i386/pr128409-2.c: Ditto.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* gcc.target/i386/pr128373-1.c: New test.
+	* gcc.target/i386/pr128373-2.c: Ditto.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128360
+	* gcc.target/i386/pr128360-1.c: New test.
+	* gcc.target/i386/pr128360-2.c: Ditto.
+	* gcc.target/i386/pr128360-3.c: Ditto.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pconfig-1.c (PCONFIG_KEY_PROGRAM):
+	Change to 0x00.
+
+2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128283
+	* gcc.target/i386/pr128283-1.c: New test.
+	* gcc.target/i386/pr128283-2.c: Ditto.
+
+2026-11-08  Andrea Boido  <andrea.boido@vector.com>
+
+	* gnat.dg/membership_real1.adb: New test.
+
 2026-11-04  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
