@@ -12173,10 +12173,10 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 		  gcc_assert (remap->u.ar.start[dim] && remap->u.ar.end[dim]);
 
 		  if (remap->u.ar.start[dim]->expr_type != EXPR_CONSTANT
-		      || remap->u.ar.start[dim]->expr_type != EXPR_VARIABLE)
+		      && remap->u.ar.start[dim]->expr_type != EXPR_VARIABLE)
 		    gfc_resolve_expr (remap->u.ar.start[dim]);
 		  if (remap->u.ar.end[dim]->expr_type != EXPR_CONSTANT
-		      || remap->u.ar.end[dim]->expr_type != EXPR_VARIABLE)
+		      && remap->u.ar.end[dim]->expr_type != EXPR_VARIABLE)
 		    gfc_resolve_expr (remap->u.ar.end[dim]);
 
 		  /* Convert declared bounds.  */
