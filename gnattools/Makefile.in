@@ -35,6 +35,7 @@ LN_S=@LN_S@
 target_noncanonical=@target_noncanonical@
 GNATMAKE=@GNATMAKE@
 GNATBIND=@GNATBIND@
+ADAC=$(CC)
 
 # Variables for the user (or the top level) to override.
 exeext = @EXEEXT@
@@ -79,6 +80,7 @@ CXX_LFLAGS = \
 
 # Variables for gnattools, native
 TOOLS_FLAGS_TO_PASS_NATIVE= \
+	"ADAC=../../xgcc -B../../" \
 	"CC=../../xgcc -B../../" \
 	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS) $(PICFLAG)" \
@@ -97,6 +99,7 @@ TOOLS_FLAGS_TO_PASS_NATIVE= \
 
 # Variables for regnattools
 TOOLS_FLAGS_TO_PASS_RE= \
+	"ADAC=../../xgcc -B../../" \
 	"CC=../../xgcc -B../../" \
 	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS) $(PICFLAG)" \
@@ -125,6 +128,7 @@ GNATLS_FOR_HOST   = $(subst gnatmake,gnatls,$(GNATMAKE))
 RTS_DIR:=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
 
 TOOLS_FLAGS_TO_PASS_CROSS= \
+	"ADAC=$(ADAC)" \
 	"CC=$(CC)" \
 	"CXX=$(CXX)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS) $(PICFLAG)" \

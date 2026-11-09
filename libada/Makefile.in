@@ -95,6 +95,7 @@ LIBADA_FLAGS_TO_PASS = \
         "prefix=$(prefix)" \
         "exeext=.exeext.should.not.be.used " \
 	'CC=the.host.compiler.should.not.be.needed' \
+	'ADAC=the.host.compiler.should.not.be.needed' \
 	"GCC_FOR_TARGET=$(CC)" \
         "CFLAGS=$(CFLAGS)"
 

@@ -88,7 +88,7 @@ endif
 
 ifeq ($(STAGE1),True)
   ADA_INCLUDES=$(COMMON_ADA_INCLUDES)
-  adalib=$(dir $(shell $(CC) -print-libgcc-file-name))adalib
+  adalib=$(dir $(shell $(ADAC) -print-libgcc-file-name))adalib
   GNATLIB=$(adalib)/$(if $(wildcard $(adalib)/libgnat.a),libgnat.a,libgnat.so) $(STAGE1_LIBS)
 else
   ADA_INCLUDES=-nostdinc $(COMMON_ADA_INCLUDES) -Iada/libgnat -I$(srcdir)/ada/libgnat -Iada/gcc-interface -I$(srcdir)/ada/gcc-interface
@@ -161,12 +161,12 @@ endif
 
 .adb.o:
 	mkdir -p $(dir $@)
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 .ads.o:
 	mkdir -p $(dir $@)
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 # Define the names for selecting Ada in LANGUAGES.
@@ -205,6 +205,7 @@ ifeq ($(build), $(host))
     # This is a regular native. Use the compiler from our
     # current build tree.
     ADA_TOOLS_FLAGS_TO_PASS=\
+        ADAC="../../xgcc -B../../" \
         CC="../../xgcc -B../../" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
@@ -223,6 +224,7 @@ ifeq ($(build), $(host))
     endif
 
     ADA_TOOLS_FLAGS_TO_PASS=\
+        ADAC="$(ADAC)" \
         CC="$(CC)" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS) \
@@ -242,6 +244,7 @@ else
     # This is a cross native. All the sources are taken from the currently
     # built runtime.
     ADA_TOOLS_FLAGS_TO_PASS=\
+        ADAC="$(ADAC)" \
         CC="$(CC)" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
@@ -257,6 +260,7 @@ else
       RTS_DIR:=$(strip $(subst \,/,$(shell $(GNATLS_FOR_HOST) -v | grep adalib )))
     endif
     ADA_TOOLS_FLAGS_TO_PASS=\
+        ADAC="$(ADAC)" \
         CC="$(CC)" \
         CXX="$(CXX)" \
         $(COMMON_FLAGS_TO_PASS) $(ADA_FLAGS_TO_PASS)  \
@@ -1188,7 +1192,7 @@ ada/b_gnat1.adb : $(GNAT1_ADA_OBJS)
 ada/b_gnat1.o : ada/b_gnat1.adb
         # Do not use ADAFLAGS to get rid of -gnatg which generates a lot
         # of style messages.
-	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) $(PICFLAG) -gnatp -gnatws $(ADA_INCLUDES) \
+	$(ADAC) -c $(CFLAGS) $(ADA_CFLAGS) $(PICFLAG) -gnatp -gnatws $(ADA_INCLUDES) \
 	    $< $(ADA_OUTPUT_OPTION)
 
 ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o
@@ -1197,7 +1201,7 @@ ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o
 	$(MV) b_gnatb.adb b_gnatb.ads ada/
 
 ada/b_gnatb.o : ada/b_gnatb.adb
-	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) $(PICFLAG) -gnatp -gnatws $(ADA_INCLUDES) \
+	$(ADAC) -c $(CFLAGS) $(ADA_CFLAGS) $(PICFLAG) -gnatp -gnatws $(ADA_INCLUDES) \
 	    $< $(ADA_OUTPUT_OPTION)
 
 include $(srcdir)/ada/Make-generated.in
@@ -1214,22 +1218,22 @@ ada/sdefault.o : ada/libgnat/ada.ads ada/libgnat/a-except.ads ada/libgnat/a-uncc
 # Special flags - see gcc-interface/Makefile.in for the template.
 
 ada/libgnat/a-except.o : ada/libgnat/a-except.adb ada/libgnat/a-except.ads ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
 	 $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 ada/libgnat/s-excdeb.o : ada/libgnat/s-excdeb.adb ada/libgnat/s-excdeb.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
 	 $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 ada/libgnat/s-assert.o  : ada/libgnat/s-assert.adb ada/libgnat/s-assert.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 ada/libgnat/a-tags.o  : ada/libgnat/a-tags.adb ada/libgnat/a-tags.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
+	$(ADAC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
 	  $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
@@ -1248,7 +1252,7 @@ ada/generated/gnatvsn.ads: ada/gnatvsn.ads BASE-VER ada/GNAT_DATE
 	cat $< | sed -e "/Version/s/(\([0-9]\{8\}\).*)/($$d$$s)/g" >$@
 
 ada/gnatvsn.o : ada/gnatvsn.adb ada/generated/gnatvsn.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 # All generated files.  Perhaps we should build all of these in the same

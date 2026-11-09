@@ -72,6 +72,7 @@ BOOT_CFLAGS = -O $(CFLAGS)
 T_CFLAGS =
 
 CC = cc
+ADAC = $(CC)
 BISON = bison
 BISONFLAGS =
 ECHO = echo
@@ -298,10 +299,10 @@ ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
 .adb.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 .ads.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
 
 # how to regenerate this file
 Makefile: ../config.status $(srcdir)/ada/gcc-interface/Makefile.in $(srcdir)/ada/Makefile.in $(srcdir)/ada/version.c
@@ -384,6 +385,7 @@ include $(fsrcdir)/ada/Makefile.rtl
 
 TOOLS_FLAGS_TO_PASS=		\
 	"CC=$(CC)" 		\
+	"ADAC=$(ADAC)" 		\
 	"CFLAGS=$(CFLAGS) $(PICFLAG)"	\
 	"LDFLAGS=$(LDFLAGS) $(LD_PICFLAG)"	\
 	"ADAFLAGS=$(ADAFLAGS)"	\
@@ -464,44 +466,44 @@ gnattools2: ../stamp-tools
 
 common-tools: ../stamp-tools
 	$(GNATMAKE) -j0 -c -b $(ADA_INCLUDES) \
-	  --GNATBIND="$(GNATBIND)" --GCC="$(CC) $(ALL_ADAFLAGS)" \
+	  --GNATBIND="$(GNATBIND)" --GCC="$(ADAC) $(ALL_ADAFLAGS)" \
 	  gnatchop gnatcmd gnatkr gnatls gnatprep gnatname \
 	  gnatclean -bargs $(ADA_INCLUDES) $(GNATBIND_FLAGS)
 	$(GNATLINK) -v gnatcmd -o ../../gnat$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatchop -o ../../gnatchop$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatkr -o ../../gnatkr$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatls -o ../../gnatls$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatprep -o ../../gnatprep$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatname -o ../../gnatname$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	   --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(GNATLINK) -v gnatclean -o ../../gnatclean$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 ../../gnatdll$(exeext): ../stamp-tools
-	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATMAKE) -c $(ADA_INCLUDES) gnatdll --GCC="$(ADAC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatdll
 	$(GNATLINK) -v gnatdll -o $@ \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 gnatmake-re: ../stamp-tools
-	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(CC) $(ALL_ADAFLAGS)"
-	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATMAKE) -j0 $(ADA_INCLUDES) -u sdefault --GCC="$(ADAC) $(ALL_ADAFLAGS)"
+	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatmake --GCC="$(ADAC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatmake
 	$(GNATLINK) -v gnatmake -o ../../gnatmake$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 
 # Note the use of the "mv" command in order to allow gnatlink to be linked
@@ -509,10 +511,10 @@ gnatmake-re: ../stamp-tools
 # gnatlink-re cannot be run at the same time as gnatmake-re, hence the
 # dependency
 gnatlink-re: ../stamp-tools gnatmake-re
-	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(CC) $(ALL_ADAFLAGS)"
+	$(GNATMAKE) -j0 -c $(ADA_INCLUDES) gnatlink --GCC="$(ADAC) $(ALL_ADAFLAGS)"
 	$(GNATBIND) $(ADA_INCLUDES) $(GNATBIND_FLAGS) gnatlink
 	$(GNATLINK) -v gnatlink -o ../../gnatlinknew$(exeext) \
-	  --GCC="$(CC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
+	  --GCC="$(ADAC) $(ALL_CFLAGS) $(ADA_CFLAGS) $(ADA_INCLUDES)" \
 	  --LINK="$(GCC_LINK)" $(TOOLS_LIBS)
 	$(MV)  ../../gnatlinknew$(exeext)  ../../gnatlink$(exeext)
 
@@ -884,13 +886,13 @@ b_gnatl.adb : $(GNATLINK_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatl.adb gnatlink.ali
 
 b_gnatl.o : b_gnatl.adb
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
 
 b_gnatm.adb : $(GNATMAKE_OBJS)
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatm.adb gnatmake.ali
 
 b_gnatm.o : b_gnatm.adb
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
+	$(ADAC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) -gnatws -gnatyN $< $(OUTPUT_OPTION)
 
 # Provide a `toolexeclibdir' definition for when `gnat-install-lib' is
 # wired through gcc/ in a configuration with top-level libada disabled.

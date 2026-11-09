@@ -397,7 +397,9 @@ AC_DEFUN([ACX_PROG_GNAT],
 [AC_REQUIRE([AC_PROG_CC])
 AC_CHECK_TOOL(GNATBIND, gnatbind, no)
 AC_CHECK_TOOL(GNATMAKE, gnatmake, no)
-AC_CACHE_CHECK([whether compiler driver understands Ada and is recent enough],
+test x"$ADAC" != x || ADAC=$CC
+AC_SUBST(ADAC)
+AC_CACHE_CHECK([whether $ADAC understands Ada and is recent enough],
 		 acx_cv_cc_gcc_supports_ada,
 [cat >conftest.adb <<EOF
 pragma Warnings (Off);
@@ -415,7 +417,7 @@ acx_cv_cc_gcc_supports_ada=no
 # Other compilers, like HP Tru64 UNIX cc, exit successfully when
 # given a .adb file, but produce no object file.  So we must check
 # if an object file was really produced to guard against this.
-errors=`(${CC} $1[]m4_ifval([$1], [ ])-c conftest.adb) 2>&1 || echo failure`
+errors=`(${ADAC} $1[]m4_ifval([$1], [ ])-c conftest.adb) 2>&1 || echo failure`
 if test x"$errors" = x && test -f conftest.$ac_objext; then
   acx_cv_cc_gcc_supports_ada=yes
 fi

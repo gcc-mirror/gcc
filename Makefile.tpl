@@ -458,6 +458,8 @@ A68 = @A68@
 GDC = @GDC@
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
+# ADAC is only used by gcc, in stage1 and in nonbootstrap builds.
+ADAC = @ADAC@
 
 CFLAGS = @CFLAGS@
 LDFLAGS = @LDFLAGS@
@@ -785,6 +787,7 @@ FLAGS_TO_PASS = $(BASE_FLAGS_TO_PASS) $(EXTRA_HOST_FLAGS)
 # Flags to pass to stage1 or when not bootstrapping.
 
 STAGE1_FLAGS_TO_PASS = \
+	ADAC="$(ADAC)" \
 	LDFLAGS="$${LDFLAGS}" \
 	HOST_LIBS="$${HOST_LIBS}"
 
@@ -796,6 +799,7 @@ POSTSTAGE1_FLAGS_TO_PASS = \
 	A68="$${A68}" A68_FOR_BUILD="$${A68_FOR_BUILD}" \
 	GDC="$${GDC}" GDC_FOR_BUILD="$${GDC_FOR_BUILD}" \
 	GM2="$${GM2}" GM2_FOR_BUILD="$${GM2_FOR_BUILD}" \
+	ADAC="$${CC}" \
 	GNATBIND="$${GNATBIND}" \
 	LDFLAGS="$${LDFLAGS}" \
 	HOST_LIBS="$${HOST_LIBS}" \

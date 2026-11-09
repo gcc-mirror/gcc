@@ -270,6 +270,11 @@ This includes GNAT tools such as @command{gnatmake} and
 @command{gnatlink}, since the Ada front end is written in Ada and
 uses some GNAT-specific extensions.
 
+You may set the @env{ADAC} environment variable to use a compiler driver
+other than @env{CC} to compile the Ada (stage1, if bootstrapping) front
+end. @env{GNATMAKE} and @env{GNATBIND} environment variables may need to
+be set as well.
+
 In order to build a cross compiler, it is strongly recommended to install
 the new compiler as native first, and then use it to build the cross
 compiler. Other native compiler versions may work but this is not guaranteed and
