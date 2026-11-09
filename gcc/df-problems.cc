@@ -4177,9 +4177,9 @@ can_move_insns_across (rtx_insn *from, rtx_insn *to,
 
   for (insn = across_to; ; insn = next)
     {
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
-	  if (RTL_CONST_OR_PURE_CALL_P (insn))
+	  if (RTL_CONST_OR_PURE_CALL_P (call))
 	    /* Pure functions can read from memory.  Const functions can
 	       read from arguments that the ABI has forced onto the stack.
 	       Neither sort of read can be volatile.  */

@@ -628,13 +628,13 @@ rtx_writer::print_rtx_operand_code_u (const_rtx in_rtx, int idx)
 
       if (GET_CODE (in_rtx) == LABEL_REF)
 	{
-	  if (subc == NOTE
-	      && NOTE_KIND (sub) == NOTE_INSN_DELETED_LABEL)
+	  rtx_note *note = dyn_cast<rtx_note *> (sub);
+	  if (note && NOTE_KIND (note) == NOTE_INSN_DELETED_LABEL)
 	    {
 	      if (flag_dump_unnumbered)
 		fprintf (m_outfile, " [# deleted]");
 	      else
-		fprintf (m_outfile, " [%d deleted]", INSN_UID (sub));
+		fprintf (m_outfile, " [%d deleted]", INSN_UID (note));
 	      m_sawclose = false;
 	      return;
 	    }

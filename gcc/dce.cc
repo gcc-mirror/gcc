@@ -124,22 +124,22 @@ deletable_insn_p (rtx_insn *insn, bool fast, bitmap arg_stores)
   int i;
   df_ref def;
 
-  if (CALL_P (insn)
+  auto call = dyn_cast<rtx_call_insn *> (insn);
+  if (call
       /* We cannot delete calls inside of the recursive dce because
 	 this may cause basic blocks to be deleted and this messes up
 	 the rest of the stack of optimization passes.  */
       && (!df_in_progress)
       /* We cannot delete pure or const sibling calls because it is
 	 hard to see the result.  */
-      && (!SIBLING_CALL_P (insn))
+      && (!SIBLING_CALL_P (call))
       /* We can delete dead const or pure calls as long as they do not
          infinite loop.  */
-      && (RTL_CONST_OR_PURE_CALL_P (insn)
-	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
+      && (RTL_CONST_OR_PURE_CALL_P (call)
+	  && !RTL_LOOPING_CONST_OR_PURE_CALL_P (call))
       /* Don't delete calls that may throw if we cannot do so.  */
-      && can_delete_call (insn))
-    return find_call_stack_args (as_a <rtx_call_insn *> (insn), false,
-				 fast, arg_stores);
+      && can_delete_call (call))
+    return find_call_stack_args (call, false, fast, arg_stores);
 
   /* Don't delete jumps, notes and the like.  */
   if (!NONJUMP_INSN_P (insn))
@@ -225,13 +225,14 @@ mark_insn (rtx_insn *insn, bool fast)
       bitmap_set_bit (marked, INSN_UID (insn));
       if (dump_file)
 	fprintf (dump_file, "  Adding insn %d to worklist\n", INSN_UID (insn));
-      if (CALL_P (insn)
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (call
 	  && !df_in_progress
-	  && !SIBLING_CALL_P (insn)
-	  && (RTL_CONST_OR_PURE_CALL_P (insn)
-	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (insn))
-	  && can_delete_call (insn))
-	find_call_stack_args (as_a <rtx_call_insn *> (insn), true, fast, NULL);
+	  && !SIBLING_CALL_P (call)
+	  && (RTL_CONST_OR_PURE_CALL_P (call)
+	      && !RTL_LOOPING_CONST_OR_PURE_CALL_P (call))
+	  && can_delete_call (call))
+	find_call_stack_args (call, true, fast, NULL);
     }
 }
 

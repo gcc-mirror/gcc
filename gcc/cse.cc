@@ -4444,11 +4444,11 @@ canonicalize_insn (rtx_insn *insn, vec<struct set> *psets)
   rtx x = PATTERN (insn);
   int i;
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+      for (tem = CALL_INSN_FUNCTION_USAGE (call); tem; tem = XEXP (tem, 1))
 	if (GET_CODE (XEXP (tem, 0)) != SET)
-	  XEXP (tem, 0) = canon_reg (XEXP (tem, 0), insn);
+	  XEXP (tem, 0) = canon_reg (XEXP (tem, 0), call);
     }
 
   if (GET_CODE (x) == SET && GET_CODE (SET_SRC (x)) == CALL)
@@ -5905,18 +5905,18 @@ cse_insn (rtx_insn *insn)
   /* Some registers are invalidated by subroutine calls.  Memory is
      invalidated by non-constant calls.  */
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      if (!(RTL_CONST_OR_PURE_CALL_P (insn)))
+      if (!(RTL_CONST_OR_PURE_CALL_P (call)))
 	invalidate_memory ();
       else
 	/* For const/pure calls, invalidate any argument slots, because
 	   those are owned by the callee.  */
-	for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	for (tem = CALL_INSN_FUNCTION_USAGE (call); tem; tem = XEXP (tem, 1))
 	  if (GET_CODE (XEXP (tem, 0)) == USE
 	      && MEM_P (XEXP (XEXP (tem, 0), 0)))
 	    invalidate (XEXP (XEXP (tem, 0), 0), VOIDmode);
-      invalidate_for_call (insn);
+      invalidate_for_call (call);
     }
 
   /* Now invalidate everything set by this instruction.
@@ -7159,8 +7159,8 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
 	   && !insn_nothrow_p (as_a <rtx_insn *> (x)))
 	  || side_effects_p (PATTERN (x)))
 	dest = pc_rtx;
-      if (code == CALL_INSN)
-	count_reg_usage (CALL_INSN_FUNCTION_USAGE (x), counts, dest, incr);
+      if (auto call = dyn_cast<rtx_call_insn *> (x))
+	count_reg_usage (CALL_INSN_FUNCTION_USAGE (call), counts, dest, incr);
       count_reg_usage (PATTERN (x), counts, dest, incr);
 
       /* Things used in a REG_EQUAL note aren't dead since loop may try to

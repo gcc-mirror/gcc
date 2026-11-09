@@ -634,10 +634,10 @@ set_bb_regs (basic_block bb, rtx_insn *insn)
       if (regno >= FIRST_PSEUDO_REGISTER && reg->subreg_p)
 	bitmap_set_bit (&subreg_regs, regno);
     }
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       /* Partially-clobbered registers might still be live.  */
-      HARD_REG_SET clobbers = insn_callee_abi (insn).full_reg_clobbers ();
+      HARD_REG_SET clobbers = insn_callee_abi (call).full_reg_clobbers ();
       bitmap_ior_into (&get_remat_bb_data (bb)->dead_regs,
 		       bitmap_view<HARD_REG_SET> (clobbers));
     }
@@ -809,9 +809,9 @@ calculate_gen_cands (void)
 			}
 		    }
 
-	    if (CALL_P (insn))
+	    if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	      {
-		function_abi callee_abi = insn_callee_abi (insn);
+		function_abi callee_abi = insn_callee_abi (call);
 		EXECUTE_IF_SET_IN_BITMAP (gen_insns, 0, uid, bi)
 		  {
 		    rtx_insn *insn2 = lra_insn_recog_data[uid]->insn;
@@ -1223,9 +1223,9 @@ do_remat (void)
 		      bitmap_set_bit (&temp_bitmap, cand->index);
 		  }
 
-	  if (CALL_P (insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	    {
-	      function_abi callee_abi = insn_callee_abi (insn);
+	      function_abi callee_abi = insn_callee_abi (call);
 	      EXECUTE_IF_SET_IN_BITMAP (avail_cands, 0, cid, bi)
 		{
 		  cand = all_cands[cid];

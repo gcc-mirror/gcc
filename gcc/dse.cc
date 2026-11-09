@@ -2537,7 +2537,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
   /* Look at all of the uses in the insn.  */
   note_uses (&PATTERN (insn), check_mem_read_use, bb_info);
 
-  if (CALL_P (insn))
+  if (auto call_insn = dyn_cast<rtx_call_insn *> (insn))
     {
       bool const_call;
       rtx call, sym;
@@ -2549,9 +2549,9 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
 	 however, they can read their parameters which may have
 	 been pushed onto the stack.
 	 memset and bzero don't read memory either.  */
-      const_call = RTL_CONST_CALL_P (insn);
+      const_call = RTL_CONST_CALL_P (call_insn);
       if (!const_call
-	  && (call = get_call_rtx_from (insn))
+	  && (call = get_call_rtx_from (call_insn))
 	  && (sym = XEXP (XEXP (call, 0), 0))
 	  && GET_CODE (sym) == SYMBOL_REF
 	  && SYMBOL_REF_DECL (sym)
@@ -2574,7 +2574,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
 		 arg pointer.  If it is a frame pointer on the target,
 		 even before reload we need to kill frame pointer based
 		 stores.  */
-	      || (SIBLING_CALL_P (insn)
+	      || (SIBLING_CALL_P (call_insn)
 		  && HARD_FRAME_POINTER_IS_ARG_POINTER))
 	    insn_info->frame_read = true;
 
@@ -2622,7 +2622,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
 	  if (memset_call)
 	    {
 	      rtx args[3];
-	      if (get_call_args (insn, memset_call, args, 3)
+	      if (get_call_args (call_insn, memset_call, args, 3)
 		  && CONST_INT_P (args[1])
 		  && CONST_INT_P (args[2])
 		  && INTVAL (args[2]) > 0)
@@ -2650,7 +2650,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
 		clear_rhs_from_active_local_stores ();
 	    }
 	}
-      else if (SIBLING_CALL_P (insn)
+      else if (SIBLING_CALL_P (call_insn)
 	       && (reload_completed || HARD_FRAME_POINTER_IS_ARG_POINTER))
 	/* Arguments for a sibling call that are pushed to memory are passed
 	   using the incoming argument pointer of the current function.  After
@@ -2663,7 +2663,7 @@ scan_insn (bb_info_t bb_info, rtx_insn *insn, int max_active_local_stores)
            that is not relative to the frame.  */
         add_non_frame_wild_read (bb_info);
 
-      for (rtx link = CALL_INSN_FUNCTION_USAGE (insn);
+      for (rtx link = CALL_INSN_FUNCTION_USAGE (call_insn);
 	   link != NULL_RTX;
 	   link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == USE && MEM_P (XEXP (XEXP (link, 0),0)))

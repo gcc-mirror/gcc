@@ -165,7 +165,8 @@ rest_of_insert_bti (void)
 
 	  /* Also look for calls that may return indirectly, such as setjmp,
 	     and put a BTI J after them.  */
-	  if (CALL_P (insn) && call_needs_bti_j (insn))
+	  auto call = dyn_cast<rtx_call_insn *> (insn);
+	  if (call && call_needs_bti_j (call))
 	    {
 	      bti_insn = aarch_gen_bti_j ();
 	      emit_insn_after (bti_insn, insn);

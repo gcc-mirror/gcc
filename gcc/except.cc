@@ -2003,7 +2003,8 @@ set_nothrow_function_flags (void)
       {
         crtl->nothrow = 0;
 
-	if (!CALL_P (insn) || !SIBLING_CALL_P (insn))
+	auto call = dyn_cast<rtx_call_insn *> (insn);
+	if (!call || !SIBLING_CALL_P (call))
 	  {
 	    crtl->all_throwers_are_sibcalls = 0;
 	    return 0;

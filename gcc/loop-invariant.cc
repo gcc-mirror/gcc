@@ -594,9 +594,10 @@ find_exits (class loop *loop, basic_block *body,
 	{
 	  FOR_BB_INSNS (body[i], insn)
 	    {
-	      if (CALL_P (insn)
-		  && (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
-		      || !RTL_CONST_OR_PURE_CALL_P (insn)))
+	      auto call = dyn_cast<rtx_call_insn *> (insn);
+	      if (call
+		  && (RTL_LOOPING_CONST_OR_PURE_CALL_P (call)
+		      || !RTL_CONST_OR_PURE_CALL_P (call)))
 		{
 		  has_call = true;
 		  bitmap_set_bit (may_exit, i);
@@ -1213,10 +1214,11 @@ find_invariants_bb (class loop *loop, basic_block bb, bool always_reached,
 
       find_invariants_insn (insn, always_reached, always_executed);
 
+      auto call = dyn_cast<rtx_call_insn *> (insn);
       if (always_reached
-	  && CALL_P (insn)
-	  && (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
-	      || ! RTL_CONST_OR_PURE_CALL_P (insn)))
+	  && call
+	  && (RTL_LOOPING_CONST_OR_PURE_CALL_P (call)
+	      || ! RTL_CONST_OR_PURE_CALL_P (call)))
 	always_reached = false;
     }
 }

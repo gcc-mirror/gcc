@@ -375,11 +375,11 @@ store_killed_in_insn (const_rtx x, const vec<rtx> &x_regs,
   if (! NONDEBUG_INSN_P (insn))
     return false;
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<const rtx_call_insn *> (insn))
     {
       /* A normal or pure call might read from pattern,
 	 but a const call will not.  */
-      if (!RTL_CONST_CALL_P (insn))
+      if (!RTL_CONST_CALL_P (call))
 	return true;
 
       /* But even a const call reads its parameters.  Check whether the

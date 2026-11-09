@@ -3305,12 +3305,12 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
       for (insn = BB_HEAD (bb); insn != NEXT_INSN (BB_END (bb));
 	   insn = NEXT_INSN (insn))
 	{
-	  if (CALL_P (insn))
+	  if (auto call_insn = dyn_cast<rtx_call_insn *> (insn))
 	    {
-	      need_endbr = find_reg_note (insn, REG_SETJMP, NULL) != NULL;
-	      if (!need_endbr && !SIBLING_CALL_P (insn))
+	      need_endbr = find_reg_note (call_insn, REG_SETJMP, NULL) != NULL;
+	      if (!need_endbr && !SIBLING_CALL_P (call_insn))
 		{
-		  rtx call = get_call_rtx_from (insn);
+		  rtx call = get_call_rtx_from (call_insn);
 		  rtx fnaddr = XEXP (call, 0);
 		  tree fndecl = NULL_TREE;
 
@@ -3338,7 +3338,8 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
 		 twice, setjmp-like functions.  */
 
 	      endbr = gen_nop_endbr ();
-	      emit_insn_after_setloc (endbr, insn, INSN_LOCATION (insn));
+	      emit_insn_after_setloc (endbr, call_insn,
+				     INSN_LOCATION (call_insn));
 	      continue;
 	    }
 

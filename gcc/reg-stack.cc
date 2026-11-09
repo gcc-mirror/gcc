@@ -2447,8 +2447,8 @@ subst_stack_regs (rtx_insn *insn, stack_ptr regstack)
 
   /* If the target of the call doesn't clobber any stack registers,
      Don't clear the arguments.  */
-  if (CALL_P (insn)
-      && callee_clobbers_any_stack_reg (insn_callee_abi (insn)))
+  auto call = dyn_cast<rtx_call_insn *> (insn);
+  if (call && callee_clobbers_any_stack_reg (insn_callee_abi (call)))
     {
       int top = regstack->top;
 
@@ -2458,7 +2458,7 @@ subst_stack_regs (rtx_insn *insn, stack_ptr regstack)
 
       if (top >= 0)
 	{
-	  straighten_stack (insn, regstack);
+	  straighten_stack (call, regstack);
 
 	  /* Now mark the arguments as dead after the call.  */
 

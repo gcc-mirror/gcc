@@ -995,8 +995,8 @@ legitimize_pic_address (rtx orig, machine_mode mode, rtx reg)
 	  orig = XEXP (orig, 0);
 	  add_reg_note (insn, REG_LABEL_OPERAND, orig);
 	  /* Make sure we have label and not a note.  */
-	  if (LABEL_P (orig))
-	    LABEL_NUSES (orig)++;
+	  if (auto lab = dyn_cast<rtx_code_label *> (orig))
+	    LABEL_NUSES (lab)++;
 	}
       crtl->uses_pic_offset_table = 1;
       return reg;

@@ -1995,7 +1995,7 @@ early_remat::process_block (basic_block bb)
 	    }
 	}
 
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  if (!last_call)
 	    {
@@ -2012,7 +2012,7 @@ early_remat::process_block (basic_block bb)
 	      emit_remat_insns (m_required, NULL, info->rd_after_call,
 				last_call);
 	    }
-	  last_call = insn;
+	  last_call = call;
 	  bitmap_clear (m_available);
 	  gcc_checking_assert (empty_p (m_required));
 	}

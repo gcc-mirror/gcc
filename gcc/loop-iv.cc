@@ -1956,12 +1956,12 @@ simplify_using_initial_values (class loop *loop, enum rtx_code op, rtx *expr)
 
 	  CLEAR_REG_SET (this_altered);
 	  note_stores (insn, mark_altered, this_altered);
-	  if (CALL_P (insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	    {
 	      /* Kill all registers that might be clobbered by the call.
 		 We don't track modes of hard registers, so we need to be
 		 conservative and assume that partial kills are full kills.  */
-	      function_abi callee_abi = insn_callee_abi (insn);
+	      function_abi callee_abi = insn_callee_abi (call);
 	      IOR_REG_SET_HRS (this_altered,
 			       callee_abi.full_and_partial_reg_clobbers ());
 	    }

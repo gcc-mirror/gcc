@@ -1131,14 +1131,14 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       ksvd.insn_is_frame_related = false;
 
       /* Clobber call-clobbered registers.  */
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  unsigned int set_regno = INVALID_REGNUM;
 	  unsigned int set_nregs = 0;
 	  unsigned int regno;
 	  rtx exp;
 
-	  for (exp = CALL_INSN_FUNCTION_USAGE (insn); exp; exp = XEXP (exp, 1))
+	  for (exp = CALL_INSN_FUNCTION_USAGE (call); exp; exp = XEXP (exp, 1))
 	    {
 	      rtx x = XEXP (exp, 0);
 	      if (GET_CODE (x) == SET)
@@ -1154,7 +1154,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		}
 	    }
 
-	  function_abi callee_abi = insn_callee_abi (insn);
+	  function_abi callee_abi = insn_callee_abi (call);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if (vd->e[regno].mode != VOIDmode
 		&& callee_abi.clobbers_reg_p (vd->e[regno].mode, regno)
@@ -1166,7 +1166,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     CLOBBERs on the CALL_INSN, we could wrongly assume the
 	     value in it is still live.  */
 	  if (ksvd.ignore_set_reg)
-	    kill_clobbered_values (insn, vd);
+	    kill_clobbered_values (call, vd);
 	}
 
       bool copy_p = (set

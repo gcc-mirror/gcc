@@ -6016,8 +6016,8 @@ fur_orig_expr_found (insn_t insn, expr_t expr ATTRIBUTE_UNUSED,
   fur_static_params_p params = (fur_static_params_p) static_params;
   regset tmp;
 
-  if (CALL_P (insn))
-    params->crossed_call_abis |= 1 << insn_callee_abi (insn).id ();
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+    params->crossed_call_abis |= 1 << insn_callee_abi (call).id ();
 
   def_list_add (params->original_insns, insn, params->crossed_call_abis);
 
@@ -6233,8 +6233,8 @@ fur_orig_expr_not_found (insn_t insn, av_set_t orig_ops, void *static_params)
   av_set_iterator avi;
   fur_static_params_p sparams = (fur_static_params_p) static_params;
 
-  if (CALL_P (insn))
-    sparams->crossed_call_abis |= 1 << insn_callee_abi (insn).id ();
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+    sparams->crossed_call_abis |= 1 << insn_callee_abi (call).id ();
   else if (DEBUG_INSN_P (insn))
     return true;
 

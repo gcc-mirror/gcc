@@ -239,8 +239,9 @@ compute_save_world_info (rs6000_stack_t *info)
   if (WORLD_SAVE_P (info))
     {
       rtx_insn *insn;
+      rtx_call_insn *call;
       for (insn = get_last_insn_anywhere (); insn; insn = PREV_INSN (insn))
-	if (CALL_P (insn) && SIBLING_CALL_P (insn))
+	if ((call = dyn_cast<rtx_call_insn *> (insn)) && SIBLING_CALL_P (call))
 	  {
 	    info->world_save_p = 0;
 	    break;
@@ -1224,9 +1225,9 @@ rs6000_ra_ever_killed (void)
     {
       if (INSN_P (insn))
 	{
-	  if (CALL_P (insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	    {
-	      if (!SIBLING_CALL_P (insn))
+	      if (!SIBLING_CALL_P (call))
 		return 1;
 	    }
 	  else if (find_regno_note (insn, REG_INC, LR_REGNO))

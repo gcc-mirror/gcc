@@ -421,13 +421,13 @@ setup_save_areas (void)
 
       insn = chain->insn;
       next = chain->next;
-      if (!CALL_P (insn)
-	  || find_reg_note (insn, REG_NORETURN, NULL))
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (!call || find_reg_note (call, REG_NORETURN, NULL))
 	continue;
-      freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (insn));
+      freq = REG_FREQ_FROM_BB (BLOCK_FOR_INSN (call));
       REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
 			       &chain->live_throughout);
-      used_regs = insn_callee_abi (insn).full_reg_clobbers ();
+      used_regs = insn_callee_abi (call).full_reg_clobbers ();
 
       /* Record all registers set in this call insn.  These don't
 	 need to be saved.  N.B. the call insn might set a subreg
@@ -435,9 +435,9 @@ setup_save_areas (void)
 	 live during the call, but the subreg that is set
 	 isn't.  */
       CLEAR_HARD_REG_SET (this_insn_sets);
-      note_stores (insn, mark_set_regs, &this_insn_sets);
+      note_stores (call, mark_set_regs, &this_insn_sets);
       /* Sibcalls are considered to set the return value.  */
-      if (SIBLING_CALL_P (insn) && crtl->return_rtx)
+      if (SIBLING_CALL_P (call) && crtl->return_rtx)
 	mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 
       used_regs &= ~(fixed_reg_set | this_insn_sets);
@@ -451,7 +451,7 @@ setup_save_areas (void)
 	      new_saved_hard_reg (regno, freq);
 	    SET_HARD_REG_BIT (hard_regs_used, regno);
 	  }
-      cheap = find_reg_note (insn, REG_RETURNED, NULL);
+      cheap = find_reg_note (call, REG_RETURNED, NULL);
       if (cheap)
 	cheap = XEXP (cheap, 0);
       /* Look through all live pseudos, mark their hard registers.  */
@@ -500,17 +500,17 @@ setup_save_areas (void)
 	  call_saved_regs_num = 0;
 	  insn = chain->insn;
 	  next = chain->next;
-	  if (!CALL_P (insn)
-	      || find_reg_note (insn, REG_NORETURN, NULL))
+	  auto call = dyn_cast<rtx_call_insn *> (insn);
+	  if (!call || find_reg_note (call, REG_NORETURN, NULL))
 	    continue;
 
-	  cheap = find_reg_note (insn, REG_RETURNED, NULL);
+	  cheap = find_reg_note (call, REG_RETURNED, NULL);
 	  if (cheap)
 	    cheap = XEXP (cheap, 0);
 
 	  REG_SET_TO_HARD_REG_SET (hard_regs_to_save,
 				   &chain->live_throughout);
-	  used_regs = insn_callee_abi (insn).full_reg_clobbers ();
+	  used_regs = insn_callee_abi (call).full_reg_clobbers ();
 
 	  /* Record all registers set in this call insn.  These don't
 	     need to be saved.  N.B. the call insn might set a subreg
@@ -518,10 +518,10 @@ setup_save_areas (void)
 	     live during the call, but the subreg that is set
 	     isn't.  */
 	  CLEAR_HARD_REG_SET (this_insn_sets);
-	  note_stores (insn, mark_set_regs, &this_insn_sets);
+	  note_stores (call, mark_set_regs, &this_insn_sets);
 	  /* Sibcalls are considered to set the return value,
 	     compare df-scan.cc:df_get_call_refs.  */
-	  if (SIBLING_CALL_P (insn) && crtl->return_rtx)
+	  if (SIBLING_CALL_P (call) && crtl->return_rtx)
 	    mark_set_regs (crtl->return_rtx, NULL_RTX, &this_insn_sets);
 
 	  used_regs &= ~(fixed_reg_set | this_insn_sets);
@@ -782,16 +782,17 @@ save_call_clobbered_regs (void)
 	      hard_regs_saved &= ~this_insn_sets;
 	    }
 
-	  if (code == CALL_INSN
-	      && ! SIBLING_CALL_P (insn)
-	      && ! find_reg_note (insn, REG_NORETURN, NULL))
+	  auto call = dyn_cast<rtx_call_insn *> (insn);
+	  if (call
+	      && ! SIBLING_CALL_P (call)
+	      && ! find_reg_note (call, REG_NORETURN, NULL))
 	    {
 	      unsigned regno;
 	      HARD_REG_SET hard_regs_to_save;
 	      reg_set_iterator rsi;
 	      rtx cheap;
 
-	      cheap = find_reg_note (insn, REG_RETURNED, NULL);
+	      cheap = find_reg_note (call, REG_RETURNED, NULL);
 	      if (cheap)
 		cheap = XEXP (cheap, 0);
 
@@ -831,10 +832,10 @@ save_call_clobbered_regs (void)
 		 multi-hard-reg pseudo; then the pseudo is considered live
 		 during the call, but the subreg that is set isn't.  */
 	      CLEAR_HARD_REG_SET (this_insn_sets);
-	      note_stores (insn, mark_set_regs, &this_insn_sets);
+	      note_stores (call, mark_set_regs, &this_insn_sets);
 
 	      /* Compute which hard regs must be saved before this call.  */
-	      function_abi callee_abi = insn_callee_abi (insn);
+	      function_abi callee_abi = insn_callee_abi (call);
 	      hard_regs_to_save &= ~(fixed_reg_set
 				     | this_insn_sets
 				     | hard_regs_saved);
@@ -858,7 +859,7 @@ save_call_clobbered_regs (void)
 						REGNO (cheap)))
 		{
 		  rtx dest, newpat;
-		  rtx pat = PATTERN (insn);
+		  rtx pat = PATTERN (call);
 		  if (GET_CODE (pat) == PARALLEL)
 		    pat = XVECEXP (pat, 0, 0);
 		  dest = SET_DEST (pat);
@@ -1361,8 +1362,8 @@ insert_one_insn (class insn_chain *chain, int before_p, int code, rtx pat)
 		 &new_chain->live_throughout);
       /* If CHAIN->INSN is a call, then the registers which contain
 	 the arguments to the function are live in the new insn.  */
-      if (CALL_P (chain->insn))
-	for (link = CALL_INSN_FUNCTION_USAGE (chain->insn);
+      if (auto call = dyn_cast<rtx_call_insn *> (chain->insn))
+	for (link = CALL_INSN_FUNCTION_USAGE (call);
 	     link != NULL_RTX;
 	     link = XEXP (link, 1))
 	  note_uses (&XEXP (link, 0), add_used_regs,

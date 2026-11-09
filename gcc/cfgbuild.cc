@@ -236,8 +236,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 	    }
 	}
 
-      if (LABEL_P (BB_HEAD (bb))
-	  && LABEL_ALT_ENTRY_P (BB_HEAD (bb)))
+      auto label = dyn_cast<rtx_code_label *> (BB_HEAD (bb));
+      if (label && LABEL_ALT_ENTRY_P (label))
 	cached_make_edge (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 
       /* Examine the last instruction of the block, and discover the
@@ -314,7 +314,8 @@ make_edges (basic_block min, basic_block max, int update_p)
 	 and return, and so we need an edge to the exit block.  No need to
 	 worry about EH edges, since we wouldn't have created the sibling call
 	 in the first place.  */
-      if (code == CALL_INSN && SIBLING_CALL_P (insn))
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (call && SIBLING_CALL_P (call))
 	cached_make_edge (edge_cache, bb, EXIT_BLOCK_PTR_FOR_FN (cfun),
 			  EDGE_SIBCALL | EDGE_ABNORMAL);
 
@@ -322,14 +323,14 @@ make_edges (basic_block min, basic_block max, int update_p)
 	 handler for this CALL_INSN.  If we're handling non-call
 	 exceptions then any insn can reach any of the active handlers.
 	 Also mark the CALL_INSN as reaching any nonlocal goto handler.  */
-      else if (code == CALL_INSN || cfun->can_throw_non_call_exceptions)
+      else if (call || cfun->can_throw_non_call_exceptions)
 	{
 	  /* Add any appropriate EH edges.  */
 	  rtl_make_eh_edge (edge_cache, bb, insn);
 
-	  if (code == CALL_INSN)
+	  if (call)
 	    {
-	      if (can_nonlocal_goto (insn))
+	      if (can_nonlocal_goto (call))
 		{
 		  /* ??? This could be made smarter: in some cases it's
 		     possible to tell that certain calls will not do a
@@ -362,9 +363,9 @@ make_edges (basic_block min, basic_block max, int update_p)
       if (e && e->flags & EDGE_FALLTHRU)
 	insn = NULL;
 
-      while (insn
-	     && NOTE_P (insn)
-	     && NOTE_KIND (insn) != NOTE_INSN_BASIC_BLOCK)
+      rtx_note *note;
+      while ((note = safe_dyn_cast<rtx_note *> (insn))
+	     && NOTE_KIND (note) != NOTE_INSN_BASIC_BLOCK)
 	insn = NEXT_INSN (insn);
 
       if (!insn)
@@ -573,7 +574,8 @@ find_bb_boundaries (basic_block bb)
 	  bb->count = profile_count::uninitialized ();
 	  flow_transfer_insn = NULL;
 	  debug_insn = NULL;
-	  if (code == CODE_LABEL && LABEL_ALT_ENTRY_P (insn))
+	  auto label = dyn_cast<rtx_code_label *> (insn);
+	  if (label && LABEL_ALT_ENTRY_P (label))
 	    make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 	}
       else if (code == BARRIER)

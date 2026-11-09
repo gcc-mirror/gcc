@@ -5255,9 +5255,9 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
       while (NOTE_P (from) || JUMP_P (from) || LABEL_P (from))
 	from = PREV_INSN (from);
 
-      if (CALL_P (from))
+      if (auto call = dyn_cast<rtx_call_insn *> (from))
 	{
-	  bool sibcall_p = SIBLING_CALL_P (from);
+	  bool sibcall_p = SIBLING_CALL_P (call);
 
 	  /* If FROM was a sibling call, then we know that control
 	     will not return.  In fact, we were guaranteed to hit
@@ -5267,7 +5267,7 @@ find_barrier (int num_mova, rtx_insn *mova, rtx_insn *from)
 	     costs space, but more importantly it confuses dwarf2cfi
 	     generation.  */
 	  if (sibcall_p)
-	    return emit_barrier_after (from);
+	    return emit_barrier_after (call);
 	}
 
       from = emit_jump_insn_after (gen_jump (label), from);
@@ -5547,8 +5547,8 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 	  if (INSN_P (scan))
 	    {
 	      used |= regs_used (PATTERN (scan), 0);
-	      if (code == CALL_INSN)
-		used |= regs_used (CALL_INSN_FUNCTION_USAGE (scan), 0);
+	      if (auto call = dyn_cast<rtx_call_insn *> (scan))
+		used |= regs_used (CALL_INSN_FUNCTION_USAGE (call), 0);
 	      dead |= (used >> 16) & ~used;
 	      if (dead & attempt)
 		{

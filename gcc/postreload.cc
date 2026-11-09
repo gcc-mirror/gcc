@@ -1460,10 +1460,10 @@ reload_combine (void)
 
       note_stores (insn, reload_combine_note_store, NULL);
 
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  rtx link;
-	  HARD_REG_SET used_regs = insn_callee_abi (insn).full_reg_clobbers ();
+	  HARD_REG_SET used_regs = insn_callee_abi (call).full_reg_clobbers ();
 
 	  hard_reg_set_iterator hrsi2;
 	  EXECUTE_IF_SET_IN_HARD_REG_SET (used_regs, 0, r, hrsi2)
@@ -1472,7 +1472,7 @@ reload_combine (void)
 	      reg_state[r].store_ruid = reload_combine_ruid;
 	    }
 
-	  for (link = CALL_INSN_FUNCTION_USAGE (insn); link;
+	  for (link = CALL_INSN_FUNCTION_USAGE (call); link;
 	       link = XEXP (link, 1))
 	    {
 	      rtx setuse = XEXP (link, 0);
@@ -2082,9 +2082,9 @@ reload_cse_move2add_invalidate (rtx_insn *insn)
 
   /* If this is a CALL_INSN, all call used registers are stored with
      unknown values.  */
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      function_abi callee_abi = insn_callee_abi (insn);
+      function_abi callee_abi = insn_callee_abi (call);
       for (int i = FIRST_PSEUDO_REGISTER - 1; i >= 0; i--)
 	if (reg_mode[i] != VOIDmode
 	    && reg_mode[i] != BLKmode

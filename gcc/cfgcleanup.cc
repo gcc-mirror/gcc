@@ -1190,7 +1190,7 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 
      Also check for identical exception regions.  */
 
-  if (CALL_P (i1))
+  if (auto call1 = dyn_cast<rtx_call_insn *> (i1))
     {
       /* Ensure the same EH region.  */
       rtx n1 = find_reg_note (i1, REG_EH_REGION, 0);
@@ -1202,10 +1202,10 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
       if (n1 && (!n2 || XEXP (n1, 0) != XEXP (n2, 0)))
 	return dir_none;
 
-      if (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (i1),
+      if (!rtx_equal_p (CALL_INSN_FUNCTION_USAGE (call1),
 			CALL_INSN_FUNCTION_USAGE (i2))
-	  || CALL_INSN_ABI_ID (i1) != CALL_INSN_ABI_ID (i2)
-	  || SIBLING_CALL_P (i1) != SIBLING_CALL_P (i2))
+	  || CALL_INSN_ABI_ID (call1) != CALL_INSN_ABI_ID (i2)
+	  || SIBLING_CALL_P (call1) != SIBLING_CALL_P (i2))
 	return dir_none;
 
       /* For address sanitizer, never crossjump __asan_report_* builtins,

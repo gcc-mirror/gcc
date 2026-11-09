@@ -3394,10 +3394,11 @@ purge_dead_edges (basic_block bb)
      in the hope that it is cleaned up later.  If it is not, just
      remove REG_EH_REGION note.  While the call maybe can throw, the
      current function's frame will not be there anymore when it does.  */
-   if (CALL_P (insn)
-       && SIBLING_CALL_P (insn)
-       && (note = find_reg_note (insn, REG_EH_REGION, NULL)))
-     remove_note (insn, note);
+  auto call = dyn_cast<rtx_call_insn *> (insn);
+  if (call
+      && SIBLING_CALL_P (call)
+      && (note = find_reg_note (call, REG_EH_REGION, NULL)))
+    remove_note (call, note);
 
   /* Cleanup abnormal edges caused by exceptions or non-local gotos.  */
   for (ei = ei_start (bb->succs); (e = ei_safe_edge (ei)); )
@@ -5300,10 +5301,11 @@ need_fake_edge_p (const rtx_insn *insn)
   if (!INSN_P (insn))
     return false;
 
-  if ((CALL_P (insn)
-       && !SIBLING_CALL_P (insn)
-       && !find_reg_note (insn, REG_NORETURN, NULL)
-       && !(RTL_CONST_OR_PURE_CALL_P (insn))))
+  auto call = dyn_cast<const rtx_call_insn *> (insn);
+  if ((call
+       && !SIBLING_CALL_P (call)
+       && !find_reg_note (call, REG_NORETURN, NULL)
+       && !(RTL_CONST_OR_PURE_CALL_P (call))))
     return true;
 
   return ((GET_CODE (PATTERN (insn)) == ASM_OPERANDS

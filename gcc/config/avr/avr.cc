@@ -3484,10 +3484,10 @@ _reg_unused_after (rtx_insn *insn, rtx reg, bool look_at_insn)
 	    return false;
 	}
 
-      if (code == CALL_INSN)
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  rtx tem;
-	  for (tem = CALL_INSN_FUNCTION_USAGE (insn); tem; tem = XEXP (tem, 1))
+	  for (tem = CALL_INSN_FUNCTION_USAGE (call); tem; tem = XEXP (tem, 1))
 	    if (GET_CODE (XEXP (tem, 0)) == USE
 		&& REG_P (XEXP (XEXP (tem, 0), 0))
 		&& reg_overlap_mentioned_p (reg, XEXP (XEXP (tem, 0), 0)))

@@ -2994,8 +2994,8 @@ unshare_all_rtl_again (rtx_insn *insn)
       {
 	reset_used_flags (PATTERN (p));
 	reset_used_flags (REG_NOTES (p));
-	if (CALL_P (p))
-	  reset_used_flags (CALL_INSN_FUNCTION_USAGE (p));
+	if (auto call = dyn_cast<rtx_call_insn *> (p))
+	  reset_used_flags (CALL_INSN_FUNCTION_USAGE (call));
       }
 
   /* Make sure that virtual stack slots are not shared.  */
@@ -3144,8 +3144,8 @@ reset_insn_used_flags (rtx_insn *insn)
   gcc_assert (INSN_P (insn));
   reset_used_flags (PATTERN (insn));
   reset_used_flags (REG_NOTES (insn));
-  if (CALL_P (insn))
-    reset_used_flags (CALL_INSN_FUNCTION_USAGE (insn));
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+    reset_used_flags (CALL_INSN_FUNCTION_USAGE (call));
 }
 
 /* Go through all the RTL insn bodies and clear all the USED bits.  */
@@ -3182,8 +3182,8 @@ verify_insn_sharing (rtx_insn *insn)
   gcc_assert (INSN_P (insn));
   verify_rtx_sharing (PATTERN (insn), insn);
   verify_rtx_sharing (REG_NOTES (insn), insn);
-  if (CALL_P (insn))
-    verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (insn), insn);
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+    verify_rtx_sharing (CALL_INSN_FUNCTION_USAGE (call), call);
 }
 
 /* Go through all the RTL insn bodies and check that there is no unexpected
@@ -3229,9 +3229,9 @@ unshare_all_rtl_in_chain (rtx_insn *insn)
       {
 	PATTERN (insn) = copy_rtx_if_shared (PATTERN (insn));
 	REG_NOTES (insn) = copy_rtx_if_shared (REG_NOTES (insn));
-	if (CALL_P (insn))
-	  CALL_INSN_FUNCTION_USAGE (insn)
-	    = copy_rtx_if_shared (CALL_INSN_FUNCTION_USAGE (insn));
+	if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	  CALL_INSN_FUNCTION_USAGE (call)
+	    = copy_rtx_if_shared (CALL_INSN_FUNCTION_USAGE (call));
       }
 }
 
@@ -4070,23 +4070,23 @@ try_split (rtx pat, rtx_insn *trial, int last)
 
   /* If we are splitting a CALL_INSN, look for the CALL_INSN
      in SEQ and copy any additional information across.  */
-  if (CALL_P (trial))
+  if (auto call_trial = dyn_cast<rtx_call_insn *> (trial))
     {
       for (insn = insn_last; insn ; insn = PREV_INSN (insn))
-	if (CALL_P (insn))
+	if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	  {
 	    gcc_assert (call_insn == NULL_RTX);
 	    call_insn = insn;
 
 	    /* Add the old CALL_INSN_FUNCTION_USAGE to whatever the
 	       target may have explicitly specified.  */
-	    rtx *p = &CALL_INSN_FUNCTION_USAGE (insn);
+	    rtx *p = &CALL_INSN_FUNCTION_USAGE (call);
 	    while (*p)
 	      p = &XEXP (*p, 1);
-	    *p = CALL_INSN_FUNCTION_USAGE (trial);
+	    *p = CALL_INSN_FUNCTION_USAGE (call_trial);
 
 	    /* Preserve the ABI information from the original call.  */
-	    CALL_INSN_ABI_ID (insn) = CALL_INSN_ABI_ID (trial);
+	    CALL_INSN_ABI_ID (call) = CALL_INSN_ABI_ID (call_trial);
 
 	    /* If the old call was a sibling call, the new one must
 	       be too.  */

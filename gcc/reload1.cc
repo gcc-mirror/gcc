@@ -1179,9 +1179,9 @@ reload (rtx_insn *first, int global)
       {
 	rtx *pnote;
 
-	if (CALL_P (insn))
-	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (insn),
-			      VOIDmode, CALL_INSN_FUNCTION_USAGE (insn));
+	if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	  replace_pseudos_in (& CALL_INSN_FUNCTION_USAGE (call),
+			      VOIDmode, CALL_INSN_FUNCTION_USAGE (call));
 
 	if ((GET_CODE (PATTERN (insn)) == USE
 	     /* We mark with QImode USEs introduced by reload itself.  */
@@ -4775,16 +4775,16 @@ reload_as_needed (int live_known)
       /* Don't assume a reload reg is still good after a call insn
 	 if it is a call-used reg, or if it contains a value that will
          be partially clobbered by the call.  */
-      else if (CALL_P (insn))
+      else if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  reg_reloaded_valid
-	    &= ~insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+	    &= ~insn_callee_abi (call).full_and_partial_reg_clobbers ();
 
 	  /* If this is a call to a setjmp-type function, we must not
 	     reuse any reload reg contents across the call; that will
 	     just be clobbered by other uses of the register in later
 	     code, before the longjmp.  */
-	  if (find_reg_note (insn, REG_SETJMP, NULL_RTX))
+	  if (find_reg_note (call, REG_SETJMP, NULL_RTX))
 	    CLEAR_HARD_REG_SET (reg_reloaded_valid);
 	}
     }
@@ -8722,8 +8722,9 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
 	}
     }
   n_occurrences = count_occurrences (PATTERN (insn), reg, 0);
-  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
-    n_occurrences += count_occurrences (CALL_INSN_FUNCTION_USAGE (insn),
+  auto call = dyn_cast<rtx_call_insn *> (insn);
+  if (call && CALL_INSN_FUNCTION_USAGE (call))
+    n_occurrences += count_occurrences (CALL_INSN_FUNCTION_USAGE (call),
 					reg, 0);
   if (substed)
     n_occurrences += count_occurrences (PATTERN (insn),

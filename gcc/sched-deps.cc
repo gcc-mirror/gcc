@@ -3020,20 +3020,20 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
     sched_analyze_2 (deps, x, insn);
 
   /* Mark registers CLOBBERED or used by called function.  */
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+      for (link = CALL_INSN_FUNCTION_USAGE (call); link; link = XEXP (link, 1))
 	{
 	  if (GET_CODE (XEXP (link, 0)) == CLOBBER)
-	    sched_analyze_1 (deps, XEXP (link, 0), insn);
+	    sched_analyze_1 (deps, XEXP (link, 0), call);
 	  else if (GET_CODE (XEXP (link, 0)) != SET)
-	    sched_analyze_2 (deps, XEXP (link, 0), insn);
+	    sched_analyze_2 (deps, XEXP (link, 0), call);
 	}
       /* Don't schedule anything after a tail call, tail call needs
 	 to use at least all call-saved registers.  */
-      if (SIBLING_CALL_P (insn))
+      if (SIBLING_CALL_P (call))
 	reg_pending_barrier = TRUE_BARRIER;
-      else if (find_reg_note (insn, REG_SETJMP, NULL))
+      else if (find_reg_note (call, REG_SETJMP, NULL))
 	reg_pending_barrier = MOVE_BARRIER;
     }
 
@@ -3836,11 +3836,11 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
     {
       sched_analyze_insn (deps, PATTERN (insn), insn);
     }
-  else if (CALL_P (insn))
+  else if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       int i;
 
-      CANT_MOVE (insn) = 1;
+      CANT_MOVE (call) = 1;
 
       if (!reload_completed)
 	{
@@ -3849,7 +3849,7 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 	     it may incorrectly move up an assignment over a longjmp.  */
 	  reg_pending_barrier = MOVE_BARRIER;
 	}
-      else if (find_reg_note (insn, REG_SETJMP, NULL))
+      else if (find_reg_note (call, REG_SETJMP, NULL))
         {
           /* This is setjmp.  Assume that all registers, not just
              hard registers, may be clobbered by this call.  */
@@ -3857,7 +3857,7 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
         }
       else
         {
-	  function_abi callee_abi = insn_callee_abi (insn);
+	  function_abi callee_abi = insn_callee_abi (call);
           for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
             /* A call may read and modify global register variables.  */
             if (global_regs[i])
@@ -3889,11 +3889,11 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 
       /* For each insn which shouldn't cross a call, add a dependence
          between that insn and this call insn.  */
-      add_dependence_list_and_free (deps, insn,
+      add_dependence_list_and_free (deps, call,
                                     &deps->sched_before_next_call, 1,
                                     REG_DEP_ANTI, true);
 
-      sched_analyze_insn (deps, PATTERN (insn), insn);
+      sched_analyze_insn (deps, PATTERN (call), call);
 
       /* If CALL would be in a sched group, then this will violate
 	 convention that sched group insns have dependencies only on the
@@ -3902,27 +3902,27 @@ deps_analyze_insn (class deps_desc *deps, rtx_insn *insn)
 	 Of course one can say: "Hey!  What about head of the sched group?"
 	 And I will answer: "Basic principles (one dep per insn) are always
 	 the same."  */
-      gcc_assert (!SCHED_GROUP_P (insn));
+      gcc_assert (!SCHED_GROUP_P (call));
 
       /* In the absence of interprocedural alias analysis, we must flush
          all pending reads and writes, and start new dependencies starting
          from here.  But only flush writes for constant calls (which may
          be passed a pointer to something we haven't written yet).  */
-      flush_pending_lists (deps, insn, true, ! RTL_CONST_OR_PURE_CALL_P (insn));
+      flush_pending_lists (deps, call, true, ! RTL_CONST_OR_PURE_CALL_P (call));
 
       if (!deps->readonly)
         {
           /* Remember the last function call for limiting lifetimes.  */
           free_INSN_LIST_list (&deps->last_function_call);
-          deps->last_function_call = alloc_INSN_LIST (insn, NULL_RTX);
+	  deps->last_function_call = alloc_INSN_LIST (call, NULL_RTX);
 
-	  if (call_may_noreturn_p (insn))
+	  if (call_may_noreturn_p (call))
 	    {
 	      /* Remember the last function call that might not always return
 		 normally for limiting moves of trapping insns.  */
 	      free_INSN_LIST_list (&deps->last_function_call_may_noreturn);
 	      deps->last_function_call_may_noreturn
-		= alloc_INSN_LIST (insn, NULL_RTX);
+		= alloc_INSN_LIST (call, NULL_RTX);
 	    }
 
           /* Before reload, begin a post-call group, so as to keep the

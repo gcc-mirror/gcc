@@ -3188,7 +3188,7 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
       if (find_reg_note (insn, REG_DEAD, reg))
 	return ret;
 
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
 	  /* We can combine a reg def from one insn into a reg use in
 	     another over a call if the memory is readonly or the call
@@ -3200,7 +3200,7 @@ validate_equiv_mem (rtx_insn *start, rtx reg, rtx memref)
 	     been changed and all hell breaks loose.  */
 	  ret = valid_combine;
 	  if (!MEM_READONLY_P (memref)
-	      && (!RTL_CONST_OR_PURE_CALL_P (insn)
+	      && (!RTL_CONST_OR_PURE_CALL_P (call)
 		  || equiv_init_varies_p (XEXP (memref, 0))))
 	    return valid_none;
 	}
@@ -3466,7 +3466,8 @@ memref_used_between_p (rtx memref, rtx_insn *start, rtx_insn *end)
 	return true;
 
       /* Nonconst functions may access memory.  */
-      if (CALL_P (insn) && (! RTL_CONST_CALL_P (insn)))
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (call && ! RTL_CONST_CALL_P (call))
 	return true;
     }
 
@@ -3609,8 +3610,8 @@ update_equiv_regs_prescan (void)
       if (NONDEBUG_INSN_P (insn))
 	{
 	  set_paradoxical_subreg (insn);
-	  if (CALL_P (insn))
-	    callee_abis.note_callee_abi (insn_callee_abi (insn));
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	    callee_abis.note_callee_abi (insn_callee_abi (call));
 	}
 
   HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);

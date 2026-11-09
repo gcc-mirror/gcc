@@ -3366,9 +3366,9 @@ cselib_process_insn (rtx_insn *insn)
   /* If this is a call instruction, forget anything stored in a
      call clobbered register, or, if this is not a const call, in
      memory.  */
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      function_abi callee_abi = insn_callee_abi (insn);
+      function_abi callee_abi = insn_callee_abi (call);
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	{
 	  elt_list **l = &REG_VALUES (i);
@@ -3385,14 +3385,14 @@ cselib_process_insn (rtx_insn *insn)
       /* Since it is not clear how cselib is going to be used, be
 	 conservative here and treat looping pure or const functions
 	 as if they were regular functions.  */
-      if (RTL_LOOPING_CONST_OR_PURE_CALL_P (insn)
-	  || !(RTL_CONST_OR_PURE_CALL_P (insn)))
+      if (RTL_LOOPING_CONST_OR_PURE_CALL_P (call)
+	  || !(RTL_CONST_OR_PURE_CALL_P (call)))
 	cselib_invalidate_mem (callmem[0]);
       else
 	{
 	  /* For const/pure calls, invalidate any argument slots because
 	     they are owned by the callee.  */
-	  for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+	  for (x = CALL_INSN_FUNCTION_USAGE (call); x; x = XEXP (x, 1))
 	    if (GET_CODE (XEXP (x, 0)) == USE
 		&& MEM_P (XEXP (XEXP (x, 0), 0)))
 	      cselib_invalidate_mem (XEXP (XEXP (x, 0), 0));
@@ -3411,9 +3411,9 @@ cselib_process_insn (rtx_insn *insn)
 
   /* Look for any CLOBBERs in CALL_INSN_FUNCTION_USAGE, but only
      after we have processed the insn.  */
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
-      for (x = CALL_INSN_FUNCTION_USAGE (insn); x; x = XEXP (x, 1))
+      for (x = CALL_INSN_FUNCTION_USAGE (call); x; x = XEXP (x, 1))
 	if (GET_CODE (XEXP (x, 0)) == CLOBBER)
 	  cselib_invalidate_rtx (XEXP (XEXP (x, 0), 0));
 

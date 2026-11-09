@@ -1515,9 +1515,9 @@ ext_dce_process_bb (basic_block bb)
       bool skipped_dest = ext_dce_process_sets (insn, PATTERN (insn), live_tmp);
 
       /* CALL_INSNs need processing their fusage data.  */
-      if (CALL_P (insn))
-	skipped_dest |= ext_dce_process_sets (insn,
-					      CALL_INSN_FUNCTION_USAGE (insn),
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	skipped_dest |= ext_dce_process_sets (call,
+					      CALL_INSN_FUNCTION_USAGE (call),
 					      live_tmp);
 
       /* And now uses, optimizing away SIGN/ZERO extensions as we go.  */
@@ -1532,19 +1532,20 @@ ext_dce_process_bb (basic_block bb)
 	}
 
       /* And process fusage data for the use as well.  */
-      if (CALL_P (insn))
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	{
-	  if (!FAKE_CALL_P (insn))
+	  if (!FAKE_CALL_P (call))
 	    bitmap_set_range (livenow, STACK_POINTER_REGNUM * 4, 4);
 
 	  /* If this is not a call to a const function, then assume it
 	     can read any global register.  */
-	  if (!RTL_CONST_CALL_P (insn))
+	  if (!RTL_CONST_CALL_P (call))
 	    for (unsigned i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	      if (global_regs[i])
 		bitmap_set_range (livenow, i * 4, 4);
 
-	  ext_dce_process_uses (insn, CALL_INSN_FUNCTION_USAGE (insn), live_tmp, false);
+	  ext_dce_process_uses (call, CALL_INSN_FUNCTION_USAGE (call),
+			       live_tmp, false);
 	}
 
       BITMAP_FREE (live_tmp);

@@ -15624,13 +15624,13 @@ ix86_avx_u128_mode_needed (rtx_insn *insn, HARD_REG_SET live)
   if (DEBUG_INSN_P (insn))
     return AVX_U128_ANY;
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       rtx link;
 
       /* Needed mode is set to AVX_U128_CLEAN if there are
 	 no 256bit or 512bit modes used in function arguments. */
-      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+      for (link = CALL_INSN_FUNCTION_USAGE (call);
 	   link;
 	   link = XEXP (link, 1))
 	{
@@ -15646,19 +15646,19 @@ ix86_avx_u128_mode_needed (rtx_insn *insn, HARD_REG_SET live)
       /* Needed mode is set to AVX_U128_CLEAN if there are no 256bit
 	 nor 512bit registers used in the function return register.  */
       bool avx_upper_reg_found = false;
-      note_stores (insn, ix86_check_avx_upper_stores,
+      note_stores (call, ix86_check_avx_upper_stores,
 		   &avx_upper_reg_found);
       if (avx_upper_reg_found)
 	return AVX_U128_DIRTY;
 
-      if (vzeroupper_pattern (PATTERN (insn), VOIDmode))
+      if (vzeroupper_pattern (PATTERN (call), VOIDmode))
 	return AVX_U128_ANY;
 
       /* Should be safe to issue a vzeroupper before sibling_call_p.  */
-      if (SIBLING_CALL_P (insn))
+      if (SIBLING_CALL_P (call))
 	return AVX_U128_CLEAN;
 
-      const function_abi &abi = insn_callee_abi (insn);
+      const function_abi &abi = insn_callee_abi (call);
 
       /* IPA-RA conservatively records fixed registers as used by the
 	 callee, e.g. xmm8-xmm15 for ia32, so ignore them.  */
@@ -15808,10 +15808,10 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 
   /* We know that state is clean after CALL insn if there are no
      256bit or 512bit registers used in the function return register. */
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       bool avx_upper_reg_found = false;
-      note_stores (insn, ix86_check_avx_upper_stores, &avx_upper_reg_found);
+      note_stores (call, ix86_check_avx_upper_stores, &avx_upper_reg_found);
 
       if (avx_upper_reg_found)
 	return AVX_U128_DIRTY;
@@ -15819,8 +15819,8 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
       /* If the function doesn't clobber any sse registers or only clobber
 	 128-bit part, then vzeroupper isn't issued before the function exit,
 	 and the function doesn't change the status.  */
-      const function_abi &abi = insn_callee_abi (insn);
-      if (!(SIBLING_CALL_P (insn)
+      const function_abi &abi = insn_callee_abi (call);
+      if (!(SIBLING_CALL_P (call)
 	    || hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
 				      abi.mode_clobbers (V4DImode))))
 	return mode;
@@ -25030,9 +25030,10 @@ ix86_min_insn_size (rtx_insn *insn)
 
   /* Important case - calls are always 5 bytes.
      It is common to have many calls in the row.  */
-  if (CALL_P (insn)
-      && symbolic_reference_mentioned_p (PATTERN (insn))
-      && !SIBLING_CALL_P (insn))
+  auto call = dyn_cast<rtx_call_insn *> (insn);
+  if (call
+      && symbolic_reference_mentioned_p (PATTERN (call))
+      && !SIBLING_CALL_P (call))
     return 5;
   len = get_attr_length (insn);
   if (len <= 1)
@@ -29900,8 +29901,8 @@ ix86_components_for_bb (basic_block bb)
   function_abi_aggregator callee_abis;
   rtx_insn *insn;
   FOR_BB_INSNS (bb, insn)
-    if (CALL_P (insn))
-      callee_abis.note_callee_abi (insn_callee_abi (insn));
+    if (auto call = dyn_cast<rtx_call_insn *> (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (call));
   HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */

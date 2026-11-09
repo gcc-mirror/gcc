@@ -6358,9 +6358,8 @@ sparc_asm_function_epilogue (FILE *file)
       && (seq = dyn_cast <rtx_sequence *> (PATTERN (last_real_insn))))
     last_real_insn = seq->insn (0);
 
-  if (last_real_insn
-      && CALL_P (last_real_insn)
-      && !SIBLING_CALL_P (last_real_insn))
+  auto call = safe_dyn_cast<rtx_call_insn *> (last_real_insn);
+  if (call && !SIBLING_CALL_P (call))
     fputs("\tnop\n", file);
 
   sparc_output_deferred_case_vectors ();

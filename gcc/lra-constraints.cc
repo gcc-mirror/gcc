@@ -7615,11 +7615,12 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 	    }
 	  last_processed_bb = curr_bb;
 	  last_insn = get_last_insertion_point (curr_bb);
+	  auto call = dyn_cast<rtx_call_insn *> (last_insn);
 	  after_p = (! JUMP_P (last_insn)
-		     && (! CALL_P (last_insn)
-			 || (find_reg_note (last_insn,
+		     && (! call
+			 || (find_reg_note (call,
 					   REG_NORETURN, NULL_RTX) == NULL_RTX
-			     && ! SIBLING_CALL_P (last_insn))));
+			     && ! SIBLING_CALL_P (call))));
 	  CLEAR_HARD_REG_SET (potential_reload_hard_regs);
 	  EXECUTE_IF_SET_IN_BITMAP (to_process, 0, j, bi)
 	    {
@@ -7796,19 +7797,19 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 				      ALL_REGS, curr_insn,
 				      to_inherit[i].insns))
 	      change_p = true;
-	  if (CALL_P (curr_insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (curr_insn))
 	    {
 	      rtx cheap, pat, dest;
 	      rtx_insn *restore;
 	      int regno, hard_regno;
 
 	      calls_num++;
-	      function_abi callee_abi = insn_callee_abi (curr_insn);
+	      function_abi callee_abi = insn_callee_abi (call);
 	      last_call_for_abi[callee_abi.id ()] = calls_num;
 	      full_and_partial_call_clobbers
 		|= callee_abi.full_and_partial_reg_clobbers ();
-	      first_call_insn = curr_insn;
-	      if ((cheap = find_reg_note (curr_insn,
+	      first_call_insn = call;
+	      if ((cheap = find_reg_note (call,
 					  REG_RETURNED, NULL_RTX)) != NULL_RTX
 		  && ((cheap = XEXP (cheap, 0)), true)
 		  && (regno = REGNO (cheap)) >= FIRST_PSEUDO_REGISTER
@@ -7823,7 +7824,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		     REG_RETURNED note says that the pseudo value is
 		     in the call result and the pseudo is an argument
 		     of the call.  */
-		  pat = PATTERN (curr_insn);
+		  pat = PATTERN (call);
 		  if (GET_CODE (pat) == PARALLEL)
 		    pat = XVECEXP (pat, 0, 0);
 		  dest = SET_DEST (pat);
@@ -7834,7 +7835,7 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 		      start_sequence ();
 		      emit_move_insn (cheap, copy_rtx (dest));
 		      restore = end_sequence ();
-		      lra_process_new_insns (curr_insn, NULL, restore,
+		      lra_process_new_insns (call, NULL, restore,
 					     "Inserting call parameter restore");
 		      /* We don't need to save/restore of the pseudo from
 			 this call.	 */

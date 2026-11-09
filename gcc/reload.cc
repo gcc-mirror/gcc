@@ -6940,12 +6940,12 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 
       /* Don't trust the conversion past a function call
 	 if either of the two is in a call-clobbered register, or memory.  */
-      if (CALL_P (p))
+      if (auto call = dyn_cast<rtx_call_insn *> (p))
 	{
 	  if (goal_mem || need_stable_sp)
 	    return 0;
 
-	  function_abi callee_abi = insn_callee_abi (p);
+	  function_abi callee_abi = insn_callee_abi (call);
 	  if (regno >= 0
 	      && regno < FIRST_PSEUDO_REGISTER
 	      && callee_abi.clobbers_reg_p (mode, regno))
@@ -7048,11 +7048,12 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		}
 	    }
 
-	  if (CALL_P (p) && CALL_INSN_FUNCTION_USAGE (p))
+	  auto call = dyn_cast<rtx_call_insn *> (p);
+	  if (call && CALL_INSN_FUNCTION_USAGE (call))
 	    {
 	      rtx link;
 
-	      for (link = CALL_INSN_FUNCTION_USAGE (p); XEXP (link, 1) != 0;
+	      for (link = CALL_INSN_FUNCTION_USAGE (call); XEXP (link, 1) != 0;
 		   link = XEXP (link, 1))
 		{
 		  pat = XEXP (link, 0);

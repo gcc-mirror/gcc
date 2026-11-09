@@ -1128,7 +1128,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
       = collect_non_operand_hard_regs (insn, &PATTERN (insn), data,
 				       NULL, OP_IN, false);
   data->arg_hard_regs = NULL;
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       bool use_p;
       rtx link;
@@ -1138,7 +1138,7 @@ lra_set_insn_recog_data (rtx_insn *insn)
       /* Finding implicit hard register usage.	We believe it will be
 	 not changed whatever transformations are used.	 Call insns
 	 are such example.  */
-      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+      for (link = CALL_INSN_FUNCTION_USAGE (call);
 	   link != NULL_RTX;
 	   link = XEXP (link, 1))
 	if (((use_p = GET_CODE (XEXP (link, 0)) == USE)
@@ -1679,12 +1679,12 @@ lra_update_insn_regno_info (rtx_insn *insn)
   if ((code = GET_CODE (PATTERN (insn))) == CLOBBER || code == USE)
     add_regs_to_insn_regno_info (data, XEXP (PATTERN (insn), 0), insn,
 				 code == USE ? OP_IN : OP_OUT, 0);
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     /* On some targets call insns can refer to pseudos in memory in
        CALL_INSN_FUNCTION_USAGE list.  Process them in order to
        consider their occurrences in calls for different
        transformations (e.g. inheritance) with given pseudos.  */
-    for (link = CALL_INSN_FUNCTION_USAGE (insn);
+    for (link = CALL_INSN_FUNCTION_USAGE (call);
 	 link != NULL_RTX;
 	 link = XEXP (link, 1))
       {

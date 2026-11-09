@@ -1553,14 +1553,14 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	  process_dependent_filters ();
 	  process_single_reg_constrained_operands (false, freq);
 
-	  if (call_p)
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	    {
 	      /* Try to find a SET in the CALL_INSN_FUNCTION_USAGE, and from
 		 there, try to find a pseudo that is live across the call but
 		 can be cheaply reconstructed from the return value.  */
-	      rtx cheap_reg = find_call_crossed_cheap_reg (insn);
+	      rtx cheap_reg = find_call_crossed_cheap_reg (call);
 	      if (cheap_reg != NULL_RTX)
-		add_reg_note (insn, REG_RETURNED, cheap_reg);
+		add_reg_note (call, REG_RETURNED, cheap_reg);
 
 	      last_call_num++;
 	      sparseset_clear (allocnos_processed);
@@ -1570,22 +1570,22 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		  ira_object_t obj = ira_object_id_map[i];
 		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
-		  function_abi callee_abi = insn_callee_abi (insn);
+		  function_abi callee_abi = insn_callee_abi (call);
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal
 		     goto.  */
 		  if (cfun->has_nonlocal_label
 		      || (!targetm.setjmp_preserves_nonvolatile_regs_p ()
-			  && (find_reg_note (insn, REG_SETJMP, NULL_RTX)
+			  && (find_reg_note (call, REG_SETJMP, NULL_RTX)
 			      != NULL_RTX)))
 		    {
 		      SET_HARD_REG_SET (OBJECT_CONFLICT_HARD_REGS (obj));
 		      SET_HARD_REG_SET (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj));
 		    }
 		  eh_region r;
-		  if (can_throw_internal (insn)
-		      && (r = get_eh_region_from_rtx (insn)) != NULL)
+		  if (can_throw_internal (call)
+		      && (r = get_eh_region_from_rtx (call)) != NULL)
 		    add_conflict_from_region_landing_pads (r, obj, callee_abi);
 		  if (sparseset_bit_p (allocnos_processed, num))
 		    continue;

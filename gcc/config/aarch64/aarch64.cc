@@ -10155,8 +10155,8 @@ aarch64_components_for_bb (basic_block bb)
   function_abi_aggregator callee_abis;
   rtx_insn *insn;
   FOR_BB_INSNS (bb, insn)
-    if (CALL_P (insn))
-      callee_abis.note_callee_abi (insn_callee_abi (insn));
+    if (auto call = dyn_cast<rtx_call_insn *> (insn))
+      callee_abis.note_callee_abi (insn_callee_abi (call));
   HARD_REG_SET extra_caller_saves = callee_abis.caller_save_regs (*crtl->abi);
 
   /* GPRs are used in a bb if they are in the IN, GEN, or KILL sets.  */

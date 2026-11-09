@@ -1256,12 +1256,13 @@ reg_set_p (const_rtx reg, const_rtx uncast_insn)
 
   /* We can be passed an insn or part of one.  If we are passed an insn,
      check if a side-effect of the insn clobbers REG.  */
+  auto call = dyn_cast<const rtx_call_insn *> (insn);
   if (INSN_P (insn)
       && (FIND_REG_INC_NOTE (insn, reg)
-	  || (CALL_P (insn)
+	  || (call
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && (insn_callee_abi (insn)
+		   && (insn_callee_abi (call)
 		       .clobbers_reg_p (GET_MODE (reg), REGNO (reg))))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
@@ -1519,8 +1520,9 @@ find_all_hard_reg_sets (const rtx_insn *insn, HARD_REG_SET *pset, bool implicit)
 
   CLEAR_HARD_REG_SET (*pset);
   note_stores (insn, record_hard_reg_sets, pset);
-  if (CALL_P (insn) && implicit)
-    *pset |= insn_callee_abi (insn).full_reg_clobbers ();
+  auto call = dyn_cast<const rtx_call_insn *> (insn);
+  if (call && implicit)
+    *pset |= insn_callee_abi (call).full_reg_clobbers ();
   for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
     if (REG_NOTE_KIND (link) == REG_INC)
       record_hard_reg_sets (XEXP (link, 0), NULL, pset);
@@ -1992,8 +1994,8 @@ void
 note_stores (const rtx_insn *insn,
 	     void (*fun) (rtx, const_rtx, void *), void *data)
 {
-  if (CALL_P (insn))
-    for (rtx link = CALL_INSN_FUNCTION_USAGE (insn);
+  if (auto call = dyn_cast<const rtx_call_insn *> (insn))
+    for (rtx link = CALL_INSN_FUNCTION_USAGE (call);
 	 link; link = XEXP (link, 1))
       if (GET_CODE (XEXP (link, 0)) == CLOBBER)
 	note_pattern_stores (XEXP (link, 0), fun, data);
@@ -2315,7 +2317,7 @@ rtx_properties::try_to_add_pattern (const_rtx pat)
 void
 rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
 {
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<const rtx_call_insn *> (insn))
     {
       /* Non-const functions can read from global registers.  Impure
 	 functions can also set them.
@@ -2324,10 +2326,10 @@ rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
 	 a fixed-form clobber of register R could come before a real set
 	 of register R.  */
       if (!hard_reg_set_empty_p (global_reg_set)
-	  && !RTL_CONST_CALL_P (insn))
+	  && !RTL_CONST_CALL_P (call))
 	{
 	  unsigned int flags = rtx_obj_flags::IS_READ;
-	  if (!RTL_PURE_CALL_P (insn))
+	  if (!RTL_PURE_CALL_P (call))
 	    flags |= rtx_obj_flags::IS_WRITE;
 	  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	    /* As a special case, the stack pointer is invariant across calls
@@ -2342,21 +2344,21 @@ rtx_properties::try_to_add_insn (const rtx_insn *insn, bool include_notes)
       /* Untyped calls implicitly set all function value registers.
 	 Again, we add them first in case the main pattern contains
 	 a fixed-form clobber.  */
-      if (find_reg_note (insn, REG_UNTYPED_CALL, NULL_RTX))
+      if (find_reg_note (call, REG_UNTYPED_CALL, NULL_RTX))
 	for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
 	  if (targetm.calls.function_value_regno_p (regno)
 	      && ref_iter != ref_end)
 	    *ref_iter++ = rtx_obj_reference (regno, rtx_obj_flags::IS_WRITE,
 					     reg_raw_mode[regno], 0);
-      if (ref_iter != ref_end && !RTL_CONST_CALL_P (insn))
+      if (ref_iter != ref_end && !RTL_CONST_CALL_P (call))
 	{
 	  auto mem_flags = rtx_obj_flags::IS_READ;
-	  if (!RTL_PURE_CALL_P (insn))
+	  if (!RTL_PURE_CALL_P (call))
 	    mem_flags |= rtx_obj_flags::IS_WRITE;
 	  *ref_iter++ = rtx_obj_reference (MEM_REGNO, mem_flags, BLKmode);
 	}
-      try_to_add_pattern (PATTERN (insn));
-      for (rtx link = CALL_INSN_FUNCTION_USAGE (insn); link;
+      try_to_add_pattern (PATTERN (call));
+      for (rtx link = CALL_INSN_FUNCTION_USAGE (call); link;
 	   link = XEXP (link, 1))
 	{
 	  rtx x = XEXP (link, 0);
@@ -2634,7 +2636,8 @@ find_reg_fusage (const rtx_insn *insn, enum rtx_code code, const_rtx datum)
 {
   /* If it's not a CALL_INSN, it can't possibly have a
      CALL_INSN_FUNCTION_USAGE field, so don't bother checking.  */
-  if (!CALL_P (insn))
+  auto call = dyn_cast<const rtx_call_insn *> (insn);
+  if (!call)
     return false;
 
   gcc_assert (datum);
@@ -2643,7 +2646,7 @@ find_reg_fusage (const rtx_insn *insn, enum rtx_code code, const_rtx datum)
     {
       rtx link;
 
-      for (link = CALL_INSN_FUNCTION_USAGE (insn);
+      for (link = CALL_INSN_FUNCTION_USAGE (call);
 	   link;
 	   link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == code
@@ -2663,7 +2666,7 @@ find_reg_fusage (const rtx_insn *insn, enum rtx_code code, const_rtx datum)
 	  unsigned int i;
 
 	  for (i = regno; i < end_regno; i++)
-	    if (find_regno_fusage (insn, code, i))
+	    if (find_regno_fusage (call, code, i))
 	      return true;
 	}
     }
@@ -2682,11 +2685,11 @@ find_regno_fusage (const rtx_insn *insn, enum rtx_code code, unsigned int regno)
   /* CALL_INSN_FUNCTION_USAGE information cannot contain references
      to pseudo registers, so don't bother checking.  */
 
-  if (regno >= FIRST_PSEUDO_REGISTER
-      || !CALL_P (insn) )
+  auto call = dyn_cast<const rtx_call_insn *> (insn);
+  if (regno >= FIRST_PSEUDO_REGISTER || !call)
     return false;
 
-  for (link = CALL_INSN_FUNCTION_USAGE (insn); link; link = XEXP (link, 1))
+  for (link = CALL_INSN_FUNCTION_USAGE (call); link; link = XEXP (link, 1))
     {
       rtx op, reg;
 
@@ -3454,8 +3457,9 @@ replace_label (rtx *loc, rtx_insn *old_label, rtx_insn *new_label,
   /* If this is a JUMP_INSN, then we also need to fix the JUMP_LABEL
      field.  This is not handled by the iterator because it doesn't
      handle unprinted ('0') fields.  */
-  if (JUMP_P (x) && JUMP_LABEL (x) == old_label)
-    JUMP_LABEL (x) = new_label;
+  auto jump = dyn_cast<rtx_jump_insn *> (x);
+  if (jump && JUMP_LABEL (jump) == old_label)
+    JUMP_LABEL (jump) = new_label;
 
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)

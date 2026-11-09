@@ -2694,18 +2694,18 @@ create_trace_edges (rtx_insn *insn)
 	  maybe_record_trace_start (lab, insn);
 	}
     }
-  else if (CALL_P (insn))
+  else if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       /* Sibling calls don't have edges inside this function.  */
-      if (SIBLING_CALL_P (insn))
+      if (SIBLING_CALL_P (call))
 	return;
 
       /* Process non-local goto edges.  */
-      if (can_nonlocal_goto (insn))
+      if (can_nonlocal_goto (call))
 	for (rtx_insn_list *lab = nonlocal_goto_handler_labels;
 	     lab;
 	     lab = lab->next ())
-	  maybe_record_trace_start_abnormal (lab->insn (), insn);
+	  maybe_record_trace_start_abnormal (lab->insn (), call);
     }
   else if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
     {

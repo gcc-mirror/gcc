@@ -10295,8 +10295,8 @@ vt_initialize (void)
 
 		  if (MAY_HAVE_DEBUG_BIND_INSNS)
 		    {
-		      if (CALL_P (insn))
-			prepare_call_arguments (bb, insn);
+		      if (auto call = dyn_cast<rtx_call_insn *> (insn))
+			prepare_call_arguments (bb, call);
 		      cselib_process_insn (insn);
 		      if (dump_file && (dump_flags & TDF_DETAILS))
 			{

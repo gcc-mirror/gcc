@@ -4408,9 +4408,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
     INSN_CODE (i3) = insn_code_number;
     PATTERN (i3) = newpat;
 
-    if (CALL_P (i3) && CALL_INSN_FUNCTION_USAGE (i3))
+    auto call = dyn_cast<rtx_call_insn *> (i3);
+    if (call && CALL_INSN_FUNCTION_USAGE (call))
       {
-	for (rtx link = CALL_INSN_FUNCTION_USAGE (i3); link;
+	for (rtx link = CALL_INSN_FUNCTION_USAGE (call); link;
 	     link = XEXP (link, 1))
 	  {
 	    if (substed_i2)
@@ -13600,10 +13601,10 @@ record_dead_and_set_regs (rtx_insn *insn)
 	record_value_for_reg (XEXP (link, 0), insn, NULL_RTX);
     }
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       HARD_REG_SET callee_clobbers
-	= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+	= insn_callee_abi (call).full_and_partial_reg_clobbers ();
       hard_reg_set_iterator hrsi;
       EXECUTE_IF_SET_IN_HARD_REG_SET (callee_clobbers, 0, i, hrsi)
 	{
@@ -13619,7 +13620,7 @@ record_dead_and_set_regs (rtx_insn *insn)
 	     situation before RA.  */
 	  rsp = &reg_stat[i];
 	  rsp->last_set_invalid = true;
-	  rsp->last_set = insn;
+	  rsp->last_set = call;
 	  rsp->last_set_value = 0;
 	  rsp->last_set_mode = VOIDmode;
 	  rsp->last_set_nonzero_bits = 0;
@@ -13628,13 +13629,13 @@ record_dead_and_set_regs (rtx_insn *insn)
 	  rsp->truncated_to_mode = VOIDmode;
 	}
 
-      last_call_luid = mem_last_set = DF_INSN_LUID (insn);
+      last_call_luid = mem_last_set = DF_INSN_LUID (call);
 
       /* We can't combine into a call pattern.  Remember, though, that
 	 the return value register is set at this LUID.  We could
 	 still replace a register with the return value from the
 	 wrong subroutine call!  */
-      note_stores (insn, record_dead_and_set_regs_1, NULL_RTX);
+      note_stores (call, record_dead_and_set_regs_1, NULL_RTX);
     }
   else
     note_stores (insn, record_dead_and_set_regs_1, insn);

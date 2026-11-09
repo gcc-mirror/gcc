@@ -2072,8 +2072,8 @@ instantiate_virtual_regs (void)
 	instantiate_virtual_regs_in_rtx (&REG_NOTES (insn));
 
 	/* Instantiate any virtual registers in CALL_INSN_FUNCTION_USAGE.  */
-	if (CALL_P (insn))
-	  instantiate_virtual_regs_in_rtx (&CALL_INSN_FUNCTION_USAGE (insn));
+	if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	  instantiate_virtual_regs_in_rtx (&CALL_INSN_FUNCTION_USAGE (call));
       }
 
   /* Instantiate the virtual registers in the DECLs for debugging purposes.  */
@@ -6342,7 +6342,8 @@ thread_prologue_and_epilogue_insns (void)
 
       rtx_insn *insn = BB_END (e->src);
 
-      if (!(CALL_P (insn) && SIBLING_CALL_P (insn)))
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (!(call && SIBLING_CALL_P (call)))
 	continue;
 
       rtx_insn *ep_seq;

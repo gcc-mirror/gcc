@@ -3691,9 +3691,10 @@ output_asm_label (rtx x)
 
   if (GET_CODE (x) == LABEL_REF)
     x = label_ref_label (x);
+  rtx_note *note = dyn_cast<rtx_note *> (x);
   if (LABEL_P (x)
-      || (NOTE_P (x)
-	  && NOTE_KIND (x) == NOTE_INSN_DELETED_LABEL))
+      || (note
+	  && NOTE_KIND (note) == NOTE_INSN_DELETED_LABEL))
     ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (x));
   else
     output_operand_lossage ("'%%l' operand isn't a label");
@@ -4166,15 +4167,14 @@ leaf_function_p (void)
 
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      if (CALL_P (insn)
-	  && ! SIBLING_CALL_P (insn)
-	  && ! FAKE_CALL_P (insn))
+      rtx_call_insn *call = dyn_cast<rtx_call_insn *> (insn);
+      if (call && ! SIBLING_CALL_P (call) && ! FAKE_CALL_P (call))
 	return false;
       rtx_sequence *seq;
       if (NONJUMP_INSN_P (insn)
 	  && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
-	  && CALL_P (seq->insn (0))
-	  && ! SIBLING_CALL_P (seq->insn (0)))
+	  && (call = dyn_cast<rtx_call_insn *> (seq->insn (0)))
+	  && ! SIBLING_CALL_P (call))
 	return false;
     }
 
@@ -4701,10 +4701,10 @@ collect_fn_hard_reg_usage (void)
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      if (CALL_P (insn)
-	  && !self_recursive_call_p (insn))
+      auto call = dyn_cast<rtx_call_insn *> (insn);
+      if (call && !self_recursive_call_p (call))
 	function_used_regs
-	  |= insn_callee_abi (insn).full_and_partial_reg_clobbers ();
+	  |= insn_callee_abi (call).full_and_partial_reg_clobbers ();
 
       find_all_hard_reg_sets (insn, &insn_used_regs, false);
       function_used_regs |= insn_used_regs;

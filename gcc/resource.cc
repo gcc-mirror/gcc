@@ -800,16 +800,16 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 	      && INSN_P (XEXP (PATTERN (insn), 0)))
 	    real_insn = as_a <rtx_insn *> (XEXP (PATTERN (insn), 0));
 
-	  if (CALL_P (real_insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (real_insn))
 	    {
 	      /* Values in call-clobbered registers survive a COND_EXEC CALL
 		 if that is not executed; this matters for resource use because
 		 they may be used by a complementarily (or more strictly)
 		 predicated instruction, or if the CALL is NORETURN.  */
-	      if (GET_CODE (PATTERN (real_insn)) != COND_EXEC)
+	      if (GET_CODE (PATTERN (call)) != COND_EXEC)
 		{
 		  HARD_REG_SET regs_invalidated_by_this_call
-		    = insn_callee_abi (real_insn).full_reg_clobbers ();
+		    = insn_callee_abi (call).full_reg_clobbers ();
 		  /* CALL clobbers all call-used regs that aren't fixed except
 		     sp, ap, and fp.  Do this before setting the result of the
 		     call live.  */

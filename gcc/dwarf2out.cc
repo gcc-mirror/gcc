@@ -28625,13 +28625,13 @@ dwarf2out_var_location (rtx_insn *loc_note)
 
   if (!NOTE_P (loc_note))
     {
-      if (CALL_P (loc_note))
+      if (auto call = dyn_cast<rtx_call_insn *> (loc_note))
 	{
-	  maybe_reset_location_view (loc_note, cur_line_info_table);
+	  maybe_reset_location_view (call, cur_line_info_table);
 	  call_site_count++;
-	  if (SIBLING_CALL_P (loc_note))
+	  if (SIBLING_CALL_P (call))
 	    tail_call_site_count++;
-	  if (find_reg_note (loc_note, REG_CALL_ARG_LOCATION, NULL_RTX))
+	  if (find_reg_note (call, REG_CALL_ARG_LOCATION, NULL_RTX))
 	    {
 	      call_insn = loc_note;
 	      loc_note = NULL;

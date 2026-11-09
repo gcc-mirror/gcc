@@ -2903,8 +2903,9 @@ delete_prior_computation (rtx note, rtx_insn *insn)
 
       /* If we reach a CALL which is not calling a const function
 	 or the callee pops the arguments, then give up.  */
-      if (CALL_P (our_prev)
-	  && (! RTL_CONST_CALL_P (our_prev)
+      auto call = dyn_cast<rtx_call_insn *> (our_prev);
+      if (call
+	  && (! RTL_CONST_CALL_P (call)
 	      || GET_CODE (pat) != SET || GET_CODE (SET_SRC (pat)) != CALL))
 	break;
 

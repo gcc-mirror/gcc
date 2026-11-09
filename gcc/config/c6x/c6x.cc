@@ -4717,10 +4717,10 @@ emit_nop_after (int cycles, rtx_insn *after)
 static bool
 returning_call_p (rtx_insn *insn)
 {
-  if (CALL_P (insn))
-    return (!SIBLING_CALL_P (insn)
-	    && get_attr_type (insn) != TYPE_CALLP
-	    && get_attr_type (insn) != TYPE_SHADOW);
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
+    return (!SIBLING_CALL_P (call)
+	    && get_attr_type (call) != TYPE_CALLP
+	    && get_attr_type (call) != TYPE_SHADOW);
   if (recog_memoized (insn) < 0)
     return false;
   if (get_attr_type (insn) == TYPE_CALL)
@@ -5128,7 +5128,7 @@ split_delayed_branch (rtx_insn *insn)
   if (GET_CODE (pat) == COND_EXEC)
     pat = COND_EXEC_CODE (pat);
 
-  if (CALL_P (insn))
+  if (auto call = dyn_cast<rtx_call_insn *> (insn))
     {
       rtx src = pat, dest = NULL_RTX;
       rtx callee;
@@ -5138,7 +5138,7 @@ split_delayed_branch (rtx_insn *insn)
 	  src = SET_SRC (pat);
 	}
       callee = XEXP (XEXP (src, 0), 0);
-      if (SIBLING_CALL_P (insn))
+      if (SIBLING_CALL_P (call))
 	{
 	  if (REG_P (callee))
 	    newpat = gen_indirect_sibcall_shadow ();
@@ -5162,8 +5162,8 @@ split_delayed_branch (rtx_insn *insn)
 	    newpat = gen_call_shadow (callee);
 	  pat = gen_real_call (callee);
 	}
-      pat = duplicate_cond (pat, insn);
-      newpat = duplicate_cond (newpat, insn);
+      pat = duplicate_cond (pat, call);
+      newpat = duplicate_cond (newpat, call);
     }
   else
     {

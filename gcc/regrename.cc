@@ -1815,8 +1815,9 @@ build_def_use (basic_block bb)
 	  restore_operands (insn, n_ops, old_operands, old_dups);
 
 	  /* Step 2B: Can't rename function call argument registers.  */
-	  if (CALL_P (insn) && CALL_INSN_FUNCTION_USAGE (insn))
-	    scan_rtx (insn, &CALL_INSN_FUNCTION_USAGE (insn),
+	  auto call = dyn_cast<rtx_call_insn *> (insn);
+	  if (call && CALL_INSN_FUNCTION_USAGE (call))
+	    scan_rtx (call, &CALL_INSN_FUNCTION_USAGE (call),
 		      NO_REGS, mark_all_read, OP_IN);
 
 	  /* Step 2C: Can't rename asm operands that were originally
@@ -1889,9 +1890,9 @@ build_def_use (basic_block bb)
 
 	  /* Step 4B: If this is a call, any chain live at this point
 	     requires a caller-saved reg.  */
-	  if (CALL_P (insn))
+	  if (auto call = dyn_cast<rtx_call_insn *> (insn))
 	    {
-	      function_abi callee_abi = insn_callee_abi (insn);
+	      function_abi callee_abi = insn_callee_abi (call);
 	      class du_head *p;
 	      for (p = open_chains; p; p = p->next_chain)
 		{

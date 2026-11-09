@@ -393,12 +393,9 @@ riscv_remove_unneeded_save_restore_calls (void)
      has no more than 1 call (checked above).  To convert this single call
      into a tail call we rely on the call being the last thing before the
      epilogue.  */
-  if (GET_CODE (insn_before_epilogue) != CALL_INSN)
+  auto call = dyn_cast<rtx_call_insn *> (insn_before_epilogue);
+  if (!call)
     return;
-
-  /* The last instruction in this block, just before the epilogue is a
-     call.  We can potentially change this call into a tail call.  */
-  rtx_insn *call = insn_before_epilogue;
 
   /* Transform call in insn to a sibcall, this will only be done if the
      last thing in the function is a call.  */
