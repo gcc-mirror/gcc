@@ -3571,6 +3571,10 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       gcc_assert (prolog);
       prolog->force_vectorize = false;
+      /* Assumptions are only versioned for the main exit, others might
+	 still be taken, so do not mislead later passes.  */
+      if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+	loop_constraint_clear (prolog, LOOP_C_FINITE);
 
       first_loop = prolog;
       reset_original_copy_tables ();
@@ -3681,6 +3685,10 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       gcc_assert (epilog);
       gcc_assert (new_epilog_e);
       epilog->force_vectorize = false;
+      /* Assumptions are only versioned for the main exit, others might
+	 still be taken, so do not mislead later passes.  */
+      if (!vect_epilogues && LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+	loop_constraint_clear (epilog, LOOP_C_FINITE);
       bb_before_epilog = loop_preheader_edge (epilog)->src;
 
       /* Scalar version loop may be preferred.  In this case, add guard
