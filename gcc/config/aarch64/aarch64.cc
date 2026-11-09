@@ -17598,6 +17598,9 @@ public:
      in aarch64_base_vec_issue_info for details.  */
   unsigned int general_ops = 0;
 
+  /* The instruction count of the preceding integer unpack stage.  */
+  unsigned int last_unpack_count = 0;
+
   /* The number of load and store operations, under the same scheme
      as above.  */
   unsigned int loads = 0;
@@ -18708,6 +18711,32 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
   const aarch64_simd_vec_issue_info *simd_issue = ops->simd_issue_info ();
   const aarch64_sve_vec_issue_info *sve_issue = ops->sve_issue_info ();
 
+  /* Multi-step integer conversions create a dependency chain.  For example,
+     a QI -> SI conversion goes through QI -> HI -> SI, and the vectorizer
+     might cost these stages as 2 unpacks followed by 4 unpacks.  Counting
+     just the 6 operations makes them look as though they could all issue
+     in one cycle on a wide enough core.  However, the second stage needs
+     the results of the first, so they cannot all issue together.
+
+     Our issue model only counts operations and does not track these
+     dependencies.  Approximate their effect by rounding the previous
+     stage up to a whole number of issue cycles.  For example, on a core
+     that can issue 4 general operations per cycle, add 2 slots for the
+     first stage above.  Together with the 6 actual unpacks, this gives
+     an estimate of 2 cycles.  Use each model's general issue rate here,
+     and keep the original unpack count for costing the next stage.  */
+  if (kind == vec_promote_demote && node && stmt_info
+      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt_info->stmt))
+      && TREE_CODE (TREE_TYPE (SLP_TREE_VECTYPE (node))) == INTEGER_TYPE)
+    {
+      unsigned int width = base_issue->general_ops_per_cycle;
+      ops->general_ops += (CEIL (ops->last_unpack_count, width) * width
+			  - ops->last_unpack_count);
+      ops->last_unpack_count = count;
+    }
+  else
+    ops->last_unpack_count = 0;
+
   /* Calculate the minimum cycles per iteration imposed by a reduction
      operation.  */
   if (stmt_info
@@ -18806,7 +18835,15 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
     case scalar_to_vec:
     case vector_stmt:
     case scalar_stmt:
-      ops->general_ops += count;
+      /* Count predicate conversions on the predicate issue units.  */
+      if (sve_issue
+	  && kind == vec_promote_demote
+	  && node
+	  && SLP_TREE_VECTYPE (node)
+	  && VECTOR_BOOLEAN_TYPE_P (SLP_TREE_VECTYPE (node)))
+	ops->pred_ops += count;
+      else
+	ops->general_ops += count;
       break;
 
     case scalar_load:
