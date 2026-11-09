@@ -8898,7 +8898,7 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
     {
       note = emit_note_after (NOTE_INSN_VAR_LOCATION, insn);
       if (where == EMIT_NOTE_AFTER_CALL_INSN)
-	NOTE_DURING_CALL_P (note) = true;
+	set_note_during_call_p (note, true);
     }
   else
     {
