@@ -90,6 +90,7 @@
 #define __glibcxx_want_parallel_algorithm
 #define __glibcxx_want_ranges_iota
 #define __glibcxx_want_saturation_arithmetic
+#define __glibcxx_want_clmul
 #include <bits/version.h>
 
 #if __glibcxx_ranges_iota >= 202202L // C++ >= 23
@@ -764,6 +765,87 @@ namespace ranges
   inline constexpr __iota_fn iota{};
 } // namespace ranges
 #endif // __glibcxx_ranges_iota
+
+#if __glibcxx_clmul >= 202610L // C++29
+  template<typename _Tp>
+    class wide_result {
+    public:
+      static_assert(__is_unsigned_integer<_Tp>::value);
+      constexpr _Tp high() const noexcept { return _M_high; }
+      constexpr _Tp low() const noexcept { return _M_low; }
+
+      friend constexpr bool operator==(const wide_result&,
+				       const wide_result&) = default;
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      constexpr wide_result(_Tp __high, _Tp __low) noexcept
+	: _M_low(__low), _M_high(__high) {}
+      friend constexpr strong_ordering operator<=>(const wide_result& __x,
+						   const wide_result& __y)
+	noexcept
+      {
+	if (auto __r = __x._M_high <=> __y._M_high; __r != 0)
+	  return __r;
+	return __x._M_low <=> __y._M_low;
+      }
+    private:
+      _Tp _M_low, _M_high;
+#else
+      constexpr wide_result(_Tp __high, _Tp __low) noexcept
+	: _M_high(__high), _M_low(__low) {}
+      friend constexpr strong_ordering operator<=>(const wide_result& __x,
+						   const wide_result& __y)
+	noexcept = default;
+    private:
+      _Tp _M_high, _M_low;
+#endif
+    };
+
+  template<__unsigned_integer _Tp>
+    [[nodiscard]] constexpr wide_result<_Tp>
+    widening_clmul(_Tp __x, _Tp __y) noexcept
+    {
+      _Tp __high, __low;
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clmulg)
+      __low = __builtin_clmulg(__x, __y, &__high);
+      return wide_result<_Tp>(__high, __low);
+#elif _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_elementwise_clmul) \
+      && _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_bitreverseg)
+      __low = __builtin_elementwise_clmul(__x, __y);
+      __high = __builtin_elementwise_clmul(__builtin_bitreverseg(__x),
+					   __builtin_bitreverseg(__y));
+      return wide_result<_Tp>(__builtin_bitreverseg(__high) >> 1, __low);
+#else
+      constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      __high = 0;
+      __low = (__y & _Tp(1)) ? __x : 0;
+      for (int __i = 1; __i < _Nd; ++__i)
+	if ((__y >> __i) & _Tp(1))
+	  {
+	    __low ^= __x << __i;
+	    __high ^= __x >> (_Nd - __i);
+	  }
+      return wide_result<_Tp>(__high, __low);
+#endif
+    }
+
+  template<__unsigned_integer _Tp>
+    [[nodiscard]] constexpr _Tp
+    clmul(_Tp __x, _Tp __y) noexcept
+    {
+#if _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_clmulg)
+      return __builtin_clmulg(__x, __y);
+#elif _GLIBCXX_USE_BUILTIN_TRAIT(__builtin_elementwise_clmul)
+      return __builtin_elementwise_clmul(__x, __y);
+#else
+      _Tp __res = 0;
+      constexpr auto _Nd = __gnu_cxx::__int_traits<_Tp>::__digits;
+      for (int __i = 0; __i < _Nd; ++__i)
+	if ((__y >> __i) & _Tp(1))
+	  __res ^= __x << __i;
+      return __res;
+#endif
+    }
+#endif // C++29
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

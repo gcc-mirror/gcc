@@ -2483,6 +2483,11 @@ export namespace std
   using std::saturating_div;
   using std::saturating_cast;
 #endif
+#if __cpp_lib_clmul
+  using std::wide_result;
+  using std::widening_clmul;
+  using std::clmul;
+#endif
 }
 
 // <optional>

@@ -2991,4 +2991,14 @@
 #endif /* !defined(__cpp_lib_hardened_view_interface) */
 #undef __glibcxx_want_hardened_view_interface
 
+#if !defined(__cpp_lib_clmul)
+# if (__cplusplus >  202603L)
+#  define __glibcxx_clmul 202610L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_clmul)
+#   define __cpp_lib_clmul 202610L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_clmul) */
+#undef __glibcxx_want_clmul
+
 #undef __glibcxx_want_all

@@ -2709,6 +2709,14 @@ ftms = {
   };
 };
 
+ftms = {
+  name = clmul;
+  values = {
+    v = 202610;
+    cxxmin = 29;
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";
