@@ -8663,22 +8663,33 @@ gimple_lower_bitint (void)
 	  large_huge.lower_stmt (stmt);
 	}
 
+      /* The PHIs of BB read their arguments from an incoming edge in
+	 parallel.  For each edge, queue the copies in the order of the
+	 PHIs and then the constant stores.  If a copy reads a partition
+	 that an earlier copy on the edge writes, save the partition to a
+	 temporary before all the copies and let the copy read that.  */
       tree atype = NULL_TREE;
-      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
+      auto_bitmap written;
+      hash_map<int_hash<int, -1, -2>, tree> saved;
+      for (unsigned i = 0; i < EDGE_COUNT (bb->preds); ++i)
 	{
-	  gphi *phi = gsi.phi ();
-	  tree lhs = gimple_phi_result (phi);
-	  if (!BITINT_TYPE_P (TREE_TYPE (lhs))
-	      || bitint_precision_kind (TREE_TYPE (lhs)) < bitint_prec_large)
-	    continue;
-	  int p1 = var_to_partition (large_huge.m_map, lhs);
-	  gcc_assert (large_huge.m_vars[p1] != NULL_TREE);
-	  tree v1 = large_huge.m_vars[p1];
-	  for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	  gimple_seq saves = NULL, copies = NULL, consts = NULL;
+	  gimple_seq clobbers = NULL;
+	  bitmap_clear (written);
+	  saved.empty ();
+	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	       gsi_next (&gsi))
 	    {
+	      gphi *phi = gsi.phi ();
+	      tree lhs = gimple_phi_result (phi);
+	      if (!BITINT_TYPE_P (TREE_TYPE (lhs))
+		  || (bitint_precision_kind (TREE_TYPE (lhs))
+		      < bitint_prec_large))
+		continue;
+	      int p1 = var_to_partition (large_huge.m_map, lhs);
+	      gcc_assert (large_huge.m_vars[p1] != NULL_TREE);
+	      tree v1 = large_huge.m_vars[p1];
 	      tree arg = gimple_phi_arg_def (phi, i);
-	      edge e = gimple_phi_arg_edge (phi, i);
 	      gimple *g;
 	      switch (TREE_CODE (arg))
 		{
@@ -8687,8 +8698,7 @@ gimple_lower_bitint (void)
 		    {
 		      tree zero = build_zero_cst (TREE_TYPE (v1));
 		      g = gimple_build_assign (v1, zero);
-		      gsi_insert_on_edge (e, g);
-		      edge_insertions = true;
+		      gimple_seq_add_stmt (&consts, g);
 		      break;
 		    }
 		  int ext;
@@ -8736,8 +8746,7 @@ gimple_lower_bitint (void)
 			  tree v2 = build1 (VIEW_CONVERT_EXPR,
 					    TREE_TYPE (v1), c);
 			  g = gimple_build_assign (v1, v2);
-			  gsi_insert_on_edge (e, g);
-			  edge_insertions = true;
+			  gimple_seq_add_stmt (&consts, g);
 			  break;
 			}
 		      if (TREE_CODE (TREE_TYPE (c)) == INTEGER_TYPE)
@@ -8786,12 +8795,9 @@ gimple_lower_bitint (void)
 						   build1 (VIEW_CONVERT_EXPR,
 							   vtype, c));
 			}
-		      gsi_insert_on_edge (e, g);
+		      gimple_seq_add_stmt (&consts, g);
 		      if (min_prec == prec)
-			{
-			  edge_insertions = true;
-			  break;
-			}
+			break;
 		    }
 		  if (ext == 0)
 		    {
@@ -8836,8 +8842,7 @@ gimple_lower_bitint (void)
 					     build_int_cst (sizetype,
 							    nbytes));
 		    }
-		  gsi_insert_on_edge (e, g);
-		  edge_insertions = true;
+		  gimple_seq_add_stmt (&consts, g);
 		  break;
 		default:
 		  gcc_unreachable ();
@@ -8854,6 +8859,34 @@ gimple_lower_bitint (void)
 		    continue;
 		  gcc_assert (large_huge.m_vars[p2] != NULL_TREE);
 		  tree v2 = large_huge.m_vars[p2];
+		  if (atype == NULL_TREE
+		      || !tree_int_cst_equal (TYPE_SIZE (atype),
+					      TYPE_SIZE (TREE_TYPE (lhs))))
+		    {
+		      unsigned HOST_WIDE_INT nelts
+			= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (lhs)))
+			  / limb_prec;
+		      atype = build_array_type_nelts (large_huge.m_limb_type,
+						      nelts);
+		    }
+		  if (bitmap_bit_p (written, p2))
+		    {
+		      bool existed;
+		      tree &tmp = saved.get_or_insert (p2, &existed);
+		      if (!existed)
+			{
+			  tmp = create_tmp_var (atype);
+			  if (TREE_TYPE (v2) != atype)
+			    v2 = build1 (VIEW_CONVERT_EXPR, atype, v2);
+			  g = gimple_build_assign (tmp, v2);
+			  gimple_seq_add_stmt (&saves, g);
+			  tree clobber = build_clobber (atype,
+							CLOBBER_STORAGE_END);
+			  g = gimple_build_assign (tmp, clobber);
+			  gimple_seq_add_stmt (&clobbers, g);
+			}
+		      v2 = tmp;
+		    }
 		  if (VAR_P (v1) && VAR_P (v2))
 		    g = gimple_build_assign (v1, v2);
 		  else if (VAR_P (v1))
@@ -8863,27 +8896,25 @@ gimple_lower_bitint (void)
 		    g = gimple_build_assign (build1 (VIEW_CONVERT_EXPR,
 						     TREE_TYPE (v2), v1), v2);
 		  else
-		    {
-		      if (atype == NULL_TREE
-			  || !tree_int_cst_equal (TYPE_SIZE (atype),
-						  TYPE_SIZE (TREE_TYPE (lhs))))
-			{
-			  unsigned HOST_WIDE_INT nelts
-			    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (lhs)))
-			      / limb_prec;
-			  atype
-			    = build_array_type_nelts (large_huge.m_limb_type,
-						      nelts);
-			}
-		      g = gimple_build_assign (build1 (VIEW_CONVERT_EXPR,
-						       atype, v1),
-					       build1 (VIEW_CONVERT_EXPR,
-						       atype, v2));
-		    }
-		  gsi_insert_on_edge (e, g);
-		  edge_insertions = true;
+		    g = gimple_build_assign (build1 (VIEW_CONVERT_EXPR,
+						     atype, v1),
+					     build1 (VIEW_CONVERT_EXPR,
+						     atype, v2));
+		  gimple_seq_add_stmt (&copies, g);
+		  /* The live PHI results of BB conflict with each other, so
+		     no two copies on the edge write the same partition.  */
+		  bool fresh = bitmap_set_bit (written, p1);
+		  gcc_checking_assert (fresh);
 		  break;
 		}
+	    }
+	  gimple_seq_add_seq (&saves, copies);
+	  gimple_seq_add_seq (&saves, consts);
+	  gimple_seq_add_seq (&saves, clobbers);
+	  if (saves)
+	    {
+	      gsi_insert_seq_on_edge (EDGE_PRED (bb, i), saves);
+	      edge_insertions = true;
 	    }
 	}
     }
