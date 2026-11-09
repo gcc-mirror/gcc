@@ -18690,7 +18690,8 @@ aarch64_force_single_cycle (vec_info *vinfo, slp_tree node)
   auto reduc_info = info_for_reduction (as_a <loop_vec_info> (vinfo), node);
   if (!reduc_info)
     return false;
-  return VECT_REDUC_INFO_FORCE_SINGLE_CYCLE (reduc_info);
+  return VECT_REDUC_INFO_FORCE_SINGLE_CYCLE (reduc_info)
+	 || VECT_REDUC_INFO_TYPE (reduc_info) == FOLD_LEFT_REDUCTION;
 }
 
 /* COUNT, KIND and STMT_INFO are the same as for vector_costs::add_stmt_cost
