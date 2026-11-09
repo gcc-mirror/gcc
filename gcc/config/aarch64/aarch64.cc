@@ -24280,6 +24280,7 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
 
   if (aarch64_force_autovec_mode != VOIDmode)
     {
+      modes->truncate (0);
       modes->safe_push (aarch64_force_autovec_mode);
       return 0;
     }
