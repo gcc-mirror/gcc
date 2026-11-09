@@ -67,7 +67,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
     class exception_ptr;
   }
 
-  using __exception_ptr::exception_ptr;
+  typedef __exception_ptr::exception_ptr exception_ptr;
 
   /** Obtain an exception_ptr to the currently handled exception.
    *
