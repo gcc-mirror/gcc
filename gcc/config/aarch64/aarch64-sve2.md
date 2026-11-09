@@ -4250,6 +4250,20 @@
   [(set_attr "sve_type" "sve_int_pmul")]
 )
 
+;; PMULLB on scalar operands that overlap element 0 of SVE registers.  The
+;; result is the product of the 8-bit or 32-bit sources in element 0 of the
+;; destination, which has twice the element width.
+(define_insn "@aarch64_sve_pmullb_scalar<mode>"
+  [(set (match_operand:<DWI> 0 "register_operand" "=w")
+	(unspec:<DWI>
+	  [(match_operand:SVE_PMULL_SCALAR 1 "register_operand" "w")
+	   (match_operand:SVE_PMULL_SCALAR 2 "register_operand" "w")]
+	  UNSPEC_PMULLB))]
+  "TARGET_SVE2"
+  "pmullb\t%Z0.<Vpmull_wetype>, %Z1.<Vpmull_etype>, %Z2.<Vpmull_etype>"
+  [(set_attr "sve_type" "sve_int_pmul")]
+)
+
 ;; Extending PMUL, with the results modeled as pairs of values.
 ;; This representation works for .H, .D and .Q, with .Q requiring
 ;; the AES extension.  (This is enforced by the mode iterator.)

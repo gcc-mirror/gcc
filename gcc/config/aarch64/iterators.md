@@ -1550,6 +1550,12 @@
 ;; For doubling width of an integer mode
 (define_mode_attr DWI [(QI "HI") (HI "SI") (SI "DI") (DI "TI")])
 
+;; Scalar integer modes for which SVE2 PMULLB has a non-pair form, and the
+;; element sizes of its sources and result.
+(define_mode_iterator SVE_PMULL_SCALAR [QI SI])
+(define_mode_attr Vpmull_etype [(QI "b") (SI "s")])
+(define_mode_attr Vpmull_wetype [(QI "h") (SI "d")])
+
 (define_mode_attr fcvt_change_mode [(SI "df") (DI "sf")])
 
 (define_mode_attr FCVT_CHANGE_MODE [(SI "DF") (DI "SF")])

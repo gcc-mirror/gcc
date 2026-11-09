@@ -34098,6 +34098,81 @@ aarch64::report_not_enum (location_t location, tree fndecl, unsigned int argno,
 	    " a valid %qT value", actual, argno + 1, fndecl, enumtype);
 }
 
+/* Return the scalar X, which has 32 or 64 bits, in a new register of the SVE
+   vector mode VMODE with the elements of VMODE other than element 0 set to
+   zero.  Element 0 is loaded with a scalar FMOV.  */
+
+static rtx
+aarch64_sve_load_elt0 (machine_mode vmode, rtx x)
+{
+  rtx res = gen_reg_rtx (vmode);
+  emit_set_insn (res, gen_rtx_UNSPEC (vmode,
+				      gen_rtvec (2, CONST0_RTX (vmode), x),
+				      UNSPEC_INSR));
+  return res;
+}
+
+/* Store element 0 of the SVE vector VEC, which has mode VMODE, in the
+   scalar register DEST.  */
+
+static void
+aarch64_sve_store_elt0 (rtx dest, rtx vec, machine_mode vmode)
+{
+  insn_code icode = convert_optab_handler (vec_extract_optab, vmode,
+					   GET_MODE (dest));
+  class expand_operand ops[3];
+  create_output_operand (&ops[0], dest, GET_MODE (dest));
+  create_input_operand (&ops[1], vec, vmode);
+  create_integer_operand (&ops[2], 0);
+  expand_insn (icode, 3, ops);
+  if (!rtx_equal_p (ops[0].value, dest))
+    emit_move_insn (dest, ops[0].value);
+}
+
+/* Expand the carry-less multiplication of A and B, which are scalars of the
+   same integer mode, using SVE2 PMULLB.  Store the least significant half of
+   the product in LO and, if HI is nonnull, the most significant half in HI.
+
+   For 8-bit and 32-bit inputs PMULLB produces the whole product as one
+   element of twice the width, in the scalar register that overlaps element 0
+   of the result.  Split it into two halves with a shift.  For 64-bit inputs
+   the product has 128 bits, so use the pair form of PMULLB, which writes the
+   two halves to elements 0 and 1.  Move element 1 to element 0 with UZP2.  */
+
+void
+aarch64_expand_sve_clmul (rtx lo, rtx hi, rtx a, rtx b)
+{
+  scalar_mode mode = as_a <scalar_mode> (GET_MODE (a));
+
+  if (mode == DImode)
+    {
+      machine_mode vmode = aarch64_full_sve_mode (mode).require ();
+      rtx x = aarch64_sve_load_elt0 (vmode, a);
+      rtx y = rtx_equal_p (a, b) ? x : aarch64_sve_load_elt0 (vmode, b);
+      rtx prod = gen_reg_rtx (vmode);
+      emit_insn (gen_aarch64_sve (UNSPEC_PMULLB_PAIR, vmode, prod, x, y));
+      aarch64_sve_store_elt0 (lo, prod, vmode);
+      if (hi)
+	{
+	  rtx high = gen_reg_rtx (vmode);
+	  emit_insn (gen_aarch64_sve (UNSPEC_UZP2, vmode, high, prod, prod));
+	  aarch64_sve_store_elt0 (hi, high, vmode);
+	}
+      return;
+    }
+
+  scalar_mode wmode = GET_MODE_WIDER_MODE (mode).require ();
+  rtx wide = gen_reg_rtx (wmode);
+  emit_insn (gen_aarch64_sve_pmullb_scalar (mode, wide, a, b));
+  emit_move_insn (lo, gen_lowpart (mode, wide));
+  if (hi)
+    {
+      rtx high = expand_shift (RSHIFT_EXPR, wmode, wide,
+			       GET_MODE_BITSIZE (mode), NULL_RTX, 1);
+      emit_move_insn (hi, gen_lowpart (mode, high));
+    }
+}
+
 /* Generate assembly to calculate CRC
    using carry-less multiplication instruction.
    OPERANDS[1] is input CRC,
