@@ -418,10 +418,6 @@ struct Session
   std::string injected_crate_name;
   std::map<std::string, std::string> extern_crates;
 
-  /* extra files get included during late stages of compilation (e.g. macro
-   * expansion) */
-  std::vector<std::string> extra_files;
-
   // backend linemap
   Linemap *linemap;
 
@@ -449,15 +445,6 @@ public:
   void handle_input_files (int num_files, const char **files);
   void init_options ();
   void handle_crate_name (const char *filename, const AST::Crate &parsed_crate);
-
-  /* This function saves the filename data into the session manager using the
-   * `move` semantics, and returns a C-style string referencing the input
-   * std::string */
-  inline const char *include_extra_file (std::string filename)
-  {
-    extra_files.push_back (std::move (filename));
-    return extra_files.back ().c_str ();
-  }
 
   struct LoadedCrate
   {

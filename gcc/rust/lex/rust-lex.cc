@@ -163,8 +163,10 @@ Lexer::Lexer (const char *filename, RAIIFile file_input, Linemap *linemap,
     input_queue{*raw_input_source}, token_queue (TokenSource (this))
 {
   // inform line_table that file is being entered and is in line 1
+  // TODO: filename needs to live ~forever, is there a better way than xstrdup?
+  //                               ^ (as long as the linemap does)
   if (linemap)
-    line_map->start_file (filename, current_line);
+    line_map->start_file (xstrdup (filename), current_line);
 }
 
 Lexer::~Lexer ()

@@ -227,8 +227,7 @@ MacroBuiltin::include_handler (location_t invoc_locus,
 
   std::string filename
     = source_relative_path (lit_expr->as_string (), invoc_locus);
-  auto target_filename
-    = Rust::Session::get_instance ().include_extra_file (std::move (filename));
+  const char *target_filename = filename.c_str ();
 
   RAIIFile target_file (target_filename);
   Linemap *linemap = Session::get_instance ().linemap;
