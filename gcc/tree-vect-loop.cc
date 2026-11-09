@@ -6899,7 +6899,7 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 
   tree type = TREE_TYPE (gimple_assign_lhs (stmt));
 
-  if (!INTEGRAL_TYPE_P (type))
+  if (!INTEGRAL_TYPE_P (type) && !SCALAR_FLOAT_TYPE_P (type))
     return false;
 
   /* Do not try to vectorize bit-precision reductions.  */

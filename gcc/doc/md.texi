@@ -7977,13 +7977,20 @@ for (i = 0; i < LEN + BIAS; i++)
 @mdindex sdot_prod@var{m}@var{n}
 @item @samp{sdot_prod@var{m}@var{n}}
 
-Multiply operand 1 by operand 2 without loss of precision, given that
-both operands contain signed elements.  Add each product to the overlapping
-element of operand 3 and store the result in operand 0.  Operands 0 and 3
-have mode @var{m} and operands 1 and 2 have mode @var{n}, with @var{n}
-having narrower elements than @var{m}.
+Multiply operand 1 by operand 2.  Both operands contain signed integer or
+floating-point elements.  Add each product to the overlapping element of
+operand 3 and store the result in operand 0.
+Operands 0 and 3 have mode @var{m} and operands 1 and 2 have mode @var{n},
+with the elements of @var{m} at least twice as wide as those of @var{n}.
+Both modes must have the same mode class.
 
-Semantically the expressions perform the multiplication in the following signs
+For floating-point operands, convert each input element to the element type
+of mode @var{m} before multiplication.  Round each product to that type
+before summation.  The additions may be reassociated, so the order of
+summation is unspecified.
+
+For integer operands, multiplication is performed without loss of precision,
+and the expressions have the following semantics:
 
 @smallexample
 sdot<signed op0, signed op1, signed op2, signed op3> ==

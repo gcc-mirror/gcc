@@ -1461,12 +1461,17 @@ DEFTREECODE (TRANSACTION_EXPR, "transaction_expr", tcc_expression, 1)
 /* Widening dot-product.
    The first two arguments are of type t1.
    The third argument and the result are of type t2, such that t2 is at least
-   twice the size of t1. DOT_PROD_EXPR(arg1,arg2,arg3) is equivalent to:
+   twice the size of t1.
+   All element types must be integral or all floating-point.
+   For integers, DOT_PROD_EXPR(arg1,arg2,arg3) is equivalent to:
    	tmp = WIDEN_MULT_EXPR(arg1, arg2);
    	arg3 = PLUS_EXPR (tmp, arg3);
    or:
 	tmp = WIDEN_MULT_EXPR(arg1, arg2);
         arg3 = WIDEN_SUM_EXPR (tmp, arg3);
+   For floating-point dot products, convert the inputs to t2, multiply in
+   t2, and add the products to arg3.  Each product is rounded to t2 before
+   summation.
    Like WIDEN_SUM_EXPR, this code is only created for a reduction whose
    summation may be reassociated, so which products are added into which
    element of arg3 is not observable.  */
