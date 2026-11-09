@@ -1246,7 +1246,7 @@ process_dependent_filters ()
    we find a SET rtx that we can use to deduce that a register can be cheaply
    caller-saved.  Return such a register, or NULL_RTX if none is found.  */
 static rtx
-find_call_crossed_cheap_reg (rtx_insn *insn)
+find_call_crossed_cheap_reg (rtx_call_insn *insn)
 {
   rtx cheap_reg = NULL_RTX;
   rtx exp = CALL_INSN_FUNCTION_USAGE (insn);

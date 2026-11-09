@@ -2104,7 +2104,7 @@ rehash_using_reg (rtx x)
    register in INSN.  Also update their TICK values.  */
 
 static void
-invalidate_for_call (rtx_insn *insn)
+invalidate_for_call (rtx_call_insn *insn)
 {
   unsigned int regno;
   unsigned hash;

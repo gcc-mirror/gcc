@@ -6253,7 +6253,7 @@ static rtx call_arguments;
 /* Compute call_arguments.  */
 
 static void
-prepare_call_arguments (basic_block bb, rtx_insn *insn)
+prepare_call_arguments (basic_block bb, rtx_call_insn *insn)
 {
   rtx link, x, call;
   rtx prev, cur, next;
@@ -10013,7 +10013,7 @@ vt_init_cfa_base (void)
 
 /* Reemit INSN, a MARKER_DEBUG_INSN, as a note.  */
 
-static rtx_insn *
+static rtx_note *
 reemit_marker_as_note (rtx_insn *insn)
 {
   gcc_checking_assert (DEBUG_MARKER_INSN_P (insn));

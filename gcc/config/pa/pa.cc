@@ -9834,15 +9834,15 @@ pa_combine_instructions (void)
 	      /* Emit the new_jump instruction and delete the old anchor.  */
 	      rtvec vtemp = gen_rtvec (2, copy_rtx (PATTERN (anchor)),
 				       copy_rtx (PATTERN (floater)));
-	      rtx temp = gen_rtx_PARALLEL (VOIDmode, vtemp);
-	      temp = emit_jump_insn_before (temp, anchor);
+	      rtx body = gen_rtx_PARALLEL (VOIDmode, vtemp);
+	      rtx_jump_insn *insn = emit_jump_insn_before (body, anchor);
 
-	      JUMP_LABEL (temp) = JUMP_LABEL (anchor);
+	      JUMP_LABEL (insn) = JUMP_LABEL (anchor);
 	      SET_INSN_DELETED (anchor);
 
 	      /* Emit a special USE insn for FLOATER, then delete
 		 the floating insn.  */
-	      temp = copy_rtx (PATTERN (floater));
+	      rtx temp = copy_rtx (PATTERN (floater));
 	      emit_insn_before (gen_rtx_USE (VOIDmode, temp), floater);
 	      delete_insn (floater);
 	      continue;

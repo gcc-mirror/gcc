@@ -94,7 +94,7 @@ const pass_data pass_data_insert_bti =
 
 /* Decide if BTI J is needed after a call instruction.  */
 static bool
-call_needs_bti_j (rtx_insn *insn)
+call_needs_bti_j (rtx_call_insn *insn)
 {
   /* Call returns twice, one of which may be indirect.  */
   if (find_reg_note (insn, REG_SETJMP, NULL))

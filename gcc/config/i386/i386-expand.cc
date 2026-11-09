@@ -11308,8 +11308,8 @@ ix86_expand_strlensi_unroll_1 (rtx out, rtx src, rtx align_rtx)
        tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
                             gen_rtx_LABEL_REF (VOIDmode, end_2_label),
                             pc_rtx);
-       tmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-       JUMP_LABEL (tmp) = end_2_label;
+       rtx_insn *jump = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+       JUMP_LABEL (jump) = end_2_label;
 
        /* Not in the first two.  Move two bytes forward.  */
        emit_insn (gen_lshrsi3 (tmpreg, tmpreg, GEN_INT (16)));
@@ -22853,8 +22853,8 @@ ix86_expand_sse_compare_and_jump (enum rtx_code code, rtx op0, rtx op1,
   tmp = gen_rtx_fmt_ee (code, VOIDmode, reg, const0_rtx);
   tmp = gen_rtx_IF_THEN_ELSE (VOIDmode, tmp,
 			      gen_rtx_LABEL_REF (VOIDmode, label), pc_rtx);
-  tmp = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
-  JUMP_LABEL (tmp) = label;
+  rtx_insn *jump = emit_jump_insn (gen_rtx_SET (pc_rtx, tmp));
+  JUMP_LABEL (jump) = label;
 
   return label;
 }

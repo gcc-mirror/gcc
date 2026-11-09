@@ -248,7 +248,7 @@ const unsigned int MULTIPLE_CANDIDATES = -1U;
 /* Pass-specific information about one basic block.  */
 struct remat_block_info {
   /* The last call instruction in the block.  */
-  rtx_insn *last_call;
+  rtx_call_insn *last_call;
 
   /* The set of candidates that are live on entry to the block.  NULL is
      equivalent to an empty set.  */
@@ -438,7 +438,7 @@ private:
   void assign_value_number (unsigned int);
   void decide_candidate_validity (void);
   void restrict_remat_for_unavail_regs (bitmap, const_bitmap);
-  void restrict_remat_for_call (bitmap, rtx_insn *);
+  void restrict_remat_for_call (bitmap, rtx_call_insn *);
   bool stable_use_p (unsigned int);
   void emit_copy_before (unsigned int, rtx, rtx);
   void stabilize_pattern (unsigned int);
@@ -1544,7 +1544,7 @@ early_remat::restrict_remat_for_unavail_regs (bitmap candidates,
    that is potentially live across CALL.  */
 
 void
-early_remat::restrict_remat_for_call (bitmap candidates, rtx_insn *call)
+early_remat::restrict_remat_for_call (bitmap candidates, rtx_call_insn *call)
 {
   /* We don't know whether partially-clobbered registers are live
      across the call or not, so assume that they are.  */
@@ -1926,7 +1926,7 @@ void
 early_remat::process_block (basic_block bb)
 {
   remat_block_info *info = &m_block_info[bb->index];
-  rtx_insn *last_call = NULL;
+  rtx_call_insn *last_call = NULL;
   rtx_insn *insn;
 
   /* Ensure that we always use the same candidate index to refer to an

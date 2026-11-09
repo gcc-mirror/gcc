@@ -3685,7 +3685,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 /* FIXME: Why can't this function just use flags_from_decl_or_type and
    test for ECF_NORETURN?  */
 static bool
-call_may_noreturn_p (rtx_insn *insn)
+call_may_noreturn_p (rtx_call_insn *insn)
 {
   rtx call;
 
