@@ -1070,9 +1070,11 @@ gfc_build_qualified_array (tree decl, gfc_symbol * sym)
   nest = (procns->proc_name->backend_decl != current_function_decl)
 	 && !sym->attr.contained;
 
+  /* A dummy coarray already has its hidden token argument.  */
   if (array_attr->codimension && flag_coarray == GFC_FCOARRAY_LIB
       && as->type != AS_ASSUMED_SHAPE
-      && GFC_TYPE_ARRAY_CAF_TOKEN (type) == NULL_TREE)
+      && GFC_TYPE_ARRAY_CAF_TOKEN (type) == NULL_TREE
+      && !(DECL_LANG_SPECIFIC (decl) && GFC_DECL_TOKEN (decl)))
     {
       tree token;
       tree token_type = build_qualified_type (pvoid_type_node,

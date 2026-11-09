@@ -376,7 +376,7 @@ split_expr_at_caf_ref (gfc_expr *expr, gfc_namespace *ns,
   created = !gfc_get_sym_tree (!caf_ref ? expr->symtree->name : "base", ns, &st,
 			       false);
   gcc_assert (created);
-  st->n.sym->attr.flavor = FL_PARAMETER;
+  st->n.sym->attr.flavor = FL_VARIABLE;
   st->n.sym->attr.dummy = 1;
   st->n.sym->attr.intent = INTENT_IN;
   st->n.sym->ts = *caf_ts;
@@ -857,7 +857,7 @@ create_get_callback (gfc_expr *expr)
   gfc_get_symbol (name, sub_ns, &nsym);                                        \
   nsym->ts.type = stype;                                                       \
   nsym->ts.kind = skind;                                                       \
-  nsym->attr.flavor = FL_PARAMETER;                                            \
+  nsym->attr.flavor = FL_VARIABLE;                                             \
   nsym->attr.dummy = 1;                                                        \
   nsym->attr.intent = sintent;                                                 \
   nsym->declared_at = expr->where;                                             \
@@ -1106,7 +1106,7 @@ create_allocated_callback (gfc_expr *expr)
   gfc_get_symbol (name, sub_ns, &nsym);                                        \
   nsym->ts.type = stype;                                                       \
   nsym->ts.kind = skind;                                                       \
-  nsym->attr.flavor = FL_PARAMETER;                                            \
+  nsym->attr.flavor = FL_VARIABLE;                                             \
   nsym->attr.dummy = 1;                                                        \
   nsym->attr.intent = sintent;                                                 \
   nsym->declared_at = expr->where;                                             \
@@ -1252,7 +1252,7 @@ create_send_callback (gfc_expr *expr, gfc_expr *rhs)
   gfc_get_symbol (name, sub_ns, &nsym);                                        \
   nsym->ts.type = stype;                                                       \
   nsym->ts.kind = skind;                                                       \
-  nsym->attr.flavor = FL_PARAMETER;                                            \
+  nsym->attr.flavor = FL_VARIABLE;                                             \
   nsym->attr.dummy = 1;                                                        \
   nsym->attr.intent = sintent;                                                 \
   nsym->declared_at = expr->where;                                             \
