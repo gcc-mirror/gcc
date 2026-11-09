@@ -462,7 +462,7 @@ try_forward_edges (int mode, basic_block b)
 		      if (DEBUG_INSN_P (last))
 			last = prev_nondebug_insn (last);
 		      if (last && INSN_P (last))
-			new_locus = INSN_LOCATION (last);
+			new_locus = last->location ();
 		      else
 			new_locus = UNKNOWN_LOCATION;
 

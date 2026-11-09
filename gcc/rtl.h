@@ -579,6 +579,13 @@ public:
   /* Mark this insn as not deleted.  */
 
   void set_undeleted () { volatil = false; }
+
+  /* Source location, or UNKNOWN_LOCATION.  */
+  location_t location () const;
+  void set_location (location_t);
+
+  /* True when location () is a real source location.  */
+  bool has_location () const;
 };
 
 /* Subclasses of rtx_insn.  */
@@ -1528,24 +1535,27 @@ inline rtx& PATTERN (rtx insn)
   return XEXP (insn, 3);
 }
 
-inline location_t INSN_LOCATION (const rtx_insn *insn)
+inline location_t
+rtx_insn::location () const
 {
-  return XLOC (insn, 4);
+  return XLOC (this, 4);
 }
 
-inline location_t& INSN_LOCATION (rtx_insn *insn)
+inline void
+rtx_insn::set_location (location_t loc)
 {
-  return XLOC (insn, 4);
+  XLOC (this, 4) = loc;
 }
 
-inline bool INSN_HAS_LOCATION (const rtx_insn *insn)
+inline bool
+rtx_insn::has_location () const
 {
-  return LOCATION_LOCUS (INSN_LOCATION (insn)) != UNKNOWN_LOCATION;
+  return LOCATION_LOCUS (location ()) != UNKNOWN_LOCATION;
 }
 
 /* LOCATION of an RTX if relevant.  */
 #define RTL_LOCATION(X) (INSN_P (X) ? \
-			 INSN_LOCATION (as_a <rtx_insn *> (X)) \
+			 (as_a <rtx_insn *> (X))->location () \
 			 : UNKNOWN_LOCATION)
 
 /* Code number of instruction, from when it was recognized.

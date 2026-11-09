@@ -3897,7 +3897,7 @@ insert_wic_for_ilb_runout (rtx_insn *first)
                                     (gen_int_mode (addr_offset, SImode)),
                                     before_4);
                 recog_memoized (insn);
-                INSN_LOCATION (insn) = INSN_LOCATION (before_4);
+		insn->set_location (before_4->location ());
                 INSN_ADDRESSES_NEW (insn, INSN_ADDRESSES (INSN_UID (before_4)));
                 return;
               }

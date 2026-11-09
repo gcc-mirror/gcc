@@ -389,8 +389,9 @@ skip NEXT_INSN
 skip SET_NEXT_INSN
 skip BLOCK_FOR_INSN
 skip PATTERN
-skip INSN_LOCATION
-skip INSN_HAS_LOCATION
+skip rtx_insn::location
+skip rtx_insn::set_location
+skip rtx_insn::has_location
 skip JUMP_LABEL_AS_INSN
 
 # Restore pagination to the previous state.

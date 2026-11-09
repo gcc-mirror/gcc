@@ -923,7 +923,7 @@ can_assign_to_reg_without_clobbers_p (rtx x, machine_mode mode)
 						   FIRST_PSEUDO_REGISTER * 2),
 				      const0_rtx));
       SET_NEXT_INSN (test_insn) = SET_PREV_INSN (test_insn) = 0;
-      INSN_LOCATION (test_insn) = UNKNOWN_LOCATION;
+      test_insn->set_location (UNKNOWN_LOCATION);
     }
 
   /* Now make an insn like the one we would make when GCSE'ing and see if

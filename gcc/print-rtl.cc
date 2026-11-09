@@ -452,7 +452,7 @@ rtx_writer::print_rtx_operand_code_L (const_rtx in_rtx, int idx)
       /*  Pretty-print insn locations.  Ignore scoping as it is mostly
 	  redundant with line number information and do not print anything
 	  when there is no location information available.  */
-      if (INSN_HAS_LOCATION (in_insn))
+      if (in_insn->has_location ())
 	{
 	  expanded_location xloc = insn_location (in_insn);
 	  fprintf (m_outfile, " \"%s\":%i:%i", xloc.file, xloc.line,

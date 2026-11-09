@@ -3339,7 +3339,7 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
 
 	      endbr = gen_nop_endbr ();
 	      emit_insn_after_setloc (endbr, call_insn,
-				     INSN_LOCATION (call_insn));
+				      call_insn->location ());
 	      continue;
 	    }
 

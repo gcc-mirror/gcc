@@ -4170,7 +4170,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   before = PREV_INSN (trial);
   after = NEXT_INSN (trial);
 
-  emit_insn_after_setloc (seq, trial, INSN_LOCATION (trial));
+  emit_insn_after_setloc (seq, trial, trial->location ());
 
   delete_insn (trial);
 
@@ -4206,7 +4206,7 @@ make_insn_raw (rtx pattern)
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
-  INSN_LOCATION (insn) = curr_insn_location ();
+  insn->set_location (curr_insn_location ());
   BLOCK_FOR_INSN (insn) = NULL;
 
 #ifdef ENABLE_RTL_CHECKING
@@ -4241,7 +4241,7 @@ make_debug_insn_raw (rtx pattern)
   PATTERN (insn) = pattern;
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
-  INSN_LOCATION (insn) = curr_insn_location ();
+  insn->set_location (curr_insn_location ());
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -4263,7 +4263,7 @@ make_jump_insn_raw (rtx pattern)
   INSN_CODE (insn) = -1;
   REG_NOTES (insn) = NULL;
   JUMP_LABEL (insn) = NULL;
-  INSN_LOCATION (insn) = curr_insn_location ();
+  insn->set_location (curr_insn_location ());
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -4286,7 +4286,7 @@ make_call_insn_raw (rtx pattern)
   REG_NOTES (insn) = NULL;
   CALL_INSN_FUNCTION_USAGE (insn) = NULL;
   CALL_INSN_ABI_ID (insn) = 0;
-  INSN_LOCATION (insn) = curr_insn_location ();
+  insn->set_location (curr_insn_location ());
   BLOCK_FOR_INSN (insn) = NULL;
 
   return insn;
@@ -5034,8 +5034,8 @@ emit_pattern_after_setloc (rtx pattern, rtx_insn *after, location_t loc,
     {
       if (active_insn_p (after)
 	  && !JUMP_TABLE_DATA_P (after) /* FIXME */
-	  && !INSN_LOCATION (after))
-	INSN_LOCATION (after) = loc;
+	  && !after->location ())
+	after->set_location (loc);
       if (after == last)
 	break;
       after = NEXT_INSN (after);
@@ -5058,7 +5058,7 @@ emit_pattern_after (rtx pattern, rtx_insn *after, bool skip_debug_insns,
       prev = PREV_INSN (prev);
 
   if (INSN_P (prev))
-    return emit_pattern_after_setloc (pattern, after, INSN_LOCATION (prev),
+    return emit_pattern_after_setloc (pattern, after, prev->location (),
 				      make_raw);
   else
     return emit_pattern_after_noloc (pattern, after, NULL, make_raw);
@@ -5147,8 +5147,8 @@ emit_pattern_before_setloc (rtx pattern, rtx_insn *before, location_t loc,
     {
       if (active_insn_p (first)
 	  && !JUMP_TABLE_DATA_P (first) /* FIXME */
-	  && !INSN_LOCATION (first))
-	INSN_LOCATION (first) = loc;
+	  && !first->location ())
+	first->set_location (loc);
       if (first == last)
 	break;
       first = NEXT_INSN (first);
@@ -5172,7 +5172,7 @@ emit_pattern_before (rtx pattern, rtx_insn *before, bool skip_debug_insns,
       next = PREV_INSN (next);
 
   if (INSN_P (next))
-    return emit_pattern_before_setloc (pattern, before, INSN_LOCATION (next),
+    return emit_pattern_before_setloc (pattern, before, next->location (),
 				       insnp, make_raw);
   else
     return emit_pattern_before_noloc (pattern, before,
@@ -6700,7 +6700,7 @@ emit_copy_of_insn_after (rtx_insn *insn, rtx_insn *after)
   if (NONDEBUG_INSN_P (insn))
     mark_jump_label (PATTERN (new_rtx), new_rtx, 0);
 
-  INSN_LOCATION (new_rtx) = INSN_LOCATION (insn);
+  new_rtx->set_location (insn->location ());
 
   /* If the old insn is frame related, then so is the new one.  This is
      primarily needed for IA-64 unwind info which marks epilogue insns,
@@ -6782,7 +6782,7 @@ set_insn_locations (rtx_insn *insn, location_t loc)
   while (insn)
     {
       if (INSN_P (insn))
-	INSN_LOCATION (insn) = loc;
+	insn->set_location (loc);
       insn = NEXT_INSN (insn);
     }
 }
@@ -6791,28 +6791,28 @@ set_insn_locations (rtx_insn *insn, location_t loc)
 tree
 insn_scope (const rtx_insn *insn)
 {
-  return LOCATION_BLOCK (INSN_LOCATION (insn));
+  return LOCATION_BLOCK (insn->location ());
 }
 
 /* Return line number of the statement that produced this insn.  */
 int
 insn_line (const rtx_insn *insn)
 {
-  return LOCATION_LINE (INSN_LOCATION (insn));
+  return LOCATION_LINE (insn->location ());
 }
 
 /* Return source file of the statement that produced this insn.  */
 const char *
 insn_file (const rtx_insn *insn)
 {
-  return LOCATION_FILE (INSN_LOCATION (insn));
+  return LOCATION_FILE (insn->location ());
 }
 
 /* Return expanded location of the statement that produced this insn.  */
 expanded_location
 insn_location (const rtx_insn *insn)
 {
-  return expand_location (INSN_LOCATION (insn));
+  return expand_location (insn->location ());
 }
 
 /* Return true if memory model MODEL requires a pre-operation (release-style)

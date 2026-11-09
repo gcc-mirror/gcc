@@ -8122,7 +8122,7 @@ require_pic_register (rtx pic_reg, bool compute_now)
 
 	      for (insn = seq; insn; insn = NEXT_INSN (insn))
 		if (INSN_P (insn))
-		  INSN_LOCATION (insn) = prologue_location;
+		  insn->set_location (prologue_location);
 
 	      /* We can be called during expansion of PHI nodes, where
 	         we can't yet emit instructions directly in the final
@@ -34511,11 +34511,11 @@ arm_emit_mve_unpredicated_insn_to_seq (rtx_insn* insn)
       default:
 	gcc_unreachable ();
     }
-  INSN_LOCATION (new_insn) = INSN_LOCATION (insn);
+  new_insn->set_location (insn->location ());
   if (move)
     {
       new_insn = emit_insn (move);
-      INSN_LOCATION (new_insn) = INSN_LOCATION (insn);
+      new_insn->set_location (insn->location ());
     }
   return true;
 }

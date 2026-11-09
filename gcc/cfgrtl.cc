@@ -925,10 +925,10 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
   /* First scan block A backward.  */
   insn = BB_END (a);
   end = PREV_INSN (BB_HEAD (a));
-  while (insn != end && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
+  while (insn != end && (!NONDEBUG_INSN_P (insn) || !insn->has_location ()))
     insn = PREV_INSN (insn);
 
-  if (insn != end && loc_equal (INSN_LOCATION (insn), goto_locus))
+  if (insn != end && loc_equal (insn->location (), goto_locus))
     return false;
 
   /* Then scan block B forward.  */
@@ -939,8 +939,8 @@ unique_locus_on_edge_between_p (basic_block a, basic_block b)
       while (insn != end && !NONDEBUG_INSN_P (insn))
 	insn = NEXT_INSN (insn);
 
-      if (insn != end && INSN_HAS_LOCATION (insn)
-	  && loc_equal (INSN_LOCATION (insn), goto_locus))
+      if (insn != end && insn->has_location ()
+	  && loc_equal (insn->location (), goto_locus))
 	return false;
     }
 
@@ -957,7 +957,7 @@ emit_nop_for_unique_locus_between (basic_block a, basic_block b)
     return;
 
   BB_END (a) = emit_insn_after_noloc (gen_nop (), BB_END (a), a);
-  INSN_LOCATION (BB_END (a)) = EDGE_SUCC (a, 0)->goto_locus;
+  BB_END (a)->set_location (EDGE_SUCC (a, 0)->goto_locus);
 }
 
 /* Blocks A and B are to be merged into a single block A.  The insns
@@ -4344,15 +4344,15 @@ fixup_reorder_chain (void)
 	      insn = BB_END (e->src);
 	      end = PREV_INSN (BB_HEAD (e->src));
 	      while (insn != end
-		     && (!NONDEBUG_INSN_P (insn) || !INSN_HAS_LOCATION (insn)))
+		     && (!NONDEBUG_INSN_P (insn) || !insn->has_location ()))
 		insn = PREV_INSN (insn);
 	      if (insn != end
-		  && loc_equal (INSN_LOCATION (insn), e->goto_locus))
+		  && loc_equal (insn->location (), e->goto_locus))
 		continue;
 	      if (simplejump_p (BB_END (e->src))
-		  && !INSN_HAS_LOCATION (BB_END (e->src)))
+		  && !BB_END (e->src)->has_location ())
 		{
-		  INSN_LOCATION (BB_END (e->src)) = e->goto_locus;
+		  BB_END (e->src)->set_location (e->goto_locus);
 		  continue;
 		}
 	      dest = e->dest;
@@ -4368,15 +4368,15 @@ fixup_reorder_chain (void)
 		  end = NEXT_INSN (BB_END (dest));
 		  while (insn != end && !NONDEBUG_INSN_P (insn))
 		    insn = NEXT_INSN (insn);
-		  if (insn != end && INSN_HAS_LOCATION (insn)
-		      && loc_equal (INSN_LOCATION (insn), e->goto_locus))
+		  if (insn != end && insn->has_location ()
+		      && loc_equal (insn->location (), e->goto_locus))
 		    continue;
 		}
 	      nb = split_edge (e);
 	      if (!INSN_P (BB_END (nb)))
 		BB_END (nb) = emit_insn_after_noloc (gen_nop (), BB_END (nb),
 							 nb);
-	      INSN_LOCATION (BB_END (nb)) = e->goto_locus;
+	      BB_END (nb)->set_location (e->goto_locus);
 
 	      /* If there are other incoming edges to the destination block
 		 with the same goto locus, redirect them to the new block as

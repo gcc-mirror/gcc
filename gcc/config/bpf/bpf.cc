@@ -1233,7 +1233,7 @@ bpf_output_line_info (FILE *asm_out_file, rtx_insn *insn)
 	}
 
 
-      if (!INSN_HAS_LOCATION (insn))
+      if (!insn->has_location ())
 	return;
 
       exploc = insn_location (insn);

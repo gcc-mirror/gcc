@@ -56,8 +56,8 @@ copyid_location_from_bb (basic_block bb)
 
   rtx_insn *insn;
   FOR_BB_INSNS_REVERSE (bb, insn)
-    if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
-      return INSN_LOCATION (insn);
+    if (INSN_P (insn) && insn->has_location ())
+      return insn->location ();
 
   return UNKNOWN_LOCATION;
 }

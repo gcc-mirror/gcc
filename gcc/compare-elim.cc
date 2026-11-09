@@ -656,7 +656,7 @@ try_validate_parallel (rtx set_a, rtx set_b)
 
   SET_PREV_INSN (insn) = NULL_RTX;
   SET_NEXT_INSN (insn) = NULL_RTX;
-  INSN_LOCATION (insn) = 0;
+  insn->set_location (0);
   return insn;
 }
 

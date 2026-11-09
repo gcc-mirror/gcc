@@ -3412,7 +3412,7 @@ mips16_gp_pseudo_reg (void)
 
       rtx set = gen_load_const_gp (cfun->machine->mips16_gp_pseudo_rtx);
       rtx_insn *insn = emit_insn_after (set, scan);
-      INSN_LOCATION (insn) = 0;
+      insn->set_location (0);
       /* NewABI support hasn't been implement.  NewABI should generate RTL
 	 sequence instead of ASM sequence directly.  */
       if (mips_current_loadgp_style () == LOADGP_OLDABI)

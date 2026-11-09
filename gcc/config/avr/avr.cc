@@ -3066,7 +3066,7 @@ void
 avr_final_prescan_insn (rtx_insn *insn, rtx * /*operands*/,
 			int /*num_operands*/)
 {
-  avr_insn_location = LOCATION_LOCUS (INSN_LOCATION (insn));
+  avr_insn_location = LOCATION_LOCUS (insn->location ());
 
   if (avr_log.rtx_costs)
     {

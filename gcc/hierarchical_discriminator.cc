@@ -110,11 +110,12 @@ assign_discriminators_to_bb (basic_block bb,
       rtx_insn *insn;
       FOR_BB_INSNS (bb, insn)
 	{
-	  if (!INSN_P (insn) || !INSN_HAS_LOCATION (insn))
+	  if (!INSN_P (insn) || !insn->has_location ())
 	    continue;
-	  location_t loc = INSN_LOCATION (insn);
-	  INSN_LOCATION (insn)
-	    = update_location_discriminator (loc, multiplicity_factor, copyid);
+	  location_t loc = insn->location ();
+	  insn->set_location
+	    (update_location_discriminator (loc, multiplicity_factor,
+						     copyid));
 	}
       return;
     }
@@ -285,7 +286,7 @@ init_copyid_allocator (struct function *fn)
 	  FOR_BB_INSNS (bb, insn)
 	    {
 	      if (INSN_P (insn))
-		record_existing_copyid (INSN_LOCATION (insn), fn);
+		record_existing_copyid (insn->location (), fn);
 	    }
 	}
     }

@@ -455,7 +455,7 @@ riscv_remove_unneeded_save_restore_calls (void)
   rtx_insn *before_call = PREV_INSN (call);
   remove_insn (call);
   rtx_insn *insn = emit_call_insn_after_setloc (sibcall, before_call,
-						INSN_LOCATION (call));
+						call->location ());
   REG_NOTES (insn) = REG_NOTES (call);
   CALL_INSN_ABI_ID (insn) = CALL_INSN_ABI_ID (call);
   SIBLING_CALL_P (insn) = 1;

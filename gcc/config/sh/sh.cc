@@ -5609,7 +5609,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 	 NOTE_INSN_BLOCK_END notes between the indirect_jump_scratch and
 	 the jump.  */
 
-      INSN_LOCATION (insn) = INSN_LOCATION (jump);
+      insn->set_location (jump->location ());
       INSN_CODE (insn) = CODE_FOR_indirect_jump_scratch;
       return insn;
     }
@@ -12276,7 +12276,7 @@ sh_recog_treg_set_expr (rtx op, machine_mode mode)
   PATTERN (i) = gen_rtx_SET (get_t_reg_rtx (), op);
   INSN_CODE (i) = -1;
   REG_NOTES (i) = NULL;
-  INSN_LOCATION (i) = curr_insn_location ();
+  i->set_location (curr_insn_location ());
   BLOCK_FOR_INSN (i) = NULL;
   SET_PREV_INSN (i) = NULL;
   SET_NEXT_INSN (i) = NULL;

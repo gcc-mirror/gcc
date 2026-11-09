@@ -405,7 +405,7 @@ aarch64_do_track_speculation ()
 		    }
 
 		  for (rtx_insn *list = seq; list; list = NEXT_INSN (list))
-		    INSN_LOCATION (list) = INSN_LOCATION (call_insn);
+		    list->set_location (call_insn->location ());
 
 		  insert_insn_on_edge (seq, e);
 		}

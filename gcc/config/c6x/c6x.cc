@@ -4592,7 +4592,7 @@ gen_one_bundle (rtx_insn **slot, int n_filled, int real_first)
   seq = gen_rtx_SEQUENCE (VOIDmode, gen_rtvec_v (n_filled, slot));
   bundle = make_insn_raw (seq);
   BLOCK_FOR_INSN (bundle) = BLOCK_FOR_INSN (slot[0]);
-  INSN_LOCATION (bundle) = INSN_LOCATION (slot[0]);
+  bundle->set_location (slot[0]->location ());
   SET_PREV_INSN (bundle) = SET_PREV_INSN (slot[real_first]);
 
   t = NULL;
@@ -4606,7 +4606,7 @@ gen_one_bundle (rtx_insn **slot, int n_filled, int real_first)
 	SET_NEXT_INSN (t) = insn;
       t = insn;
       if (i > 0)
-	INSN_LOCATION (slot[i]) = INSN_LOCATION (bundle);
+	slot[i]->set_location (bundle->location ());
     }
 
   SET_NEXT_INSN (bundle) = NEXT_INSN (PREV_INSN (bundle));

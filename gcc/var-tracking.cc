@@ -10029,7 +10029,7 @@ reemit_marker_as_note (rtx_insn *insn)
 	if (cfun->debug_nonbind_markers)
 	  {
 	    note = emit_note_before (kind, insn);
-	    NOTE_MARKER_LOCATION (note) = INSN_LOCATION (insn);
+	    NOTE_MARKER_LOCATION (note) = insn->location ();
 	  }
 	delete_insn (insn);
 	return note;

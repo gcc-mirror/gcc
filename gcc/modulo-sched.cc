@@ -1251,7 +1251,7 @@ loop_single_full_bb_p (class loop *loop)
 static void
 dump_insn_location (rtx_insn *insn)
 {
-  if (dump_file && INSN_HAS_LOCATION (insn))
+  if (dump_file && insn->has_location ())
     {
       expanded_location xloc = insn_location (insn);
       fprintf (dump_file, " %s:%i", xloc.file, xloc.line);

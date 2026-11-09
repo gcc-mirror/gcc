@@ -6483,7 +6483,7 @@ output_return (rtx_insn *insn)
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
 	      final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
-	      INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+	      delay->set_location (UNKNOWN_LOCATION);
 
 	      output_restore (pat);
 	    }
@@ -6554,7 +6554,7 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
 	  final_scan_insn (delay, asm_out_file, optimize, 0, NULL);
-	  INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+	  delay->set_location (UNKNOWN_LOCATION);
 
 	  output_restore (pat);
 	}

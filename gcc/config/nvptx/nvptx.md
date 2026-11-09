@@ -1711,7 +1711,7 @@
       return nvptx_output_fake_ptx_alloca ();
     else
       {
-	sorry_at (INSN_LOCATION (insn),
+	sorry_at (insn->location (),
 		  "dynamic stack allocation not supported");
 	return "";
       }

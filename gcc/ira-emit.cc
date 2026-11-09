@@ -1006,7 +1006,7 @@ emit_moves (void)
 	  while (next && !NONDEBUG_INSN_P (next))
 	    next = NEXT_INSN (next);
 	  if (next)
-	    set_insn_locations (insns, INSN_LOCATION (next));
+	    set_insn_locations (insns, next->location ());
 	  if (tmp == BB_HEAD (bb))
 	    emit_insn_before (insns, tmp);
 	  else if (tmp)

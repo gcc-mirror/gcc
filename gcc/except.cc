@@ -944,7 +944,7 @@ emit_to_new_bb_before (rtx_insn *seq, rtx_insn *insn)
   while (next && !NONDEBUG_INSN_P (next))
     next = NEXT_INSN (next);
   if (next)
-    last = emit_insn_before_setloc (seq, insn, INSN_LOCATION (next));
+    last = emit_insn_before_setloc (seq, insn, next->location ());
   else
     last = emit_insn_before (seq, insn);
   if (BARRIER_P (last))

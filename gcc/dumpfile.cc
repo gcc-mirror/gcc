@@ -429,7 +429,7 @@ dump_user_location_t::dump_user_location_t (const rtx_insn *insn)
       basic_block bb = BLOCK_FOR_INSN (insn);
       if (bb)
 	m_count = bb->count;
-      m_loc = INSN_LOCATION (insn);
+      m_loc = insn->location ();
     }
 }
 

@@ -1542,7 +1542,7 @@ reemit_insn_block_notes (void)
 	}
       if (! this_block)
 	{
-	  if (INSN_LOCATION (insn) == UNKNOWN_LOCATION)
+	  if (insn->location () == UNKNOWN_LOCATION)
 	    continue;
 	  else
 	    this_block = DECL_INITIAL (cfun->decl);
@@ -2978,7 +2978,7 @@ compute_discriminator (location_t loc)
 int
 insn_discriminator (const rtx_insn *insn)
 {
-  return compute_discriminator (INSN_LOCATION (insn));
+  return compute_discriminator (insn->location ());
 }
 
 /* Return whether a source line note needs to be emitted before INSN.
@@ -3007,7 +3007,7 @@ notice_source_line (rtx_insn *insn, bool *is_stmt)
       discriminator = compute_discriminator (loc);
       force_source_line = true;
     }
-  else if (INSN_HAS_LOCATION (insn))
+  else if (insn->has_location ())
     {
       expanded_location xloc = insn_location (insn);
       filename = xloc.file;

@@ -1855,7 +1855,7 @@ get_loop_location (class loop *loop)
     {
       FOR_BB_INSNS_REVERSE (desc->in_edge->src, insn)
         {
-          if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+	  if (INSN_P (insn) && insn->has_location ())
             return insn;
         }
     }
@@ -1865,21 +1865,21 @@ get_loop_location (class loop *loop)
     {
       FOR_BB_INSNS_REVERSE (exit->src, insn)
         {
-          if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+	  if (INSN_P (insn) && insn->has_location ())
             return insn;
         }
     }
   /* Next check the latch, to see if it is non-empty.  */
   FOR_BB_INSNS_REVERSE (loop->latch, insn)
     {
-      if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+      if (INSN_P (insn) && insn->has_location ())
         return insn;
     }
   /* Finally, if none of the above identifies the loop control branch,
      return the first location in the loop header.  */
   FOR_BB_INSNS (loop->header, insn)
     {
-      if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+      if (INSN_P (insn) && insn->has_location ())
         return insn;
     }
   /* If all else fails, simply return the current function location.  */

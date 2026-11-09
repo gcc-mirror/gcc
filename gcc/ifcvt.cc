@@ -1331,7 +1331,7 @@ noce_commit_sequence (noce_if_info *if_info, rtx_insn *seq,
     return false;
 
   emit_insn_before_setloc (seq, if_info->jump,
-			   INSN_LOCATION (if_info->insn_a));
+			   if_info->insn_a->location ());
   if_info->transform_name = name;
   return true;
 }
@@ -1381,7 +1381,7 @@ noce_try_move (noce_if_info *if_info)
 	    return false;
 
 	  emit_insn_before_setloc (seq, if_info->jump,
-				   INSN_LOCATION (if_info->insn_a));
+				   if_info->insn_a->location ());
 	}
       if_info->transform_name = "noce_try_move";
       return true;
@@ -3142,7 +3142,7 @@ noce_try_minmax (noce_if_info *if_info)
   if (!seq)
     return false;
 
-  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
+  emit_insn_before_setloc (seq, if_info->jump, if_info->insn_a->location ());
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
   if_info->rev_cond = NULL_RTX;
@@ -3311,7 +3311,7 @@ noce_try_abs (noce_if_info *if_info)
   if (!seq)
     return false;
 
-  emit_insn_before_setloc (seq, if_info->jump, INSN_LOCATION (if_info->insn_a));
+  emit_insn_before_setloc (seq, if_info->jump, if_info->insn_a->location ());
   if_info->cond = cond;
   if_info->cond_earliest = earliest;
   if_info->rev_cond = NULL_RTX;
@@ -3774,7 +3774,7 @@ noce_try_bitop (noce_if_info *if_info)
 	return false;
 
       emit_insn_before_setloc (seq, if_info->jump,
-			       INSN_LOCATION (if_info->insn_a));
+			       if_info->insn_a->location ());
     }
   if_info->transform_name = "noce_try_bitop";
   return true;
@@ -4101,7 +4101,7 @@ noce_convert_multiple_sets (noce_if_info *if_info)
   gcc_assert (!insn_info.is_empty ());
   unsigned then_count = insn_info.length ();
   location_t sequence_location
-    = INSN_LOCATION (insn_info.last ()->unmodified_insn);
+    = insn_info.last ()->unmodified_insn->location ();
 
   auto_delete_vec<noce_multiple_sets_info> else_insn_info;
   auto_vec<unsigned> else_only_indices;
@@ -4320,7 +4320,7 @@ noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
 					  else_insn_info[ii]->target,
 					  else_insn_info[ii]->temporary);
 
-	  set_curr_insn_location (INSN_LOCATION (else_insn));
+	  set_curr_insn_location (else_insn->location ());
 	  rtx temporary = copy_to_mode_reg (GET_MODE (target), value);
 
 	  info->temporary = temporary;
@@ -5135,7 +5135,7 @@ noce_process_if_block (noce_if_info *if_info)
       unshare_all_rtl_in_chain (seq);
       end_sequence ();
 
-      emit_insn_before_setloc (seq, BB_END (test_bb), INSN_LOCATION (insn_a));
+      emit_insn_before_setloc (seq, BB_END (test_bb), insn_a->location ());
     }
 
   /* The original THEN and ELSE blocks may now be removed and the test block
@@ -5389,7 +5389,7 @@ cond_move_process_if_block (noce_if_info *if_info)
       loc_insn = first_active_insn (else_bb);
       gcc_assert (loc_insn);
     }
-  emit_insn_before_setloc (seq, jump, INSN_LOCATION (loc_insn));
+  emit_insn_before_setloc (seq, jump, loc_insn->location ());
 
   noce_finish_if_conversion (if_info);
 
@@ -6119,7 +6119,7 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
     return false;
 
   /* Emit the new insns before cond_earliest.  */
-  emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATION (trap));
+  emit_insn_before_setloc (seq, cond_earliest, trap->location ());
 
   /* Delete the trap block if possible.  */
   remove_edge (trap_bb == then_bb ? then_edge : else_edge);

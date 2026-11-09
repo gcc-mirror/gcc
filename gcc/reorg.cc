@@ -471,7 +471,7 @@ emit_delay_sequence (rtx_insn *insn, const vec<rtx_insn *> &list, int length)
   /* If DELAY_INSN has a location, use it for SEQ_INSN.  If DELAY_INSN does
      not have a location, but one of the delayed insns does, we pick up a
      location from there later.  */
-  INSN_LOCATION (seq_insn) = INSN_LOCATION (insn);
+  seq_insn->set_location (insn->location ());
 
   /* Unlink INSN from the insn chain, so that we can put it into
      the SEQUENCE.   Remember where we want to emit SEQUENCE in AFTER.  */
@@ -500,9 +500,9 @@ emit_delay_sequence (rtx_insn *insn, const vec<rtx_insn *> &list, int length)
 
       /* SPARC assembler, for instance, emit warning when debug info is output
          into the delay slot.  */
-      if (INSN_LOCATION (tem) && !INSN_LOCATION (seq_insn))
-	INSN_LOCATION (seq_insn) = INSN_LOCATION (tem);
-      INSN_LOCATION (tem) = 0;
+      if (tem->location () && !seq_insn->location ())
+	seq_insn->set_location (tem->location ());
+      tem->set_location (0);
 
       for (note = REG_NOTES (tem); note; note = next)
 	{
