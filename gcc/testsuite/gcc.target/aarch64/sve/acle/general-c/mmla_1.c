@@ -52,7 +52,6 @@ f2 (svbool_t pg, svint8_t s8, svuint8_t u8, svuint32_t u32, svint32_t s32,
   svmmla (f64, f32, f16); /* { dg-error {'svmmla' has no form that takes 'svfloat64_t' and 'svfloat32_t' arguments} } */
   svmmla (f64, f64, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svmmla', but argument 2 had type 'svfloat64_t'} } */
 
-  svmmla (f16, f16, f16); /* { dg-error {'svmmla' has no form that takes 'svfloat16_t' arguments} } */
   svmmla (f32, f32, f32);
   svmmla (f64, f64, f64);
 }

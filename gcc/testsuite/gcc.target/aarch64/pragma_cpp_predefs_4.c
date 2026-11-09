@@ -430,3 +430,18 @@
 #ifdef __ARM_FEATURE_CSSC
 #error Foo
 #endif
+
+#pragma GCC target "+nothing+f16mm"
+#ifndef __ARM_FEATURE_F16MM
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+f16f32mm"
+#ifndef __ARM_FEATURE_F16F32MM
+#error Foo
+#endif
+
+#pragma GCC target "+nothing+sve-b16mm"
+#ifndef __ARM_FEATURE_SVE_B16MM
+#error Foo
+#endif

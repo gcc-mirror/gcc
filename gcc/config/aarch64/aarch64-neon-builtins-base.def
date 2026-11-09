@@ -396,3 +396,12 @@ DEF_NEON_FUNCTION (vsm3partw2q, s_unsigned, ("Q0,Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsm4eq,    s_unsigned, ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsm4ekeyq, s_unsigned, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
+// FP16 matrix-multiply accumulate (widening)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_F16F32MM)
+DEF_NEON_FUNCTION (vmmlaq, cvt_f32_f16, ("Q0,Q0,Q1,Q1"))
+#undef REQUIRED_EXTENSIONS
+
+// FP16 matrix-multiply accumulate (non-widening)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_F16MM)
+DEF_NEON_FUNCTION (vmmlaq, h_float, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS

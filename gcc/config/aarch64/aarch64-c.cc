@@ -347,6 +347,9 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
 
   aarch64_def_or_undef (TARGET_F8F16MM, "__ARM_FEATURE_F8F16MM", pfile);
   aarch64_def_or_undef (TARGET_F8F32MM, "__ARM_FEATURE_F8F32MM", pfile);
+  aarch64_def_or_undef (TARGET_F16MM, "__ARM_FEATURE_F16MM", pfile);
+  aarch64_def_or_undef (TARGET_F16F32MM, "__ARM_FEATURE_F16F32MM", pfile);
+  aarch64_def_or_undef (TARGET_SVE_B16MM, "__ARM_FEATURE_SVE_B16MM", pfile);
   aarch64_def_or_undef (TARGET_SVE_F16F32MM, "__ARM_FEATURE_SVE_F16F32MM",
 			pfile);
 }

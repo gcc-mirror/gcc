@@ -946,6 +946,16 @@ struct gimple_abs_diff : public gimple_function_base
   }
 };
 
+/* FP16 matrix-multiply accumulate (widening and non-widening).  */
+class vmmlaq_impl : public function_base
+{
+public:
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (code_for_aarch64_fmmlaq (e.result_mode ()));
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1092,4 +1102,7 @@ NEON_FUNCTION (vsm3partw2q, gimple_exact_insn<CODE_FOR_aarch64_sm3partw2qv4si>,)
 // SM4
 NEON_FUNCTION (vsm4eq,    gimple_exact_insn<CODE_FOR_aarch64_sm4eqv4si>,)
 NEON_FUNCTION (vsm4ekeyq, gimple_exact_insn<CODE_FOR_aarch64_sm4ekeyqv4si>,)
+
+// FP16 matrix-multiply accumulate
+NEON_FUNCTION (vmmlaq,  vmmlaq_impl,)
 }

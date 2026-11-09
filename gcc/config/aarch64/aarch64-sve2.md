@@ -145,6 +145,7 @@
 ;;
 ;; == FMMLA extensions
 ;; ---- [FP] Matrix multiply-accumulate widening
+;; ---- [FP] Matrix multiply-accumulate non-widening
 
 ;; =========================================================================
 ;; == Moves
@@ -5089,6 +5090,29 @@
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , w ; *              ] fmmla\t%0.s, %2.h, %3.h
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;fmmla\t%0.s, %2.h, %3.h
+  }
+  [(set_attr "sve_type" "sve_fp_mul")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Matrix multiply-accumulate non-widening
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FMMLA (F16MM)
+;; - BFMMLA (SVE_B16MM)
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_<sve_fp_op><SVE_FULL_HF_FMMLA:mode><SVE_FULL_HF_FMMLA:mode>"
+  [(set (match_operand:SVE_FULL_HF_FMMLA 0 "register_operand")
+	(unspec:SVE_FULL_HF_FMMLA
+	 [(match_operand:SVE_FULL_HF_FMMLA 2 "register_operand")
+	  (match_operand:SVE_FULL_HF_FMMLA 3 "register_operand")
+	  (match_operand:SVE_FULL_HF_FMMLA 1 "register_operand")]
+	 FMMLA))]
+  "TARGET_NON_STREAMING"
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
+     [ w        , 0 , w , w ; *              ] <b><sve_fp_op>\t%0.h, %2.h, %3.h
+     [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;<b><sve_fp_op>\t%0.h, %2.h, %3.h
   }
   [(set_attr "sve_type" "sve_fp_mul")]
 )

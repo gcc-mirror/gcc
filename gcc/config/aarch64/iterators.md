@@ -226,8 +226,12 @@
 				    (V2SF "TARGET_FP8DOT4")
 				    (V4SF "TARGET_FP8DOT4")])
 
-(define_mode_iterator VDQ_HSF_FMMLA [(V8HF "TARGET_F8F16MM")
-				     (V4SF "TARGET_F8F32MM")])
+;; Same, but with the appropriate conditions for FMMLA support with FP16 source.
+(define_mode_iterator VQ_HSF_F16_FMMLA [(V8HF "TARGET_F16MM")
+				       (V4SF "TARGET_F16F32MM")])
+
+(define_mode_iterator VQ_HSF_F8_FMMLA [(V8HF "TARGET_F8F16MM")
+				      (V4SF "TARGET_F8F32MM")])
 
 ;; Modes suitable to use as the return type of a vcond expression.
 (define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
@@ -596,7 +600,11 @@
 ;; Fully-packed SVE vector modes that have 16-bit float elements.
 (define_mode_iterator SVE_FULL_HF [VNx8BF VNx8HF])
 
-;; Pairs of the above.
+;; Same, but with the appropriate conditions for FMMLA support.
+(define_mode_iterator SVE_FULL_HF_FMMLA [(VNx8BF "TARGET_SVE_B16MM")
+					 (VNx8HF "TARGET_F16MM && TARGET_SVE2p2")])
+
+;; Pairs of SVE_FULL_HF.
 (define_mode_iterator SVE_FULL_HFx2 [VNx16BF VNx16HF])
 
 ;; {f16}{x1,x2}

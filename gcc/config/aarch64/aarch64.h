@@ -438,10 +438,16 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_F8F32MM (AARCH64_HAVE_ISA (F8F32MM))
 /* F8F16MM instructions, enabled through +f8f16mm.  */
 #define TARGET_F8F16MM (AARCH64_HAVE_ISA (F8F16MM))
+/* F16F32MM instructions, enabled through +f16f32mm.  */
+#define TARGET_F16F32MM (AARCH64_HAVE_ISA (F16F32MM))
+/* F16MM instructions, enabled through +f16mm.  */
+#define TARGET_F16MM (AARCH64_HAVE_ISA (F16MM))
 /* SVE_F16F32MM instructions, enabled through +sve-f16f32mm.  */
 #define TARGET_SVE_F16F32MM (AARCH64_HAVE_ISA (SVE_F16F32MM))
 /* F16F32DOT instructions enabled through +f16f32dot.  */
 #define TARGET_F16F32DOT (AARCH64_HAVE_ISA (F16F32DOT))
+/* SVE_B16MM instructions, enabled through +sve-b16mm.  */
+#define TARGET_SVE_B16MM (AARCH64_HAVE_ISA (SVE_B16MM))
 
 /* Make sure this is always defined so we don't have to check for ifdefs
    but rather use normal ifs.  */

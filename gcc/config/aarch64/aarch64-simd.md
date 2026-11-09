@@ -10925,6 +10925,18 @@
   [(set_attr "type" "neon_fp_mla_s_q")]
 )
 
+;; fmmla
+(define_insn "@aarch64_fmmlaq<mode>"
+  [(set (match_operand:VQ_HSF_F16_FMMLA 0 "register_operand" "=w")
+        (plus:VQ_HSF_F16_FMMLA (match_operand:VQ_HSF_F16_FMMLA 1 "register_operand" "0")
+                               (unspec:VQ_HSF_F16_FMMLA [(match_operand:V8HF 2 "register_operand" "w")
+                                                         (match_operand:V8HF 3 "register_operand" "w")]
+                                UNSPEC_FMMLA)))]
+  ""
+  "fmmla\t%0.<Vtype>, %2.8h, %3.8h"
+  [(set_attr "type" "neon_fp_mla_s_q")]
+)
+
 ;; bfmlal<bt>
 (define_insn "aarch64_bfmlal<bt>v4sf"
   [(set (match_operand:V4SF 0 "register_operand" "=w")
@@ -11229,11 +11241,11 @@
 )
 
 (define_insn "@aarch64_<insn><mode>"
-  [(set (match_operand:VDQ_HSF_FMMLA 0 "register_operand")
-	(unspec:VDQ_HSF_FMMLA
+  [(set (match_operand:VQ_HSF_F8_FMMLA 0 "register_operand")
+	(unspec:VQ_HSF_F8_FMMLA
 	 [(match_operand:V16QI 2 "register_operand")
 	  (match_operand:V16QI 3 "register_operand")
-	  (match_operand:VDQ_HSF_FMMLA 1 "register_operand")
+	  (match_operand:VQ_HSF_F8_FMMLA 1 "register_operand")
 	  (reg:DI FPM_REGNUM)]
 	 FMMLA))]
   ""

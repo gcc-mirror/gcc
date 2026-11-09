@@ -496,6 +496,16 @@ DEF_SVE_FUNCTION_GS_FPM (svmmla, mmla, s_float_mf8, none, none, set)
 DEF_SVE_FUNCTION (svmmla, mmla, cvt_f32_f16, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS \
+  nonstreaming_sve (AARCH64_FL_SVE_B16MM)
+DEF_SVE_FUNCTION_GS (svmmla, mmla, h_bfloat, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  nonstreaming_sve (AARCH64_FL_SVE2p2 | AARCH64_FL_F16MM)
+DEF_SVE_FUNCTION_GS (svmmla, mmla, h_float, none, none)
+#undef REQUIRED_EXTENSIONS
+
 /*
 - BFSCALE (predicated)
   // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SVE2 != 0
