@@ -1,0 +1,10 @@
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::u32' in this scope [E0425]
+core/src/num/wrapping.rs:982:32: error: cannot find value 'super::u64' in this scope [E0425]
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::i8' in this scope [E0425]
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::i16' in this scope [E0425]
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::i32' in this scope [E0425]
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::i64' in this scope [E0425]
+core/src/num/wrapping.rs:145:55: error: cannot find value 'self::shift_max::i128' in this scope [E0425]
+core/src/num/wrapping.rs:983:32: error: cannot find value 'super::i64' in this scope [E0425]
+core/src/pin.rs:462:23: error: trait bound is not object safe
+crab1: internal compiler error: in add_constrints_from_param, at rust/typecheck/rust-tyty-variance-analysis.cc:497

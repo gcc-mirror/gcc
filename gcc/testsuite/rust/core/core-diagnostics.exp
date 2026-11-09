@@ -1,0 +1,71 @@
+# Copyright (C) 2026 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Compile libcore through the type checker and compare the diagnostics
+# with core-1.49.expected.
+#
+# core.exp only checks that the early passes still get through core.
+# This test records what the compiler says about core past that point,
+# so a change that fixes or breaks something in core shows up as a diff
+# of the expected file in the PR.
+
+load_lib rust-dg.exp
+
+proc core-diagnostics { } {
+    global srcdir subdir tmpdir
+
+    set name "core-diagnostics"
+    set libdir [file normalize "$srcdir/../../libgrust/rustc-lib"]
+    set src "$libdir/core/src/lib.rs"
+    set expected "$srcdir/$subdir/core-1.49.expected"
+
+    set options [list "additional_flags=-fno-rust-debug -frust-edition=2018 -frust-crate=core -w"]
+    set output [rust_target_compile $src "$tmpdir/core-diagnostics.s" assembly $options]
+
+    # the diagnostics carry the absolute path of the source tree
+    set output [string map [list "$libdir/" ""] $output]
+    # keep an ICE line but nothing after it, the backtrace changes per build
+    regsub {(internal compiler error: [^\n]*\n).*$} $output {\1} output
+    set output [string trim $output]
+
+    set f [open $expected r]
+    set want [string trim [read $f]]
+    close $f
+
+    if { $output eq $want } {
+	pass $name
+	return
+    }
+
+    set actual "$tmpdir/core-diagnostics.out"
+    set f [open $actual w]
+    puts $f $output
+    close $f
+    catch { exec diff -u $expected $actual } diff
+    regsub {\nchild process exited abnormally$} $diff "" diff
+    send_log "diff -u core-1.49.expected core-diagnostics.out:\n$diff\n"
+    fail "$name: diagnostics differ from core-1.49.expected, see rust.log"
+}
+
+set individual_timeout 1200
+
+# the expected file is from a 64-bit target, core's cfg(target_pointer_width)
+# code errors on different lines elsewhere
+if { [check_effective_target_lp64] } {
+    core-diagnostics
+} else {
+    unsupported "core-diagnostics: expected file is for lp64 targets"
+}
