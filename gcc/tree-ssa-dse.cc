@@ -911,8 +911,9 @@ dse_optimize_redundant_stores (gimple *stmt)
       tree fndecl;
       if ((is_gimple_assign (use_stmt)
 	   && gimple_vdef (use_stmt)
-	   && (gimple_assign_single_p (use_stmt)
-	       && initializer_zerop (gimple_assign_rhs1 (use_stmt))))
+	   && gimple_assign_single_p (use_stmt)
+	   && !gimple_has_volatile_ops (use_stmt)
+	   && initializer_zerop (gimple_assign_rhs1 (use_stmt)))
 	  || (gimple_call_builtin_p (use_stmt, BUILT_IN_NORMAL)
 	      && (fndecl = gimple_call_fndecl (use_stmt)) != NULL
 	      && (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_MEMSET
