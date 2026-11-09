@@ -6353,25 +6353,30 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
   unsigned int prec0 = get_min_precision (arg0, UNSIGNED);
   unsigned int prec1 = get_min_precision (arg1, UNSIGNED);
   unsigned int prec = GET_MODE_PRECISION (mode);
+  unsigned int type_prec = TYPE_PRECISION (TREE_TYPE (arg0));
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx bitint_mask = NULL_RTX;
-  if (TYPE_PRECISION (TREE_TYPE (arg0)) != prec)
+  if (type_prec != prec)
     bitint_mask
-      = immed_wide_int_const (wi::mask (TYPE_PRECISION (TREE_TYPE (arg0)),
-					false, prec), mode);
+      = immed_wide_int_const (wi::mask (type_prec, false, prec), mode);
   if (prec0 + prec1 - 1 <= prec)
     {
-      rtx res = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      /* The whole product fits in MODE.  For a type narrower than MODE
+	 the bits above its precision are the high half.  */
+      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      rtx reshi = const0_rtx;
+      if (prec0 + prec1 - 1 > type_prec)
+	reshi = expand_shift (RSHIFT_EXPR, mode, reslo, type_prec, NULL_RTX, 1);
       if (bitint_mask)
-	res = expand_and (mode, res, bitint_mask, NULL_RTX);
-      write_complex_part (target, res, false, true);
-      write_complex_part (target, const0_rtx, true, false);
+	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
+      write_complex_part (target, reslo, false, true);
+      write_complex_part (target, reshi, true, false);
       return;
     }
   if (optab_handler (clmul_widen_optab, mode) != CODE_FOR_nothing
-      && TYPE_PRECISION (TREE_TYPE (arg0)) == prec)
+      && type_prec == prec)
     {
       rtx_insn *start = get_last_insn ();
       rtx reslo = gen_reg_rtx (mode);
@@ -6399,8 +6404,7 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
       if (bitint_mask)
 	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
       write_complex_part (target, reslo, false, true);
-      rtx reshi = expand_shift (RSHIFT_EXPR, wmode, res,
-				TYPE_PRECISION (TREE_TYPE (arg0)),
+      rtx reshi = expand_shift (RSHIFT_EXPR, wmode, res, type_prec,
 				NULL_RTX, 1);
       reshi = convert_modes (mode, wmode, reshi, 1);
       write_complex_part (target, reshi, true, false);
@@ -6467,10 +6471,8 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
       write_complex_part (target, reslom, false, true);
       rtx reshi = expand_binop (mode, xor_optab, h, t1, NULL_RTX, 1, olw);
       reshi = expand_shift (LSHIFT_EXPR, mode, reshi,
-			    prec - TYPE_PRECISION (TREE_TYPE (arg0)),
-			    NULL_RTX, 1);
-      reslo = expand_shift (RSHIFT_EXPR, mode, reslo,
-			    TYPE_PRECISION (TREE_TYPE (arg0)), NULL_RTX, 1);
+			    prec - type_prec, NULL_RTX, 1);
+      reslo = expand_shift (RSHIFT_EXPR, mode, reslo, type_prec, NULL_RTX, 1);
       reshi = expand_binop (mode, ior_optab, reshi, reslo, NULL_RTX, 1, olw);
       reshi = expand_and (mode, reshi, bitint_mask, NULL_RTX);
       write_complex_part (target, reshi, true, false);
