@@ -2924,7 +2924,7 @@ aarch64_expand_builtin_rsqrt (int fcode, tree exp, rtx target)
   tree arg0 = CALL_EXPR_ARG (exp, 0);
   rtx op0 = expand_normal (arg0);
 
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   switch (fcode)
     {

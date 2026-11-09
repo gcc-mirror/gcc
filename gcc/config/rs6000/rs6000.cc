@@ -7223,9 +7223,9 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	}
       else
 	{
-	  rtx (*merge_v16qi) (rtx, rtx, rtx) = NULL;
-	  rtx (*merge_v8hi) (rtx, rtx, rtx) = NULL;
-	  rtx (*merge_v4si) (rtx, rtx, rtx) = NULL;
+	  rtx_insn *(*merge_v16qi) (rtx, rtx, rtx) = NULL;
+	  rtx_insn *(*merge_v8hi) (rtx, rtx, rtx) = NULL;
+	  rtx_insn *(*merge_v4si) (rtx, rtx, rtx) = NULL;
 	  rtx perm_idx;
 
 	  /* Set up some common gen routines and values.  */
@@ -7432,17 +7432,17 @@ rs6000_expand_vector_set_var_p7 (rtx target, rtx val, rtx idx)
 
   machine_mode shift_mode;
   rtx (*gen_ashl)(rtx, rtx, rtx);
-  rtx (*gen_add)(rtx, rtx, rtx);
-  rtx (*gen_sub)(rtx, rtx, rtx);
-  rtx (*gen_lvsl)(rtx, rtx);
+  rtx_insn *(*gen_add)(rtx, rtx, rtx);
+  rtx_insn *(*gen_sub)(rtx, rtx, rtx);
+  rtx_insn *(*gen_lvsl)(rtx, rtx);
 
   if (TARGET_POWERPC64)
     {
       shift_mode = DImode;
       gen_ashl = gen_ashldi3;
       gen_add = gen_adddi3;
-      gen_sub = gen_subdi3;
-      gen_lvsl = gen_altivec_lvsl_reg_di;
+      gen_sub = gen_insn_subdi3;
+      gen_lvsl = gen_insn_altivec_lvsl_reg_di;
     }
   else
     {
@@ -7450,7 +7450,7 @@ rs6000_expand_vector_set_var_p7 (rtx target, rtx val, rtx idx)
       gen_ashl = gen_ashlsi3;
       gen_add = gen_addsi3;
       gen_sub = gen_subsi3;
-      gen_lvsl = gen_altivec_lvsl_reg_si;
+      gen_lvsl = gen_insn_altivec_lvsl_reg_si;
     }
 
   /*  idx = idx * width.  */
@@ -16937,26 +16937,26 @@ emit_unlikely_jump (rtx cond, rtx label)
 static void
 emit_load_locked (machine_mode mode, rtx reg, rtx mem, rtx local)
 {
-  rtx (*fn) (rtx, rtx, rtx) = NULL;
+  rtx_insn *(*fn) (rtx, rtx, rtx) = NULL;
 
   switch (mode)
     {
     case E_QImode:
-      fn = gen_load_lockedqi;
+      fn = gen_insn_load_lockedqi;
       break;
     case E_HImode:
-      fn = gen_load_lockedhi;
+      fn = gen_insn_load_lockedhi;
       break;
     case E_SImode:
       if (GET_MODE (mem) == QImode)
-	fn = gen_load_lockedqi_si;
+	fn = gen_insn_load_lockedqi_si;
       else if (GET_MODE (mem) == HImode)
-	fn = gen_load_lockedhi_si;
+	fn = gen_insn_load_lockedhi_si;
       else
-	fn = gen_load_lockedsi;
+	fn = gen_insn_load_lockedsi;
       break;
     case E_DImode:
-      fn = gen_load_lockeddi;
+      fn = gen_insn_load_lockeddi;
       break;
     case E_TImode:
       fn = gen_load_lockedti;
@@ -16973,21 +16973,21 @@ emit_load_locked (machine_mode mode, rtx reg, rtx mem, rtx local)
 static void
 emit_store_conditional (machine_mode mode, rtx res, rtx mem, rtx val)
 {
-  rtx (*fn) (rtx, rtx, rtx) = NULL;
+  rtx_insn *(*fn) (rtx, rtx, rtx) = NULL;
 
   switch (mode)
     {
     case E_QImode:
-      fn = gen_store_conditionalqi;
+      fn = gen_insn_store_conditionalqi;
       break;
     case E_HImode:
-      fn = gen_store_conditionalhi;
+      fn = gen_insn_store_conditionalhi;
       break;
     case E_SImode:
-      fn = gen_store_conditionalsi;
+      fn = gen_insn_store_conditionalsi;
       break;
     case E_DImode:
-      fn = gen_store_conditionaldi;
+      fn = gen_insn_store_conditionaldi;
       break;
     case E_TImode:
       fn = gen_store_conditionalti;

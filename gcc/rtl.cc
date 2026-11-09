@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl.h"
 #ifdef GENERATOR_FILE
 # include "errors.h"
+# include "gensupport.h"
 #else
 # include "rtlhash.h"
 # include "diagnostic-core.h"
@@ -606,6 +607,70 @@ rtvec_series_p (rtvec vec, poly_int64 start)
   return true;
 }
 
+/* Classify the elements of VEC.  VEC is either the body of a PARALLEL
+   or the required prefix of a MATCH_PARALLEL.  A call or return that
+   selects CALL_INSN or JUMP_INSN is one of those elements.  */
+
+static enum rtx_code
+classify_insn_vec (rtvec vec)
+{
+  int j;
+  bool has_return_p = false;
+
+  for (j = GET_NUM_ELEM (vec) - 1; j >= 0; j--)
+    {
+      rtx el = RTVEC_ELT (vec, j);
+
+      if (GET_CODE (el) == CALL)
+	return CALL_INSN;
+      else if (ANY_RETURN_P (el))
+	has_return_p = true;
+      else if (GET_CODE (el) == SET && GET_CODE (SET_DEST (el)) == PC)
+	return JUMP_INSN;
+      else if (GET_CODE (el) == SET && GET_CODE (SET_SRC (el)) == CALL)
+	return CALL_INSN;
+    }
+  if (has_return_p)
+    return JUMP_INSN;
+  if (GET_NUM_ELEM (vec) > 0
+      && GET_CODE (RTVEC_ELT (vec, 0)) == ASM_OPERANDS
+      && ASM_OPERANDS_LABEL_LENGTH (RTVEC_ELT (vec, 0)))
+    return JUMP_INSN;
+  return INSN;
+}
+
+#ifdef GENERATOR_FILE
+/* True when every code PRED accepts is an ordinary insn body.  A call,
+   set, parallel, return, or asm can still select another insn code.  */
+
+static bool
+predicate_is_always_insn (const struct pred_data *pred)
+{
+  if (!pred || pred->num_codes == 0)
+    return false;
+
+  for (int code = 0; code < NUM_RTX_CODE; code++)
+    if (pred->codes[code])
+      switch ((enum rtx_code) code)
+	{
+	case CALL:
+	case SET:
+	case PARALLEL:
+	case RETURN:
+	case SIMPLE_RETURN:
+	case ASM_OPERANDS:
+	case ASM_INPUT:
+	case CODE_LABEL:
+	  return false;
+
+	default:
+	  break;
+	}
+
+  return true;
+}
+#endif
+
 /* Return an indication of which type of insn should have X as a body.
    In generator files, this can be UNKNOWN if the answer is only known
    at (GCC) runtime.  Otherwise the value is CODE_LABEL, INSN, CALL_INSN
@@ -632,33 +697,19 @@ classify_insn (rtx x)
 	return INSN;
     }
   if (GET_CODE (x) == PARALLEL)
-    {
-      int j;
-      bool has_return_p = false;
-      for (j = XVECLEN (x, 0) - 1; j >= 0; j--)
-	if (GET_CODE (XVECEXP (x, 0, j)) == CALL)
-	  return CALL_INSN;
-	else if (ANY_RETURN_P (XVECEXP (x, 0, j)))
-	  has_return_p = true;
-	else if (GET_CODE (XVECEXP (x, 0, j)) == SET
-		 && GET_CODE (SET_DEST (XVECEXP (x, 0, j))) == PC)
-	  return JUMP_INSN;
-	else if (GET_CODE (XVECEXP (x, 0, j)) == SET
-		 && GET_CODE (SET_SRC (XVECEXP (x, 0, j))) == CALL)
-	  return CALL_INSN;
-      if (has_return_p)
-	return JUMP_INSN;
-      if (GET_CODE (XVECEXP (x, 0, 0)) == ASM_OPERANDS
-	  && ASM_OPERANDS_LABEL_LENGTH (XVECEXP (x, 0, 0)))
-	return JUMP_INSN;
-    }
+    return classify_insn_vec (XVEC (x, 0));
 #ifdef GENERATOR_FILE
+  /* The predicate may accept elements past this prefix.  The RTX that
+     selects the insn code is written in the prefix.  */
+  if (GET_CODE (x) == MATCH_PARALLEL)
+    return classify_insn_vec (XVEC (x, 2));
+  if (GET_CODE (x) == MATCH_OPERAND
+      && predicate_is_always_insn (lookup_predicate (XSTR (x, 1))))
+    return INSN;
   if (GET_CODE (x) == MATCH_OPERAND
       || GET_CODE (x) == MATCH_OPERATOR
-      || GET_CODE (x) == MATCH_PARALLEL
       || GET_CODE (x) == MATCH_OP_DUP
-      || GET_CODE (x) == MATCH_DUP
-      || GET_CODE (x) == PARALLEL)
+      || GET_CODE (x) == MATCH_DUP)
     return UNKNOWN;
 #endif
   return INSN;

@@ -31716,7 +31716,7 @@ arm_block_set_unaligned_vect (rtx dstbase,
   unsigned int i, nelt_v16, nelt_v8, nelt_mode;
   rtx dst, mem;
   rtx val_vec, reg;
-  rtx (*gen_func) (rtx, rtx);
+  rtx_insn *(*gen_func) (rtx, rtx);
   machine_mode mode;
   unsigned HOST_WIDE_INT v = value;
   unsigned int offset = 0;

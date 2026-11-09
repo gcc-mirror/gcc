@@ -125,15 +125,15 @@
      enough not to require barriers of any kind.  */
   if (is_mm_seq_cst (model))
     {
-      rtx (*mfence_insn)(rtx);
+      rtx_insn *(*mfence_insn)(rtx);
       rtx mem;
 
       if ((TARGET_64BIT || TARGET_SSE2)
 	  && (optimize_function_for_size_p (cfun)
 	      || !TARGET_AVOID_MFENCE))
-	mfence_insn = gen_mfence_sse2;
+	mfence_insn = gen_insn_mfence_sse2;
       else
-	mfence_insn = gen_mfence_nosse;
+	mfence_insn = gen_insn_mfence_nosse;
 
       mem = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
       MEM_VOLATILE_P (mem) = 1;

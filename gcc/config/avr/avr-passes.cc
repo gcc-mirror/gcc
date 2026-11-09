@@ -4132,8 +4132,9 @@ avr_optimize_casesi (rtx_insn *insns[5], rtx *xop)
 
   rtx reg = copy_to_mode_reg (mode, xop[11]);
 
-  rtx (*gen_add)(rtx,rtx,rtx) = QImode == mode ? gen_addqi3 : gen_addhi3;
-  rtx (*gen_cbranch)(rtx,rtx,rtx,rtx)
+  rtx_insn *(*gen_add) (rtx, rtx, rtx)
+    = QImode == mode ? gen_insn_addqi3 : gen_addhi3;
+  rtx_insn *(*gen_cbranch)(rtx,rtx,rtx,rtx)
     = QImode == mode ? gen_cbranchqi4 : gen_cbranchhi4;
 
   emit_insn (gen_add (reg, reg, gen_int_mode (-low_idx, mode)));

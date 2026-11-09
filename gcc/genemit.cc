@@ -411,9 +411,10 @@ maybe_queue_insn (const md_rtx_info &info)
    in STATS.  Return the C++ expression for the operands array.  */
 
 static const char *
-start_gen_insn (FILE *file, const char *name, const pattern_stats &stats)
+start_gen_insn (FILE *file, const char *name, const pattern_stats &stats,
+		bool return_pat)
 {
-  fprintf (file, "rtx\ngen_%s (", name);
+  fprintf (file, "%s\ngen_%s (", return_pat ? "rtx" : "rtx_insn *", name);
   if (stats.num_generator_args)
     for (int i = 0; i < stats.num_generator_args; i++)
       fprintf (file, "%sconst rtx operand%d", i == 0 ? "" : ", ", i);
@@ -441,6 +442,33 @@ start_gen_insn (FILE *file, const char *name, const pattern_stats &stats)
   return "nullptr";
 }
 
+/* Generate an rtx_insn * gen_insn_<name> wrapper around gen_<name>.
+   MAKE_INSN is make_insn_raw, make_jump_insn_raw, or make_call_insn_raw.
+   The insn is not inserted into the current sequence.  */
+
+static void
+gen_insn_wrapper (FILE *file, const char *name, int args,
+		  const char *make_insn)
+{
+  int i;
+
+  fprintf (file, "rtx_insn *\ngen_insn_%s (", name);
+  if (args > 0)
+    {
+      for (i = 1; i < args; i++)
+	fprintf (file, "rtx %c, ", 'a' + i - 1);
+      fprintf (file, "rtx %c", 'a' + args - 1);
+    }
+  fprintf (file, ")\n{ return %s (gen_%s (", make_insn, name);
+  if (args > 0)
+    {
+      for (i = 1; i < args; i++)
+	fprintf (file, "%c, ", 'a' + i - 1);
+      fprintf (file, "%c", 'a' + args - 1);
+    }
+  fprintf (file, ")); }\n");
+}
+
 /* Generate the `gen_...' function for a DEFINE_INSN.  */
 
 static void
@@ -455,13 +483,16 @@ gen_insn (const md_rtx_info &info, FILE *file)
     fatal_at (info.loc, "match_dup operand number has no match_operand");
 
   /* Output the function name and argument declarations.  */
-  const char *operands = start_gen_insn (file, XSTR (insn, 0), stats);
+  const char *operands = start_gen_insn (file, XSTR (insn, 0), stats,
+					true);
 
   /* Output code to construct and return the rtl for the instruction body.  */
 
   rtx pattern = add_implicit_parallel (XVEC (insn, 1));
   const char *table = generator (info).gen_exp (file, pattern);
   fprintf (file, "  return expand_rtx (%s, %s);\n}\n\n", table, operands);
+  gen_insn_wrapper (file, XSTR (insn, 0), stats.num_generator_args,
+		    get_make_insn_function (pattern));
 }
 
 /* Process and queue the DEFINE_EXPAND in INFO.  */
@@ -493,19 +524,23 @@ gen_expand (const md_rtx_info &info, FILE *file)
     fatal_at (info.loc, "define_expand for %s needs to have match_scratch "
 	      "numbers above all other operands", XSTR (expand, 0));
 
-  /* Output the function name and argument declarations.  */
-  const char *operands = start_gen_insn (file, XSTR (expand, 0), stats);
+  /* A one-element expand with no C code returns the pattern, like a
+     DEFINE_INSN.  Anything that emits insns returns an rtx_insn *.  */
+  bool return_pat = ((XSTR (expand, 3) == 0 || *XSTR (expand, 3) == '\0')
+		     && stats.max_opno >= stats.max_dup_opno
+		     && XVECLEN (expand, 1) == 1);
 
-  /* If we don't have any C code to write, only one insn is being written,
-     and no MATCH_DUPs are present, we can just return the desired insn
-     like we do for a DEFINE_INSN.  This saves memory.  */
-  if ((XSTR (expand, 3) == 0 || *XSTR (expand, 3) == '\0')
-      && stats.max_opno >= stats.max_dup_opno
-      && XVECLEN (expand, 1) == 1)
+  /* Output the function name and argument declarations.  */
+  const char *operands = start_gen_insn (file, XSTR (expand, 0), stats,
+					return_pat);
+
+  if (return_pat)
     {
       rtx pattern = XVECEXP (expand, 1, 0);
       const char *table = generator (info).gen_exp (file, pattern);
       fprintf (file, "  return expand_rtx (%s, %s);\n}\n\n", table, operands);
+      gen_insn_wrapper (file, XSTR (expand, 0), stats.num_generator_args,
+			get_make_insn_function (pattern));
       return;
     }
 

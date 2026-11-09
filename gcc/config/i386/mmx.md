@@ -3050,7 +3050,7 @@
   rtx op1 = gen_reg_rtx (V8HImode);
   rtx op0 = gen_reg_rtx (V8HFmode);
 
-  rtx (*gen_movd_sse) (rtx, rtx)
+  rtx_insn *(*gen_movd_sse) (rtx, rtx)
     = gen_mov<mov_to_sse_suffix>_<mmxintvecmodelower>_to_sse;
   emit_insn (gen_movd_sse (op1, operands[1]));
 
@@ -6570,7 +6570,7 @@
  "TARGET_MMX_WITH_SSE"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
-  ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_<code><mode>3, tmp, operands[1]);
   emit_insn (gen_vec_extract<mode><mmxscalarmodelower> (operands[0],
 						       tmp, const0_rtx));
   DONE;
@@ -6610,7 +6610,7 @@
  "TARGET_MMX_WITH_SSE"
 {
   rtx tmp = gen_reg_rtx (V4HImode);
-  ix86_expand_reduc (gen_addv4hi3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_addv4hi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
   DONE;
 })
@@ -6622,7 +6622,7 @@
   "TARGET_MMX_WITH_SSE"
 {
   rtx tmp = gen_reg_rtx (V4HImode);
-  ix86_expand_reduc (gen_<code>v4hi3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_<code>v4hi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
   DONE;
 })
@@ -6634,7 +6634,7 @@
   "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (V4QImode);
-  ix86_expand_reduc (gen_<code>v4qi3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_<code>v4qi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4qiqi (operands[0], tmp, const0_rtx));
   DONE;
 })
@@ -6646,7 +6646,7 @@
   "TARGET_MMX_WITH_SSE && TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (V4HImode);
-  ix86_expand_reduc (gen_<code>v4hi3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_<code>v4hi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4hihi (operands[0], tmp, const0_rtx));
   DONE;
 })
@@ -6658,7 +6658,7 @@
   "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (V4QImode);
-  ix86_expand_reduc (gen_<code>v4qi3, tmp, operands[1]);
+  ix86_expand_reduc (gen_insn_<code>v4qi3, tmp, operands[1]);
   emit_insn (gen_vec_extractv4qiqi (operands[0], tmp, const0_rtx));
   DONE;
 })

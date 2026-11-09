@@ -102,11 +102,22 @@ gen_proto (rtx insn)
   int i;
   const char *name = XSTR (insn, 0);
   int truth = maybe_eval_c_test (XSTR (insn, 2));
+  pattern_stats stats;
+  get_pattern_stats (&stats, XVEC (insn, 1));
+  /* DEFINE_INSN, and a one-element define_expand with no C code,
+     return the pattern.  An expand that emits insns returns an
+     rtx_insn *.  */
+  bool return_pat = (GET_CODE (insn) == DEFINE_INSN
+		     || ((!XSTR (insn, 3) || XSTR (insn, 3)[0] == '\0')
+			 && stats.max_opno >= stats.max_dup_opno
+			 && XVECLEN (insn, 1) == 1));
+  const char *ret_type = return_pat ? "rtx" : "rtx_insn *";
 
   if (truth != 0)
-    printf ("extern rtx        gen_%-*s (", max_id_len, name);
+    printf ("extern %s gen_%-*s (", ret_type, max_id_len, name);
   else
-    printf ("static inline rtx gen_%-*s (", max_id_len, name);
+    printf ("static inline %s gen_%-*s (", ret_type, max_id_len,
+	     name);
 
   if (num == 0)
     fputs ("void", stdout);
@@ -120,11 +131,59 @@ gen_proto (rtx insn)
 
   puts (");");
 
+  if (return_pat)
+    {
+      /* genemit drops an elided pattern, so the wrapper is a stub.  */
+      if (truth == 0)
+	{
+	  printf ("static inline rtx_insn *\ngen_insn_%s", name);
+	  if (num > 0)
+	    {
+	      putchar ('(');
+	      for (i = 0; i < num - 1; i++)
+		printf ("rtx ARG_UNUSED (%c), ", 'a' + i);
+	      printf ("rtx ARG_UNUSED (%c))\n", 'a' + i);
+	    }
+	  else
+	    puts ("(void)");
+	  puts ("{\n  return 0;\n}");
+	}
+      else
+	{
+	  printf ("extern rtx_insn *gen_insn_%s (", name);
+	  if (num > 0)
+	    {
+	      for (i = 1; i < num; i++)
+		printf ("rtx, ");
+	      printf ("rtx");
+	    }
+	  puts (");");
+	}
+    }
+  else
+    {
+      printf ("static inline rtx_insn *\ngen_insn_%s (", name);
+      if (num > 0)
+	{
+	  for (i = 1; i < num; i++)
+	    printf ("rtx %c, ", 'a' + i - 1);
+	  printf ("rtx %c", 'a' + i - 1);
+	}
+      printf (")\n{ return gen_%s (", name);
+      if (num > 0)
+	{
+	  for (i = 1; i < num; i++)
+	    printf ("%c, ", 'a' + i - 1);
+	  printf ("%c", 'a' + i - 1);
+	}
+      printf ("); }\n");
+    }
+
   /* Some back ends want to take the address of generator functions,
      so we cannot simply use #define for these dummy definitions.  */
   if (truth == 0)
     {
-      printf ("static inline rtx\ngen_%s", name);
+      printf ("static inline %s\ngen_%s", ret_type, name);
       if (num > 0)
 	{
 	  putchar ('(');

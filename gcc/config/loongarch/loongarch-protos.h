@@ -201,7 +201,7 @@ extern void loongarch_expand_vec_cond_expr (machine_mode, machine_mode, rtx *);
 extern void loongarch_expand_vec_cond_mask_expr (machine_mode, machine_mode,
 						 rtx *);
 extern void loongarch_expand_vec_widen_hilo (rtx, rtx, rtx, bool,
-	rtx (*)(rtx, rtx, rtx), rtx (*)(rtx, rtx, rtx));
+	rtx_insn *(*)(rtx, rtx, rtx), rtx_insn *(*)(rtx, rtx, rtx));
 extern bool loongarch_16b_atomic_lock_free_p (void);
 
 /* Routines implemented in loongarch-c.c.  */

@@ -853,7 +853,7 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
-  mips_expand_vec_reduc (tmp, operands[1], gen_add<mode>3);
+  mips_expand_vec_reduc (tmp, operands[1], gen_insn_add<mode>3);
   emit_insn (gen_vec_loongson_extract_lo_<mode> (operands[0], tmp));
   DONE;
 })
@@ -864,7 +864,7 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
-  mips_expand_vec_reduc (tmp, operands[1], gen_smax<mode>3);
+  mips_expand_vec_reduc (tmp, operands[1], gen_insn_smax<mode>3);
   emit_insn (gen_vec_loongson_extract_lo_<mode> (operands[0], tmp));
   DONE;
 })
@@ -875,7 +875,7 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
-  mips_expand_vec_reduc (tmp, operands[1], gen_smin<mode>3);
+  mips_expand_vec_reduc (tmp, operands[1], gen_insn_smin<mode>3);
   emit_insn (gen_vec_loongson_extract_lo_<mode> (operands[0], tmp));
   DONE;
 })
@@ -886,7 +886,7 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
-  mips_expand_vec_reduc (tmp, operands[1], gen_umax<mode>3);
+  mips_expand_vec_reduc (tmp, operands[1], gen_insn_umax<mode>3);
   emit_insn (gen_vec_loongson_extract_lo_<mode> (operands[0], tmp));
   DONE;
 })
@@ -897,7 +897,7 @@
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_MMI"
 {
   rtx tmp = gen_reg_rtx (GET_MODE (operands[1]));
-  mips_expand_vec_reduc (tmp, operands[1], gen_umin<mode>3);
+  mips_expand_vec_reduc (tmp, operands[1], gen_insn_umin<mode>3);
   emit_insn (gen_vec_loongson_extract_lo_<mode> (operands[0], tmp));
   DONE;
 })

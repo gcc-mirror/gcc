@@ -21286,16 +21286,16 @@ mips_mulsidi3_gen_fn (enum rtx_code ext_code)
 	 ensure that we always remove the redundant sign-extension in this
 	 case we still expand mulsidi3 for DMUL.  */
       if (ISA_HAS_R6DMUL)
-	return signed_p ? gen_mulsidi3_64bit_r6dmul : NULL;
+	return signed_p ? gen_insn_mulsidi3_64bit_r6dmul : NULL;
       if (ISA_HAS_DMUL3)
-	return signed_p ? gen_mulsidi3_64bit_dmul : NULL;
+	return signed_p ? gen_insn_mulsidi3_64bit_dmul : NULL;
       if (TARGET_MIPS16)
 	return (signed_p
 		? gen_mulsidi3_64bit_mips16
 		: gen_umulsidi3_64bit_mips16);
       if (TARGET_FIX_R4000)
 	return NULL;
-      return signed_p ? gen_mulsidi3_64bit : gen_umulsidi3_64bit;
+      return signed_p ? gen_insn_mulsidi3_64bit : gen_insn_umulsidi3_64bit;
     }
   else
     {
@@ -21306,8 +21306,10 @@ mips_mulsidi3_gen_fn (enum rtx_code ext_code)
 		? gen_mulsidi3_32bit_mips16
 		: gen_umulsidi3_32bit_mips16);
       if (TARGET_FIX_R4000 && !ISA_HAS_DSP)
-	return signed_p ? gen_mulsidi3_32bit_r4000 : gen_umulsidi3_32bit_r4000;
-      return signed_p ? gen_mulsidi3_32bit : gen_umulsidi3_32bit;
+	return (signed_p
+		? gen_insn_mulsidi3_32bit_r4000
+		: gen_insn_umulsidi3_32bit_r4000);
+      return signed_p ? gen_insn_mulsidi3_32bit : gen_insn_umulsidi3_32bit;
     }
 }
 
@@ -22839,7 +22841,7 @@ mips_expand_vector_init (rtx target, rtx vals)
 /* Expand a vector reduction.  */
 
 void
-mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
+mips_expand_vec_reduc (rtx target, rtx in, rtx_insn *(*gen)(rtx, rtx, rtx))
 {
   machine_mode vmode = GET_MODE (in);
   unsigned char perm2[2];

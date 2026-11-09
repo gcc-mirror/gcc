@@ -303,7 +303,7 @@ extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);
 extern void ix86_expand_vector_set_var (rtx, rtx, rtx);
 extern void ix86_expand_vector_extract (bool, rtx, rtx, int);
-extern void ix86_expand_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
+extern void ix86_expand_reduc (rtx_insn *(*)(rtx, rtx, rtx), rtx, rtx);
 
 extern void ix86_expand_vec_extract_even_odd (rtx, rtx, rtx, unsigned);
 extern bool ix86_expand_pextr (rtx *);

@@ -3751,23 +3751,22 @@ get_pattern_stats (struct pattern_stats *stats, rtvec pattern)
 				       stats->max_scratch_opno)) + 1;
 }
 
-/* Return the emit_* function that should be used for pattern X, or NULL
-   if we can't pick a particular type at compile time and should instead
-   fall back to "emit".  */
+/* Return the make_*_insn_raw function for pattern X, or NULL if the
+   insn code is only known when the compiler is run.  */
 
 const char *
-get_emit_function (rtx x)
+get_make_insn_function (rtx x)
 {
   switch (classify_insn (x))
     {
     case INSN:
-      return "emit_insn";
+      return "make_insn_raw";
 
     case CALL_INSN:
-      return "emit_call_insn";
+      return "make_call_insn_raw";
 
     case JUMP_INSN:
-      return "emit_jump_insn";
+      return "make_jump_insn_raw";
 
     case UNKNOWN:
       return NULL;

@@ -7965,7 +7965,7 @@
   ""
 {
   rtx tem;
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
@@ -7977,7 +7977,7 @@
     {
       tem = force_reg (V8HFmode, operands[1]);
       tem = lowpart_subreg (V4HFmode, tem, V8HFmode);
-      gen = gen_extendv4hfv4sf2;
+      gen = gen_insn_extendv4hfv4sf2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -7990,7 +7990,7 @@
   ""
 {
   rtx tem;
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
@@ -8009,7 +8009,7 @@
       emit_move_insn (tem,
 		      gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
       tem = lowpart_subreg (V4HFmode, tem, V8HFmode);
-      gen = gen_extendv4hfv4sf2;
+      gen = gen_insn_extendv4hfv4sf2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -10002,12 +10002,12 @@
 {
   rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
   rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   if (<MODE>mode == V2DImode)
     gen = gen_avx512dq_float<floatunssuffix>v2div2sf2;
   else
-    gen = gen_float<floatunssuffix><mode><vpckfloat_op_mode>2;
+    gen = gen_insn_float<floatunssuffix><mode><vpckfloat_op_mode>2;
   emit_insn (gen (r1, operands[1]));
   emit_insn (gen (r2, operands[2]));
   if (<MODE>mode == V2DImode)
@@ -10027,12 +10027,12 @@
 {
   rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
   rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   if (<MODE>mode == V4SImode)
     gen = gen_avx512fp16_float<floatunssuffix>v4siv4hf2;
   else
-    gen = gen_float<floatunssuffix><mode><vpckfloat_op_mode>2;
+    gen = gen_insn_float<floatunssuffix><mode><vpckfloat_op_mode>2;
   emit_insn (gen (r1, operands[1]));
   emit_insn (gen (r2, operands[2]));
   if (<MODE>mode == V4SImode)
@@ -10559,17 +10559,17 @@
   "TARGET_AVX512DQ"
 {
   rtx tem = operands[1];
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   if (<MODE>mode != V4SFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
       emit_insn (gen_vec_extract_lo_<vunpckfixt_extract_mode> (tem,
 							       operands[1]));
-      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
     }
   else
-    gen = gen_avx512dq_fix<fixunssuffix>_truncv2sfv2di2;
+    gen = gen_insn_avx512dq_fix<fixunssuffix>_truncv2sfv2di2;
 
   emit_insn (gen (operands[0], tem));
   DONE;
@@ -10582,20 +10582,20 @@
   "TARGET_AVX512DQ"
 {
   rtx tem;
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   if (<MODE>mode != V4SFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
       emit_insn (gen_vec_extract_hi_<vunpckfixt_extract_mode> (tem,
 							       operands[1]));
-      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
     }
   else
     {
       tem = gen_reg_rtx (V4SFmode);
       emit_insn (gen_avx_vpermilv4sf (tem, operands[1], GEN_INT (0x4e)));
-      gen = gen_avx512dq_fix<fixunssuffix>_truncv2sfv2di2;
+      gen = gen_insn_avx512dq_fix<fixunssuffix>_truncv2sfv2di2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -10609,16 +10609,16 @@
   "TARGET_AVX512FP16"
 {
   rtx tem = operands[1];
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
       emit_insn (gen_vec_extract_lo_<vunpckfixt_extract_mode> (tem,
 							       operands[1]));
-      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
     }
   else
-    gen = gen_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
+    gen = gen_insn_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
 
   emit_insn (gen (operands[0], tem));
   DONE;
@@ -10631,13 +10631,13 @@
   "TARGET_AVX512FP16"
 {
   rtx tem = operands[1];
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
       tem = gen_reg_rtx (<ssehalfvecmode>mode);
       emit_insn (gen_vec_extract_hi_<vunpckfixt_extract_mode> (tem,
 							       operands[1]));
-      gen = gen_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
+gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
     }
   else
     {
@@ -10649,7 +10649,7 @@
       rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
       emit_move_insn (tem,
 		     gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
-      gen = gen_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
+      gen = gen_insn_avx512fp16_fix<fixunssuffix>_trunc<vunpckfixt_model>2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -11550,7 +11550,7 @@
 {
   rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
   rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
-  rtx (*gen) (rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx);
 
   if (<MODE>mode == V4SFmode)
     gen = gen_f16c_truncv4sfv8hf2;
@@ -13533,7 +13533,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512F"
 {
-  rtx (*insn)(rtx, rtx, rtx, rtx);
+  rtx_insn *(*insn)(rtx, rtx, rtx, rtx);
   rtx dest = operands[0];
 
   if (MEM_P (dest) && !rtx_equal_p (dest, operands[3]))
@@ -13542,10 +13542,10 @@
   switch (INTVAL (operands[2]))
     {
     case 0:
-      insn = gen_vec_extract_lo_<mode>_mask;
+      insn = gen_insn_vec_extract_lo_<mode>_mask;
       break;
     case 1:
-      insn = gen_vec_extract_hi_<mode>_mask;
+      insn = gen_insn_vec_extract_hi_<mode>_mask;
       break;
     default:
       gcc_unreachable ();
@@ -13685,7 +13685,7 @@
    (match_operand:QI 4 "register_operand")]
   "TARGET_AVX512VL"
 {
-  rtx (*insn)(rtx, rtx, rtx, rtx);
+  rtx_insn *(*insn)(rtx, rtx, rtx, rtx);
   rtx dest = operands[0];
 
   if (MEM_P (dest)
@@ -13702,10 +13702,10 @@
   switch (INTVAL (operands[2]))
     {
     case 0:
-      insn = gen_vec_extract_lo_<mode>_mask;
+      insn = gen_insn_vec_extract_lo_<mode>_mask;
       break;
     case 1:
-      insn = gen_vec_extract_hi_<mode>_mask;
+      insn = gen_insn_vec_extract_hi_<mode>_mask;
       break;
     default:
       gcc_unreachable ();
@@ -13723,15 +13723,15 @@
    (match_operand:SI 2 "const_0_to_1_operand")]
   "TARGET_AVX"
 {
-  rtx (*insn)(rtx, rtx);
+  rtx_insn *(*insn)(rtx, rtx);
 
   switch (INTVAL (operands[2]))
     {
     case 0:
-      insn = gen_vec_extract_lo_<mode>;
+      insn = gen_insn_vec_extract_lo_<mode>;
       break;
     case 1:
-      insn = gen_vec_extract_hi_<mode>;
+      insn = gen_insn_vec_extract_hi_<mode>;
       break;
     default:
       gcc_unreachable ();
@@ -28141,7 +28141,7 @@
   if (TARGET_XOP && <MODE>mode == V16QImode)
     {
       bool negate = false;
-      rtx (*gen) (rtx, rtx, rtx);
+      rtx_insn *(*gen) (rtx, rtx, rtx);
       rtx tmp, par;
       int i;
 
@@ -28163,7 +28163,9 @@
       if (negate)
         emit_insn (gen_negv16qi2 (tmp, tmp));
 
-      gen = (<CODE> == LSHIFTRT ? gen_xop_shlv16qi3 : gen_xop_shav16qi3);
+      gen = ((<CODE> == LSHIFTRT)
+	     ? gen_insn_xop_shlv16qi3
+	     : gen_insn_xop_shav16qi3);
       emit_insn (gen (operands[0], operands[1], tmp));
     }
   else if (TARGET_GFNI && CONST_INT_P (operands[2])
@@ -29732,15 +29734,15 @@
    (match_operand:<avx512fmaskmode> 5 "register_operand")]
   "TARGET_AVX512VL"
 {
-  rtx (*insn)(rtx, rtx, rtx, rtx, rtx);
+  rtx_insn *(*insn)(rtx, rtx, rtx, rtx, rtx);
 
   switch (INTVAL (operands[3]))
     {
     case 0:
-      insn = gen_vec_set_lo_<mode>_mask;
+      insn = gen_insn_vec_set_lo_<mode>_mask;
       break;
     case 1:
-      insn = gen_vec_set_hi_<mode>_mask;
+      insn = gen_insn_vec_set_hi_<mode>_mask;
       break;
     default:
       gcc_unreachable ();
@@ -29758,15 +29760,15 @@
    (match_operand:SI 3 "const_0_to_1_operand")]
   "TARGET_AVX"
 {
-  rtx (*insn)(rtx, rtx, rtx);
+  rtx_insn *(*insn)(rtx, rtx, rtx);
 
   switch (INTVAL (operands[3]))
     {
     case 0:
-      insn = gen_vec_set_lo_<mode>;
+      insn = gen_insn_vec_set_lo_<mode>;
       break;
     case 1:
-      insn = gen_vec_set_hi_<mode>;
+      insn = gen_insn_vec_set_hi_<mode>;
       break;
     default:
       gcc_unreachable ();

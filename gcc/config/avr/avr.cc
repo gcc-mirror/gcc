@@ -15694,7 +15694,7 @@ avr_move_fixed_operands (rtx *op, rtx *hreg, unsigned mask)
    move the contents of respective pseudos to their hard regs.  */
 
 bool
-avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
+avr_emit3_fix_outputs (rtx_insn *(*gen)(rtx,rtx,rtx), rtx *op,
 		       unsigned opmask, unsigned rmask)
 {
   const int n = 3;

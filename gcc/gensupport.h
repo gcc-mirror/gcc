@@ -230,7 +230,7 @@ extern hash_set<rtx> compact_syntax;
 extern void get_pattern_stats (struct pattern_stats *ranges, rtvec vec);
 extern void compute_test_codes (rtx, file_location, char *);
 extern file_location get_file_location (rtx);
-extern const char *get_emit_function (rtx);
+extern const char *get_make_insn_function (rtx);
 extern bool find_optab (optab_pattern *, const char *);
 
 /* An output file produced by a machine-description generator.  Partition

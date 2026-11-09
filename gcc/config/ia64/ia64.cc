@@ -189,11 +189,11 @@ static void ia64_compute_frame_size (HOST_WIDE_INT);
 static void setup_spill_pointers (int, rtx, HOST_WIDE_INT);
 static void finish_spill_pointers (void);
 static rtx spill_restore_mem (rtx, HOST_WIDE_INT);
-static void do_spill (rtx (*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT, rtx);
-static void do_restore (rtx (*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT);
-static rtx gen_movdi_x (rtx, rtx, rtx);
-static rtx gen_fr_spill_x (rtx, rtx, rtx);
-static rtx gen_fr_restore_x (rtx, rtx, rtx);
+static void do_spill (rtx_insn *(*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT, rtx);
+static void do_restore (rtx_insn *(*)(rtx, rtx, rtx), rtx, HOST_WIDE_INT);
+static rtx_insn *gen_movdi_x (rtx, rtx, rtx);
+static rtx_insn *gen_fr_spill_x (rtx, rtx, rtx);
+static rtx_insn *gen_fr_restore_x (rtx, rtx, rtx);
 
 static void ia64_option_override (void);
 static bool ia64_can_eliminate (const int, const int);
@@ -3208,7 +3208,7 @@ spill_restore_mem (rtx reg, HOST_WIDE_INT cfa_off)
 }
 
 static void
-do_spill (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
+do_spill (rtx_insn *(*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
 	  rtx frame_reg)
 {
   int iter = spill_fill_data.next_iter;
@@ -3250,7 +3250,8 @@ do_spill (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off,
 }
 
 static void
-do_restore (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off)
+do_restore (rtx_insn *(*move_fn) (rtx, rtx, rtx), rtx reg,
+	    HOST_WIDE_INT cfa_off)
 {
   int iter = spill_fill_data.next_iter;
   rtx_insn *insn;
@@ -3264,22 +3265,22 @@ do_restore (rtx (*move_fn) (rtx, rtx, rtx), rtx reg, HOST_WIDE_INT cfa_off)
    exist so that we can give gr_spill/gr_fill the offset they need and
    use a consistent function interface.  */
 
-static rtx
+static rtx_insn *
 gen_movdi_x (rtx dest, rtx src, rtx offset ATTRIBUTE_UNUSED)
 {
-  return gen_movdi (dest, src);
+  return gen_insn_movdi (dest, src);
 }
 
-static rtx
+static rtx_insn *
 gen_fr_spill_x (rtx dest, rtx src, rtx offset ATTRIBUTE_UNUSED)
 {
-  return gen_fr_spill (dest, src);
+  return gen_insn_fr_spill (dest, src);
 }
 
-static rtx
+static rtx_insn *
 gen_fr_restore_x (rtx dest, rtx src, rtx offset ATTRIBUTE_UNUSED)
 {
-  return gen_fr_restore (dest, src);
+  return gen_insn_fr_restore (dest, src);
 }
 
 #define PROBE_INTERVAL (1 << STACK_CHECK_PROBE_INTERVAL_EXP)

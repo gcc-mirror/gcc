@@ -3570,9 +3570,9 @@
    (const_int zero_one)]
   "ISA_HAS_LASX"
 {
-  rtx (*fn_even) (rtx, rtx, rtx) =
+rtx_insn *(*fn_even) (rtx, rtx, rtx) =
 gen_lasx_xv<optab>wev_<dlasxfmt>_<lasxfmt><u>;
-  rtx (*fn_odd) (rtx, rtx, rtx) =
+rtx_insn *(*fn_odd) (rtx, rtx, rtx) =
 gen_lasx_xv<optab>wod_<dlasxfmt>_<lasxfmt><u>;
   loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
                         <zero_one>, fn_even, fn_odd);
@@ -3587,9 +3587,9 @@ gen_lasx_xv<optab>wod_<dlasxfmt>_<lasxfmt><u>;
    (const_int zero_one)]
   "ISA_HAS_LASX"
 {
-  rtx (*fn_even) (rtx, rtx, rtx) =
+rtx_insn *(*fn_even) (rtx, rtx, rtx) =
 gen_lasx_xvmulwev_<dlasxfmt>_<lasxfmt><u>;
-  rtx (*fn_odd) (rtx, rtx, rtx) =
+rtx_insn *(*fn_odd) (rtx, rtx, rtx) =
 gen_lasx_xvmulwod_<dlasxfmt>_<lasxfmt><u>;
   loongarch_expand_vec_widen_hilo (operands[0], operands[1], operands[2],
                         <zero_one>, fn_even, fn_odd);

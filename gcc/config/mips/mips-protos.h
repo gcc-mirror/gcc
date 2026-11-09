@@ -351,7 +351,7 @@ extern void mips_expand_atomic_qihi (union mips_gen_fn_ptrs,
 
 extern void mips_expand_vector_init (rtx, rtx);
 extern void mips_expand_vec_unpack (rtx op[2], bool, bool);
-extern void mips_expand_vec_reduc (rtx, rtx, rtx (*)(rtx, rtx, rtx));
+extern void mips_expand_vec_reduc (rtx, rtx, rtx_insn *(*)(rtx, rtx, rtx));
 extern void mips_expand_msa_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);
 extern void mips_expand_vec_minmax (rtx, rtx, rtx,
 				    rtx (*) (rtx, rtx, rtx), bool);
@@ -380,7 +380,7 @@ extern int mips_trampoline_code_size (void);
 extern void mips_function_profiler (FILE *);
 extern bool mips_load_store_bonding_p (rtx *, machine_mode, bool);
 
-typedef rtx (*mulsidi3_gen_fn) (rtx, rtx, rtx);
+typedef rtx_insn *(*mulsidi3_gen_fn) (rtx, rtx, rtx);
 #ifdef RTX_CODE
 extern mulsidi3_gen_fn mips_mulsidi3_gen_fn (enum rtx_code);
 #endif

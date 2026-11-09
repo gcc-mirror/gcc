@@ -2691,16 +2691,16 @@ expand_strn_compare (rtx operands[], int no_length)
    DEST is the destination for the data.
    SRC is the source of the data for the move.  */
 
-static rtx
+static rtx_insn *
 gen_lvx_v4si_move (rtx dest, rtx src)
 {
   gcc_assert (MEM_P (dest) ^ MEM_P (src));
   gcc_assert (GET_MODE (dest) == V4SImode && GET_MODE (src) == V4SImode);
 
   if (MEM_P (dest))
-    return gen_altivec_stvx_v4si_internal (dest, src);
+    return gen_insn_altivec_stvx_v4si_internal (dest, src);
   else
-    return gen_altivec_lvx_v4si_internal (dest, src);
+    return gen_insn_altivec_lvx_v4si_internal (dest, src);
 }
 
 static rtx
@@ -2775,7 +2775,7 @@ expand_block_move (rtx operands[], bool might_overlap)
   for (offset = 0; bytes > 0; offset += move_bytes, bytes -= move_bytes)
     {
       union {
-	rtx (*mov) (rtx, rtx);
+	rtx_insn *(*mov) (rtx, rtx);
 	rtx (*movlen) (rtx, rtx, int);
       } gen_func;
       machine_mode mode = BLKmode;
@@ -2804,7 +2804,7 @@ expand_block_move (rtx operands[], bool might_overlap)
 	{
 	  move_bytes = 16;
 	  mode = V2DImode;
-	  gen_func.mov = gen_vsx_movv2di_64bit;
+	  gen_func.mov = gen_insn_vsx_movv2di_64bit;
 	}
       else if (TARGET_BLOCK_OPS_UNALIGNED_VSX
 	       /* Only use lxvl/stxvl on 64bit POWER10.  */

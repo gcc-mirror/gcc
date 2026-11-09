@@ -4199,6 +4199,8 @@ make_insn_raw (rtx pattern)
   rtx_insn *insn;
 
   insn = as_a <rtx_insn *> (rtx_alloc (INSN));
+  SET_NEXT_INSN (insn) = nullptr;
+  SET_PREV_INSN (insn) = nullptr;
 
   INSN_UID (insn) = cur_insn_uid++;
   PATTERN (insn) = pattern;
@@ -4230,6 +4232,8 @@ make_debug_insn_raw (rtx pattern)
   rtx_debug_insn *insn;
 
   insn = as_a <rtx_debug_insn *> (rtx_alloc (DEBUG_INSN));
+  SET_NEXT_INSN (insn) = nullptr;
+  SET_PREV_INSN (insn) = nullptr;
   INSN_UID (insn) = cur_debug_insn_uid++;
   if (cur_debug_insn_uid > param_min_nondebug_insn_uid)
     INSN_UID (insn) = cur_insn_uid++;
@@ -4245,12 +4249,14 @@ make_debug_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a JUMP_INSN instead of an insn.  */
 
-static rtx_insn *
+rtx_insn *
 make_jump_insn_raw (rtx pattern)
 {
   rtx_jump_insn *insn;
 
   insn = as_a <rtx_jump_insn *> (rtx_alloc (JUMP_INSN));
+  SET_NEXT_INSN (insn) = nullptr;
+  SET_PREV_INSN (insn) = nullptr;
   INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;
@@ -4265,12 +4271,14 @@ make_jump_insn_raw (rtx pattern)
 
 /* Like `make_insn_raw' but make a CALL_INSN instead of an insn.  */
 
-static rtx_insn *
+rtx_insn *
 make_call_insn_raw (rtx pattern)
 {
   rtx_call_insn *insn;
 
   insn = as_a <rtx_call_insn *> (rtx_alloc (CALL_INSN));
+  SET_NEXT_INSN (insn) = nullptr;
+  SET_PREV_INSN (insn) = nullptr;
   INSN_UID (insn) = cur_insn_uid++;
 
   PATTERN (insn) = pattern;

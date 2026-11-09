@@ -623,7 +623,7 @@ rl78_split_movdi (rtx *operands, enum machine_mode omode)
    operands in the "far" namespace.  Force some such operands into
    registers so that each pattern has at most one far operand.  */
 int
-rl78_force_nonfar_2 (rtx *operands, rtx (*gen)(rtx,rtx))
+rl78_force_nonfar_2 (rtx *operands, rtx_insn *(*gen)(rtx,rtx))
 {
   int did = 0;
   rtx temp_reg = NULL;
@@ -648,7 +648,7 @@ rl78_force_nonfar_2 (rtx *operands, rtx (*gen)(rtx,rtx))
 
 /* Likewise, but for three-operand expanders.  */
 int
-rl78_force_nonfar_3 (rtx *operands, rtx (*gen)(rtx,rtx,rtx))
+rl78_force_nonfar_3 (rtx *operands, rtx_insn *(*gen)(rtx,rtx,rtx))
 {
   int did = 0;
   rtx temp_reg = NULL;

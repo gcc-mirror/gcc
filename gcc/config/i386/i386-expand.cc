@@ -806,7 +806,7 @@ static void
 ix86_avx256_split_vector_move_misalign (rtx op0, rtx op1)
 {
   rtx m;
-  rtx (*extract) (rtx, rtx, rtx);
+  rtx_insn *(*extract) (rtx, rtx, rtx);
   machine_mode mode;
 
   if ((MEM_P (op1) && !TARGET_AVX256_SPLIT_UNALIGNED_LOAD)
@@ -5138,7 +5138,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 		  || !vector_all_ones_operand (optrue, data_mode)
 		  || opfalse != CONST0_RTX (data_mode))))
 	{
-	  rtx (*gen) (rtx, rtx, rtx) = NULL;
+	  rtx_insn *(*gen) (rtx, rtx, rtx) = NULL;
 
 	  switch (mode)
 	    {
@@ -5178,21 +5178,21 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      break;
 	    case E_V8QImode:
 	      if (code == GTU && TARGET_SSE2)
-		gen = gen_uminv8qi3;
+		gen = gen_insn_uminv8qi3;
 	      else if (code == GT && TARGET_SSE4_1)
-		gen = gen_sminv8qi3;
+		gen = gen_insn_sminv8qi3;
 	      break;
 	    case E_V4QImode:
 	      if (code == GTU && TARGET_SSE2)
-		gen = gen_uminv4qi3;
+		gen = gen_insn_uminv4qi3;
 	      else if (code == GT && TARGET_SSE4_1)
-		gen = gen_sminv4qi3;
+		gen = gen_insn_sminv4qi3;
 	      break;
 	    case E_V2QImode:
 	      if (code == GTU && TARGET_SSE2)
-		gen = gen_uminv2qi3;
+		gen = gen_insn_uminv2qi3;
 	      else if (code == GT && TARGET_SSE4_1)
-		gen = gen_sminv2qi3;
+		gen = gen_insn_sminv2qi3;
 	      break;
 	    case E_V8HImode:
 	      if (code == GTU && TARGET_SSE4_1)
@@ -5202,15 +5202,15 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      break;
 	    case E_V4HImode:
 	      if (code == GTU && TARGET_SSE4_1)
-		gen = gen_uminv4hi3;
+		gen = gen_insn_uminv4hi3;
 	      else if (code == GT && TARGET_SSE2)
-		gen = gen_sminv4hi3;
+		gen = gen_insn_sminv4hi3;
 	      break;
 	    case E_V2HImode:
 	      if (code == GTU && TARGET_SSE4_1)
-		gen = gen_uminv2hi3;
+		gen = gen_insn_uminv2hi3;
 	      else if (code == GT && TARGET_SSE2)
-		gen = gen_sminv2hi3;
+		gen = gen_insn_sminv2hi3;
 	      break;
 	    case E_V4SImode:
 	      if (TARGET_SSE4_1)
@@ -5218,7 +5218,7 @@ ix86_expand_int_sse_cmp (rtx dest, enum rtx_code code, rtx cop0, rtx cop1,
 	      break;
 	    case E_V2SImode:
 	      if (TARGET_SSE4_1)
-		gen = (code == GTU) ? gen_uminv2si3 : gen_sminv2si3;
+		gen = (code == GTU) ? gen_insn_uminv2si3 : gen_insn_sminv2si3;
 	      break;
 	    case E_V2DImode:
 	      if (TARGET_AVX512VL)
@@ -6711,7 +6711,7 @@ ix86_expand_ashl_const (rtx operand, int count, machine_mode mode)
     }
   else
     {
-      rtx (*insn)(rtx, rtx, rtx);
+      rtx_insn *(*insn)(rtx, rtx, rtx);
 
       insn = mode == DImode ? gen_ashlsi3 : gen_ashldi3;
       emit_insn (insn (operand, operand, GEN_INT (count)));
@@ -6721,7 +6721,7 @@ ix86_expand_ashl_const (rtx operand, int count, machine_mode mode)
 void
 ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
 {
-  rtx (*gen_ashl3)(rtx, rtx, rtx);
+  rtx_insn *(*gen_ashl3)(rtx, rtx, rtx);
   rtx (*gen_shld)(rtx, rtx, rtx);
   int half_width = GET_MODE_BITSIZE (mode) >> 1;
   machine_mode half_mode;
@@ -6802,9 +6802,9 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
 	 pentium4 a bit; no one else seems to care much either way.  */
       else
 	{
-	  rtx (*gen_lshr3)(rtx, rtx, rtx);
-	  rtx (*gen_and3)(rtx, rtx, rtx);
-	  rtx (*gen_xor3)(rtx, rtx, rtx);
+	  rtx_insn *(*gen_lshr3)(rtx, rtx, rtx);
+	  rtx_insn *(*gen_and3)(rtx, rtx, rtx);
+	  rtx_insn *(*gen_xor3)(rtx, rtx, rtx);
 	  HOST_WIDE_INT bits;
 	  rtx x;
 
@@ -6876,7 +6876,7 @@ ix86_split_ashl (rtx *operands, rtx scratch, machine_mode mode)
 void
 ix86_split_ashr (rtx *operands, rtx scratch, machine_mode mode)
 {
-  rtx (*gen_ashr3)(rtx, rtx, rtx)
+  rtx_insn *(*gen_ashr3)(rtx, rtx, rtx)
     = mode == DImode ? gen_ashrsi3 : gen_ashrdi3;
   rtx (*gen_shrd)(rtx, rtx, rtx);
   int half_width = GET_MODE_BITSIZE (mode) >> 1;
@@ -6967,7 +6967,7 @@ ix86_split_ashr (rtx *operands, rtx scratch, machine_mode mode)
 void
 ix86_split_lshr (rtx *operands, rtx scratch, machine_mode mode)
 {
-  rtx (*gen_lshr3)(rtx, rtx, rtx)
+  rtx_insn *(*gen_lshr3)(rtx, rtx, rtx)
     = mode == DImode ? gen_lshrsi3 : gen_lshrdi3;
   rtx (*gen_shrd)(rtx, rtx, rtx);
   int half_width = GET_MODE_BITSIZE (mode) >> 1;
@@ -7112,7 +7112,7 @@ ix86_split_rshift_ndd (enum rtx_code code, rtx *operands, rtx scratch)
   gcc_assert (TARGET_APX_NDD);
   int half_width = GET_MODE_BITSIZE (TImode) >> 1;
   bool ashr_p = code == ASHIFTRT;
-  rtx (*gen_shr)(rtx, rtx, rtx) = ashr_p ? gen_ashrdi3
+  rtx_insn *(*gen_shr)(rtx, rtx, rtx) = ashr_p ? gen_ashrdi3
 					 : gen_lshrdi3;
 
   rtx low[2], high[2];
@@ -7223,7 +7223,7 @@ ix86_expand_v1ti_shift (enum rtx_code code, rtx operands[])
     {
       rtx tmp1 = ix86_expand_v1ti_to_ti (op1);
       rtx tmp2 = gen_reg_rtx (TImode);
-      rtx (*shift) (rtx, rtx, rtx)
+      rtx_insn *(*shift) (rtx, rtx, rtx)
 	    = (code == ASHIFT) ? gen_ashlti3 : gen_lshrti3;
       emit_insn (shift (tmp2, tmp1, operands[2]));
       rtx tmp3 = ix86_expand_ti_to_v1ti (tmp2);
@@ -7304,7 +7304,7 @@ ix86_expand_v1ti_rotate (enum rtx_code code, rtx operands[])
     {
       rtx tmp1 = ix86_expand_v1ti_to_ti (op1);
       rtx tmp2 = gen_reg_rtx (TImode);
-      rtx (*rotate) (rtx, rtx, rtx)
+      rtx_insn *(*rotate) (rtx, rtx, rtx)
 	    = (code == ROTATE) ? gen_rotlti3 : gen_rotrti3;
       emit_insn (rotate (tmp2, tmp1, operands[2]));
       rtx tmp3 = ix86_expand_ti_to_v1ti (tmp2);
@@ -18981,14 +18981,14 @@ ix86_expand_vector_init_interleave (machine_mode mode,
   machine_mode first_imode, second_imode, third_imode, inner_mode;
   int i, j;
   rtx op, op0, op1;
-  rtx (*gen_load_even) (rtx, rtx, rtx);
+  rtx_insn *(*gen_load_even) (rtx, rtx, rtx);
   rtx (*gen_interleave_first_low) (rtx, rtx, rtx);
   rtx (*gen_interleave_second_low) (rtx, rtx, rtx);
 
   switch (mode)
     {
     case E_V8HFmode:
-      gen_load_even = gen_vec_interleave_lowv8hf;
+      gen_load_even = gen_insn_vec_interleave_lowv8hf;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
       gen_interleave_second_low = gen_vec_interleave_lowv2di;
       inner_mode = HFmode;
@@ -18997,7 +18997,7 @@ ix86_expand_vector_init_interleave (machine_mode mode,
       third_imode = VOIDmode;
       break;
     case E_V8BFmode:
-      gen_load_even = gen_vec_interleave_lowv8bf;
+      gen_load_even = gen_insn_vec_interleave_lowv8bf;
       gen_interleave_first_low = gen_vec_interleave_lowv4si;
       gen_interleave_second_low = gen_vec_interleave_lowv2di;
       inner_mode = BFmode;
@@ -21217,7 +21217,7 @@ ix86_expand_vector_set (bool mmx_ok, rtx target, rtx val, int elt)
       };
   int i, j, n;
   machine_mode mmode = VOIDmode;
-  rtx (*gen_blendm) (rtx, rtx, rtx, rtx);
+  rtx_insn *(*gen_blendm) (rtx, rtx, rtx, rtx);
 
   if (!IN_RANGE (elt, 0, GET_MODE_NUNITS (mode)))
     {
@@ -21502,7 +21502,7 @@ half:
       if (TARGET_AVX512F)
 	{
 	  mmode = QImode;
-	  gen_blendm = gen_avx512f_blendmv8df;
+	  gen_blendm = gen_insn_avx512f_blendmv8df;
 	}
       break;
 
@@ -21510,7 +21510,7 @@ half:
       if (TARGET_AVX512F)
 	{
 	  mmode = QImode;
-	  gen_blendm = gen_avx512f_blendmv8di;
+	  gen_blendm = gen_insn_avx512f_blendmv8di;
 	}
       break;
 
@@ -21518,7 +21518,7 @@ half:
       if (TARGET_AVX512F)
 	{
 	  mmode = HImode;
-	  gen_blendm = gen_avx512f_blendmv16sf;
+	  gen_blendm = gen_insn_avx512f_blendmv16sf;
 	}
       break;
 
@@ -21526,7 +21526,7 @@ half:
       if (TARGET_AVX512F)
 	{
 	  mmode = HImode;
-	  gen_blendm = gen_avx512f_blendmv16si;
+	  gen_blendm = gen_insn_avx512f_blendmv16si;
 	}
       break;
 
@@ -21534,21 +21534,21 @@ half:
       if (TARGET_AVX512BW)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx512bw_blendmv32hf;
+	  gen_blendm = gen_insn_avx512bw_blendmv32hf;
 	}
       break;
     case E_V32BFmode:
       if (TARGET_AVX512BW)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx512bw_blendmv32bf;
+	  gen_blendm = gen_insn_avx512bw_blendmv32bf;
 	}
       break;
     case E_V32HImode:
       if (TARGET_AVX512BW)
 	{
 	  mmode = SImode;
-	  gen_blendm = gen_avx512bw_blendmv32hi;
+	  gen_blendm = gen_insn_avx512bw_blendmv32hi;
 	}
       else if (TARGET_AVX512F)
 	{
@@ -21562,7 +21562,7 @@ half:
       if (TARGET_AVX512BW)
 	{
 	  mmode = DImode;
-	  gen_blendm = gen_avx512bw_blendmv64qi;
+	  gen_blendm = gen_insn_avx512bw_blendmv64qi;
 	}
       else if (TARGET_AVX512F)
 	{
@@ -22155,7 +22155,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
    DEST is the destination; IN is the input vector.  */
 
 void
-ix86_expand_reduc (rtx (*fn) (rtx, rtx, rtx), rtx dest, rtx in)
+ix86_expand_reduc (rtx_insn *(*fn) (rtx, rtx, rtx), rtx dest, rtx in)
 {
   rtx half, dst, vec = in;
   machine_mode mode = GET_MODE (in);
@@ -22541,7 +22541,7 @@ ix86_emit_i387_round (rtx op0, rtx op1)
   rtx res = gen_reg_rtx (outmode);
   rtx_code_label *jump_label = gen_label_rtx ();
   rtx (*floor_insn) (rtx, rtx);
-  rtx (*neg_insn) (rtx, rtx);
+  rtx_insn *(*neg_insn) (rtx, rtx);
   rtx_insn *insn;
   rtx tmp;
 
@@ -23522,7 +23522,7 @@ ix86_expand_round_sse4 (rtx op0, rtx op1)
   rtx e1, e2, res, half;
   const struct real_format *fmt;
   REAL_VALUE_TYPE pred_half, half_minus_pred_half;
-  rtx (*gen_copysign) (rtx, rtx, rtx);
+  rtx_insn *(*gen_copysign) (rtx, rtx, rtx);
   rtx (*gen_round) (rtx, rtx, rtx);
 
   switch (mode)
@@ -25761,7 +25761,7 @@ static bool
 expand_vec_perm_interleave3 (struct expand_vec_perm_d *d)
 {
   unsigned i, nelt;
-  rtx (*gen) (rtx, rtx, rtx);
+  rtx_insn *(*gen) (rtx, rtx, rtx);
 
   if (d->one_operand_p)
     return false;
@@ -26143,7 +26143,7 @@ expand_vec_perm_psrlw_psllw_por (struct expand_vec_perm_d *d)
   unsigned i;
   rtx (*gen_shr) (rtx, rtx, rtx);
   rtx (*gen_shl) (rtx, rtx, rtx);
-  rtx (*gen_or) (rtx, rtx, rtx);
+  rtx_insn *(*gen_or) (rtx, rtx, rtx);
   machine_mode mode = VOIDmode;
 
   if (!TARGET_SSE2 || !d->one_operand_p)
@@ -26157,7 +26157,7 @@ expand_vec_perm_psrlw_psllw_por (struct expand_vec_perm_d *d)
       mode = V4HImode;
       gen_shr = gen_lshrv4hi3;
       gen_shl = gen_ashlv4hi3;
-      gen_or = gen_iorv4hi3;
+      gen_or = gen_insn_iorv4hi3;
       break;
     case E_V16QImode:
       mode = V8HImode;
@@ -26639,8 +26639,8 @@ expand_vec_perm_pslldq_psrldq_por (struct expand_vec_perm_d *d, bool pandn)
   bool clear_op0, clear_op1;
   unsigned inner_size;
   rtx op0, op1, dop1;
-  rtx (*gen_vec_shr) (rtx, rtx, rtx);
-  rtx (*gen_vec_shl) (rtx, rtx, rtx);
+  rtx_insn *(*gen_vec_shr) (rtx, rtx, rtx);
+  rtx_insn *(*gen_vec_shl) (rtx, rtx, rtx);
 
   /* pshufd can be used for V4SI/V2DI under TARGET_SSE2.  */
   if (!TARGET_SSE2 || (vmode != E_V16QImode && vmode != E_V8HImode))
@@ -26735,7 +26735,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
   int pblendw_i = 0;
   bool end_perm = false;
   machine_mode half_mode;
-  rtx (*gen_and) (rtx, rtx, rtx);
+  rtx_insn *(*gen_and) (rtx, rtx, rtx);
   rtx (*gen_pack) (rtx, rtx, rtx);
   rtx (*gen_shift) (rtx, rtx, rtx);
 
@@ -26751,7 +26751,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       c = 0xffff;
       s = 16;
       half_mode = V2SImode;
-      gen_and = gen_andv2si3;
+      gen_and = gen_insn_andv2si3;
       gen_pack = gen_mmx_packusdw;
       gen_shift = gen_lshrv2si3;
       pblendw_i = 0x5;
@@ -26773,7 +26773,7 @@ expand_vec_perm_even_odd_pack (struct expand_vec_perm_d *d)
       c = 0xff;
       s = 8;
       half_mode = V4HImode;
-      gen_and = gen_andv4hi3;
+      gen_and = gen_insn_andv4hi3;
       gen_pack = gen_mmx_packuswb;
       gen_shift = gen_lshrv4hi3;
       break;
@@ -28071,9 +28071,9 @@ ix86_expand_vec_shift_qihi_constant (enum rtx_code code,
   rtx vec_const_and, vec_const_xor;
   rtx tmp, op1_subreg;
   rtx (*gen_shift) (rtx, rtx, rtx);
-  rtx (*gen_and) (rtx, rtx, rtx);
-  rtx (*gen_xor) (rtx, rtx, rtx);
-  rtx (*gen_sub) (rtx, rtx, rtx);
+  rtx_insn *(*gen_and) (rtx, rtx, rtx);
+  rtx_insn *(*gen_xor) (rtx, rtx, rtx);
+  rtx_insn *(*gen_sub) (rtx, rtx, rtx);
 
   /* Only optimize shift by constant.  */
   if (!CONST_INT_P (op2))
@@ -28329,7 +28329,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
   machine_mode himode, qimode = GET_MODE (dest);
   machine_mode wqimode;
   rtx qop1, qop2, hop1, hop2, hdest;
-  rtx (*gen_truncate)(rtx, rtx) = NULL;
+  rtx_insn *(*gen_truncate) (rtx, rtx) = NULL;
   bool op2vec = GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT;
   bool uns_p = code != ASHIFTRT;
 
@@ -28357,7 +28357,7 @@ ix86_expand_vecop_qihi2 (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       break;
     case E_V32QImode:
       himode = V32HImode;
-      gen_truncate = gen_truncv32hiv32qi2;
+      gen_truncate = gen_insn_truncv32hiv32qi2;
       break;
     default:
       gcc_unreachable ();
@@ -28407,8 +28407,8 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
 {
   machine_mode qimode = GET_MODE (dest);
   machine_mode himode;
-  rtx (*gen_il) (rtx, rtx, rtx);
-  rtx (*gen_ih) (rtx, rtx, rtx);
+  rtx_insn *(*gen_il) (rtx, rtx, rtx);
+  rtx_insn *(*gen_ih) (rtx, rtx, rtx);
   rtx op1_l, op1_h, op2_l, op2_h, res_l, res_h;
   bool op2vec = GET_MODE_CLASS (GET_MODE (op2)) == MODE_VECTOR_INT;
   struct expand_vec_perm_d d;
@@ -28451,17 +28451,17 @@ ix86_expand_vecop_qihi (enum rtx_code code, rtx dest, rtx op1, rtx op2)
       switch (qimode)
 	{
 	case E_V16QImode:
-	  gen_il = gen_vec_interleave_lowv16qi;
-	  gen_ih = gen_vec_interleave_highv16qi;
+	  gen_il = gen_insn_vec_interleave_lowv16qi;
+	  gen_ih = gen_insn_vec_interleave_highv16qi;
 	  break;
 	case E_V32QImode:
-	  gen_il = gen_avx2_interleave_lowv32qi;
-	  gen_ih = gen_avx2_interleave_highv32qi;
+	  gen_il = gen_insn_avx2_interleave_lowv32qi;
+	  gen_ih = gen_insn_avx2_interleave_highv32qi;
 	  full_interleave = false;
 	  break;
 	case E_V64QImode:
-	  gen_il = gen_avx512bw_interleave_lowv64qi;
-	  gen_ih = gen_avx512bw_interleave_highv64qi;
+	  gen_il = gen_insn_avx512bw_interleave_lowv64qi;
+	  gen_ih = gen_insn_avx512bw_interleave_highv64qi;
 	  full_interleave = false;
 	  break;
 	default:
@@ -28850,7 +28850,7 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
   else
     {
       machine_mode nmode;
-      rtx (*umul) (rtx, rtx, rtx);
+      rtx_insn *(*umul) (rtx, rtx, rtx);
 
       if (mode == V2DImode)
 	{
@@ -28903,7 +28903,7 @@ ix86_expand_umulvndi_highpart (rtx op0, rtx op1, rtx op2)
 {
   /* The following sequence can be used with SSE2.  */
   machine_mode mode = GET_MODE (op0);
-  rtx (*umul) (rtx, rtx, rtx);
+  rtx_insn *(*umul) (rtx, rtx, rtx);
   machine_mode nmode;
   if (mode == V2DImode)
     {
@@ -29215,7 +29215,7 @@ ix86_expand_pinsr (rtx *operands)
     case E_V1TImode:
       {
 	machine_mode srcmode, dstmode;
-	rtx (*pinsr)(rtx, rtx, rtx, rtx);
+	rtx_insn *(*pinsr)(rtx, rtx, rtx, rtx);
 	rtx d;
 
 	if (!int_mode_for_size (size, 0).exists (&srcmode))
@@ -29227,21 +29227,21 @@ ix86_expand_pinsr (rtx *operands)
 	    if (!TARGET_SSE4_1)
 	      return false;
 	    dstmode = V16QImode;
-	    pinsr = gen_sse4_1_pinsrb;
+	    pinsr = gen_insn_sse4_1_pinsrb;
 	    break;
 
 	  case E_HImode:
 	    if (!TARGET_SSE2)
 	      return false;
 	    dstmode = V8HImode;
-	    pinsr = gen_sse2_pinsrw;
+	    pinsr = gen_insn_sse2_pinsrw;
 	    break;
 
 	  case E_SImode:
 	    if (!TARGET_SSE4_1)
 	      return false;
 	    dstmode = V4SImode;
-	    pinsr = gen_sse4_1_pinsrd;
+	    pinsr = gen_insn_sse4_1_pinsrd;
 	    break;
 
 	  case E_DImode:
@@ -29249,7 +29249,7 @@ ix86_expand_pinsr (rtx *operands)
 	    if (!TARGET_SSE4_1)
 	      return false;
 	    dstmode = V2DImode;
-	    pinsr = gen_sse4_1_pinsrq;
+	    pinsr = gen_insn_sse4_1_pinsrq;
 	    break;
 
 	  default:
@@ -29405,8 +29405,8 @@ ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
   rtx_code_label *cmp_label = NULL;
   rtx_code_label *done_label = NULL;
   rtx target_bool = NULL_RTX, new_mem = NULL_RTX;
-  rtx (*gen) (rtx, rtx, rtx, rtx, rtx) = NULL;
-  rtx (*gendw) (rtx, rtx, rtx, rtx, rtx, rtx) = NULL;
+  rtx_insn *(*gen) (rtx, rtx, rtx, rtx, rtx) = NULL;
+  rtx_insn *(*gendw) (rtx, rtx, rtx, rtx, rtx, rtx) = NULL;
   machine_mode mode = GET_MODE (target_val), hmode = mode;
 
   if (*ptarget_bool == NULL)
@@ -29424,26 +29424,26 @@ ix86_expand_cmpxchg_loop (rtx *ptarget_bool, rtx target_val,
   switch (mode)
     {
     case E_TImode:
-      gendw = gen_atomic_compare_and_swapti_doubleword;
+      gendw = gen_insn_atomic_compare_and_swapti_doubleword;
       hmode = DImode;
       break;
     case E_DImode:
       if (doubleword)
 	{
-	  gendw = gen_atomic_compare_and_swapdi_doubleword;
+	  gendw = gen_insn_atomic_compare_and_swapdi_doubleword;
 	  hmode = SImode;
 	}
       else
-	gen = gen_atomic_compare_and_swapdi_1;
+	gen = gen_insn_atomic_compare_and_swapdi_1;
       break;
     case E_SImode:
-      gen = gen_atomic_compare_and_swapsi_1;
+      gen = gen_insn_atomic_compare_and_swapsi_1;
       break;
     case E_HImode:
-      gen = gen_atomic_compare_and_swaphi_1;
+      gen = gen_insn_atomic_compare_and_swaphi_1;
       break;
     case E_QImode:
-      gen = gen_atomic_compare_and_swapqi_1;
+      gen = gen_insn_atomic_compare_and_swapqi_1;
       break;
     default:
       gcc_unreachable ();
@@ -30668,7 +30668,7 @@ ix86_expand_bitreverse (rtx dest, rtx src)
 	}
       rtx temp4 = gen_reg_rtx (GET_MODE (target));
       rtx temp5 = gen_reg_rtx (GET_MODE (target));
-      rtx (*gen_bswap) (rtx, rtx)
+      rtx_insn *(*gen_bswap) (rtx, rtx)
 	= mode == TImode ? gen_bswapdi2 : gen_bswapsi2;
       emit_insn (gen_bswap (temp4, target));
       emit_insn (gen_bswap (temp5, temp1));
