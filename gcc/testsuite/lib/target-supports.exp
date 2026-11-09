@@ -6974,6 +6974,24 @@ proc check_effective_target_arm_neon_hw { } {
     } [add_options_for_arm_neon ""]]
 }
 
+# Return true if this is an AArch64 target that can run the 64-bit
+# polynomial multiply (PMULL) instructions of FEAT_PMULL.
+
+proc check_effective_target_aarch64_pmull_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_pmull_hw_available {
+	#pragma GCC target "+aes"
+	int
+	main (void)
+	{
+	  asm volatile ("pmull v0.1q, v1.1d, v2.1d");
+	  return 0;
+	}
+    }]
+}
+
 # Return true if this is an AArch64 target that can run SVE code.
 
 proc check_effective_target_aarch64_sve_hw { } {

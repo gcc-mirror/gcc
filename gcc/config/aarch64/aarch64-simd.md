@@ -10833,6 +10833,59 @@
   [(set_attr "type" "crypto_pmull")]
 )
 
+;; Carry-less multiplication.  clmul<mode>3 returns the low half of the
+;; product.  clmul_widen<mode>3 returns the low half in operand 0 and the
+;; high half in operand 1.  The DImode pattern also serves narrower modes,
+;; which the middle-end zero-extends to DImode.
+
+(define_expand "clmuldi3"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")]
+  "TARGET_AES && TARGET_NON_STREAMING"
+{
+  rtx prod = gen_reg_rtx (TImode);
+  emit_insn (gen_aarch64_crypto_pmulldi (prod, operands[1], operands[2]));
+  emit_move_insn (operands[0], gen_lowpart (DImode, prod));
+  DONE;
+})
+
+(define_expand "clmul_widendi3"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")
+   (match_operand:DI 3 "register_operand")]
+  "TARGET_AES && TARGET_NON_STREAMING"
+{
+  rtx prod = gen_reg_rtx (TImode);
+  emit_insn (gen_aarch64_crypto_pmulldi (prod, operands[2], operands[3]));
+  emit_move_insn (operands[0], gen_lowpart (DImode, prod));
+  emit_insn (gen_vec_extractv2didi (operands[1],
+				    gen_lowpart (V2DImode, prod),
+				    aarch64_endian_lane_rtx (V2DImode, 1)));
+  DONE;
+})
+
+(define_expand "clmul_widenqi3"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:QI 1 "register_operand")
+   (match_operand:QI 2 "register_operand")
+   (match_operand:QI 3 "register_operand")]
+  "TARGET_SIMD"
+{
+  rtx x = gen_reg_rtx (V8QImode);
+  rtx y = gen_reg_rtx (V8QImode);
+  rtx prod = gen_reg_rtx (V8HImode);
+  rtx half = gen_lowpart (HImode, prod);
+  emit_insn (gen_aarch64_simd_dupv8qi (x, operands[2]));
+  emit_insn (gen_aarch64_simd_dupv8qi (y, operands[3]));
+  emit_insn (gen_aarch64_pmullv8qi (prod, x, y));
+  emit_move_insn (operands[0], gen_lowpart (QImode, half));
+  rtx hi = expand_shift (RSHIFT_EXPR, HImode, half, 8, NULL_RTX, 1);
+  emit_move_insn (operands[1], gen_lowpart (QImode, hi));
+  DONE;
+})
+
 ;; Sign- or zero-extend a 64-bit integer vector to a 128-bit vector.
 (define_insn_and_split "<optab><Vnarrowq><mode>2"
   [(set (match_operand:VQN 0 "register_operand" "=w")
