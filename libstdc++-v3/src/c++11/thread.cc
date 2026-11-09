@@ -129,9 +129,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   thread::join()
   {
-    int __e = EINVAL;
+    int __e = 0;
 
-    if (_M_id != id())
+    if (_M_id == this_thread::get_id())
+      __e = EDEADLK;
+    else if (_M_id == id())
+      __e = EINVAL;
+    else
       __e = __gthread_join(_M_id._M_thread, 0);
 
     if (__e)
