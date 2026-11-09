@@ -85,8 +85,9 @@ extern void
 emit_stack_clash_protection_probe_loop_start (rtx_code_label **,
 					      rtx_code_label **,
 					      rtx, bool);
-extern void emit_stack_clash_protection_probe_loop_end (rtx_code_label *, rtx,
-							rtx, bool);
+extern void
+emit_stack_clash_protection_probe_loop_end (rtx_code_label *,
+					    rtx_code_label *, rtx, bool);
 
 /* This enum is used for the following two functions.  */
 enum save_level {SAVE_BLOCK, SAVE_FUNCTION, SAVE_NONLOCAL};

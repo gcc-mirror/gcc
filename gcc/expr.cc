@@ -105,8 +105,8 @@ static rtx do_store_flag (const_sepops, rtx, machine_mode);
 #ifdef PUSH_ROUNDING
 static void emit_single_push_insn (machine_mode, rtx, tree);
 #endif
-static void do_tablejump (rtx, machine_mode, rtx, rtx, rtx,
-			  profile_probability);
+static void do_tablejump (rtx, machine_mode, rtx, rtx_code_label *,
+			  rtx_code_label *, profile_probability);
 static rtx const_vector_from_tree (tree);
 static tree tree_expr_size (const_tree);
 static void convert_mode_scalar (rtx, rtx, int);
@@ -14226,8 +14226,8 @@ do_store_flag (const_sepops ops, rtx target, machine_mode mode)
    label.  */
 bool
 try_casesi (tree index_type, tree index_expr, tree minval, tree range,
-	    rtx table_label, rtx default_label, rtx fallback_label,
-            profile_probability default_probability)
+	    rtx_code_label *table_label, rtx_code_label *default_label,
+	    rtx_insn *fallback_label, profile_probability default_probability)
 {
   class expand_operand ops[5];
   scalar_int_mode index_mode = SImode;
@@ -14296,8 +14296,9 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
    the default label.  */
 
 static void
-do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
-	      rtx default_label, profile_probability default_probability)
+do_tablejump (rtx index, machine_mode mode, rtx range,
+	      rtx_code_label *table_label, rtx_code_label *default_label,
+	      profile_probability default_probability)
 {
   rtx temp, vector;
 
@@ -14375,7 +14376,7 @@ do_tablejump (rtx index, machine_mode mode, rtx range, rtx table_label,
 
 bool
 try_tablejump (tree index_type, tree index_expr, tree minval, tree range,
-	       rtx table_label, rtx default_label,
+	       rtx_code_label *table_label, rtx_code_label *default_label,
 	       profile_probability default_probability)
 {
   rtx index;

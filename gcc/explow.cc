@@ -2043,8 +2043,8 @@ emit_stack_clash_protection_probe_loop_start (rtx_code_label **loop_lab,
 
 void
 emit_stack_clash_protection_probe_loop_end (rtx_code_label *loop_lab,
-					    rtx end_loop, rtx last_addr,
-					    bool rotated)
+					    rtx_code_label *end_loop,
+					    rtx last_addr, bool rotated)
 {
   if (rotated)
     emit_cmp_and_jump_insns (stack_pointer_rtx, last_addr, NE, NULL_RTX,

@@ -3031,7 +3031,7 @@ unshare_all_rtl (void)
    Recursively does the same for subexpressions.  */
 
 static void
-verify_rtx_sharing (rtx orig, rtx insn)
+verify_rtx_sharing (rtx orig, rtx_insn *insn)
 {
   rtx x = orig;
   int i;
@@ -3139,7 +3139,7 @@ verify_rtx_sharing (rtx orig, rtx insn)
 /* Reset used-flags for INSN.  */
 
 static void
-reset_insn_used_flags (rtx insn)
+reset_insn_used_flags (rtx_insn *insn)
 {
   gcc_assert (INSN_P (insn));
   reset_used_flags (PATTERN (insn));
@@ -3177,7 +3177,7 @@ reset_all_used_flags (void)
 /* Verify sharing in INSN.  */
 
 static void
-verify_insn_sharing (rtx insn)
+verify_insn_sharing (rtx_insn *insn)
 {
   gcc_assert (INSN_P (insn));
   verify_rtx_sharing (PATTERN (insn), insn);

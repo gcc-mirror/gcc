@@ -148,7 +148,8 @@ static tree *get_block_vector (tree, int *);
 extern tree debug_find_var_in_block_tree (tree, tree);
 /* We always define `record_insns' even if it's not used so that we
    can always export `prologue_epilogue_contains'.  */
-static void record_insns (rtx_insn *, rtx, hash_table<insn_cache_hasher> **)
+static void record_insns (rtx_insn *, rtx_insn *,
+			  hash_table<insn_cache_hasher> **)
      ATTRIBUTE_UNUSED;
 static bool contains (const rtx_insn *, hash_table<insn_cache_hasher> *);
 static void prepare_function_start (void);
@@ -5811,7 +5812,8 @@ dump_stack_clash_frame_info (enum stack_clash_probes probes, bool residuals)
    for the first time.  */
 
 static void
-record_insns (rtx_insn *insns, rtx end, hash_table<insn_cache_hasher> **hashp)
+record_insns (rtx_insn *insns, rtx_insn *end,
+	      hash_table<insn_cache_hasher> **hashp)
 {
   rtx_insn *tmp;
   hash_table<insn_cache_hasher> *hash = *hashp;

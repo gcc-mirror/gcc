@@ -6640,7 +6640,8 @@ s390_expand_cmpmem (rtx target, rtx op0, rtx op1, rtx len)
    comparison operator COMPARISON.  Return the emitted jump insn.  */
 
 static rtx_insn *
-s390_emit_ccraw_jump (HOST_WIDE_INT mask, enum rtx_code comparison, rtx label)
+s390_emit_ccraw_jump (HOST_WIDE_INT mask, enum rtx_code comparison,
+		      rtx_code_label *label)
 {
   rtx temp;
 

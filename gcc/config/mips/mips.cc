@@ -15403,9 +15403,7 @@ static void
 vr4130_true_reg_dependence_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
 				void *data)
 {
-  rtx *insn_ptr;
-
-  insn_ptr = (rtx *) data;
+  auto insn_ptr = (rtx_insn **) data;
   if (REG_P (x)
       && *insn_ptr != 0
       && reg_referenced_p (x, PATTERN (*insn_ptr)))
@@ -15416,7 +15414,7 @@ vr4130_true_reg_dependence_p_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
    and INSN.  */
 
 static bool
-vr4130_true_reg_dependence_p (rtx insn)
+vr4130_true_reg_dependence_p (rtx_insn *insn)
 {
   note_stores (vr4130_last_insn, vr4130_true_reg_dependence_p_1, &insn);
   return insn == 0;

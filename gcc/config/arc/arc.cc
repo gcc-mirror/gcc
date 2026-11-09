@@ -9479,7 +9479,7 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
    ANNULLED indicates if INSN is an annulled delay-slot insn.
    Register further changes if necessary.  */
 static rtx
-conditionalize_nonjump (rtx pat, rtx cond, rtx insn, bool annulled)
+conditionalize_nonjump (rtx pat, rtx cond, rtx_insn *insn, bool annulled)
 {
   /* For commutative operators, we generally prefer to have
      the first source match the destination.  */
