@@ -3,7 +3,7 @@
 /* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
 /* { dg-options "-O2 -pg -static" { target hppa*-*-hpux* } } */
-/* { dg-additional-options "-mfentry -fno-pic" { target i?86-*-gnu* x86_64-*-gnu* } } */
+/* { dg-additional-options "-mfentry -fno-pic -no-pie" { target i?86-*-gnu* x86_64-*-gnu* } } */
 /* { dg-error "profiler" "No profiler support" { target xstormy16-*-* } 0 } */
 
 extern void abort (void);

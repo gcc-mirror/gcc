@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fomit-frame-pointer" } */
+/* { dg-additional-options "-fno-pie" { target ia32 } } */
 /* { dg-add-options check_function_bodies } */
 /* { dg-final { check-function-bodies "**" "*#" "" { target { ! *-*-darwin* } } {^\t?\.} } } */
 /* { dg-final { check-function-bodies "*D" "*E" "" { target *-*-darwin* } {^\t?\.} } } */

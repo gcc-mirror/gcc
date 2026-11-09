@@ -1,6 +1,6 @@
 /* PR target/127897 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx2 -mno-avx512f" } */
+/* { dg-options "-O2 -mavx2 -mno-avx512f -fno-pie" } */
 /* { dg-final { scan-assembler-times "vbroadcastss" 2 } } */
 
 #include <immintrin.h>

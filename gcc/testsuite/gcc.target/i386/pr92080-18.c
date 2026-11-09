@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=x86-64-v4" } */
+/* { dg-options "-O2 -march=x86-64-v4 -fno-pie" } */
 /* { dg-final { scan-assembler-times "vbroadcastsd" 1 } } */
 
 typedef double v2df __attribute__((vector_size(16)));

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -march=x86-64-v4" } */
+/* { dg-options "-O1 -march=x86-64-v4 -fno-pie" } */
 /* { dg-final { scan-assembler-times "vpbroadcastd" 1 } } */
 
 typedef int v4si __attribute__((vector_size(16)));

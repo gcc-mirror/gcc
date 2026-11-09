@@ -1,5 +1,6 @@
 // PR c++/122819
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-fno-pie" }
 
 template <typename T> struct basic_streambuf;
 using streambuf = basic_streambuf<char>;

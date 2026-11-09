@@ -1,6 +1,6 @@
 /* PR target/94913 */
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -fno-pie" } */
 
 void f1 (void);
 void f2 (void);
@@ -21,8 +21,8 @@ void fooi (unsigned long x, unsigned long y)
 }
 
 /* { dg-final { scan-assembler-not "cmp" } } */
-/* On IA32, PIC adds one add per function to compute the PIC register, and
+/* On IA32, PIC/PIE adds one add per function to compute the PIC register, and
    another add to adjust %esp in the epilogue needed to restore the PIC
-   register.  */
-/* { dg-final { scan-assembler-times "add" 3 { target { ! { ia32 && { ! nonpic } } } } } } */
-/* { dg-final { scan-assembler-times "add" 9 { target { ia32 && { ! nonpic } } } } } */
+   register, but the epilogue may or may not be duplicated.  Avoid this
+   complexity by disabling PIC/PIE altogether.  */
+/* { dg-final { scan-assembler-times "add" 3 } } */

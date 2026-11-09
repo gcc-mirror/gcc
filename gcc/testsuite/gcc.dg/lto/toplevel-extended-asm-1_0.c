@@ -1,5 +1,5 @@
 /* { dg-lto-do link } */
-/* { dg-lto-options {{-O2 -flto -flto-partition=1to1 -no-pie} } } */
+/* { dg-lto-options {{-O2 -flto -flto-partition=1to1 -no-pie -fno-pie} } } */
 /* { dg-skip-if "SPARC relocation overflow" { sparc*-*-solaris2* && lp64 } } */
 /* { dg-skip-if "no-pie unsupported" { *-*-darwin* } "" "" } */
 

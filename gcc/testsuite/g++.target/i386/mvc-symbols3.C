@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -fno-pie" } */
 
 __attribute__((target_clones("default", "arch=slm", "sse4.2")))
 int foo ();

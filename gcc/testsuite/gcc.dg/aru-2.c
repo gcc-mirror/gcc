@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
-/* { dg-additional-options "-mfentry -fno-pic" { target i?86-*-gnu* x86_64-*-gnu* } } */
+/* { dg-additional-options "-mfentry -fno-pic -no-pie" { target i?86-*-gnu* x86_64-*-gnu* } } */
 
 static int __attribute__((noinline))
 bar (int x)

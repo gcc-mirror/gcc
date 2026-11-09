@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=x86-64-v4 -O2" } */
+/* { dg-options "-march=x86-64-v4 -O2 -fno-pie" } */
 /* { dg-final { scan-assembler-times "vpbroadcastd" 1 } } */
 /* { dg-final { scan-assembler-times "vpbroadcastq" 1 } } */
 

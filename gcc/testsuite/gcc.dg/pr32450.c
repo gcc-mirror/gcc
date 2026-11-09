@@ -4,7 +4,7 @@
 /* { dg-require-profiling "-pg" } */
 /* { dg-options "-O2 -pg" } */
 /* { dg-options "-O2 -pg -mtune=core2" { target { i?86-*-* x86_64-*-* } } } */
-/* { dg-additional-options "-mfentry -fno-pic" { target i?86-*-gnu* x86_64-*-gnu* } } */
+/* { dg-additional-options "-mfentry -fno-pic -no-pie" { target i?86-*-gnu* x86_64-*-gnu* } } */
 /* { dg-options "-O2 -pg -static" { target hppa*-*-hpux* } } */
 
 extern void abort (void);

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-skip-if "64b Darwin does not support non-PIC" *-*-darwin* } */
-/* { dg-options "-O2 -march=x86-64 -fomit-frame-pointer -DUSE_SCANF -fno-stack-protector" } */
+/* { dg-options "-O2 -march=x86-64 -fomit-frame-pointer -DUSE_SCANF -fno-stack-protector -fno-pie" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 
