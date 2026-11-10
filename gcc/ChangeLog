@@ -1,3 +1,13 @@
+2026-11-09  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/127967
+	* ipa-prop.cc (ipcp_modif_dom_walker::before_dom_children): Add a
+	check that bit_offset aligns to byte boundary.
+	(ipcp_get_aggregate_const): Likewise and also add bounds checks.
+
 2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
