@@ -24,11 +24,11 @@ extern tree expand_simple_operations (tree, tree = NULL);
 extern tree simplify_using_initial_conditions (class loop *, tree);
 extern bool loop_only_exit_p (const class loop *, basic_block *body,
 			      const_edge);
-extern bool number_of_iterations_exit (class loop *, edge,
+extern bool number_of_iterations_exit (class loop *, const_edge,
 				       class tree_niter_desc *niter, bool,
 				       bool every_iteration = true,
 				       basic_block * = NULL);
-extern bool number_of_iterations_exit_assumptions (class loop *, edge,
+extern bool number_of_iterations_exit_assumptions (class loop *, const_edge,
 						   class tree_niter_desc *,
 						   gcond **, bool = true,
 						   basic_block * = NULL);

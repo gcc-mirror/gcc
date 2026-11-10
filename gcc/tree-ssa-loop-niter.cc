@@ -2086,7 +2086,7 @@ ssa_defined_by_minus_one_stmt_p (tree op, tree val)
  */
 
 static bool
-number_of_iterations_popcount (loop_p loop, edge exit,
+number_of_iterations_popcount (loop_p loop, const_edge exit,
 			       enum tree_code code,
 			       class tree_niter_desc *niter)
 {
@@ -2372,9 +2372,9 @@ shifted_range_nonzero_p (loop_p loop, tree src,
  */
 
 static bool
-number_of_iterations_cltz (loop_p loop, edge exit,
-			       enum tree_code code,
-			       class tree_niter_desc *niter)
+number_of_iterations_cltz (loop_p loop, const_edge exit,
+			   enum tree_code code,
+			   class tree_niter_desc *niter)
 {
   bool modify_before_test = true;
   HOST_WIDE_INT max;
@@ -2594,9 +2594,9 @@ number_of_iterations_cltz (loop_p loop, edge exit,
  */
 
 static bool
-number_of_iterations_cltz_complement (loop_p loop, edge exit,
-			       enum tree_code code,
-			       class tree_niter_desc *niter)
+number_of_iterations_cltz_complement (loop_p loop, const_edge exit,
+				      enum tree_code code,
+				      class tree_niter_desc *niter)
 {
   bool modify_before_test = true;
   HOST_WIDE_INT max;
@@ -2763,7 +2763,7 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
    true.  */
 
 static bool
-number_of_iterations_bitcount (loop_p loop, edge exit,
+number_of_iterations_bitcount (loop_p loop, const_edge exit,
 			       enum tree_code code,
 			       class tree_niter_desc *niter)
 {
@@ -3249,7 +3249,7 @@ loop_only_exit_p (const class loop *loop, basic_block *body, const_edge exit)
    it when returning true.  */
 
 bool
-number_of_iterations_exit_assumptions (class loop *loop, edge exit,
+number_of_iterations_exit_assumptions (class loop *loop, const_edge exit,
 				       class tree_niter_desc *niter,
 				       gcond **at_stmt, bool every_iteration,
 				       basic_block *body)
@@ -3393,7 +3393,7 @@ number_of_iterations_exit_assumptions (class loop *loop, edge exit,
    the niter information holds unconditionally.  */
 
 bool
-number_of_iterations_exit (class loop *loop, edge exit,
+number_of_iterations_exit (class loop *loop, const_edge exit,
 			   class tree_niter_desc *niter,
 			   bool warn, bool every_iteration,
 			   basic_block *body)
