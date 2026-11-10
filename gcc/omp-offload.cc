@@ -928,8 +928,7 @@ oacc_xform_loop (gcall *call)
     }
 
   if (!chunking
-      && (!targetm.simt.vf
-	  || targetm.simt.vf () == 1)
+      && !targetm.simt.vf
       && (mask & GOMP_DIM_MASK (GOMP_DIM_VECTOR)))
     {
       poly_uint64 max_vf = omp_max_vf (false);
