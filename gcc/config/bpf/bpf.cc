@@ -1396,20 +1396,53 @@ emit_move_loop (rtx src, rtx dst, machine_mode mode, int offset, int inc,
     {
       emit_insn (gen_rtx_SET (adjust_address (dst, SImode, offset),
 			      adjust_address (src, SImode, offset)));
-      offset += (inc < 0 ? -4 : 4);
-      remainder -= 4;
+      offset += 4;
     }
   if (remainder & 2)
     {
       emit_insn (gen_rtx_SET (adjust_address (dst, HImode, offset),
 			      adjust_address (src, HImode, offset)));
-      offset += (inc < 0 ? -2 : 2);
-      remainder -= 2;
+      offset += 2;
     }
   if (remainder & 1)
     {
       emit_insn (gen_rtx_SET (adjust_address (dst, QImode, offset),
 			      adjust_address (src, QImode, offset)));
+    }
+}
+
+/* As above, but use a backwards loop.  For memmove when the source and
+   destination overlap with source higher than dest.  */
+
+static void
+emit_move_loop_back (rtx src, rtx dst, machine_mode mode, int offset, int inc,
+		     unsigned iters, unsigned remainder)
+{
+  /* First handle trailing bytes.  */
+  if (remainder & 1)
+    {
+      offset -= 1;
+      emit_insn (gen_rtx_SET (adjust_address (dst, QImode, offset),
+			      adjust_address (src, QImode, offset)));
+    }
+  if (remainder & 2)
+    {
+      offset -= 2;
+      emit_insn (gen_rtx_SET (adjust_address (dst, HImode, offset),
+			      adjust_address (src, HImode, offset)));
+    }
+  if (remainder & 4)
+    {
+      offset -= 4;
+      emit_insn (gen_rtx_SET (adjust_address (dst, SImode, offset),
+			      adjust_address (src, SImode, offset)));
+    }
+  /* Copy in chunks as large as the alignment permits.  */
+  for (unsigned int i = 0; i < iters; i++)
+    {
+      offset -= inc;
+      emit_insn (gen_rtx_SET (adjust_address (dst, mode, offset),
+			      adjust_address (src, mode, offset)));
     }
 }
 
@@ -1485,7 +1518,7 @@ bpf_expand_cpymem (rtx *operands, bool is_move)
 			       true, fwd_label, profile_probability::even ());
 
       /* Emit the "backwards" unrolled loop.  */
-      emit_move_loop (src, dst, mode, (size_bytes - inc), -inc, iters, remainder);
+      emit_move_loop_back (src, dst, mode, size_bytes, inc, iters, remainder);
       emit_jump_insn (gen_jump (done_label));
       emit_barrier ();
 
