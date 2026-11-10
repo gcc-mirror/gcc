@@ -12925,6 +12925,7 @@ up''.
 All implicitly popped input registers must be closer to the top of
 the reg-stack than any input that is not implicitly popped.
 
+@item
 It is possible that if an input dies in an @code{asm}, the compiler might
 use the input register for an output reload.  Consider this example:
 
@@ -12972,6 +12973,10 @@ operands may not ``skip'' a register.
 Some @code{asm} statements may need extra stack space for internal
 calculations.  This can be guaranteed by clobbering stack registers
 unrelated to the inputs and outputs.
+
+@item
+Each operand must occupy a single register.  Operands that need
+more, such as complex values, which take two, are not supported.
 
 @end enumerate
 
