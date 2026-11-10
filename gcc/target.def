@@ -5948,6 +5948,39 @@ DEFHOOK
  reg_class_t, (int, reg_class_t, reg_class_t),
  default_ira_change_pseudo_allocno_class)
 
+/* Return the cost of removing a low-pressure loop from the IRA region
+   tree.  A positive value keeps the loop as a region.  */
+DEFHOOK
+(ira_loop_region_flatten_cost,
+ "IRA removes a loop from its region tree when the register pressure in\n\
+the loop and its parent is low.  If this hook is defined, IRA calls it\n\
+before removing such a loop when more pseudos of some register class\n\
+live through a call in the loop than the class has call-saved registers\n\
+and the excess is covered by pseudos that live through the loop without\n\
+being referenced in it.  Spilling those around the loop lets the others\n\
+have call-saved registers.\n\
+\n\
+The hook returns the cost of removing the loop, that is of allocating\n\
+it together with its parent.  A positive result means keeping the loop\n\
+as an IRA region; otherwise IRA removes it.  The loop can still be\n\
+removed for other reasons, for example when there are more than\n\
+@option{--param ira-max-loops-num} loops.\n\
+\n\
+@var{call_freq} is the frequency of the calls in the loop that the\n\
+pseudos of such a class live through, summed over the pseudos live on\n\
+the entry and exit edges of the loop.  @var{border_freq} is the\n\
+frequency of those edges, summed over the pseudos live on them, and\n\
+@var{border_edges} is their number.  The calls and references in a\n\
+subloop that stays a region are not counted.  A target with many more\n\
+call-clobbered than call-saved registers can use the hook to keep loops\n\
+whose pseudos would otherwise be saved and restored around calls.\n\
+\n\
+IRA first calls the hook with @var{call_freq} 1 and the other arguments\n\
+0 and does not examine the loops of a function if that result is not\n\
+positive.",
+ int, (int call_freq, int border_freq, int border_edges),
+ NULL)
+
 /* Return true if we use LRA instead of reload.  */
 DEFHOOK
 (lra_p,

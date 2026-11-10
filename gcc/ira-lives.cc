@@ -1564,13 +1564,18 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 
 	      last_call_num++;
 	      sparseset_clear (allocnos_processed);
+	      function_abi callee_abi = insn_callee_abi (call);
+	      /* Registers of each class needed by the pseudos living
+		 through this call.  */
+	      int call_pressure[N_REG_CLASSES];
+	      if (ira_flatten_cost_p)
+		memset (call_pressure, 0, sizeof (call_pressure));
 	      /* The current set of live allocnos are live across the call.  */
 	      EXECUTE_IF_SET_IN_SPARSESET (objects_live, i)
 	        {
 		  ira_object_t obj = ira_object_id_map[i];
 		  a = OBJECT_ALLOCNO (obj);
 		  int num = ALLOCNO_NUM (a);
-		  function_abi callee_abi = insn_callee_abi (call);
 
 		  /* Don't allocate allocnos that cross setjmps or any
 		     call, if this function receives a nonlocal
@@ -1591,6 +1596,25 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		    continue;
 		  sparseset_set_bit (allocnos_processed, num);
 
+		  if (ira_flatten_cost_p)
+		    {
+		      enum reg_class cl, aclass = ALLOCNO_CLASS (a);
+		      enum reg_class pclass
+			= ira_pressure_class_translate[aclass];
+		      int nregs
+			= ira_reg_class_max_nregs[aclass][ALLOCNO_MODE (a)];
+		      /* A call that clobbers no register of the class
+			 does not need a call-preserved register.  */
+		      if (hard_reg_set_intersect_p
+			  (callee_abi.full_and_partial_reg_clobbers (),
+			   reg_class_contents[pclass] & ~ira_no_alloc_regs))
+			for (int j = 0;
+			     (cl = ira_reg_class_super_classes[pclass][j])
+			     != LIM_REG_CLASSES;
+			     j++)
+			  call_pressure[cl] += nregs;
+		    }
+
 		  if (allocno_saved_at_call[num] != last_call_num)
 		    /* Here we are mimicking caller-save.cc behavior
 		       which does not save hard register at a call if
@@ -1608,6 +1632,15 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 		      && ALLOCNO_REGNO (a) == (int) REGNO (cheap_reg))
 		    ALLOCNO_CHEAP_CALLS_CROSSED_NUM (a)++;
 		}
+	      if (ira_flatten_cost_p)
+		for (int j = 0; j < ira_pressure_classes_num; j++)
+		  {
+		    enum reg_class cl = ira_pressure_classes[j];
+		    if (curr_bb_node->call_crossing_pressure[cl]
+			< call_pressure[cl])
+		      curr_bb_node->call_crossing_pressure[cl]
+			= call_pressure[cl];
+		  }
 	    }
 
 	  /* See which defined values die here.  Note that we include
@@ -1726,6 +1759,13 @@ process_bb_node_lives (ira_loop_tree_node_t loop_tree_node)
 	    > loop_tree_node->parent->reg_pressure[pclass])
 	  loop_tree_node->parent->reg_pressure[pclass]
 	    = loop_tree_node->reg_pressure[pclass];
+	/* A loop gets the calls of its subloops when they are marked for
+	   removal.  */
+	if (loop_tree_node->bb != NULL
+	    && (loop_tree_node->call_crossing_pressure[pclass]
+		> loop_tree_node->parent->call_crossing_pressure[pclass]))
+	  loop_tree_node->parent->call_crossing_pressure[pclass]
+	    = loop_tree_node->call_crossing_pressure[pclass];
       }
 }
 

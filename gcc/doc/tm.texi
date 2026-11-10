@@ -3085,6 +3085,35 @@ A target hook which can change allocno class for given pseudo from
   The default version of this target hook always returns given class.
 @end deftypefn
 
+@deftypefn {Target Hook} int TARGET_IRA_LOOP_REGION_FLATTEN_COST (int @var{call_freq}, int @var{border_freq}, int @var{border_edges})
+IRA removes a loop from its region tree when the register pressure in
+the loop and its parent is low.  If this hook is defined, IRA calls it
+before removing such a loop when more pseudos of some register class
+live through a call in the loop than the class has call-saved registers
+and the excess is covered by pseudos that live through the loop without
+being referenced in it.  Spilling those around the loop lets the others
+have call-saved registers.
+
+The hook returns the cost of removing the loop, that is of allocating
+it together with its parent.  A positive result means keeping the loop
+as an IRA region; otherwise IRA removes it.  The loop can still be
+removed for other reasons, for example when there are more than
+@option{--param ira-max-loops-num} loops.
+
+@var{call_freq} is the frequency of the calls in the loop that the
+pseudos of such a class live through, summed over the pseudos live on
+the entry and exit edges of the loop.  @var{border_freq} is the
+frequency of those edges, summed over the pseudos live on them, and
+@var{border_edges} is their number.  The calls and references in a
+subloop that stays a region are not counted.  A target with many more
+call-clobbered than call-saved registers can use the hook to keep loops
+whose pseudos would otherwise be saved and restored around calls.
+
+IRA first calls the hook with @var{call_freq} 1 and the other arguments
+0 and does not examine the loops of a function if that result is not
+positive.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_LRA_P (void)
 A target hook which returns true if we use LRA instead of reload pass.
 

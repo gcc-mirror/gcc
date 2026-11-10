@@ -55,6 +55,10 @@ ira_loop_tree_node_t ira_loop_nodes;
 /* And size of the ira_loop_nodes array.  */
 unsigned int ira_loop_nodes_count;
 
+/* True if the target can keep a loop of the current function with low
+   register pressure as a region (see flatten_cost_keep_p).  */
+bool ira_flatten_cost_p;
+
 /* Map regno -> allocnos with given regno (see comments for
    allocno member `next_regno_allocno').  */
 ira_allocno_t *ira_regno_allocno_map;
@@ -107,6 +111,8 @@ init_loop_tree_node (struct ira_loop_tree_node *node, int loop_num)
     = (ira_allocno_t *) ira_allocate (sizeof (ira_allocno_t) * max_regno);
   memset (node->regno_allocno_map, 0, sizeof (ira_allocno_t) * max_regno);
   memset (node->reg_pressure, 0, sizeof (node->reg_pressure));
+  memset (node->call_crossing_pressure, 0,
+	  sizeof (node->call_crossing_pressure));
   node->all_allocnos = ira_allocate_bitmap ();
   node->modified_regnos = ira_allocate_bitmap ();
   node->border_allocnos = ira_allocate_bitmap ();
@@ -140,6 +146,8 @@ create_loop_tree_nodes (void)
       ira_bb_nodes[i].regno_allocno_map = NULL;
       memset (ira_bb_nodes[i].reg_pressure, 0,
 	      sizeof (ira_bb_nodes[i].reg_pressure));
+      memset (ira_bb_nodes[i].call_crossing_pressure, 0,
+	      sizeof (ira_bb_nodes[i].call_crossing_pressure));
       ira_bb_nodes[i].all_allocnos = NULL;
       ira_bb_nodes[i].modified_regnos = NULL;
       ira_bb_nodes[i].border_allocnos = NULL;
@@ -2238,6 +2246,137 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
   return true;
 }
 
+/* Return the frequency of the calls that the pseudo REGNO lives through
+   in LOOP_NODE and in its subloops marked for removal, counting only
+   calls that clobber a register of the pseudo's class.  Set *CROSS_P if
+   there is such a call.  Subloop allocnos are not yet propagated to the
+   parents here.  */
+static int
+region_call_freq (ira_loop_tree_node_t loop_node, int regno, bool *cross_p)
+{
+  int freq = 0;
+  ira_allocno_t a = loop_node->regno_allocno_map[regno];
+  if (a != NULL
+      && ALLOCNO_CALLS_CROSSED_NUM (a) != 0
+      && hard_reg_set_intersect_p (ira_need_caller_save_regs (a),
+				   reg_class_contents[ALLOCNO_CLASS (a)]))
+    {
+      freq = ALLOCNO_CALL_FREQ (a);
+      *cross_p = true;
+    }
+  for (ira_loop_tree_node_t sub = loop_node->subloops; sub != NULL;
+       sub = sub->subloop_next)
+    if (sub->regno_allocno_map != NULL && sub->to_remove_p)
+      freq += region_call_freq (sub, regno, cross_p);
+  return freq;
+}
+
+/* Return true if the pseudo REGNO is referenced in LOOP_NODE or in its
+   subloops marked for removal.  */
+static bool
+region_ref_p (ira_loop_tree_node_t loop_node, int regno)
+{
+  ira_allocno_t a = loop_node->regno_allocno_map[regno];
+  if (a != NULL && ALLOCNO_NREFS (a) != 0)
+    return true;
+  for (ira_loop_tree_node_t sub = loop_node->subloops; sub != NULL;
+       sub = sub->subloop_next)
+    if (sub->regno_allocno_map != NULL && sub->to_remove_p
+	&& region_ref_p (sub, regno))
+      return true;
+  return false;
+}
+
+/* Return TRUE if LOOP_NODE should be kept as a separate region although
+   its pressure is low.  This is possible only if more pseudos of some
+   class live through a call in the loop than the class has
+   call-preserved registers, and the pseudos living through the loop
+   without a reference in it cover the excess: spilling them around the
+   loop lets the others have call-preserved registers.  Keeping the loop
+   costs moves on the loop border.  Let the target compare the two.  The
+   subloops of LOOP_NODE are already marked.  */
+static bool
+flatten_cost_keep_p (ira_loop_tree_node_t loop_node)
+{
+  if (!ira_flatten_cost_p)
+    return false;
+
+  int excess[N_REG_CLASSES], through[N_REG_CLASSES];
+  memset (excess, 0, sizeof (excess));
+  memset (through, 0, sizeof (through));
+  bool any_excess_p = false;
+  for (int i = 0; i < ira_pressure_classes_num; i++)
+    {
+      enum reg_class cl = ira_pressure_classes[i];
+      int preserved_num = 0;
+      for (int j = 0; j < ira_class_hard_regs_num[cl]; j++)
+	if (!crtl->abi->clobbers_full_reg_p (ira_class_hard_regs[cl][j]))
+	  preserved_num++;
+      if (preserved_num != 0)
+	excess[cl] = loop_node->call_crossing_pressure[cl] - preserved_num;
+      any_excess_p |= excess[cl] > 0;
+    }
+  if (!any_excess_p)
+    return false;
+
+  int call_freq = 0, border_freq = 0;
+  unsigned int i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (loop_node->border_allocnos, 0, i, bi)
+    {
+      ira_allocno_t a = ira_allocnos[i];
+      int regno = ALLOCNO_REGNO (a);
+      enum reg_class cl, aclass = ALLOCNO_CLASS (a);
+      enum reg_class pclass = ira_pressure_class_translate[aclass];
+      bool cross_p = false;
+      int freq = region_call_freq (loop_node, regno, &cross_p);
+      if (excess[pclass] > 0)
+	call_freq += freq;
+      if (cross_p && !region_ref_p (loop_node, regno))
+	for (int j = 0;
+	     (cl = ira_reg_class_super_classes[pclass][j]) != LIM_REG_CLASSES;
+	     j++)
+	  through[cl] += ira_reg_class_max_nregs[aclass][ALLOCNO_MODE (a)];
+      border_freq += (ira_loop_edge_freq (loop_node, regno, false)
+		      + ira_loop_edge_freq (loop_node, regno, true));
+    }
+
+  bool covered_p = false;
+  for (int j = 0; j < ira_pressure_classes_num; j++)
+    {
+      enum reg_class cl = ira_pressure_classes[j];
+      if (excess[cl] > 0 && through[cl] >= excess[cl])
+	covered_p = true;
+    }
+  if (!covered_p)
+    {
+      if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
+	fprintf (ira_dump_file,
+		 "  Loop %d flatten-cost: excess not covered (allow flatten)\n",
+		 loop_node->loop_num);
+      return false;
+    }
+
+  /* Count the entry and exit edges, not the back edges.  */
+  class loop *loop = loop_node->loop;
+  int border_edges = get_loop_exit_edges (loop).length ();
+  edge e;
+  edge_iterator ei;
+  FOR_EACH_EDGE (e, ei, loop->header->preds)
+    if (!flow_bb_inside_loop_p (loop, e->src))
+      border_edges++;
+
+  int bias = targetm.ira_loop_region_flatten_cost (call_freq, border_freq,
+						   border_edges);
+  if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
+    fprintf (ira_dump_file,
+	     "  Loop %d flatten-cost: call_freq=%d border_freq=%d"
+	     " border_edges=%d bias=%d (%s)\n",
+	     loop_node->loop_num, call_freq, border_freq, border_edges, bias,
+	     bias > 0 ? "keep (veto flatten)" : "allow flatten");
+  return bias > 0;
+}
+
 #ifdef STACK_REGS
 /* Return TRUE if LOOP has a complex enter or exit edge.  We don't
    form a region from such loop if the target use stack register
@@ -2289,6 +2428,37 @@ loop_compare_func (const void *v1p, const void *v2p)
   return l1->loop_num - l2->loop_num;
 }
 
+/* Set to_remove_p of LOOP_NODE for mark_loops_for_removal.  */
+static void
+mark_low_pressure_loop_for_removal (ira_loop_tree_node_t loop_node)
+{
+  if (loop_node->parent == NULL)
+    {
+      /* Don't remove the root.  */
+      loop_node->to_remove_p = false;
+      return;
+    }
+  loop_node->to_remove_p
+    = ((low_pressure_loop_node_p (loop_node->parent)
+	&& low_pressure_loop_node_p (loop_node)
+	&& !flatten_cost_keep_p (loop_node))
+#ifdef STACK_REGS
+       || loop_with_complex_edge_p (loop_node->loop)
+#endif
+       );
+  if (!loop_node->to_remove_p)
+    return;
+  /* The calls of a removed loop become calls of its parent.  */
+  for (int i = 0; i < ira_pressure_classes_num; i++)
+    {
+      enum reg_class cl = ira_pressure_classes[i];
+      if (loop_node->parent->call_crossing_pressure[cl]
+	  < loop_node->call_crossing_pressure[cl])
+	loop_node->parent->call_crossing_pressure[cl]
+	  = loop_node->call_crossing_pressure[cl];
+    }
+}
+
 /* Mark loops which should be removed from regional allocation.  We
    remove a loop with low register pressure inside another loop with
    register pressure.  In this case a separate allocation of the loop
@@ -2312,27 +2482,18 @@ mark_loops_for_removal (void)
   sorted_loops
     = (ira_loop_tree_node_t *) ira_allocate (sizeof (ira_loop_tree_node_t)
 					     * number_of_loops (cfun));
+  /* Mark the subloops of a loop first: flatten_cost_keep_p needs to know
+     which of them become a part of the loop.  */
+  ira_traverse_loop_tree (false, ira_loop_tree_root, NULL,
+			  mark_low_pressure_loop_for_removal);
   for (n = i = 0; vec_safe_iterate (get_loops (cfun), i, &loop); i++)
-    if (ira_loop_nodes[i].regno_allocno_map != NULL)
-      {
-	if (ira_loop_nodes[i].parent == NULL)
-	  {
-	    /* Don't remove the root.  */
-	    ira_loop_nodes[i].to_remove_p = false;
-	    continue;
-	  }
-	sorted_loops[n++] = &ira_loop_nodes[i];
-	ira_loop_nodes[i].to_remove_p
-	  = ((low_pressure_loop_node_p (ira_loop_nodes[i].parent)
-	      && low_pressure_loop_node_p (&ira_loop_nodes[i]))
-#ifdef STACK_REGS
-	     || loop_with_complex_edge_p (ira_loop_nodes[i].loop)
-#endif
-	     );
-      }
+    if (ira_loop_nodes[i].regno_allocno_map != NULL
+	&& ira_loop_nodes[i].parent != NULL)
+      sorted_loops[n++] = &ira_loop_nodes[i];
   qsort (sorted_loops, n, sizeof (ira_loop_tree_node_t), loop_compare_func);
   for (i = 0; i < n - param_ira_max_loops_num; i++)
     {
+      bool removed_p = sorted_loops[i]->to_remove_p;
       sorted_loops[i]->to_remove_p = true;
       if (internal_flag_ira_verbose > 1 && ira_dump_file != NULL)
 	fprintf
@@ -2341,7 +2502,8 @@ mark_loops_for_removal (void)
 	   sorted_loops[i]->loop_num, sorted_loops[i]->loop->header->index,
 	   sorted_loops[i]->loop->header->count.to_frequency (cfun),
 	   loop_depth (sorted_loops[i]->loop),
-	   low_pressure_loop_node_p (sorted_loops[i]->parent)
+	   removed_p
+	   && low_pressure_loop_node_p (sorted_loops[i]->parent)
 	   && low_pressure_loop_node_p (sorted_loops[i])
 	   ? "low pressure" : "cheap loop");
     }
@@ -3514,6 +3676,12 @@ ira_build (void)
   create_allocnos ();
   ira_costs ();
   create_allocno_objects ();
+  /* The hook result for one call and no loop border tells whether the
+     target keeps any loop.  If it does not, the data for the hook is
+     not collected.  */
+  ira_flatten_cost_p
+    = (targetm.ira_loop_region_flatten_cost != NULL
+       && targetm.ira_loop_region_flatten_cost (1, 0, 0) > 0);
   ira_create_allocno_live_ranges ();
   remove_unnecessary_regions (false);
   ira_compress_allocno_live_ranges ();

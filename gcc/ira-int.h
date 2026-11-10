@@ -124,6 +124,13 @@ struct ira_loop_tree_node
      (defined only for the pressure classes).  */
   int reg_pressure[N_REG_CLASSES];
 
+  /* Maximal number of registers of given register class needed by the
+     pseudos living through one call inside the loop, counting only
+     calls that clobber a register of the class (defined only for the
+     pressure classes).  Unlike REG_PRESSURE it does not include the
+     subloops until they are marked for removal.  */
+  int call_crossing_pressure[N_REG_CLASSES];
+
   /* Numbers of allocnos referred or living in the loop node (except
      for its subloops).  */
   bitmap all_allocnos;
@@ -171,6 +178,10 @@ extern ira_loop_tree_node_t ira_bb_nodes;
 /* All nodes representing loops are referred through the following
    array.  */
 extern ira_loop_tree_node_t ira_loop_nodes;
+
+/* True if the target can keep a loop of the current function with low
+   register pressure as a region (see flatten_cost_keep_p).  */
+extern bool ira_flatten_cost_p;
 
 /* Two access macros to the nodes representing loops.  */
 #if defined ENABLE_IRA_CHECKING && (GCC_VERSION >= 2007)
