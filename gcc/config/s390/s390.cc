@@ -13431,6 +13431,7 @@ s390_return_in_memory (const_tree type, const_tree fundecl ATTRIBUTE_UNUSED)
   /* We accept small integral (and similar) types.  */
   if (INTEGRAL_TYPE_P (type)
       || POINTER_TYPE_P (type)
+      || TREE_CODE (type) == NULLPTR_TYPE
       || TREE_CODE (type) == OFFSET_TYPE
       || SCALAR_FLOAT_TYPE_P (type))
     return int_size_in_bytes (type) > 8;
@@ -13477,6 +13478,68 @@ s390_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   return mode;
 }
 
+/* Emit a diagnostic for the GCC 17.1 psABI fix for return type
+   NULLPTR_TYPE.  */
+
+static void
+s390_diagnose_nullptr_return (const_tree ret_type)
+{
+  if (!ret_type || TREE_CODE (ret_type) != NULLPTR_TYPE || !warn_psabi)
+    return;
+
+  bool warn_p = false;
+  /* Diagnose function definitions.  */
+  if (currently_expanding_function_start)
+    {
+      /* Since LTO may have promoted a static function to a public one in
+	 order to be referenced across partitions, we cannot make use of
+	 TREE_PUBLIC.  */
+      cgraph_node *node = cgraph_node::get (current_function_decl);
+      if (!node || node->externally_visible || node->address_taken)
+	warn_p = true;
+    }
+  /* Diagnose function call sites.  */
+  else if (currently_expanding_gimple_stmt
+	   && is_a<gcall *> (currently_expanding_gimple_stmt))
+    {
+      /* Diagnose calls whose callee may have been built by an older GCC:
+
+	 - Indirect calls.
+	 - Calls to functions which are only declared.  The definition resides
+	   in a different TU.  For LTO, symbols which are only declared have
+	   externally_visible unset, so rely on DECL_EXTERNAL and on whether
+	   the definition is in another partition instead.
+	 - Calls to functions which are defined in this TU but may be replaced
+	   at link time, e.g., weak functions or, when compiling for a shared
+	   library (-fPIC), public functions with default visibility.
+
+	 Calls to functions which cannot be replaced are not diagnosed since
+	 caller and callee are compiled by the same GCC.  */
+      tree callee = gimple_call_fndecl (currently_expanding_gimple_stmt);
+      cgraph_node *node = callee ? cgraph_node::get (callee) : NULL;
+      if (!node
+	  || (DECL_EXTERNAL (callee) && !node->in_other_partition)
+	  || decl_replaceable_p (callee, true))
+	warn_p = true;
+    }
+
+  /* Functions expand_function_start and expand_call invoke hooks
+     TARGET_FUNCTION_VALUE / TARGET_LIBCALL_VALUE multiple times for a single
+     function definition / call.  Make sure to emit at most one diagnostic.  */
+  static unsigned last_reported_fndecl_uid;
+  if (warn_p
+      && DECL_UID (current_function_decl) != last_reported_fndecl_uid)
+    {
+      last_reported_fndecl_uid = DECL_UID (current_function_decl);
+      const char *url
+	= CHANGES_ROOT_URL "gcc-17/changes.html#s390_return_nullptr_type";
+      inform (input_location,
+	      "the ABI for returning %qT changed %{in GCC 17.1%}; it is "
+	      "now returned in a register instead of in memory",
+	      ret_type, url);
+    }
+}
+
 /* Define where to return a (scalar) value of type RET_TYPE.
    If RET_TYPE is null, define where to return a (scalar)
    value of mode MODE from a libcall.  */
@@ -13487,6 +13550,8 @@ s390_function_and_libcall_value (machine_mode mode,
 				 const_tree fntype_or_decl,
 				 bool outgoing ATTRIBUTE_UNUSED)
 {
+  s390_diagnose_nullptr_return (ret_type);
+
   /* For vector return types it is important to use the RET_TYPE
      argument whenever available since the middle-end might have
      changed the mode to a scalar mode.  */
