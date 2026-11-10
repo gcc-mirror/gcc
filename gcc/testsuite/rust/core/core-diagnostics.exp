@@ -57,6 +57,8 @@ proc core-diagnostics { } {
     catch { exec diff -u $expected $actual } diff
     regsub {\nchild process exited abnormally$} $diff "" diff
     send_log "diff -u core-1.49.expected core-diagnostics.out:\n$diff\n"
+    send_log "if the change is expected, update the file with\n"
+    send_log "  $srcdir/$subdir/regen-core-expected.sh <build dir>\n"
     fail "$name: diagnostics differ from core-1.49.expected, see rust.log"
 }
 
