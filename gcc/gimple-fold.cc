@@ -8027,6 +8027,16 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 	  else
 	    and_mask &= wide_int::from (*pand_mask, prec_op, UNSIGNED);
 	}
+      /* If we have already dropped a narrowing conversion, it applies to
+	 the result of the masking, so mask bits at or above the precision
+	 of OUTER_TYPE are discarded by the conversion.  Drop them from the
+	 mask, so that they're not mistaken for tests of extensions of the
+	 sign bit below.  Bits below that precision but above the field
+	 width, e.g. after a right shift, still test such extensions.  */
+      if (outer_type
+	  && TYPE_PRECISION (outer_type) < and_mask.get_precision ())
+	and_mask = wide_int::from (and_mask, TYPE_PRECISION (outer_type),
+				   UNSIGNED);
     }
   else
     and_mask = *pand_mask;
@@ -8729,8 +8739,10 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	 us to mask the entire field out, yielding zero, i.e., the sign bit of
 	 the zero-extended value.  We know the masked value is being compared
 	 with zero, so the compare will get us the result we're looking
-	 for: TRUE if EQ_EXPR, FALSE if NE_EXPR.  */
-      if (lsignbit > ll_bitsize && ll_unsignedp)
+	 for: TRUE if EQ_EXPR, FALSE if NE_EXPR.  Likewise if ll_arg is
+	 masked so that all the extension bits are clear (ll_signbit < 0):
+	 it can't be negative then, even if the field is signed.  */
+      if (lsignbit > ll_bitsize && (ll_unsignedp || ll_signbit < 0))
 	sign <<= 1;
       if (!ll_and_mask.get_precision ())
 	ll_and_mask = sign;
@@ -8753,7 +8765,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   if (rsignbit)
     {
       wide_int sign = wi::mask (rl_bitsize - 1, true, rl_bitsize);
-      if (rsignbit > rl_bitsize && rl_unsignedp)
+      if (rsignbit > rl_bitsize && (rl_unsignedp || rl_signbit < 0))
 	sign <<= 1;
       if (!rl_and_mask.get_precision ())
 	rl_and_mask = sign;
@@ -9092,11 +9104,19 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 
   /* Likewise, if the right sides are not constant, align them for the combined
      compare.  Also, disallow this optimization if a size, signedness or
-     storage order mismatch occurs between the left and right sides.  */
+     storage order mismatch occurs between the left and right sides.
+     A signed field whose mask clears all the extension bits
+     (signbit < 0) is effectively zero-extended, so it must not be
+     compared with a sign-extended field: clipping both to the field
+     width would drop the test that the sign bit of the latter is
+     clear.  */
   else
     {
       if (ll_bitsize != lr_bitsize || rl_bitsize != rr_bitsize
-	  || ll_unsignedp != lr_unsignedp || rl_unsignedp != rr_unsignedp
+	  || ((ll_unsignedp || ll_signbit < 0)
+	      != (lr_unsignedp || lr_signbit < 0))
+	  || ((rl_unsignedp || rl_signbit < 0)
+	      != (rr_unsignedp || rr_signbit < 0))
 	  || ll_reversep != lr_reversep
 	  /* Make sure the two fields on the right
 	     correspond to the left without being swapped.  */
