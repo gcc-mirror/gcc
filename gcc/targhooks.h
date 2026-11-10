@@ -75,6 +75,7 @@ extern bool hook_callee_copies_named
   (cumulative_args_t ca, const function_arg_info &);
 
 extern void default_print_operand (FILE *, rtx, int);
+extern int default_print_operand_modifier (string_slice, bool);
 extern void default_print_operand_address (FILE *, machine_mode, rtx);
 extern bool default_print_operand_punct_valid_p (unsigned char);
 extern tree default_mangle_assembler_name (const char *);

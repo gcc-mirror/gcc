@@ -84,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "common/common-target.h"
 #include "diagnostic.h"
 #include "diagnostics/file-cache.h"
+#include "selftest.h"
 
 #include "dwarf2out.h"
 
@@ -3403,6 +3404,70 @@ do_assembler_dialects (const char *p, int *dialect)
 }
 #endif
 
+static rtx *current_modifier_operands;
+static const vec<unsigned long> *current_modifier_opnums;
+
+/* Return the Nth operand of the current multi-operand modifier.  */
+
+rtx
+output_operand_modifier_operand (int code, unsigned int n)
+{
+  if (code < PRINT_OPERAND_MODIFIER_BASE
+      || !current_modifier_opnums
+      || n >= current_modifier_opnums->length ())
+    return nullptr;
+  rtx x = current_modifier_operands[(*current_modifier_opnums)[n]];
+  if (x && GET_CODE (x) == SUBREG)
+    x = alter_subreg (&x, true);
+  if (x)
+    mark_symbol_refs_as_used (x);
+  return x;
+}
+
+/* Output OPERAND, which was parsed from a %[...] reference.  */
+
+static void
+output_bracketed_operand (bracketed_operand &operand, rtx *operands,
+			  int *oporder, char *opoutput, int &ops)
+{
+  if (this_is_asm_operands)
+    for (unsigned long opnum : operand.opnums)
+      if (opnum >= insn_noperands)
+	{
+	  output_operand_lossage ("operand number out of range");
+	  return;
+	}
+  unsigned long opnum = operand.opnums[0];
+  if (!operand.modifier.empty ())
+    {
+      int code = targetm.asm_out.print_operand_modifier
+	(operand.modifier, this_is_asm_operands != NULL);
+      if (code < PRINT_OPERAND_MODIFIER_BASE)
+	{
+	  output_operand_lossage ("invalid operand modifier '%.*s'",
+				  (int) operand.modifier.size (),
+				  operand.modifier.begin ());
+	  return;
+	}
+      rtx *saved_operands = current_modifier_operands;
+      const vec<unsigned long> *saved_opnums = current_modifier_opnums;
+      current_modifier_operands = operands;
+      current_modifier_opnums = &operand.opnums;
+      output_operand (operands[opnum], code);
+      current_modifier_operands = saved_operands;
+      current_modifier_opnums = saved_opnums;
+    }
+  else
+    output_operand (operands[opnum], 0);
+
+  for (unsigned long number : operand.opnums)
+    {
+      if (!opoutput[number])
+	oporder[ops++] = number;
+      opoutput[number] = 1;
+    }
+}
+
 /* Output text from TEMPLATE to the assembler output file,
    obeying %-directions to substitute operands taken from
    the vector OPERANDS.
@@ -3495,6 +3560,18 @@ output_asm_insn (const char *templ, rtx *operands)
 	  {
 	    p++;
 	    fprintf (asm_out_file, "%d", insn_counter);
+	  }
+	else if (*p == '[')
+	  {
+	    bracketed_operand operand;
+	    if (!parse_bracketed_operand (&p, operand))
+	      {
+		output_operand_lossage ("invalid %%[...] operand modifier");
+		break;
+	      }
+	    output_bracketed_operand (operand, operands, oporder, opoutput,
+				      ops);
+	    c = *p;
 	  }
 	/* % followed by a letter and some digits
 	   outputs an operand in a special way depending on the letter.
@@ -4644,3 +4721,105 @@ collect_fn_hard_reg_usage (void)
 
   node->function_used_regs = function_used_regs;
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+static void
+test_parse_bracketed_operand ()
+{
+  const struct
+  {
+    const char *text;
+    const char *modifier;
+    unsigned long opnums[2];
+    unsigned int count;
+  } valid[] = {
+    { "[10]", "", { 10 }, 1 },
+    { "[fmt:11]", "fmt", { 11 }, 1 },
+    { "[gpr,zero:13]", "gpr,zero", { 13 }, 1 },
+    { "[fmt:13,14]", "fmt", { 13, 14 }, 2 },
+    { "[999999999999999999999999999999999999]", "", { ULONG_MAX }, 1 }
+  };
+  bracketed_operand operand;
+  for (const auto &test : valid)
+    {
+      const char *p = test.text;
+      ASSERT_TRUE (parse_bracketed_operand (&p, operand));
+      ASSERT_TRUE (operand.modifier == test.modifier);
+      ASSERT_EQ (test.count, operand.opnums.length ());
+      for (unsigned int i = 0; i < test.count; ++i)
+	ASSERT_EQ (test.opnums[i], operand.opnums[i]);
+      ASSERT_EQ ('\0', *p);
+    }
+  const char *invalid[] = {
+    "[fmt]12", "[fmt:1,]", "[fmt]", "[fmt:]", "[]0", "[0,1]",
+    "[fmt:12x]", "[fmt:1", "[:1]", "[,fmt:1]", "[fmt,:1]", "[fmt,,part:1]"
+  };
+  for (const char *text : invalid)
+    {
+      const char *p = text;
+      ASSERT_FALSE (parse_bracketed_operand (&p, operand));
+    }
+}
+
+/* The same syntax must be understood by the operand reference scanner.  */
+
+static void
+test_referenced_operands ()
+{
+  const struct
+  {
+    const char *text;
+    unsigned int mask;
+  } tests[] = {
+    { "%[0] %[fmt:1,2]", 7 },
+    { "%%[0] %%[fmt:1,2]", 0 },
+    { "%[1]0 %2", 6 },
+    { "%0 %a1 %cc2", 7 },
+    { "%[fmt:2,2] %[99]", 4 },
+    { "%[fmt:1,]", 0 },
+    { "%", 0 }
+  };
+  for (const auto &test : tests)
+    {
+      bool used[3];
+      get_referenced_operands (test.text, used, 3);
+      for (unsigned int i = 0; i < 3; ++i)
+	ASSERT_EQ ((test.mask & (1U << i)) != 0, used[i]);
+    }
+}
+
+static void
+test_output_operand_modifier_operand ()
+{
+  rtx operands[] = { GEN_INT (10),
+		     gen_rtx_SUBREG (QImode, gen_rtx_REG (HImode, 0), 0) };
+  auto_vec<unsigned long, 2> opnums;
+  opnums.safe_push (1);
+  opnums.safe_push (0);
+  current_modifier_operands = operands;
+  current_modifier_opnums = &opnums;
+  rtx x = output_operand_modifier_operand (PRINT_OPERAND_MODIFIER_BASE, 0);
+  ASSERT_TRUE (REG_P (x));
+  ASSERT_EQ (QImode, GET_MODE (x));
+  ASSERT_EQ (operands[0], output_operand_modifier_operand
+	     (PRINT_OPERAND_MODIFIER_BASE, 1));
+  ASSERT_EQ (nullptr, output_operand_modifier_operand
+	     (PRINT_OPERAND_MODIFIER_BASE, 2));
+  current_modifier_operands = nullptr;
+  current_modifier_opnums = nullptr;
+}
+
+void
+final_cc_tests ()
+{
+  test_parse_bracketed_operand ();
+  test_referenced_operands ();
+  test_output_operand_modifier_operand ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */

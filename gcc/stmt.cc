@@ -56,6 +56,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfgexpand.h"
 
+#if CHECKING_P
+#include "selftest.h"
+#endif
+
 
 /* Functions and data structures for expanding case statements.  */
 
@@ -86,7 +90,6 @@ public:
 };
 
 static bool check_unique_operand_names (tree, tree, tree);
-static char *resolve_operand_name_1 (char *, tree, tree, tree);
 
 /* Return the rtx-label that corresponds to a LABEL_DECL,
    creating it if necessary.  */
@@ -869,149 +872,255 @@ check_unique_operand_names (tree outputs, tree inputs, tree labels)
   return false;
 }
 
-/* Resolve the names of the operands in *POUTPUTS and *PINPUTS to numbers,
-   and replace the name expansions in STRING and in the constraints to
-   those numbers.  This is generally done in the front end while creating
-   the ASM_EXPR generic tree that eventually becomes the GIMPLE_ASM.  */
+/* Find the operand named by [START, END), including in/out operands and
+   labels in the numbering.  */
+
+static int
+asm_operand_name_number (const char *start, const char *end,
+			 tree outputs, tree inputs, tree labels)
+{
+  string_slice operand_name (start, end);
+  int op = 0;
+  int op_inout = 0;
+
+  /* Outputs come first.  Count read/write outputs as we go: each one
+     also creates an implicit input, which affects the label numbers.  */
+  for (tree t = outputs; t; t = TREE_CHAIN (t), op++)
+    {
+      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (name && operand_name == TREE_STRING_POINTER (name))
+	return op;
+      tree constraint = TREE_VALUE (TREE_PURPOSE (t));
+      if (constraint && strchr (TREE_STRING_POINTER (constraint), '+'))
+	op_inout++;
+    }
+  /* Explicit inputs follow the outputs, before the implicit inputs.  */
+  for (tree t = inputs; t; t = TREE_CHAIN (t), op++)
+    {
+      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
+      if (name && operand_name == TREE_STRING_POINTER (name))
+	return op;
+    }
+  /* Labels follow all inputs, including those from read/write outputs.
+     Their names are stored directly in TREE_PURPOSE.  */
+  op += op_inout;
+  for (tree t = labels; t; t = TREE_CHAIN (t), op++)
+    {
+      tree name = TREE_PURPOSE (t);
+      if (name && operand_name == TREE_STRING_POINTER (name))
+	return op;
+    }
+
+  /* Only the diagnostic needs a null-terminated copy of the name.  */
+  char *name = xstrndup (start, end - start);
+  error ("undefined named operand %qs",
+	 identifier_to_locale (name));
+  free (name);
+  return 0;
+}
+
+/* Append OPNUM in decimal form to OB.  */
+
+static void
+asm_obstack_grow_opnum (struct obstack *ob, int opnum)
+{
+  char number[HOST_BITS_PER_INT * 3 / 10 + 3];
+  int n = sprintf (number, "%d", opnum);
+  obstack_grow (ob, number, n);
+}
+
+/* Resolve names in an asm template and its input constraints.  This is
+   normally done while the front end builds the ASM_EXPR.  */
 
 tree
 resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
 {
-  char *buffer;
-  char *p;
-  const char *c;
-  tree t;
-
   check_unique_operand_names (outputs, inputs, labels);
 
-  /* Substitute [<name>] in input constraint strings.  There should be no
-     named operands in output constraints.  */
-  for (t = inputs; t ; t = TREE_CHAIN (t))
+  /* Substitute names in input constraints, removing their brackets.  */
+  for (tree t = inputs; t; t = TREE_CHAIN (t))
     {
-      c = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
-      if (strchr (c, '[') != NULL)
+      const char *input = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (t)));
+      if (!strchr (input, '['))
+	continue;
+
+      struct obstack ob;
+      gcc_obstack_init (&ob);
+      const char *p = input;
+      while (const char *open = strchr (p, '['))
 	{
-	  p = buffer = xstrdup (c);
-	  while ((p = strchr (p, '[')) != NULL)
-	    p = resolve_operand_name_1 (p, outputs, inputs, NULL);
-	  TREE_VALUE (TREE_PURPOSE (t))
-	    = build_string (strlen (buffer), buffer);
-	  free (buffer);
+	  obstack_grow (&ob, p, open - p);
+	  const char *close = strchr (open + 1, ']');
+	  if (!close)
+	    {
+	      error ("missing close brace for named operand");
+	      p = open;
+	      break;
+	    }
+	  asm_obstack_grow_opnum (&ob,
+				  asm_operand_name_number (open + 1, close,
+							   outputs, inputs,
+							   nullptr));
+	  p = close + 1;
 	}
+      obstack_grow (&ob, p, strlen (p));
+      TREE_VALUE (TREE_PURPOSE (t))
+	= build_string (obstack_object_size (&ob), (char *) obstack_base (&ob));
+      obstack_free (&ob, nullptr);
     }
 
-  /* Now check for any needed substitutions in the template.  */
-  c = TREE_STRING_POINTER (string);
-  while ((c = strchr (c, '%')) != NULL)
+  const char *input = TREE_STRING_POINTER (string);
+  if (!strchr (input, '%'))
+    return string;
+
+  struct obstack ob;
+  gcc_obstack_init (&ob);
+  const char *p = input;
+  while (const char *percent = strchr (p, '%'))
     {
-      if (c[1] == '[')
-	break;
-      else if (ISALPHA (c[1])
-	       && (c[2] == '[' || (ISALPHA (c[2]) && c[3] == '[')))
-	break;
-      else
+      obstack_grow (&ob, p, percent - p);
+      p = percent;
+      const char *open = p + 1;
+      if (ISALPHA (*open))
 	{
-	  c += 1 + (c[1] == '%');
+	  ++open;
+	  if (ISALPHA (*open))
+	    ++open;
+	}
+      if (*open != '[')
+	{
+	  int len = 1 + (p[1] == '%');
+	  obstack_grow (&ob, p, len);
+	  p += len;
 	  continue;
 	}
-    }
 
-  if (c)
-    {
-      /* OK, we need to make a copy so we can perform the substitutions.
-	 Assume that we will not need extra space--we get to remove '['
-	 and ']', which means we cannot have a problem until we have more
-	 than 999 operands.  */
-      buffer = xstrdup (TREE_STRING_POINTER (string));
-      p = buffer + (c - TREE_STRING_POINTER (string));
-
-      while ((p = strchr (p, '%')) != NULL)
+      bool remove_brackets = open != p + 1;
+      const char *name_start = open + 1;
+      const char *close = strchr (name_start, ']');
+      if (!close)
 	{
-	  if (p[1] == '[')
-	    p += 1;
-	  else if (ISALPHA (p[1]) && p[2] == '[')
-	    p += 2;
-	  else if (ISALPHA (p[1]) && ISALPHA (p[2]) && p[3] == '[')
-	    p += 3;
-	  else
+	  error ("missing close brace for named operand");
+	  break;
+	}
+      if (!remove_brackets)
+	{
+	  if (const char *colon
+	      = (const char *) memchr (name_start, ':', close - name_start))
 	    {
-	      p += 1 + (p[1] == '%');
+	      /* Validate modifiers even in asms that are optimized away.  */
+	      string_slice name (name_start, colon);
+	      if (targetm.asm_out.print_operand_modifier (name, true)
+		  < PRINT_OPERAND_MODIFIER_BASE)
+		error ("invalid operand modifier %qB", &name);
+	      name_start = colon + 1;
+	    }
+	  /* Symbolic operand names cannot start with a digit.  Leave
+	     numbered operands and lists for final output to parse.  */
+	  if (ISDIGIT (*name_start))
+	    {
+	      obstack_grow (&ob, p, close + 1 - p);
+	      p = close + 1;
 	      continue;
 	    }
-
-	  p = resolve_operand_name_1 (p, outputs, inputs, labels);
 	}
-
-      string = build_string (strlen (buffer), buffer);
-      free (buffer);
+      /* Preserve brackets in %[name] and %[modifier:name], so following
+	 literal digits cannot become part of the operand number.  */
+      obstack_grow (&ob, p, name_start - p - remove_brackets);
+      asm_obstack_grow_opnum (&ob,
+			      asm_operand_name_number (name_start, close,
+						       outputs, inputs,
+						       labels));
+      p = close + remove_brackets;
     }
-
+  obstack_grow (&ob, p, strlen (p));
+  string = build_string (obstack_object_size (&ob), (char *) obstack_base (&ob));
+  obstack_free (&ob, nullptr);
   return string;
 }
 
-/* A subroutine of resolve_operand_names.  P points to the '[' for a
-   potential named operand of the form [<name>].  In place, replace
-   the name and brackets with a number.  Return a pointer to the
-   balance of the string after substitution.  */
+#if CHECKING_P
 
-static char *
-resolve_operand_name_1 (char *p, tree outputs, tree inputs, tree labels)
+namespace selftest {
+
+static tree
+build_asm_operand (const char *name, const char *constraint)
 {
-  char *q;
-  int op, op_inout;
-  tree t;
-
-  /* Collect the operand name.  */
-  q = strchr (++p, ']');
-  if (!q)
-    {
-      error ("missing close brace for named operand");
-      return strchr (p, '\0');
-    }
-  *q = '\0';
-
-  /* Resolve the name to a number.  */
-  for (op_inout = op = 0, t = outputs; t ; t = TREE_CHAIN (t), op++)
-    {
-      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
-      if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
-	goto found;
-      tree constraint = TREE_VALUE (TREE_PURPOSE (t));
-      if (constraint && strchr (TREE_STRING_POINTER (constraint), '+') != NULL)
-        op_inout++;
-    }
-  for (t = inputs; t ; t = TREE_CHAIN (t), op++)
-    {
-      tree name = TREE_PURPOSE (TREE_PURPOSE (t));
-      if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
-	goto found;
-    }
-  op += op_inout;
-  for (t = labels; t ; t = TREE_CHAIN (t), op++)
-    {
-      tree name = TREE_PURPOSE (t);
-      if (name && strcmp (TREE_STRING_POINTER (name), p) == 0)
-	goto found;
-    }
-
-  error ("undefined named operand %qs", identifier_to_locale (p));
-  op = 0;
-
- found:
-  /* Replace the name with the number.  Unfortunately, not all libraries
-     get the return value of sprintf correct, so search for the end of the
-     generated string by hand.  */
-  sprintf (--p, "%d", op);
-  p = strchr (p, '\0');
-
-  /* Verify the no extra buffer space assumption.  */
-  gcc_assert (p <= q);
-
-  /* Shift the rest of the buffer down to fill the gap.  */
-  memmove (p, q + 1, strlen (q + 1) + 1);
-
-  return p;
+  tree name_tree = name ? build_string (strlen (name), name) : NULL_TREE;
+  tree constraint_tree = build_string (strlen (constraint), constraint);
+  return tree_cons (tree_cons (name_tree, constraint_tree, NULL_TREE),
+		    integer_zero_node, NULL_TREE);
 }
+
+static tree
+build_asm_label (const char *name)
+{
+  return tree_cons (build_string (strlen (name), name), integer_zero_node,
+		    NULL_TREE);
+}
+
+/* Keep these tests independent of the target's modifier namespace.  */
+
+static int
+test_asm_operand_modifier (string_slice name, bool user_p)
+{
+  ASSERT_TRUE (user_p);
+  return name == "w" || name == "wide" ? PRINT_OPERAND_MODIFIER_BASE : 0;
+}
+
+static void
+test_resolve_asm_operand_names ()
+{
+  tree outputs = build_asm_operand ("out", "=r");
+  tree inputs = build_asm_operand ("in", "[out]");
+  tree labels = build_asm_label ("lab");
+  auto saved_hook = targetm.asm_out.print_operand_modifier;
+  targetm.asm_out.print_operand_modifier = test_asm_operand_modifier;
+
+  const char *tests[][2] = {
+    { "%[out] %w[out] %cc[in] %l[lab]", "%[0] %w0 %cc1 %l2" },
+    { "%[out]0 %[in]1", "%[0]0 %[1]1" },
+    { "%[10] %[0]", "%[10] %[0]" },
+    { "%[w:out] %[w:in]", "%[w:0] %[w:1]" },
+    { "%[wide:out] %[wide:0,1]", "%[wide:0] %[wide:0,1]" },
+    { "%%[out] %%[w:in] %[w:0,1]", "%%[out] %%[w:in] %[w:0,1]" }
+  };
+  for (const auto &test : tests)
+    {
+      tree string = build_string (strlen (test[0]), test[0]);
+      tree result = resolve_asm_operand_names (string, outputs, inputs, labels);
+      ASSERT_STREQ (test[1], TREE_STRING_POINTER (result));
+    }
+  ASSERT_STREQ ("0", TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (inputs))));
+
+  /* Unlike the old %[name] syntax, %[modifier:name] can grow when a
+     short name is replaced by a two-digit operand number.  */
+  tree many_outputs = build_asm_operand ("x", "=r");
+  for (int i = 0; i < 10; ++i)
+    many_outputs = chainon (build_asm_operand (nullptr, "=r"), many_outputs);
+  const char *templ = "%[w:x]";
+  tree string = build_string (strlen (templ), templ);
+  tree result = resolve_asm_operand_names (string, many_outputs, nullptr,
+					 nullptr);
+  ASSERT_STREQ ("%[w:10]", TREE_STRING_POINTER (result));
+
+  TREE_VALUE (TREE_PURPOSE (outputs)) = build_string (2, "+r");
+  templ = "%l[lab]";
+  string = build_string (strlen (templ), templ);
+  result = resolve_asm_operand_names (string, outputs, inputs, labels);
+  ASSERT_STREQ ("%l3", TREE_STRING_POINTER (result));
+  targetm.asm_out.print_operand_modifier = saved_hook;
+}
+
+void
+stmt_cc_tests ()
+{
+  test_resolve_asm_operand_names ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
 
 
 /* Generate RTL to return directly from the current function.

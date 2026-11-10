@@ -23,6 +23,15 @@ along with GCC; see the file COPYING3.  If not see
 /* For enum tree_code ERROR_MARK.  */
 #include "tree.h"
 
+/* An operand reference of the form %[N] or %[MODIFIER:N[,N...]].  */
+struct bracketed_operand
+{
+  string_slice modifier;
+  auto_vec<unsigned long, 2> opnums;
+};
+
+extern bool parse_bracketed_operand (const char **, bracketed_operand &);
+
 /* Random number that should be large enough for all purposes.  Also define
    a type that has at least MAX_RECOG_ALTERNATIVES + 1 bits, with the extra
    bit giving an invalid value that can be used to mean "uninitialized".  */

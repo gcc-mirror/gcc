@@ -398,6 +398,14 @@ default_print_operand (FILE *stream ATTRIBUTE_UNUSED, rtx x ATTRIBUTE_UNUSED,
 #endif
 }
 
+/* No named operand modifiers are supported by default.  */
+
+int
+default_print_operand_modifier (string_slice, bool)
+{
+  return 0;
+}
+
 /* Emit to STREAM the assembler syntax for an insn operand whose memory
    address is X.  */
 

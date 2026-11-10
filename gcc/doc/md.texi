@@ -524,6 +524,39 @@ alternate fashion.  Four letters have standard, built-in meanings described
 below.  The machine description macro @code{PRINT_OPERAND} can define
 additional letters with nonstandard meanings.
 
+@samp{%[@var{n}]} is another way of writing operand @var{n}.  The brackets
+separate the operand number from any literal digits that follow it.
+
+@samp{%[@var{name}:@var{n}]} is the same idea as
+@samp{%@var{letter}@var{n}}, but with a multi-character target-specific
+modifier named @var{name}.  GCC parses the bracketed name and passes it to
+@code{PRINT_OPERAND} as an opaque integer code supplied by the target's
+@code{TARGET_PRINT_OPERAND_MODIFIER} hook.  This form is
+useful when a single-letter modifier would be too cryptic, or when a target
+has used most of its single-letter namespace.  The modifier name can include
+text substituted by the machine description reader, such as mode attributes.
+It can also contain comma-separated nonempty components; GCC records the
+full text before the colon and leaves any further interpretation to the
+target.
+
+The operand part can list more than one operand, as in
+@samp{%[@var{name}:@var{n},@var{m}]}.  @code{PRINT_OPERAND} receives
+@var{n}; the target can use @code{output_operand_modifier_operand} to
+access either operand.  Operands in a list must be numbered.
+
+For example, a target could write:
+
+@example
+(define_insn "example_extract"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+        (match_operand:SI 1 "register_operand" "r"))]
+  ""
+  "extract\t%[lowpart:0], %1")
+@end example
+
+@noindent
+and then define @samp{lowpart} in its @code{PRINT_OPERAND} hook.
+
 @samp{%c@var{digit}} can be used to substitute an operand that is a
 constant value without the syntax that normally indicates an immediate
 operand.

@@ -80,6 +80,8 @@ extern rtx alter_subreg (rtx *, bool);
 
 /* Print an operand using machine-dependent assembler syntax.  */
 extern void output_operand (rtx, int);
+constexpr int PRINT_OPERAND_MODIFIER_BASE = UCHAR_MAX + 1;
+extern rtx output_operand_modifier_operand (int, unsigned int);
 
 /* Report inconsistency between the assembler template and the operands.
    In an `asm', it's the user's fault; otherwise, the compiler's fault.  */

@@ -12065,6 +12065,12 @@ on all targets.  Other modifiers are hardware dependent.
 For example, the list of supported modifiers for x86 is found at
 @ref{x86Operandmodifiers,x86 Operand modifiers}.
 
+Targets can also provide multi-character modifiers, written as
+@samp{%[@var{modifier}:2]}.  If the operand has a symbolic name, write
+@samp{%[@var{modifier}:@var{asmSymbolicName}]}.
+@samp{%[@var{name}]} without a modifier separator continues to mean the
+operand named @var{name}.
+
 If the C code that follows the @code{asm} makes no use of any of the output 
 operands, use @code{volatile} for the @code{asm} statement to prevent the 
 optimizers from discarding the @code{asm} statement as unneeded 

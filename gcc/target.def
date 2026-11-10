@@ -912,6 +912,16 @@ DEFHOOK_UNDOC
  void, (FILE *file, rtx x, int code),
  default_print_operand)
 
+/* Validate a multi-character operand modifier and return its target code.  */
+DEFHOOK
+(print_operand_modifier,
+ "Return the code to pass to @code{TARGET_PRINT_OPERAND} for the named\n\
+modifier @var{name}.  @var{user_p} is true for a modifier in a user\n\
+@code{asm}.  Return zero if the modifier is unavailable in that context.\n\
+Valid codes must be at least @code{PRINT_OPERAND_MODIFIER_BASE}.",
+ int, (string_slice name, bool user_p),
+ default_print_operand_modifier)
+
 /* Emit a machine-specific memory address.  */
 /* ??? tm.texi only documents the old macro PRINT_OPERAND_ADDRESS,
    not this  hook, and uses different argument names.  */

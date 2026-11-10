@@ -2234,6 +2234,52 @@ decode_asm_operands (rtx body, rtx *operands, rtx **operand_locs,
   return ASM_OPERANDS_TEMPLATE (asmop);
 }
 
+/* Parse an operand reference that starts with %[...].
+
+   The forms are %[N] and %[MODIFIER:N[,N...]].  */
+
+bool
+parse_bracketed_operand (const char **p, bracketed_operand &operand)
+{
+  const char *start = *p;
+  gcc_assert (*start == '[');
+  operand.opnums.truncate (0);
+
+  const char *end = strchr (start + 1, ']');
+  if (!end)
+    return false;
+
+  const char *contents = start + 1;
+  const char *colon = (const char *) memchr (contents, ':', end - contents);
+
+  if (colon)
+    {
+      if (colon == contents)
+	return false;
+      for (const char *q = contents; q != colon; ++q)
+	if (*q == ',' && (q == contents || q[-1] == ',' || q + 1 == colon))
+	  return false;
+    }
+
+  const char *number = colon ? colon + 1 : contents;
+  char *next;
+  do
+    {
+      if (!ISDIGIT (*number))
+	return false;
+      unsigned long opnum = strtoul (number, &next, 10);
+      if (next != end && (!colon || *next != ','))
+	return false;
+      operand.opnums.safe_push (opnum);
+      number = next + 1;
+    }
+  while (next != end);
+
+  operand.modifier = string_slice (contents, colon ? colon : contents);
+  *p = end + 1;
+  return true;
+}
+
 /* Parse inline assembly string STRING and determine which operands are
    referenced by % markers.  For the first NOPERANDS operands, set USED[I]
    to true if operand I is referenced.
@@ -2257,7 +2303,20 @@ get_referenced_operands (const char *string, bool *used,
       {
       case '%':
 	p += 1;
+	if (*p == '[')
+	  {
+	    bracketed_operand operand;
+	    if (parse_bracketed_operand (&p, operand))
+	      {
+		for (unsigned long opnum : operand.opnums)
+		  if (opnum < noperands)
+		    used[opnum] = true;
+		break;
+	      }
+	  }
 	/* A letter followed by a digit indicates an operand number.  */
+	if (p[0] == 'c' && p[1] == 'c')
+	  p += 1;
 	if (ISALPHA (p[0]) && ISDIGIT (p[1]))
 	  p += 1;
 	if (ISDIGIT (*p))
@@ -2268,7 +2327,7 @@ get_referenced_operands (const char *string, bool *used,
 	      used[opnum] = true;
 	    p = endptr;
 	  }
-	else
+	else if (*p)
 	  p += 1;
 	break;
 

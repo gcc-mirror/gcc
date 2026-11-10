@@ -9863,6 +9863,22 @@ the @samp{%} specification that was used to request printing of the
 operand.  If the specification was just @samp{%@var{digit}} then
 @var{code} is 0; if the specification was @samp{%@var{ltr}
 @var{digit}} then @var{code} is the ASCII code for @var{ltr}.
+If the specification used the multi-character form
+@samp{%[@var{name}:@var{digit}]}, then @var{code} is the value
+returned by @code{TARGET_PRINT_OPERAND_MODIFIER}.
+User @code{asm} statements can combine this form with symbolic operand names
+by writing @samp{%[@var{name}:@var{asmSymbolicName}]}.  The front end
+resolves the symbolic operand name before final output, so the
+@code{PRINT_OPERAND} implementation still sees the same @var{code} as it
+would for @samp{%[@var{name}:@var{digit}]}.
+
+@findex output_operand_modifier_operand
+For @samp{%[@var{name}:@var{n},@var{m}]}, use
+@code{output_operand_modifier_operand (@var{code}, @var{i})} to access
+operand @var{i} in the list, counting from zero, using the @var{code}
+passed to @code{PRINT_OPERAND}.  It resolves @code{SUBREG}s and records
+symbol references as @code{output_operand} does.  It returns null if the
+position is absent.
 
 @findex reg_names
 If @var{x} is a register, this macro should print the register's name.
@@ -9875,6 +9891,13 @@ When the machine description has a specification @samp{%@var{punct}}
 with a null pointer for @var{x} and the punctuation character for
 @var{code}.
 @end defmac
+
+@deftypefn {Target Hook} int TARGET_PRINT_OPERAND_MODIFIER (string_slice @var{name}, bool @var{user_p})
+Return the code to pass to @code{TARGET_PRINT_OPERAND} for the named
+modifier @var{name}.  @var{user_p} is true for a modifier in a user
+@code{asm}.  Return zero if the modifier is unavailable in that context.
+Valid codes must be at least @code{PRINT_OPERAND_MODIFIER_BASE}.
+@end deftypefn
 
 @defmac PRINT_OPERAND_PUNCT_VALID_P (@var{code})
 A C expression which evaluates to true if @var{code} is a valid
