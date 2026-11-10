@@ -1539,12 +1539,23 @@ instantiate_new_reg (rtx x, poly_int64 *poffset)
     new_rtx = stack_pointer_rtx, offset = out_arg_offset;
   else if (x == virtual_cfa_rtx)
     {
+      offset = cfa_offset;
 #ifdef FRAME_POINTER_CFA_OFFSET
       new_rtx = frame_pointer_rtx;
 #else
-      new_rtx = arg_pointer_rtx;
+      if (stack_realign_drap)
+	{
+	  /* As for virtual_incoming_args_rtx: if DRAP is used to realign
+	     the stack, the argument pointer is at no fixed offset from SP
+	     or the hard frame pointer.  The DRAP pseudo holds the address
+	     of the incoming arguments (arg_pointer_rtx + in_arg_offset),
+	     so the CFA is at cfa_offset - in_arg_offset from it.  */
+	  new_rtx = crtl->args.internal_arg_pointer;
+	  offset -= in_arg_offset;
+	}
+      else
+	new_rtx = arg_pointer_rtx;
 #endif
-      offset = cfa_offset;
     }
   else if (x == virtual_preferred_stack_boundary_rtx)
     {
