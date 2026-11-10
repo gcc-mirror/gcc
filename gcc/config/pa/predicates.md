@@ -527,7 +527,8 @@
     op = XEXP (XEXP (op, 0), 0);
   if (GET_CODE (op) == SYMBOL_REF)
     {
-      if (flag_pic)
+      /* 32-bit HP-UX has constant pool in TEXT section.  */
+      if (flag_pic || !TARGET_HPUX)
         return SYMBOL_REF_FLAG (op) && !CONSTANT_POOL_ADDRESS_P (op);
       else
         return SYMBOL_REF_FLAG (op) || CONSTANT_POOL_ADDRESS_P (op);
