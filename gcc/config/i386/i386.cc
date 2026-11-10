@@ -21656,6 +21656,23 @@ ix86_callee_save_cost (spill_cost_type, unsigned int hard_regno, machine_mode,
   return mem_cost;
 }
 
+/* Implement TARGET_IRA_LOOP_REGION_FLATTEN_COST.  With APX, 25 of the 31
+   allocatable general registers are call-clobbered, so keep a loop with
+   one entry and one exit edge when its calls are more frequent than the
+   moves on its border.  */
+
+static int
+ix86_ira_loop_region_flatten_cost (int call_freq, int border_freq,
+				   int border_edges)
+{
+  if (!TARGET_APX_EGPR || !optimize_function_for_speed_p (cfun))
+    return 0;
+  /* Each further border edge needs its own moves.  */
+  if (border_edges > 2)
+    return 0;
+  return call_freq - border_freq;
+}
+
 /* Return true if a set of DST by the expression SRC should be allowed.
    This prevents complex sets of likely_spilled hard regs before split1.  */
 
@@ -29534,6 +29551,9 @@ ix86_libgcc_floating_mode_supported_p
 #define TARGET_CLASS_LIKELY_SPILLED_P ix86_class_likely_spilled_p
 #undef TARGET_CALLEE_SAVE_COST
 #define TARGET_CALLEE_SAVE_COST ix86_callee_save_cost
+
+#undef TARGET_IRA_LOOP_REGION_FLATTEN_COST
+#define TARGET_IRA_LOOP_REGION_FLATTEN_COST ix86_ira_loop_region_flatten_cost
 
 #undef TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST
 #define TARGET_VECTORIZE_BUILTIN_VECTORIZATION_COST \
