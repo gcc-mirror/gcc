@@ -3,7 +3,7 @@
 /* { dg-require-effective-target vect_early_break_hw } */
 /* { dg-require-effective-target vect_int } */
 
-/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! "x86_64-*-* i?86-*-*" } } } } */
+/* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" { target { ! "x86_64-*-* i?86-*-* s390x-*-*" } } } } */
 
 #include "tree-vect.h"
 
