@@ -139,6 +139,10 @@
       calculations.  This can be guaranteed by clobbering stack registers
       unrelated to the inputs and outputs.
 
+   7. Each operand must occupy a single register.  Operands that
+      need more, such as complex values, which take two, are not
+      supported.
+
    Here are a couple of reasonable asms to want to write.  This asm
    takes one input, which is internally popped, and produces two outputs.
 
@@ -504,6 +508,16 @@ check_asm_stack_operands (rtx_insn *insn)
 	&& REG_P (SUBREG_REG (recog_data.operand[i])))
       recog_data.operand[i] = SUBREG_REG (recog_data.operand[i]);
 
+  /* Enforce rule #7: Operands must occupy a single register.  */
+
+  for (i = 0; i < recog_data.n_operands; i++)
+    if (STACK_REG_P (recog_data.operand[i])
+	&& REG_NREGS (recog_data.operand[i]) > 1)
+      {
+	error_for_asm (insn, "operand %d must occupy a single register", i);
+	malformed_asm = true;
+      }
+
   /* Set up CLOBBER_REG.  */
 
   n_clobbers = 0;
@@ -542,7 +556,8 @@ check_asm_stack_operands (rtx_insn *insn)
       {
 	if (reg_class_size[(int) op_alt[i].cl] != 1)
 	  {
-	    error_for_asm (insn, "output constraint %d must specify a single register", i);
+	    error_for_asm (insn, "output constraint %d must "
+			   "specify a single register", i);
 	    malformed_asm = true;
 	  }
 	else
