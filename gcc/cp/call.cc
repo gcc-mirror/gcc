@@ -3928,7 +3928,7 @@ splice_viable (struct z_candidate *cands,
 
   /* Be strict inside templates, since build_over_call won't actually
      do the conversions to get pedwarns.  */
-  if (processing_template_decl)
+  if (processing_template_decl || flag_diagnostics_all_candidates)
     strict_p = true;
 
   for (z_candidate *cand = cands; cand; cand = cand->next)
