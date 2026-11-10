@@ -49,7 +49,7 @@ dnl Check whether the target supports __atomic_fetch_add.
 AC_DEFUN([LIBGFOR_CHECK_ATOMIC_FETCH_ADD], [
   AC_CACHE_CHECK([whether the target supports __atomic_fetch_add],
 		 libgfor_cv_have_atomic_fetch_add, [
-  AC_LINK_IFELSE([AC_LANG_PROGRAM([[int foovar = 0;]], [[
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[__INT64_TYPE__ foovar = 0;]], [[
 if (foovar <= 0) return __atomic_fetch_add (&foovar, 1, __ATOMIC_ACQ_REL);
 if (foovar > 10) return __atomic_add_fetch (&foovar, -1, __ATOMIC_ACQ_REL);]])],
 	      libgfor_cv_have_atomic_fetch_add=yes, libgfor_cv_have_atomic_fetch_add=no)])

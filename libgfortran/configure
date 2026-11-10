@@ -32288,7 +32288,7 @@ else
 fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
-int foovar = 0;
+__INT64_TYPE__ foovar = 0;
 int
 main ()
 {
