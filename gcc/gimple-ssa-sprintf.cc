@@ -728,14 +728,6 @@ struct format_result
     return *this += 1;
   }
 
-  /* Postincrement the number of output characters by 1.  */
-  format_result operator++ (int)
-  {
-    format_result prev (*this);
-    *this += 1;
-    return prev;
-  }
-
   /* Increment the number of output characters by N.  */
   format_result& operator+= (unsigned HOST_WIDE_INT);
 
