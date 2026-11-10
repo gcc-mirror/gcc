@@ -2404,6 +2404,8 @@ for AArch64 small memory model.
 AArch64 target that generates instructions for SME.
 @item aarch64_sme2
 AArch64 target that generates instructions for SME2.
+@item aarch64_lut_hw
+AArch64 target that is able to generate and execute LUT instructions.
 @item aarch64_sve_hw
 AArch64 target that is able to generate and execute SVE code (regardless of
 whether it does so by default).

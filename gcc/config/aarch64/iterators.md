@@ -1411,6 +1411,7 @@
     UNSPEC_ZIPQ1
     UNSPEC_ZIPQ2
     UNSPEC_SVE_LUTI
+    UNSPEC_SVE_LUTI6
 
     ;; All used in aarch64-sme.md
     UNSPEC_SME_ADD

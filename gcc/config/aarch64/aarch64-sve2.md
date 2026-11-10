@@ -4858,7 +4858,24 @@
 ;; Includes:
 ;; - LUTI2
 ;; - LUTI4
+;; - LUTI6
 ;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_luti6<mode>"
+  [(set (match_operand:SVE_FULL_BH 0 "register_operand" "=w")
+	(unspec:SVE_FULL_BH
+	 [(match_operand:<VDOUBLE> 1 "register_operand" "w")
+	  (match_operand:VNx16QI 2 "register_operand" "w")]
+	 UNSPEC_SVE_LUTI6))]
+  "TARGET_SVE2p3 && TARGET_NON_STREAMING
+   && known_ge (BYTES_PER_SVE_VECTOR, 32 * GET_MODE_UNIT_SIZE (<MODE>mode))"
+{
+  if (<MODE>mode == VNx16QImode)
+    return "luti6\t%0.b, %1, %2";
+  return "luti6\t%0.h, %1, %2[0]";
+}
+  [(set_attr "sve_type" "sve_int_general")]
+)
 
 (define_insn "@aarch64_sve_luti<LUTI_BITS><mode>"
   [(set (match_operand:SVE_FULL_BH 0 "register_operand" "=w")

@@ -6990,6 +6990,24 @@ proc check_effective_target_aarch64_sve_hw { } {
     } [add_options_for_aarch64_sve ""]]
 }
 
+# Return true if this is an AArch64 target that can run LUT instructions.
+
+proc check_effective_target_aarch64_lut_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_lut_hw_available {
+	#pragma GCC target "+lut"
+	int
+	main (void)
+	{
+	  asm volatile ("movi v0.16b, #0\n\t"
+			"luti2 v0.16b, {v0.16b}, v0[0]" ::: "v0");
+	  return 0;
+	}
+    }]
+}
+
 # Return true if this is an AArch64 target that can run SVE2 code.
 
 proc check_effective_target_aarch64_sve2_hw { } {

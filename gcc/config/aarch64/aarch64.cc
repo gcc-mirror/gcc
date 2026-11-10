@@ -28817,6 +28817,152 @@ aarch64_evpc_hvla (struct expand_vec_perm_d *d)
   return try_zip () || try_uzp () || try_extq () || try_dupq ();
 }
 
+/* Pack D's constant indices into BITS-bit fields.  For LUTI2/4, repeat the
+   packed pattern into the unused part of SEL_MODE too, to give immediate
+   materialization more freedom.  Only use those forms when the selector
+   needs no constant-pool load.  For LUTI6, pack all the indices and leave
+   the unused high bytes zero.  Stepped scalable selectors need another
+   expansion.  */
+
+static rtx
+aarch64_evpc_luti_indices (struct expand_vec_perm_d *d, unsigned int bits,
+			  machine_mode sel_mode)
+{
+  poly_int64 nelt = d->perm.length ();
+  unsigned int npatterns, packed_npatterns;
+  if (bits == 6)
+    {
+      npatterns = nelt.to_constant ();
+      packed_npatterns = GET_MODE_NUNITS (sel_mode).to_constant ();
+    }
+  else
+    {
+      const auto &encoding = d->perm.encoding ();
+      if (encoding.nelts_per_pattern () != 1)
+	return NULL_RTX;
+      npatterns = encoding.npatterns ();
+      packed_npatterns = CEIL (npatterns * bits, BITS_PER_UNIT);
+    }
+  rtx_vector_builder builder (sel_mode, packed_npatterns, 1);
+  /* Two-input LUTI4 reads eight halfwords from each register,
+     even when the input vectors are wider than that.  */
+  bool remap_inputs = bits == 4 && !d->one_vector_p;
+  unsigned int value = 0, nbits = 0, next = 0;
+  unsigned int nbytes = CEIL (npatterns * bits, BITS_PER_UNIT);
+  for (unsigned int i = 0; i < nbytes; ++i)
+    {
+      /* Append indices until we have a complete byte.  LUTI6 fields can
+	 straddle bytes, so keep any unused bits for the next byte.  */
+      while (nbits < BITS_PER_UNIT)
+	{
+	  poly_int64 elt = d->perm[next % npatterns];
+	  bool second = remap_inputs && known_ge (elt, nelt);
+	  if (second)
+	    elt -= nelt;
+	  HOST_WIDE_INT index;
+	  if (!elt.is_constant (&index)
+	      || !IN_RANGE (index, 0, remap_inputs ? 7 : (1U << bits) - 1))
+	    return NULL_RTX;
+	  value |= (index + (second ? 8 : 0)) << nbits;
+	  nbits += bits;
+	  ++next;
+	}
+      builder.quick_push (gen_int_mode (value, QImode));
+      value >>= BITS_PER_UNIT;
+      nbits -= BITS_PER_UNIT;
+    }
+  /* LUTI6 leaves the rest of the selector zero.  */
+  for (unsigned int i = nbytes; i < packed_npatterns; ++i)
+    builder.quick_push (const0_rtx);
+  rtx sel = builder.build ();
+  if (bits != 6 && !aarch64_simd_valid_mov_imm (sel))
+    return NULL_RTX;
+  return sel;
+}
+
+/* Try to implement D using LUTI2, LUTI4 or LUTI6, as selected by BITS.
+   Prefer LUTI2/4 when their packed selectors can be loaded as an immediate.
+   LUTI6 can implement any two-input permutation with 32 elements, avoiding
+   the two TBLs and their combining operations.  */
+
+static bool
+aarch64_evpc_luti (struct expand_vec_perm_d *d, unsigned int bits)
+{
+  machine_mode mode = d->vmode;
+  bool sve_p = d->vec_flags == VEC_SVE_DATA;
+  /* LUTI only supports .B and .H.  */
+  if (GET_MODE_UNIT_SIZE (mode) > 2
+      || (!sve_p && (d->vec_flags != VEC_ADVSIMD
+		    || !known_eq (GET_MODE_SIZE (mode), 16))))
+    return false;
+
+  bool two_tables;
+  if (bits == 6)
+    {
+      if (!sve_p || !TARGET_SVE2p3 || !TARGET_NON_STREAMING
+	  || d->one_vector_p || !known_eq (GET_MODE_NUNITS (mode), 32))
+	return false;
+      two_tables = true;
+    }
+  else
+    {
+      if (!TARGET_LUT || BYTES_BIG_ENDIAN
+	  || (sve_p && !TARGET_SVE2_OR_SME2))
+	return false;
+
+      /* Advanced SIMD halfword LUTI4 always needs two table registers.
+	 SVE needs two below VL == 256 or when using both inputs.  */
+      two_tables = (bits == 4 && GET_MODE_UNIT_SIZE (mode) == 2
+		    && (!d->one_vector_p
+			|| !known_ge (GET_MODE_SIZE (mode), 32)));
+      if (!d->one_vector_p && !two_tables)
+	return false;
+
+      /* Duplicating the table does not make its upper half accessible, but
+	 there's an open question whether a DUP or EXT like rotation could be
+	 used to get access.  For now just reject.  */
+      if (two_tables && d->one_vector_p
+	  && !d->perm.all_in_range_p (0, 8))
+	return false;
+    }
+
+  machine_mode sel_mode = sve_p ? VNx16QImode : V8QImode;
+  rtx sel = aarch64_evpc_luti_indices (d, bits, sel_mode);
+  if (!sel)
+    return false;
+  if (d->testing_p)
+    return true;
+
+  machine_mode table_mode = mode;
+  rtx table = d->op0;
+  if (two_tables)
+    {
+      table_mode = aarch64_array_mode (mode, 2).require ();
+      table = gen_reg_rtx (table_mode);
+      /* Emit clobber to start live region for the entire table.  */
+      emit_clobber (table);
+      emit_move_insn (gen_lowpart (mode, table), d->op0);
+      emit_move_insn (simplify_gen_subreg (mode, table, table_mode,
+					 GET_MODE_SIZE (mode)), d->op1);
+    }
+  else if (!sve_p && GET_MODE_UNIT_SIZE (mode) == 2)
+    {
+      /* LUTI2 uses only the low four halfwords of the input.  */
+      table_mode = mode_for_vector (GET_MODE_INNER (mode), 4).require ();
+      table = gen_lowpart (table_mode, table);
+    }
+  sel = force_reg (sel_mode, sel);
+  if (bits == 6)
+    emit_insn (gen_aarch64_sve_luti6 (mode, d->target, table, sel));
+  else if (sve_p)
+    emit_insn (gen_aarch64_sve_luti (bits, table_mode, d->target, table,
+				     sel, const0_rtx));
+  else
+    emit_insn (gen_aarch64_lut (table_mode, sel_mode, d->target, table,
+				sel, const0_rtx, GEN_INT (bits)));
+  return true;
+}
+
 static bool
 aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 {
@@ -29148,6 +29294,10 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  else if (aarch64_evpc_rev64_ext (d))
 	    return true;
 	  else if (aarch64_evpc_reencode (d))
+	    return true;
+	  else if (aarch64_evpc_luti (d, 2)
+		   || aarch64_evpc_luti (d, 4)
+		   || aarch64_evpc_luti (d, 6))
 	    return true;
 
 	  if (d->vec_flags == VEC_SVE_DATA)
