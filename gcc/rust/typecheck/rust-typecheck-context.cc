@@ -174,24 +174,6 @@ TypeCheckContext::clear_type (TyTy::BaseType *ty)
   resolved.erase (it);
 }
 
-void
-TypeCheckContext::insert_type_by_node_id (NodeId ref, HirId id)
-{
-  rust_assert (node_id_refs.find (ref) == node_id_refs.end ());
-  node_id_refs[ref] = id;
-}
-
-bool
-TypeCheckContext::lookup_type_by_node_id (NodeId ref, HirId *id)
-{
-  auto it = node_id_refs.find (ref);
-  if (it == node_id_refs.end ())
-    return false;
-
-  *id = it->second;
-  return true;
-}
-
 bool
 TypeCheckContext::have_function_context () const
 {
