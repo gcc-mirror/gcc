@@ -1,3 +1,9 @@
+2026-11-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-ici/M2Emit.mod: Removed.
+	* gm2-ici/README: Removed.
+	* gm2-ici/m2linemap.c: Removed.
+
 2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

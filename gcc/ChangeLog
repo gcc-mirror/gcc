@@ -1,3 +1,229 @@
+2026-11-10  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):
+	Add new __ARM_FEATURE__ macros.
+	* config/aarch64/aarch64-neon-builtins-base.cc (vmmlaq_impl):
+	New function_base class.
+	(vmmlaq): Define new function base.
+	* config/aarch64/aarch64-neon-builtins-base.def (vmmlaq): Define
+	new NEON function.
+	* config/aarch64/aarch64-simd.md (@aarch64_fmmlaq<mode>): New
+	pattern.
+	(@aarch64_<insn><mode>): Use VQ_HSF_F8_FMMLA.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svmmla): Define
+	new SVE functions for F16MM and SVE_B16MM.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_<sve_fp_op><SVE_FULL_HF_FMMLA:mode><SVE_FULL_HF_FMMLA:mode>):
+	New pattern.
+	* config/aarch64/aarch64.h
+	(TARGET_F16F32MM, TARGET_F16MM, TARGET_SVE_B16MM): New macros.
+	* config/aarch64/iterators.md (VQ_HSF_F16_FMMLA): New iterator.
+	(VQ_HSF_F8_FMMLA): Rename from VDQ_HSF_FMMLA.
+	(SVE_FULL_HF_FMMLA): New iterator.
+
+2026-11-10  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svmmla_impl::expand):
+	Simplify by using the new pattern names.
+	* config/aarch64/aarch64-sve.md (@aarch64_sve_<sve_fp_op><mode><mode>):
+	Rename from @aarch64_sve_<sve_fp_op><mode>.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve_<sve_fp_op><SVE_FULL_HSF_FMMLA:mode><VNx16QI_ONLY:mode>)
+	(@aarch64_sve_<sve_fp_op><VNx4SF_ONLY:mode><VNx8HF_ONLY:mode>): Replace
+	"sve2" with "sve".
+
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (ADAC): New.
+	* doc/install.texi (GNAT): Mention ADAC.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* internal-fn.cc (expand_CLMUL_WIDEN): Compute the high half when
+	the product fits in the mode but not in the type.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128517
+	* tree-vect-loop-manip.cc (vect_do_peeling): Clear
+	LOOP_C_FINITE for scalar prologue and epilogue if
+	doing early-break vectorization.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Do not clear
+	LOOP_C_INFINITE.
+
+2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/predicates.md (pltoff_symbol_operand): New predicate.
+	* config/i386/i386.md (*tls_global_dynamic_64_largepic): Use
+	pltoff_symbol_operand predicate for operand 3.  Remove explicit
+	UNSPEC_PLTOFF check from the insn condition.
+	(*tls_local_dynamic_base_64_largepic): Ditto for operand 2.
+
+2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* config/i386/i386.cc (ix86_remove_dead_tls_ld_base): Remove.
+	(ix86_reorg): Do not call it.
+	* config/i386/i386.md (*tls_local_dynamic_base_32_gnu): Output
+	xor of the result register when no local-dynamic TLS symbol
+	is left.
+	(*tls_local_dynamic_base_64_<mode>): Ditto.
+	(*tls_local_dynamic_base_64_largepic): Ditto.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* doc/md.texi (Standard Pattern Names for Vectorization): Document
+	floating-point inputs and widening semantics for sdot_prod.  Require
+	matching mode classes and at least twice the input element width.
+	Describe product rounding and reassociation.
+	* optabs.def (sdot_prod_optab): Allow floating-point modes.
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Allow
+	floating-point types.
+	* tree-vect-patterns.cc (vect_recog_dot_prod_pattern): Recognize
+	floating-point dot products with directly widened inputs.  Require
+	matching input types of at most half the accumulator precision.  Keep
+	product promotions and extension sign checks specific to integer
+	dot products.  Update the pattern description.
+	* tree.def (DOT_PROD_EXPR): Document floating-point conversions and
+	product rounding.  Require all element types to be integral or all
+	floating-point.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128514
+	* tree-if-conv.cc (bitfields_to_lower_p): Reject components
+	with reverse storage order.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128575
+	* tree-ssa-dse.cc (dse_optimize_redundant_stores): Do not
+	eliminate volatile stores.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_vec_op_count::last_unpack_count): New member.
+	(aarch64_vector_costs::count_ops): Track successive integer unpack
+	stages for each issue model.  Round the preceding stage's count up
+	to a whole number of issue cycles using general_ops_per_cycle.
+	Reset the unpack count for other operations.  Count operations on
+	SVE boolean vectors as predicate operations.
+
+2026-11-09  Jielun Wu  <firmiana402@gmail.com>
+
+	PR debug/128392
+	* dwarf2out.cc (mem_loc_descriptor): Use the address size in bits
+	when calculating bit-extraction shifts.
+
+2026-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/128545
+	* internal-fn.cc (expand_clmul): Optimize
+	clmul (x, ((((T) 1) << M) - 1) << N) fallback.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* internal-fn.cc (check_internal_fn_args): New function.
+	* internal-fn.h (check_internal_fn_args): Declare.
+	* tree-cfg.cc: Include internal-fn.h.
+	(verify_gimple_call): Call check_internal_fn_args for internal
+	function calls.
+	* doc/ifn.texi (IFN_CLZ, IFN_CTZ): Document the type of the first
+	argument.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* internal-fn.h (struct direct_internal_fn_info): Make vectorizable
+	8 bits wide.  Add nargs_min and nargs_max.
+	(direct_internal_fn_nargs_ok_p): New function.
+	* internal-fn.cc (not_direct, mask_load_direct, load_lanes_direct)
+	(mask_load_lanes_direct, gather_load_direct, strided_load_direct)
+	(len_load_direct, mask_len_load_direct, mask_store_direct)
+	(store_lanes_direct, mask_store_lanes_direct, vec_cond_mask_direct)
+	(vec_cond_mask_len_direct, vec_cond_direct, scatter_store_direct)
+	(strided_store_direct, len_store_direct, mask_len_store_direct)
+	(vec_set_direct, vec_extract_direct, unary_direct)
+	(unary_convert_direct, binary_direct, ternary_direct)
+	(cond_unary_direct, cond_binary_direct, cond_ternary_direct)
+	(cond_len_unary_direct, cond_len_binary_direct)
+	(cond_len_ternary_direct, while_direct, fold_extract_direct)
+	(fold_len_extract_direct, fold_left_direct, mask_fold_left_direct)
+	(mask_len_fold_left_direct, check_ptrs_direct, crc_direct)
+	(reduc_sbool_direct, select_vl_direct): Add the number of
+	arguments.
+	(mask_len_load_lanes_direct, mask_gather_load_direct)
+	(mask_len_gather_load_direct, mask_len_store_lanes_direct)
+	(mask_scatter_store_direct, mask_len_scatter_store_direct)
+	(unary_opt_direct): New macros.
+	(expand_mask_len_load_lanes_optab_fn)
+	(expand_mask_len_store_lanes_optab_fn)
+	(expand_mask_scatter_store_optab_fn)
+	(expand_mask_len_scatter_store_optab_fn)
+	(expand_mask_gather_load_optab_fn)
+	(expand_mask_len_gather_load_optab_fn, expand_unary_opt_optab_fn)
+	(direct_unary_opt_optab_supported_p)
+	(direct_mask_len_load_lanes_optab_supported_p)
+	(direct_mask_gather_load_optab_supported_p)
+	(direct_mask_len_gather_load_optab_supported_p)
+	(direct_mask_len_store_lanes_optab_supported_p)
+	(direct_mask_scatter_store_optab_supported_p)
+	(direct_mask_len_scatter_store_optab_supported_p): New macros.
+	(expand_direct_optab_fn, expand_convert_optab_fn): Assert that the
+	call has a valid number of arguments.
+	* internal-fn.def: Document that TYPE gives the number of
+	arguments.  Document mask_gather_load, mask_len_gather_load,
+	mask_scatter_store, mask_len_scatter_store and unary_opt.
+	(MASK_LEN_LOAD_LANES): Use mask_len_load_lanes.
+	(MASK_GATHER_LOAD): Use mask_gather_load.
+	(MASK_LEN_GATHER_LOAD): Use mask_len_gather_load.
+	(MASK_SCATTER_STORE): Use mask_scatter_store.
+	(MASK_LEN_SCATTER_STORE): Use mask_len_scatter_store.
+	(MASK_LEN_STORE_LANES): Use mask_len_store_lanes.
+	(CLZ, CTZ, POPCOUNT): Use unary_opt.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (gimple_ifn::fold):
+	View-convert a signed argument of .CLZ and .POPCOUNT to unsigned.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern): Convert a
+	signed argument to unsigned for all forms.  Check for reductions
+	before the conversion.
+	(vect_recog_popcount_clz_ctz_ffs_pattern): Convert a signed
+	argument of .CLZ, .CTZ and .POPCOUNT to unsigned.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (int_convert): New match.  Use it in the vector forms
+	of the C[LT]Z zero select folds.
+
+2026-11-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128445
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_XCHG): New tune.
+	* config/i386/i386.h (TARGET_AVOID_FALSE_DEP_FOR_XCHG): New macro.
+	* config/i386/i386.md (swap<mode> to three moves peephole2): New
+	peephole2.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_autovectorize_vector_modes):
+	Clear the candidate list before adding aarch64_force_autovec_mode,
+	removing the initial autodetection entry when a mode is forced.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_force_single_cycle): Include
+	fold-left reductions so that the reduction latency accounts for
+	all copies sharing the same accumulator.
+
 2026-11-08  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* rtl.h (find_first_parameter_load): Take an rtx_call_insn *.

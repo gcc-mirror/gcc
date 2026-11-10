@@ -1,3 +1,8 @@
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.in (LIBADA_FLAGS_TO_PASS): Prevent host ADAC
+	from being used.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

@@ -1,3 +1,12 @@
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc-interface/Make-lang.in: Use ADAC to compile and detect
+	properties of Ada compiler.
+	(ADA_TOOLS_FLAGS_TO_PASS): Pass it down like CC.
+	* gcc-interface/Makefile.in (ADAC): New.  Use it to compile
+	Ada code.
+	(TOOLS_FLAGS_TO_PASS): Pass it down.
+
 2026-11-08  Andrea Boido  <andrea.boido@vector.com>
 
 	PR ada/128457

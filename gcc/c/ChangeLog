@@ -1,3 +1,15 @@
+2026-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128518
+	* c-typeck.cc (mark_decl_used): Fix logic.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Do not report a
+	missing '=' after an invalid expression.
+	(c_parser_gimple_call_internal): Call check_internal_fn_args.
+	Do not build a call that has an invalid argument.
+
 2026-11-08  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/128335

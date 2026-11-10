@@ -1,3 +1,13 @@
+2026-11-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Implementation Status, OpenMP routines): Change
+	references from TR15 to OpenMP 6.1.
+
+2026-11-09  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-1.c: Change from
+	invalid ICV setting on the device to setting it on the host.
+
 2026-11-07  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* plugin/plugin-gcn.c (allocate_session_kernargs): Use

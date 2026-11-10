@@ -1,3 +1,21 @@
+2026-11-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* libsupc++/exception_ptr.h (exception_ptr): Declare as type
+	alias not via using-declaration.
+	* testsuite/18_support/exception_ptr/meta.cc: New test.
+
+2026-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (clmul): New FTM.
+	* include/std/numeric (__glibcxx_want_clmul): Define before including
+	bits/version.h.
+	(std::wide_result): New class template.
+	(std::widening_clmul, std::clmul): New function templates.
+	* src/c++23/std.cc.in (std::wide_result, std::widening_clmul,
+	std::clmul): Export for C++29.
+	* testsuite/26_numerics/clmul/1.cc: New test.
+	* include/bits/version.h: Regenerate.
+
 2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/128413

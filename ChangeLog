@@ -1,3 +1,16 @@
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure: Rebuild.
+	* Makefile.tpl (ADAC): New.
+	(STAGE1_FLAGS_TO_PASS): Pass it down.
+	(POSTSTAGE1_FLAGS_TO_PASS): Pass CC.
+	* Makefile.in: Rebuild.
+
+2026-11-09  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add myself.
+
 2026-10-22  LIU Hao  <lh_mouse@126.com>
 	    Zhongteng Gui  <dragon-archer@outlook.com>
 

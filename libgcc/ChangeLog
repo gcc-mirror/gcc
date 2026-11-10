@@ -1,3 +1,9 @@
+2026-11-09  Florian Fuchs  <fuchsfl@gmail.com>
+
+	PR target/128472
+	* config/s390/t-float16 (LIB2ADD): Only add the _dpd_ files when
+	decimal_float is set.
+
 2026-11-08  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/gthr-vxworks-thread.c (ENTRYPTR): Rename to...

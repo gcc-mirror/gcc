@@ -1,3 +1,159 @@
+2026-11-10  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test new feature
+	macros.
+	* gcc.target/aarch64/sve/acle/general-c/mmla_1.c: Remove
+	obsolete test
+	* gcc.target/aarch64/sve/acle/general-c/mmla_8.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/fmmla_bf16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/fmmla_f16.c: New test.
+	* lib/target-supports.exp ("f16mm", "f16f32mm", "sve-b16mm"):
+	Add assembly extension checks.
+
+2026-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128518
+	* gcc.dg/pr128518.c: New test.
+
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* g++.dg/template/friend88.C: Compile with -fno-pie.
+	* g++.target/i386/mv-symbols1.C: Likewise.
+	* g++.target/i386/mv-symbols3.C: Likewise.
+	* g++.target/i386/mv-symbols4.C: Likewise.
+	* g++.target/i386/mv-symbols5.C: Likewise.
+	* g++.target/i386/mvc-symbols1.C: Likewise.
+	* g++.target/i386/mvc-symbols3.C: Likewise.
+	* g++.target/i386/pr116896-1.C: Likewise.
+	* gcc.target/i386/pr116896.c: Likewise.
+	* gcc.dg/ipa/pr122458.c: Likewise.
+	* gcc.dg/lto/toplevel-extended-asm-1_0.c: Likewise.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/builtin-memmove-12.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.
+	* gcc.target/i386/pr122343-1a.c: Likewise.
+	* gcc.target/i386/pr122343-1b.c: Likewise.
+	* gcc.target/i386/pr122343-2a.c: Likewise.
+	* gcc.target/i386/pr122343-2b.c: Likewise.
+	* gcc.target/i386/pr122343-3.c: Likewise.
+	* gcc.target/i386/pr122343-4a.c: Likewise.
+	* gcc.target/i386/pr122343-4b.c: Likewise.
+	* gcc.target/i386/pr122343-5a.c: Likewise.
+	* gcc.target/i386/pr122343-5b.c: Likewise.
+	* gcc.target/i386/pr122343-6a.c: Likewise.
+	* gcc.target/i386/pr122343-6b.c: Likewise.
+	* gcc.target/i386/pr122343-7.c: Likewise.
+	* gcc.target/i386/pr125355-2.c: Likewise.
+	* gcc.target/i386/pr125355.c: Likewise.
+	* gcc.target/i386/pr127897-3.c: Likewise.
+	* gcc.target/i386/pr92080-13.c: Likewise.
+	* gcc.target/i386/pr92080-15.c: Likewise.
+	* gcc.target/i386/pr92080-16.c: Likewise.
+	* gcc.target/i386/pr92080-18.c: Likewise.
+	* gcc.target/i386/pr92080-5.c: Likewise.
+	* gcc.target/i386/pr92080-8.c: Likewise.
+	* gcc.target/i386/pr92080-9.c: Likewise.
+	* gcc.target/i386/pr94913-2.c: Likewise.
+	* gcc.dg/20021014-1.c: Link with -no-pie.
+	* gcc.dg/aru-2.c: Likewise.
+	* gcc.dg/nest.c: Likewise.
+	* gcc.dg/pr32450.c: Likewise.
+	* gcc.dg/pr43643.c: Likewise.
+	* gcc.target/i386/no-callee-saved-19c.c: Add
+	-mno-accumulate-outgoing-args.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* gcc.dg/bitint-147.c: New test.
+
+2026-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/coarray_stat_function.f90: Match any caf_token and
+	decl number.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128517
+	* gcc.dg/vect/vect-early-break_150-pr128517.c: New testcase.
+
+2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* g++.target/i386/pr128437-1.C: New test.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.dg/vect/vect-reduc-dot-float-1.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-2.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-3.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-4.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-5.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-6.c: New test.
+	* gcc.dg/vect/vect-reduc-dot-float-7.c: New test.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128514
+	* gcc.dg/vect/vect-pr128514.c: New testcase.
+
+2026-11-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128575
+	* gcc.dg/tree-ssa/ssa-dse-55.c: New testcase.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/cost_model_21.c: New test.
+	* gcc.target/aarch64/sve/cost_model_22.c: New test.
+
+2026-11-09  Jielun Wu  <firmiana402@gmail.com>
+
+	PR debug/128392
+	* gcc.dg/guality/pr128392.c: New test.
+
+2026-11-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/128545
+	* c-c++-common/builtin-clmulg-3.c: New test.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/gimplefe-62.c: New test.
+	* gcc.dg/gimplefe-error-17.c: New test.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/neon/bit_count_unsigned.c: New test.
+
+2026-11-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/clz-ctz-zero-select-1.c: New test.
+
+2026-11-09  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128445
+	* gcc.target/i386/pr128445-1.c: New test.
+	* gcc.target/i386/pr128445-2.c: Likewise.
+	* gcc.target/i386/xchg-3.c: Add -mtune=generic.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/force_autovec_mode.h: New test support header.
+	* gcc.target/aarch64/force_autovec_mode_1.c: New test.
+	* gcc.target/aarch64/force_autovec_mode_2.c: New test.
+	* gcc.target/aarch64/force_autovec_mode_3.c: New test.
+	* gcc.target/aarch64/force_autovec_mode_4.c: New test.
+	* gcc.target/aarch64/sve/force_autovec_mode_1.c: New test.
+	* gcc.target/aarch64/sve/force_autovec_mode_2.c: New test.
+	* gcc.target/aarch64/sve/force_autovec_mode_3.c: New test.
+	* gcc.target/aarch64/sve/force_autovec_mode_4.c: New test.
+	* gcc.target/aarch64/sve/force_autovec_mode_5.c: New test.
+
+2026-11-09  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/reduc_strict_10.c: New test.
+
 2026-11-08  Andrea Boido  <andrea.boido@vector.com>
 
 	* gnat.dg/membership_real1.adb: New test.

@@ -1,3 +1,7 @@
+2026-11-09  Alexandre Oliva  <oliva@adacore.com>
+
+	* acx.m4 (ACX_PROG_GNAT): Test ADAC, falling back to CC.
+
 2026-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	* zstd.m4 (AC_ZSTD): Add optional FAILURE_IS_FATAL argument.
