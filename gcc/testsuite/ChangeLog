@@ -1,3 +1,11 @@
+2026-11-09  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	Backported from master:
+	2024-11-05  Di Zhao  <dizhao@os.amperecomputing.com>
+
+	PR tree-optimization/110279
+	* gcc.dg/pr110279-1.c: add target selector.
+
 2026-11-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
