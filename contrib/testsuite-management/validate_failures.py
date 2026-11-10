@@ -143,7 +143,7 @@ class TestResult(object):
               file=sys.stderr)
         raise
       self.ordinal = ordinal
-      if tool == None or exp == None:
+      if tool is None or exp is None:
         # .sum file seem to be broken.  There was no "tool" and/or "exp"
         # lines preceding this result.
         print(f'.sum file seems to be broken: tool="{tool}", exp="{exp}", summary_line="{summary_line}"',
@@ -458,7 +458,7 @@ def CollectSumFiles(builddir):
 
 def GetResults(sum_files, build_results = None):
   """Collect all the test results from the given .sum files."""
-  if build_results == None:
+  if build_results is None:
     build_results = ResultSet()
   for sum_fname in sum_files:
     if _OPTIONS.verbosity >= 3:

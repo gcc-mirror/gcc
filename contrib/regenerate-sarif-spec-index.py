@@ -54,7 +54,7 @@ with open(filename_out, 'w') as outfile:
                   '{\n'
                   '  const char *m_ref;\n'
                   '  const char *m_anchor;\n'
-                  '} sarif_spec_anchor_arr[] = {\n');
+                  '} sarif_spec_anchor_arr[] = {\n')
     for ref, anchor in d.items():
         outfile.write(f'  {{ "{ref}", "{anchor}" }},\n')
     outfile.write('};')

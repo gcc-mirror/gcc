@@ -8,9 +8,9 @@ def sarif():
 
 final_line_num = 34
 
-line_num_call_to_PyList_New = final_line_num - 7;
-line_num_for_loop = final_line_num - 5;
-line_num_call_to_PyList_Append = final_line_num - 3;
+line_num_call_to_PyList_New = final_line_num - 7
+line_num_for_loop = final_line_num - 5
+line_num_call_to_PyList_Append = final_line_num - 3
 
 expected_file_name = 'test-warning-with-path.c'
 

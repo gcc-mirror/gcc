@@ -24,7 +24,7 @@ from subprocess import Popen, PIPE
 def usage():
     sys.stderr.write("usage: %s [-v] [dirs | files] [-- <readelf options>]\n"
                         % sys.argv[0])
-    sys.stderr.write("\t-v\tVerbose output\n");
+    sys.stderr.write("\t-v\tVerbose output\n")
     sys.exit(1)
 
 (odir, sym_args, tmpd, verbose) = (set(), "", None, False)
