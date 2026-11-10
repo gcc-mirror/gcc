@@ -1195,7 +1195,7 @@ BUILD_LIBS = $(BUILD_LIBIBERTY)
 
 BUILD_RTL = build/rtl.o build/read-rtl.o build/ggc-none.o \
 	    build/vec.o build/min-insn-modes.o build/gensupport.o \
-	    build/print-rtl.o build/hash-table.o build/sort.o
+	    build/print-rtl.o build/hash-table.o build/sort.o build/hwint.o
 BUILD_MD = build/read-md.o
 BUILD_ERRORS = build/errors.o
 
@@ -1583,7 +1583,6 @@ OBJS = \
 	hash-map-tests.o \
 	hash-set-tests.o \
 	hw-doloop.o \
-	hwint.o \
 	ifcvt.o \
 	ree.o \
 	inchash.o \
@@ -1926,7 +1925,7 @@ OBJS-libcommon = \
 	pub-sub.o \
 	xml.o \
 	sbitmap.o \
-	vec.o input.o hash-table.o ggc-none.o memory-block.o \
+	vec.o input.o hash-table.o ggc-none.o memory-block.o hwint.o \
 	selftest.o sort.o \
 	selftest-json.o \
 	text-art/box-drawing.o \
@@ -3282,6 +3281,7 @@ build/vec.o : vec.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(VEC_H)	\
 build/hash-table.o : hash-table.cc $(BCONFIG_H) $(SYSTEM_H)		\
   $(CORETYPES_H) $(HASH_TABLE_H) $(GGC_H) toplev.h $(DIAGNOSTIC_CORE_H)
 build/sort.o : sort.cc $(BCONFIG_H) $(SYSTEM_H)
+build/hwint.o : hwint.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)
 build/inchash.o : inchash.cc $(BCONFIG_H) $(SYSTEM_H) $(CORETYPES_H)	\
   $(HASHTAB_H) inchash.h
 build/gencondmd.o : build/gencondmd.cc $(BCONFIG_H) $(SYSTEM_H)		\
@@ -3423,7 +3423,7 @@ build/genautomata$(build_exeext) : BUILD_LIBS += -lm
 
 build/genrecog$(build_exeext) : build/hash-table.o build/inchash.o
 build/gencfn-macros$(build_exeext) : build/hash-table.o build/vec.o \
-  build/ggc-none.o build/sort.o
+  build/ggc-none.o build/sort.o build/hwint.o
 
 # For stage1 and when cross-compiling use the build libcpp which is
 # built with NLS disabled.  For stage2+ use the host library and
@@ -3438,7 +3438,7 @@ build/genmatch.o: BUILD_CPPFLAGS += -DGENMATCH_SELFTESTS
 endif
 
 build/genmatch$(build_exeext) : $(BUILD_CPPLIB) \
-  $(BUILD_ERRORS) build/vec.o build/hash-table.o build/sort.o
+  $(BUILD_ERRORS) build/vec.o build/hash-table.o build/sort.o build/hwint.o
 
 # These programs are not linked with the MD reader.
 build/gengtype$(build_exeext) : build/gengtype-lex.o build/gengtype-parse.o \
