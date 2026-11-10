@@ -888,6 +888,7 @@ CXXCPP
 PICFLAG_FOR_TARGET
 GDCFLAGS
 GDC
+ADAC
 GNATMAKE
 GNATBIND
 ac_ct_CXX
@@ -5339,8 +5340,10 @@ else
   GNATMAKE="$ac_cv_prog_GNATMAKE"
 fi
 
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether compiler driver understands Ada and is recent enough" >&5
-$as_echo_n "checking whether compiler driver understands Ada and is recent enough... " >&6; }
+test x"$ADAC" != x || ADAC=$CC
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ADAC understands Ada and is recent enough" >&5
+$as_echo_n "checking whether $ADAC understands Ada and is recent enough... " >&6; }
 if ${acx_cv_cc_gcc_supports_ada+:} false; then :
   $as_echo_n "(cached) " >&6
 else
@@ -5360,7 +5363,7 @@ acx_cv_cc_gcc_supports_ada=no
 # Other compilers, like HP Tru64 UNIX cc, exit successfully when
 # given a .adb file, but produce no object file.  So we must check
 # if an object file was really produced to guard against this.
-errors=`(${CC} -I"$srcdir"/ada/libgnat -c conftest.adb) 2>&1 || echo failure`
+errors=`(${ADAC} -I"$srcdir"/ada/libgnat -c conftest.adb) 2>&1 || echo failure`
 if test x"$errors" = x && test -f conftest.$ac_objext; then
   acx_cv_cc_gcc_supports_ada=yes
 fi
@@ -22053,7 +22056,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22056 "configure"
+#line 22059 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22159,7 +22162,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22162 "configure"
+#line 22165 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
