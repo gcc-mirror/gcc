@@ -708,39 +708,58 @@ add_shared_state_attribute (const char *name, bool is_in, bool is_out,
   return attrs;
 }
 
+/* The attribute lists that get_attributes has built so far, indexed by the
+   values that determine their contents.  See get_attributes for how the index
+   is formed.  */
+static GTY(()) tree attribute_cache[2 * 3 * 3 * 16];
+
 /* Return the appropriate function attributes for INSTANCE, which requires
-   the architecture extensions in REQUIRED_EXTENSIONS.  */
+   the architecture extensions in REQUIRED_EXTENSIONS.  The result depends only
+   on the streaming mode, the kind of global state that INSTANCE accesses,
+   whether it can trap and which of the ZA and ZT0 state it reads and writes,
+   so there are only a few distinct lists.  Build each one once and share it
+   between all the decls that need it.  */
 tree
 function_builder::get_attributes (const function_instance &instance,
 				  aarch64_required_extensions
 				    required_extensions)
 {
+  unsigned int flags = instance.call_properties ();
+  unsigned int streaming = (required_extensions.sm_off == 0 ? 0
+			    : required_extensions.sm_on != 0 ? 1 : 2);
+  unsigned int memory = (instance.modifies_global_state_p () ? 2
+			 : instance.reads_global_state_p () ? 1 : 0);
+  bool nothrow = !flag_non_call_exceptions || !instance.could_trap_p ();
+  unsigned int state = (((flags & CP_READ_ZA) ? 1 : 0)
+			| ((flags & CP_WRITE_ZA) ? 2 : 0)
+			| ((flags & CP_READ_ZT0) ? 4 : 0)
+			| ((flags & CP_WRITE_ZT0) ? 8 : 0));
+  tree &cached = attribute_cache[((streaming * 3 + memory) * 2 + nothrow) * 16
+				 + state];
+  if (cached)
+    return cached;
+
   tree attrs = NULL_TREE;
 
-  if (required_extensions.sm_off == 0)
+  if (streaming == 0)
     attrs = add_attribute ("arm", "streaming", NULL_TREE, attrs);
-  else if (required_extensions.sm_on != 0)
+  else if (streaming == 1)
     attrs = add_attribute ("arm", "streaming_compatible", NULL_TREE, attrs);
 
-  attrs = add_shared_state_attribute ("in", true, false,
-				      instance.call_properties (), attrs);
-  attrs = add_shared_state_attribute ("out", false, true,
-				      instance.call_properties (), attrs);
-  attrs = add_shared_state_attribute ("inout", true, true,
-				      instance.call_properties (), attrs);
+  attrs = add_shared_state_attribute ("in", true, false, flags, attrs);
+  attrs = add_shared_state_attribute ("out", false, true, flags, attrs);
+  attrs = add_shared_state_attribute ("inout", true, true, flags, attrs);
 
-  if (!instance.modifies_global_state_p ())
-    {
-      if (instance.reads_global_state_p ())
-	attrs = add_attribute ("pure", attrs);
-      else
-	attrs = add_attribute ("const", attrs);
-    }
+  if (memory == 0)
+    attrs = add_attribute ("const", attrs);
+  else if (memory == 1)
+    attrs = add_attribute ("pure", attrs);
 
-  if (!flag_non_call_exceptions || !instance.could_trap_p ())
+  if (nothrow)
     attrs = add_attribute ("nothrow", attrs);
 
-  return add_attribute ("leaf", attrs);
+  cached = add_attribute ("leaf", attrs);
+  return cached;
 }
 
 /* Add a function called NAME with type FNTYPE and attributes ATTRS.
