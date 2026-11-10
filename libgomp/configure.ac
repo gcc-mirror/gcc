@@ -333,7 +333,7 @@ AC_COMPILE_IFELSE(
    #include <sys/utsname.h>],
   [struct utsname buf;
    volatile size_t len = 0;
-   if (!uname (buf))
+   if (!uname (&buf))
      len = strlen (buf.nodename);])],
   AC_DEFINE(HAVE_UNAME, 1,
 [	Define if uname is supported and struct utsname has nodename field.]))

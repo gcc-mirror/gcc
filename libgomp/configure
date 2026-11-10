@@ -16011,7 +16011,7 @@ main ()
 {
 struct utsname buf;
    volatile size_t len = 0;
-   if (!uname (buf))
+   if (!uname (&buf))
      len = strlen (buf.nodename);
   ;
   return 0;
