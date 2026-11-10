@@ -35,7 +35,6 @@ AC_CANONICAL_TARGET
 AC_USE_SYSTEM_EXTENSIONS
 
 target_alias=${target_alias-$target}
-AC_SUBST(target_alias)
 
 # 1.11.1: Require that version of automake.
 # foreign: Don't require README, INSTALL, NEWS, etc.

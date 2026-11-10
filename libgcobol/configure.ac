@@ -28,15 +28,12 @@ AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_MACRO_DIRS([m4])
 
-# Do not delete or change the following two lines.  For why, see
-# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 ACX_NONCANONICAL_TARGET
 
 AM_ENABLE_MULTILIB(, ..)
 
 target_alias=${target_alias-$host_alias}
-AC_SUBST(target_alias)
 
 AM_MAINTAINER_MODE
 

@@ -39,17 +39,10 @@ GCC_NO_EXECUTABLES
 # compiler.
 AC_USE_SYSTEM_EXTENSIONS
 
-# Determine the system type and set output variabls to the names of
+# Determine the system type and set output variables to the names of
 # the canonical system types.
-#
-# Do not delete or change the following two lines.  For why, and for
-# why we are using the obsolete AC_CANONICAL_SYSTEM as ell as the
-# recommended AC_CANONICAL_HOST, see
-# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
-AC_SUBST(target_alias)
-AC_CANONICAL_HOST
 
 # These macro are for supporting canadian crosses, in which build /=
 # host /= target.

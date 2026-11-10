@@ -2705,9 +2705,6 @@ fi
 #
 # Also, if this library is being configured as part of a cross compiler, the
 # top-level configure script will pass the "real" host as $with_cross_host.
-#
-# Do not delete or change the following two lines.  For why, see
-# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
 ac_aux_dir=
 for ac_dir in "$srcdir" "$srcdir/.." "$srcdir/../.."; do
   if test -f "$ac_dir/install-sh"; then
@@ -2847,10 +2844,9 @@ test -n "$target_alias" &&
   test "$program_prefix$program_suffix$program_transform_name" = \
     NONENONEs,x,x, &&
   program_prefix=${target_alias}-
-
 target_alias=${target_alias-$host_alias}
 
-# Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
+# Sets up automake.  Must come after AC_CANONICAL_TARGET.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
 #  1.9.0:  minimum required version
 #  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch
@@ -11862,7 +11858,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11865 "configure"
+#line 11861 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11968,7 +11964,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11971 "configure"
+#line 11967 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

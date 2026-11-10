@@ -4,7 +4,7 @@
 
 AC_INIT(libssp, 1.0)
 AC_CONFIG_SRCDIR(ssp.c)
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 ACX_NONCANONICAL_TARGET
 
 AM_INIT_AUTOMAKE([no-dist])
@@ -27,7 +27,6 @@ GCC_NO_EXECUTABLES
 AM_ENABLE_MULTILIB(, ..)
 
 target_alias=${target_alias-$host_alias}
-AC_SUBST(target_alias)
 
 AC_CONFIG_HEADERS(config.h)
 

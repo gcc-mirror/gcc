@@ -63,13 +63,10 @@ AM_CONDITIONAL(GENINSRC, test "$enable_generated_files_in_srcdir" = yes)
 #
 # Also, if this library is being configured as part of a cross compiler, the
 # top-level configure script will pass the "real" host as $with_cross_host.
-#
-# Do not delete or change the following two lines.  For why, see
-# http://gcc.gnu.org/ml/libstdc++/2003-07/msg00451.html
-AC_CANONICAL_SYSTEM
+AC_CANONICAL_TARGET
 target_alias=${target_alias-$host_alias}
 
-# Sets up automake.  Must come after AC_CANONICAL_SYSTEM.  Each of the
+# Sets up automake.  Must come after AC_CANONICAL_TARGET.  Each of the
 # following is magically included in AUTOMAKE_OPTIONS in each Makefile.am.
 #  1.9.0:  minimum required version
 #  no-define:  PACKAGE and VERSION will not be #define'd in config.h (a bunch

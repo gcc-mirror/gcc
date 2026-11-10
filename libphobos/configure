@@ -3960,7 +3960,6 @@ $as_echo "$ac_cv_safe_to_define___extensions__" >&6; }
 
 target_alias=${target_alias-$target}
 
-
 # 1.11.1: Require that version of automake.
 # foreign: Don't require README, INSTALL, NEWS, etc.
 # no-define: Don't define PACKAGE and VERSION.
@@ -12252,7 +12251,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12255 "configure"
+#line 12254 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12358,7 +12357,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12361 "configure"
+#line 12360 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
