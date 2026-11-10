@@ -1,4 +1,3 @@
-/* { dg-require-effective-target vect_int } */
 #define N 4
 #include "simd-math-5.c"
 

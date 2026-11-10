@@ -1,4 +1,3 @@
-/* { dg-require-effective-target vect_int } */
 #define STYPE v4si
 #define UTYPE v4usi
 #define N 4

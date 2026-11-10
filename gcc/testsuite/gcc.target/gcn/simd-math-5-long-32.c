@@ -1,4 +1,3 @@
-/* { dg-require-effective-target vect_int } */
 #define TYPE long
 #define N 32
 #include "simd-math-5.c"

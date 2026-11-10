@@ -1,4 +1,3 @@
-/* { dg-require-effective-target vect_int } */
 #define STYPE v2di
 #define UTYPE v2udi
 #define N 2

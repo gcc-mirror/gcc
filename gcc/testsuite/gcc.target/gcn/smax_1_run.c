@@ -1,6 +1,5 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize" } */
-/* { dg-require-effective-target vect_int } */
 
 #include "smax_1.c"
 

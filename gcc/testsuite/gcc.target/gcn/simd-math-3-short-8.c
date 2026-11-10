@@ -1,4 +1,3 @@
-/* { dg-require-effective-target vect_int } */
 #define STYPE v8hi
 #define UTYPE v8uhi
 #define N 8
