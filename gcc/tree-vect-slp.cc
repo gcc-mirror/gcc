@@ -4971,66 +4971,121 @@ vect_analyze_slp_reduction (loop_vec_info vinfo,
   return false;
 }
 
-/* Analyze a single SLP reduction group.  If successful add a SLP instance
-   for it and return true, otherwise return false and have *MATCHES
-   populated.  */
+/* Analyze SCALAR_STMTS for SLP reduction groups.  If successful add
+   SLP instances for them and return true.  Any groups of size one
+   are handled appropriately.  Otherwise return false.  */
 
 static bool
 vect_analyze_slp_reduction_group (loop_vec_info loop_vinfo,
 				  vec<stmt_vec_info> scalar_stmts,
 				  scalar_stmts_to_slp_tree_map_t *bst_map,
-				  unsigned max_tree_size, unsigned *limit,
-				  match_elt_t *matches)
+				  unsigned max_tree_size, unsigned *limit)
 {
   /* Try to form a reduction group.  Size-1 groups are not suitable
      for SLP reduction and should fall back to single-lane reduction.  */
   unsigned int group_size = scalar_stmts.length ();
-  if (group_size <= 1)
-    return false;
-  if (!matches)
-    matches = XALLOCAVEC (match_elt_t, group_size);
+  gcc_assert (group_size > 1);
+  match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
   unsigned tree_size = 0;
   slp_tree node = vect_build_slp_tree (loop_vinfo, scalar_stmts, matches, limit,
 				       &tree_size, bst_map);
-  if (!node)
-    return false;
-
-  /* Create a new SLP instance.  */
-  slp_instance new_instance = XNEW (class _slp_instance);
-  SLP_INSTANCE_TREE (new_instance) = node;
-  SLP_INSTANCE_LOADS (new_instance) = vNULL;
-  SLP_INSTANCE_ROOT_STMTS (new_instance) = vNULL;
-  SLP_INSTANCE_REMAIN_DEFS (new_instance) = vNULL;
-  SLP_INSTANCE_KIND (new_instance) = slp_inst_kind_reduc_group;
-  new_instance->reduc_phis = NULL;
-  new_instance->cost_vec = vNULL;
-  new_instance->subgraph_entries = vNULL;
-
-  if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location,
-		     "SLP size %u vs. limit %u.\n",
-		     tree_size, max_tree_size);
-
-  loop_vinfo->slp_instances.safe_push (new_instance);
-
-  /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
-     the number of SLP lanes of the root in a few places.
-     Verify that assumption holds.  */
-  gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
-	      == group_size);
-
-  if (dump_enabled_p ())
+  if (node)
     {
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "SLP discovery of size %d reduction group "
-		       "succeeded\n", group_size);
-      dump_printf_loc (MSG_NOTE, vect_location,
-		       "Final SLP tree for instance %p:\n",
-		       (void *) new_instance);
-      vect_print_slp_graph (MSG_NOTE, vect_location,
-			    SLP_INSTANCE_TREE (new_instance));
+      /* Create a new SLP instance.  */
+      slp_instance new_instance = XNEW (class _slp_instance);
+      SLP_INSTANCE_TREE (new_instance) = node;
+      SLP_INSTANCE_LOADS (new_instance) = vNULL;
+      SLP_INSTANCE_ROOT_STMTS (new_instance) = vNULL;
+      SLP_INSTANCE_REMAIN_DEFS (new_instance) = vNULL;
+      SLP_INSTANCE_KIND (new_instance) = slp_inst_kind_reduc_group;
+      new_instance->reduc_phis = NULL;
+      new_instance->cost_vec = vNULL;
+      new_instance->subgraph_entries = vNULL;
+
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "SLP size %u vs. limit %u.\n",
+			 tree_size, max_tree_size);
+
+      loop_vinfo->slp_instances.safe_push (new_instance);
+
+      /* ???  We've replaced the old SLP_INSTANCE_GROUP_SIZE with
+	 the number of SLP lanes of the root in a few places.
+	 Verify that assumption holds.  */
+      gcc_assert (SLP_TREE_LANES (SLP_INSTANCE_TREE (new_instance))
+		  == group_size);
+
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "SLP discovery of size %d reduction group "
+			   "succeeded\n", group_size);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Final SLP tree for instance %p:\n",
+			   (void *) new_instance);
+	  vect_print_slp_graph (MSG_NOTE, vect_location,
+				SLP_INSTANCE_TREE (new_instance));
+	}
+
+      return true;
     }
 
+  /* Bail on fatal error.  */
+  if (matches[0] == -1)
+    return false;
+
+  /* When analysis as a single SLP reduction group failed try to form
+     sub-groups by collecting matching lanes.  Everything not
+     covered by a sub-group gets single-reduction treatment.  */
+  vec<stmt_vec_info> cands = vNULL;
+  int first_cand = -1;
+  do
+    {
+      cands.truncate (0);
+      cands.reserve (group_size, true);
+      int new_first_cand = -1;
+      for (unsigned i = 0; i < group_size; ++i)
+	if (matches[i] == first_cand)
+	  {
+	    cands.quick_push (scalar_stmts[i]);
+	    scalar_stmts[i] = NULL;
+	  }
+	else if (new_first_cand == -1
+		 && matches[i] > first_cand)
+	  {
+	    gcc_assert (matches[i] == (int)i);
+	    new_first_cand = i;
+	  }
+
+      if (cands.is_empty ())
+	;
+      else if (cands.length () == 1)
+	{
+	  if (! vect_analyze_slp_reduction (loop_vinfo,
+					    vect_stmt_to_vectorize (cands[0]),
+					    max_tree_size, limit,
+					    bst_map, false))
+	    {
+	      cands.release ();
+	      return false;
+	    }
+	  cands.release ();
+	}
+      /* Try to form a reduction group.  */
+      else if (!vect_analyze_slp_reduction_group (loop_vinfo, cands, bst_map,
+						  max_tree_size, limit))
+	{
+	  cands.release ();
+	  return false;
+	}
+      else
+	cands = vNULL;
+      first_cand = new_first_cand;
+    }
+  while (first_cand >= 0);
+  cands.release ();
+
+  scalar_stmts.release ();
   return true;
 }
 
@@ -5080,88 +5135,28 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
 	}
     }
 
+  /* Try to form reduction groups.  */
   if (scalar_stmts.length () > 1)
     {
-      /* Try to form a reduction group.  */
-      unsigned int group_size = scalar_stmts.length ();
-      match_elt_t *matches = XALLOCAVEC (match_elt_t, group_size);
-      if (vect_analyze_slp_reduction_group (loop_vinfo, scalar_stmts, bst_map,
-					    max_tree_size, limit, matches))
-	return true;
-
-      /* When analysis as a single SLP reduction group failed try to
-	 form sub-groups by collecting matching lanes.  Everything not
-	 covered by a sub-group gets single-reduction treatment.  */
-      vec<stmt_vec_info> cands = vNULL;
-      int first_cand = matches[0] != -1 ? 0 : -1;
-      while (first_cand >= 0)
-	{
-	  cands.truncate (0);
-	  cands.reserve (group_size, true);
-	  int new_first_cand = -1;
-	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i] == first_cand)
-	      {
-		cands.quick_push (scalar_stmts[i]);
-		scalar_stmts[i] = NULL;
-	      }
-	    else if (new_first_cand == -1
-		     && matches[i] > first_cand)
-	      {
-		gcc_assert (matches[i] == (int)i);
-		new_first_cand = i;
-	      }
-
-	  if (cands.is_empty ())
-	    ;
-	  /* Try to form a reduction group.  */
-	  else if (vect_analyze_slp_reduction_group (loop_vinfo, cands,
-						     bst_map, max_tree_size,
-						     limit, NULL))
-	    cands = vNULL;
-	  else
-	    {
-	      /* Do SLP discovery for single-lane reductions.  */
-	      for (auto stmt_info : cands)
-		if (! vect_analyze_slp_reduction (loop_vinfo,
-						  vect_stmt_to_vectorize
-						    (stmt_info),
-						  max_tree_size, limit,
-						  bst_map, force_single_lane))
-		  {
-		    scalar_stmts.release ();
-		    cands.release ();
-		    return false;
-		  }
-	    }
-	  first_cand = new_first_cand;
-	}
-      cands.release ();
-
-      /* Handle unmatched entries as single-lane.  */
-      for (unsigned i = 0; i < group_size; ++i)
-	if (scalar_stmts[i] != NULL)
-	  if (! vect_analyze_slp_reduction (loop_vinfo,
-					    vect_stmt_to_vectorize
-					      (scalar_stmts[i]),
-					    max_tree_size, limit,
-					    bst_map, force_single_lane))
-	    {
-	      scalar_stmts.release ();
-	      return false;
-	    }
-    }
-  else
-    /* Do SLP discovery for single-lane reductions.  */
-    for (auto stmt_info : scalar_stmts)
-      if (! vect_analyze_slp_reduction (loop_vinfo,
-					vect_stmt_to_vectorize (stmt_info),
-					max_tree_size, limit,
-					bst_map, force_single_lane))
+      if (!vect_analyze_slp_reduction_group (loop_vinfo, scalar_stmts, bst_map,
+					     max_tree_size, limit))
 	{
 	  scalar_stmts.release ();
 	  return false;
 	}
+      return true;
+    }
+
+  /* Do SLP discovery for a single reduction.  */
+  if (scalar_stmts.length () == 1
+      && !vect_analyze_slp_reduction (loop_vinfo,
+				      vect_stmt_to_vectorize (scalar_stmts[0]),
+				      max_tree_size, limit,
+				      bst_map, force_single_lane))
+    {
+      scalar_stmts.release ();
+      return false;
+    }
 
   scalar_stmts.release ();
   return true;
