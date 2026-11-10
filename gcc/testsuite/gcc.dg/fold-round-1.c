@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast" } */
+/* { dg-require-effective-target c99_runtime } */
 /* { dg-skip-if "Target lacks hardware-native quad-precision folding routines" { hppa*-*-hpux* } } */
 
 extern void link_error (void);
