@@ -799,16 +799,16 @@
   [(set_attr "type" "neon_dot<VS:q>")]
 )
 
-(define_insn "sdot_prod<VDQSF:vsi2qi><vczle><vczbe>"
+(define_insn "sdot_prod<VDQSF:mode><vsi2qi><vczle><vczbe>"
   [(set (match_operand:VDQSF 0 "register_operand" "=w")
 	(plus:VDQSF
 	  (unspec:VDQSF
-	   [(match_operand:<VSI2QI> 2 "register_operand" "w")
-	    (match_operand:<VSI2QI> 3 "register_operand" "w")]
+	   [(match_operand:<VSI2QI> 1 "register_operand" "w")
+	    (match_operand:<VSI2QI> 2 "register_operand" "w")]
 	    UNSPEC_FDOT)
-	  (match_operand:VDQSF 1 "register_operand" "0")))]
+	  (match_operand:VDQSF 3 "register_operand" "0")))]
   "TARGET_F16F32DOT"
-  "fdot\t%0.<Vtype>, %2.<Vbfdottype>, %3.<Vbfdottype>"
+  "fdot\t%0.<Vtype>, %1.<Vbfdottype>, %2.<Vbfdottype>"
   [(set_attr "type" "neon_dot<q>")]
 )
 
@@ -823,7 +823,9 @@
 	  (match_operand:VDQSF 1 "register_operand" "0")))]
   "TARGET_F16F32DOT"
 {
-  operands[4] = aarch64_endian_lane_rtx (<VF:MODE>mode, INTVAL (operands[4]));
+  int nunits = GET_MODE_NUNITS (<VF:MODE>mode).to_constant ();
+  int lane = INTVAL (operands[4]);
+  operands[4] = gen_int_mode (ENDIAN_LANE_N (nunits / 2, lane), SImode);
   return "fdot\t%0.<VDQSF:Vtype>, %2.<VDQSF:Vbfdottype>, %3.2h[%4]";
 }
   [(set_attr "type" "neon_dot<VDQSF:q>")]

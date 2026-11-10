@@ -979,23 +979,18 @@ public:
     insn_code icode;
     machine_mode mode0 = GET_MODE (e.args[0]);
     machine_mode mode1 = GET_MODE (e.args[1]);
+    /* Without a second type suffix, both multiplicands have the same mode.  */
+    if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
+      mode1 = mode0;
     if (e.fpm_mode == aarch64_acle::FPM_set)
       icode = code_for_aarch64_sve_dot (e.result_mode ());
     else
       {
-	/* In the optab, the multiplication operands come before the accumulator
-	   operand.  The optab is keyed off the multiplication mode.  */
+	/* The dot patterns place the multiplication operands before the
+	   accumulator.  */
 	e.rotate_inputs_left (0, 3);
 	int unspec = unspec_for (e);
-	if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
-	  icode = e.convert_optab_handler_for_sign (sdot_prod_optab,
-						    udot_prod_optab,
-						    0, e.result_mode (),
-						    GET_MODE (e.args[0]));
-	else
-	  icode = (e.type_suffix (0).float_p
-		   ? CODE_FOR_aarch64_sve_fdotvnx4sfvnx8hf
-		   : code_for_dot_prod (unspec, mode0, mode1));
+	icode = code_for_dot_prod (unspec, mode0, mode1);
       }
     return e.use_unpred_insn (icode);
   }

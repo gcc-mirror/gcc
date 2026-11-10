@@ -459,6 +459,10 @@ constexpr insn_code CODE_FOR_aarch64_udot_prodv16qi
   = CODE_FOR_udot_prodv4siv16qi;
 constexpr insn_code CODE_FOR_aarch64_usdot_prodv16qi
   = CODE_FOR_usdot_prodv4siv16qi;
+constexpr insn_code CODE_FOR_sdot_prodv4hf
+  = CODE_FOR_sdot_prodv2sfv4hf;
+constexpr insn_code CODE_FOR_sdot_prodv8hf
+  = CODE_FOR_sdot_prodv4sfv8hf;
 
 #define CF0(N, X) CODE_FOR_aarch64_##N##X
 #define CF1(N, X) CODE_FOR_##N##X##1

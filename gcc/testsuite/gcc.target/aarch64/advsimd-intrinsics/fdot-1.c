@@ -1,7 +1,7 @@
 /* { dg-do assemble { target { aarch64*-*-* } } } */
 /* { dg-require-effective-target aarch64_f16f32dot_neon_ok } */
 /* { dg-add-options aarch64_f16f32dot_neon }  */
-/* { dg-additional-options "-save-temps" } */
+/* { dg-additional-options "-save-temps -ffat-lto-objects" } */
 /* { dg-final { check-function-bodies "**" "" {-O[^0]} } } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 

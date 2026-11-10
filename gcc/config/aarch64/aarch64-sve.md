@@ -7818,7 +7818,7 @@
 ;; -------------------------------------------------------------------------
 
 ;; Four-element integer dot-product with accumulation.
-(define_insn "<sur>dot_prod<mode><vsi2qi>"
+(define_insn "@<sur>dot_prod<mode><vsi2qi>"
   [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
 	(plus:SVE_FULL_SDI
 	  (unspec:SVE_FULL_SDI

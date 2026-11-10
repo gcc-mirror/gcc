@@ -19559,14 +19559,14 @@ __extension__ extern __inline float32x2_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdot_f32_f16 (float32x2_t __r, float16x4_t __a, float16x4_t __b)
 {
-  return __builtin_aarch64_sdot_prodv4hf (__r, __a, __b);
+  return __builtin_aarch64_sdot_prodv4hf (__a, __b, __r);
 }
 
 __extension__ extern __inline float32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vdotq_f32_f16 (float32x4_t __r, float16x8_t __a, float16x8_t __b)
 {
-  return __builtin_aarch64_sdot_prodv8hf (__r, __a, __b);
+  return __builtin_aarch64_sdot_prodv8hf (__a, __b, __r);
 }
 
 __extension__ extern __inline float32x2_t

@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 /* { dg-require-effective-target aarch64_f16f32dot_neon_ok } */
 /* { dg-add-options aarch64_f16f32dot_neon }  */
-/* { dg-additional-options "--save-temps" } */
+/* { dg-additional-options "--save-temps -ffat-lto-objects" } */
 
 #include <arm_neon.h>
 

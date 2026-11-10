@@ -2998,15 +2998,14 @@
   [(set_attr "sve_type" "sve_<sve_type_unspec>")]
 )
 
-;; Two-way dot-product.
-(define_insn "aarch64_sve_fdotvnx4sfvnx8hf"
-  [(set (match_operand:VNx4SF 0 "register_operand")
-	(plus:VNx4SF
-	  (unspec:VNx4SF
-	    [(match_operand:VNx8HF 1 "register_operand")
-	     (match_operand:VNx8HF 2 "register_operand")]
-	    UNSPEC_FDOT)
-	  (match_operand:VNx4SF 3 "register_operand")))]
+(define_insn "@<sur>dot_prod<VNx4SF_ONLY:mode><VNx8HF_ONLY:mode>"
+  [(set (match_operand:VNx4SF_ONLY 0 "register_operand")
+	(plus:VNx4SF_ONLY
+	  (unspec:VNx4SF_ONLY
+	    [(match_operand:VNx8HF_ONLY 1 "register_operand")
+	     (match_operand:VNx8HF_ONLY 2 "register_operand")]
+	    DOTPROD_FP)
+	  (match_operand:VNx4SF_ONLY 3 "register_operand")))]
   "TARGET_SVE2p1_OR_SME2"
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , w , w , 0 ; *              ] fdot\t%0.s, %1.h, %2.h

@@ -2,7 +2,7 @@
 /* { dg-require-effective-target stdint_types_mbig_endian } */
 /* { dg-require-effective-target aarch64_f16f32dot_neon_ok } */
 /* { dg-add-options aarch64_f16f32dot_neon }  */
-/* { dg-additional-options "-mbig-endian --save-temps" } */
+/* { dg-additional-options "-mbig-endian --save-temps -ffat-lto-objects" } */
 /* { dg-final { check-function-bodies "**" "" {-O[^0]} } } */
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } } */
 

@@ -3761,6 +3761,7 @@
 (define_int_iterator BSL_DUP [1 2])
 
 (define_int_iterator DOTPROD [UNSPEC_SDOT UNSPEC_UDOT])
+(define_int_iterator DOTPROD_FP [UNSPEC_FDOT])
 
 (define_int_iterator DOTPROD_I8MM [UNSPEC_USDOT UNSPEC_SUDOT])
 (define_int_iterator DOTPROD_US_ONLY [UNSPEC_USDOT])
@@ -4841,6 +4842,7 @@
 		      (UNSPEC_URSHL  "ur") (UNSPEC_SRSHL  "sr")
 		      (UNSPEC_UQRSHL  "u") (UNSPEC_SQRSHL  "s")
 		      (UNSPEC_SDOT "s") (UNSPEC_UDOT "u")
+		      (UNSPEC_FDOT "s")
 		      (UNSPEC_USDOT "us") (UNSPEC_SUDOT "su")
 		      (UNSPEC_SMATMUL "s") (UNSPEC_UMATMUL "u")
 		      (UNSPEC_USMATMUL "us")
