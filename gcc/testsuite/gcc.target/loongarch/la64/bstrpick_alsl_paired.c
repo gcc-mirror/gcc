@@ -13,9 +13,7 @@ struct SA
 extern struct SA SAs[];
 
 void
-test ()
+test (unsigned int i)
 {
-  unsigned int i;
-  for (i = 0; i < 100; i++)
-    SAs[i].c = i;
+  SAs[i].c = i;
 }
