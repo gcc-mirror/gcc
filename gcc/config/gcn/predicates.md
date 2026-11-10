@@ -24,23 +24,14 @@
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
 
-  if (!REG_P (op))
+  if (!REG_P (op) || GET_MODE (op) != BImode)
     return 0;
 
-  if (GET_MODE (op) == DImode
-      && (REGNO (op) == VCC_REG   /* Implied VCCZ.  */
-	  || REGNO (op) >= FIRST_PSEUDO_REGISTER))
-    return 1;
-    
-  if (GET_MODE (op) == BImode
-      && (REGNO (op) == VCCZ_REG
-	  || REGNO (op) == VCC_REG   /* Implied VCCZ.  */
-	  || REGNO (op) == SCC_REG
-	  || REGNO (op) == EXECZ_REG
-	  || REGNO (op) >= FIRST_PSEUDO_REGISTER))
-    return 1;
-
-  return 0;
+  return REGNO (op) == VCCZ_REG
+	 || REGNO (op) == VCC_REG   /* Implied VCCZ.  */
+	 || REGNO (op) == SCC_REG
+	 || REGNO (op) == EXECZ_REG
+	 || REGNO (op) >= FIRST_PSEUDO_REGISTER;
 })
 
 (define_predicate "gcn_ssrc_register_operand"
