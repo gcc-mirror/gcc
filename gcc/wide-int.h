@@ -2182,12 +2182,15 @@ inline void
 wi::copy (T1 &x, const T2 &y)
 {
   unsigned int len = y.get_len ();
-  HOST_WIDE_INT *xval = x.write_val (len);
-  const HOST_WIDE_INT *yval = y.get_val ();
-  unsigned int i = 0;
-  do
-    xval[i] = yval[i];
-  while (++i < len);
+  if (len > 0)
+    {
+      HOST_WIDE_INT *xval = x.write_val (len);
+      const HOST_WIDE_INT *yval = y.get_val ();
+      unsigned int i = 0;
+      do
+        xval[i] = yval[i];
+      while (++i < len);
+    }
   /* For widest_int write_val is called with an exact value, not
      upper bound for len, so nothing is needed further.  */
   if (!wi::int_traits <T1>::needs_write_val_arg)
