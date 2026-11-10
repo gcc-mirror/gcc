@@ -2151,13 +2151,13 @@ function_expander::result_mode () const
 /* Create an array that can be used in aarch64-sve-builtins.def to
    select the type suffixes in TYPES_<NAME>.  */
 #define DEF_SVE_TYPES_ARRAY(NAME) \
-  static const type_suffix_triple types_##NAME[] = { \
+  static constexpr type_suffix_triple types_##NAME[] = { \
     TYPES_##NAME (DEF_VECTOR_TYPE, DEF_DOUBLE_TYPE, DEF_TRIPLE_TYPE), \
     { NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES } \
   }
 
 /* For functions that don't take any type suffixes.  */
-static const type_suffix_triple types_none[] = {
+static constexpr type_suffix_triple types_none[] = {
   { NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES },
   { NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES }
 };
@@ -2324,97 +2324,103 @@ DEF_SVE_TYPES_ARRAY (neon_tbl_other);
 DEF_SVE_TYPES_ARRAY (neon_luti2_b);
 DEF_SVE_TYPES_ARRAY (neon_luti2_h);
 
-static const group_suffix_index groups_none[] = {
+static constexpr group_suffix_index groups_none[] = {
   GROUP_none, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_x2[] = { GROUP_x2, NUM_GROUP_SUFFIXES };
+static constexpr group_suffix_index groups_x2[] = {
+  GROUP_x2, NUM_GROUP_SUFFIXES
+};
 
-static const group_suffix_index groups_x12[] = {
+static constexpr group_suffix_index groups_x12[] = {
   GROUP_none, GROUP_x2, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_x4[] = { GROUP_x4, NUM_GROUP_SUFFIXES };
+static constexpr group_suffix_index groups_x4[] = {
+  GROUP_x4, NUM_GROUP_SUFFIXES
+};
 
-static const group_suffix_index groups_x24[] = {
+static constexpr group_suffix_index groups_x24[] = {
   GROUP_x2, GROUP_x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_x124[] = {
+static constexpr group_suffix_index groups_x124[] = {
   GROUP_none, GROUP_x2, GROUP_x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_x1234[] = {
+static constexpr group_suffix_index groups_x1234[] = {
   GROUP_none, GROUP_x2, GROUP_x3, GROUP_x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg1x2[] = {
+static constexpr group_suffix_index groups_vg1x2[] = {
   GROUP_vg1x2, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg1x4[] = {
+static constexpr group_suffix_index groups_vg1x4[] = {
   GROUP_vg1x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg1x24[] = {
+static constexpr group_suffix_index groups_vg1x24[] = {
   GROUP_vg1x2, GROUP_vg1x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg2[] = {
+static constexpr group_suffix_index groups_vg2[] = {
   GROUP_vg2x1, GROUP_vg2x2, GROUP_vg2x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg4[] = {
+static constexpr group_suffix_index groups_vg4[] = {
   GROUP_vg4x1, GROUP_vg4x2, GROUP_vg4x4, NUM_GROUP_SUFFIXES
 };
 
-static const group_suffix_index groups_vg24[] = {
+static constexpr group_suffix_index groups_vg24[] = {
   GROUP_vg2, GROUP_vg4, NUM_GROUP_SUFFIXES
 };
 
 /* Used by functions that have no governing predicate.  */
-static const predication_index preds_none[] = { PRED_none, NUM_PREDS };
+static constexpr predication_index preds_none[] = { PRED_none, NUM_PREDS };
 
 /* Used by functions that have a governing predicate but do not have an
    explicit suffix.  */
-static const predication_index preds_implicit[] = { PRED_implicit, NUM_PREDS };
+static constexpr predication_index preds_implicit[] = {
+  PRED_implicit, NUM_PREDS
+};
 
 /* Used by functions that only support "_m" predication.  */
-static const predication_index preds_m[] = { PRED_m, NUM_PREDS };
+static constexpr predication_index preds_m[] = { PRED_m, NUM_PREDS };
 
 /* Used by functions that allow merging and "don't care" predication,
    but are not suitable for predicated MOVPRFX.  */
-static const predication_index preds_mx[] = {
+static constexpr predication_index preds_mx[] = {
   PRED_m, PRED_x, NUM_PREDS
 };
 
 /* Used by functions that allow merging, zeroing and "don't care"
    predication.  */
-static const predication_index preds_mxz[] = {
+static constexpr predication_index preds_mxz[] = {
   PRED_m, PRED_x, PRED_z, NUM_PREDS
 };
 
 /* Used by functions that have the mxz predicated forms above, and in addition
    have an unpredicated form.  */
-static const predication_index preds_mxz_or_none[] = {
+static constexpr predication_index preds_mxz_or_none[] = {
   PRED_m, PRED_x, PRED_z, PRED_none, NUM_PREDS
 };
 
 /* Used by functions that allow merging and zeroing predication but have
    no "_x" form.  */
-static const predication_index preds_mz[] = { PRED_m, PRED_z, NUM_PREDS };
+static constexpr predication_index preds_mz[] = { PRED_m, PRED_z, NUM_PREDS };
 
 /* Used by functions that have an unpredicated form and a _z predicated
    form.  */
-static const predication_index preds_z_or_none[] = {
+static constexpr predication_index preds_z_or_none[] = {
   PRED_z, PRED_none, NUM_PREDS
 };
 
 /* Used by (mostly predicate) functions that only support "_z" predication.  */
-static const predication_index preds_z[] = { PRED_z, NUM_PREDS };
+static constexpr predication_index preds_z[] = { PRED_z, NUM_PREDS };
 
 /* Used by SME instructions that always merge into ZA.  */
-static const predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
+static constexpr predication_index preds_za_m[] = { PRED_za_m, NUM_PREDS };
 
 void build_all (function_builder &b, const char *signature,
 		const function_group_info &group,

@@ -570,6 +570,47 @@ sve_alignment_switcher::~sve_alignment_switcher ()
   maximum_field_alignment = m_old_maximum_field_alignment;
 }
 
+/* Return the number of functions that the NUM_GROUPS entries of GROUPS
+   define.  build_all expands each group over every combination of its
+   predication, group and type suffixes, so mirror that here.  */
+static constexpr unsigned int
+count_functions (const function_group_info *groups, unsigned int num_groups)
+{
+  unsigned int count = 0;
+  for (unsigned int i = 0; i < num_groups; ++i)
+    {
+      unsigned int npreds = 0;
+      while (groups[i].preds[npreds] != NUM_PREDS)
+	++npreds;
+
+      unsigned int ngroups = 0;
+      while (groups[i].groups[ngroups] != NUM_GROUP_SUFFIXES)
+	++ngroups;
+
+      /* build_all always builds the first type suffix, then continues until
+	 the sentinel.  */
+      unsigned int ntypes = 1;
+      if (groups[i].types[0][0] != NUM_TYPE_SUFFIXES)
+	while (groups[i].types[ntypes][0] != NUM_TYPE_SUFFIXES)
+	  ++ntypes;
+
+      count += npreds * ngroups * ntypes;
+    }
+  return count;
+}
+
+/* The number of functions that the ACLE pragmas can register between them.
+   Derived from the function tables themselves, so that it stays right as
+   intrinsics are added.  The tables are constexpr, so this is folded at
+   compiler build time.  */
+static constexpr unsigned int max_registered_functions
+  = (count_functions (neon_function_groups, ARRAY_SIZE (neon_function_groups))
+     + count_functions (function_groups, ARRAY_SIZE (function_groups))
+     + count_functions (neon_sve_function_groups,
+			ARRAY_SIZE (neon_sve_function_groups))
+     + count_functions (sme_function_groups,
+			ARRAY_SIZE (sme_function_groups)));
+
 function_builder::function_builder (handle_pragma_index pragma_index,
 				    bool function_nulls)
 {
@@ -587,8 +628,23 @@ function_builder::function_builder (handle_pragma_index pragma_index,
 
   gcc_obstack_init (&m_string_obstack);
 
+  /* The pragmas register several thousand functions between them, so starting
+     from a small table just means rehashing all of them several times over.
+     The table and the vector are shared by all the pragmas, so size them once,
+     for all of the pragmas together, when the first one is handled.
+     max_registered_functions is a lower bound rather than an exact count:
+     it mirrors build_all, but a shape is free to expand a group further, for
+     instance over several mode suffixes.  Double it, which also keeps the
+     table under the m_size * 3 <= m_n_elements * 4 point at which it would
+     expand.  */
   if (!function_table)
-    function_table = hash_table<registered_function_hasher>::create_ggc (1023);
+    {
+      function_table = hash_table<registered_function_hasher>::create_ggc
+	(max_registered_functions * 2);
+
+      /* Each instance can also register a decl for its overloaded alias.  */
+      vec_safe_reserve (registered_functions, max_registered_functions * 2);
+    }
 }
 
 function_builder::~function_builder ()
