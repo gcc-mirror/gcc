@@ -6519,10 +6519,11 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
   gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
   gimple *mul_stmt, *pow_stmt;
 
-  /* Nothing to do if BUILT_IN_POWI doesn't exist for this type and
-     target, unless type is integral.  */
-  if (!powi_fndecl && !INTEGRAL_TYPE_P (type))
-    return NULL_TREE;
+  /* Expand powers as a series of multiplications if type is integral
+     or BUILT_IN_POWI doesn't exist for this type and target.  We cannot
+     simply give up in the latter case as OPS can contain entries with
+     an occurrence count larger than one for __builtin_pow calls.  */
+  bool use_mults = INTEGRAL_TYPE_P (type) || !powi_fndecl;
 
   /* Allocate the repeated factor vector.  */
   repeat_factor_vec.create (10);
@@ -6630,7 +6631,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	    }
 	  else
 	    {
-	      if (INTEGRAL_TYPE_P (type))
+	      if (use_mults)
 		{
 		  gcc_assert (power > 1);
 		  gimple_stmt_iterator gsip = gsi;
@@ -6751,7 +6752,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	  /* Form a call to __builtin_powi for the maximum product
 	     just formed, raised to the power obtained earlier.  */
 	  rf1 = &repeat_factor_vec[j];
-	  if (INTEGRAL_TYPE_P (type))
+	  if (use_mults)
 	    {
 	      gcc_assert (power > 1);
 	      gimple_stmt_iterator gsip = gsi;
