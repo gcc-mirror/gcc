@@ -587,6 +587,7 @@ can_inline_edge_by_limits_p (struct cgraph_edge *e, int flags)
          we cannot inline in these cases for correctness reason.
 	 Not even for always_inline declared functions.  */
      else if (check_match (flag_wrapv)
+	      || check_match (flag_wrapv_pointer)
 	      || check_match (flag_trapv)
 	      || check_match (flag_pcc_struct_return)
 	      || check_maybe_down (optimize_debug)
