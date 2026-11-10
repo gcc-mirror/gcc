@@ -25,6 +25,7 @@
 import argparse
 import os
 import subprocess
+import sys
 import tempfile
 
 DESCRIPTION = 'Fix up ChangeLog of the current commit.'
@@ -54,13 +55,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # Update commit message if change for a .cc file was taken
-    r = subprocess.run(f'{verify_script} HEAD', shell=True, encoding='utf8',
-                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    r = subprocess.run([sys.executable, verify_script, 'HEAD'],
+                       encoding='utf8', stdout=subprocess.PIPE,
+                       stderr=subprocess.PIPE)
     if r.returncode != 0:
         lines = r.stdout.splitlines()
-        cmd = 'git show -s --format=%B'
-        commit_message = subprocess.check_output(cmd, shell=True,
-                                                 encoding='utf8').strip()
+        commit_message = subprocess.check_output(
+            ['git', 'show', '-s', '--format=%B'], encoding='utf8').strip()
         commit_message = commit_message.splitlines()
 
         # Parse the following lines:
@@ -84,8 +85,8 @@ if __name__ == '__main__':
                                              delete=False) as w:
                 w.write('\n'.join(commit_message))
                 w.close()
-                subprocess.check_output(f'git commit --amend -F {w.name}',
-                                        shell=True, encoding='utf8')
+                subprocess.check_output(['git', 'commit', '--amend', '-F',
+                                         w.name], encoding='utf8')
                 os.unlink(w.name)
                 print(f'Commit message updated: {replaced} file(s) renamed.')
         else:

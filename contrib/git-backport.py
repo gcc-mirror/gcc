@@ -22,6 +22,7 @@
 import argparse
 import os
 import subprocess
+import sys
 
 script_folder = os.path.dirname(os.path.abspath(__file__))
 fixup_script = os.path.join(script_folder, 'git-fix-changelog.py')
@@ -31,5 +32,5 @@ if __name__ == '__main__':
     parser.add_argument('revision', help='Revision')
     args = parser.parse_args()
 
-    subprocess.run('git cherry-pick -x %s' % args.revision, shell=True)
-    subprocess.run(fixup_script, shell=True)
+    subprocess.run(['git', 'cherry-pick', '-x', args.revision])
+    subprocess.run([sys.executable, fixup_script])

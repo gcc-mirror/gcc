@@ -30,6 +30,7 @@ import argparse
 import datetime
 import json
 import os
+import posixpath
 import re
 import subprocess
 import sys
@@ -105,12 +106,11 @@ root = os.path.dirname(os.path.dirname(script_folder))
 def find_changelog(path):
     folder = os.path.split(path)[0]
     while True:
-        if os.path.exists(os.path.join(root, folder, 'ChangeLog')):
+        if os.path.exists(posixpath.join(root, folder, 'ChangeLog')):
             return folder
         folder = os.path.dirname(folder)
         if folder == '':
             return folder
-    raise AssertionError()
 
 
 def extract_function_name(line):
@@ -256,7 +256,7 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
     # sort ChangeLog so that 'testsuite' is at the end
     for changelog in sorted(changelog_list, key=lambda x: 'testsuite' in x):
         files = changelogs[changelog]
-        out += '%s:\n' % os.path.join(changelog, 'ChangeLog')
+        out += '%s:\n' % posixpath.join(changelog, 'ChangeLog')
         out += '\n'
         # new and deleted files should be at the end
         for file in sorted(files, key=sort_changelog_files):
@@ -336,16 +336,18 @@ def generate_changelog(data, no_functions=False, fill_pr_titles=False,
 
 def update_copyright(data):
     current_timestamp = datetime.datetime.now().strftime('%Y-%m-%d')
-    username = subprocess.check_output('git config user.name', shell=True,
-                                       encoding='utf8').strip()
-    email = subprocess.check_output('git config user.email', shell=True,
-                                    encoding='utf8').strip()
+    username = subprocess.check_output(
+        ['git', 'config', 'user.name'], encoding='utf8'
+    ).strip()
+    email = subprocess.check_output(
+        ['git', 'config', 'user.email'], encoding='utf8'
+    ).strip()
 
     changelogs = set()
     diff = PatchSet(data)
 
     for file in diff:
-        changelog = os.path.join(find_changelog(file.path), 'ChangeLog')
+        changelog = posixpath.join(find_changelog(file.path), 'ChangeLog')
         if changelog not in changelogs:
             changelogs.add(changelog)
             with open(changelog) as f:

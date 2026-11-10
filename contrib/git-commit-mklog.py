@@ -54,7 +54,7 @@ if __name__ == '__main__':
 
     if args.co:
         for author in args.co.split(','):
-            unknown_args.append(f'--trailer "Co-Authored-By: {author}"')
+            unknown_args += ['--trailer', f'Co-Authored-By: {author}']
 
-    commit_args = ' '.join(unknown_args)
-    subprocess.run(f'git commit {commit_args}', shell=True, env=myenv)
+    commit_args = ['git', 'commit', *unknown_args]
+    subprocess.run(commit_args, env=myenv)
