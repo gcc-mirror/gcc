@@ -4875,24 +4875,31 @@
 
 ;; V4SF splat (ISA 3.0)
 (define_insn_and_split "vsx_splat_v4sf"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,wa")
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa,wa,wa,wa,wa")
 	(vec_duplicate:V4SF
-	 (match_operand:SF 1 "splat_input_operand" "Z,wa,r")))]
-  "TARGET_P9_VECTOR"
+	 (match_operand:SF 1 "splat_input_operand" "Z,Z,Z,wa,r")))
+   (clobber (match_scratch:DI 2 "=X,X,d,X,X"))]
+  "VECTOR_MEM_VSX_P (V4SFmode)"
   "@
    lxvwsx %x0,%y1
+   lxsiwzx %x0,%y1\;xxspltw %x0,%x0,1
+   lfiwzx %2,%y1\;xxspltw %x0,%x2,1
    #
    mtvsrws %x0,%1"
   "&& reload_completed && vsx_register_operand (operands[1], SFmode)"
-  [(set (match_dup 0)
-	(unspec:V4SF [(match_dup 1)] UNSPEC_VSX_CVDPSPN))
-   (set (match_dup 0)
-	(unspec:V4SF [(match_dup 0)
-		      (const_int 0)] UNSPEC_VSX_XXSPLTW))]
-  ""
-  [(set_attr "type" "vecload,vecperm,vecperm")
-   (set_attr "length" "*,8,*")
-   (set_attr "isa" "*,p8v,*")])
+  [(const_int 0)]
+{
+  rtx cvt = (TARGET_XSCVDPSPN
+	     ? gen_vsx_xscvdpspn_scalar (operands[0], operands[1])
+	     : gen_vsx_xscvdpsp_scalar (operands[0], operands[1]));
+  emit_insn (cvt);
+  emit_insn (gen_vsx_xxspltw_v4sf_direct (operands[0], operands[0],
+					  const0_rtx));
+  DONE;
+}
+  [(set_attr "type" "vecload,vecload,fpload,vecperm,vecperm")
+   (set_attr "length" "4,8,8,8,4")
+   (set_attr "isa" "p9v,p8v,*,*,p9v")])
 
 ;; V4SF/V4SI splat from a vector element
 (define_insn "vsx_xxspltw_<mode>"

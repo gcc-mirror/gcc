@@ -7032,26 +7032,12 @@ rs6000_expand_vector_init (rtx target, rtx vals)
 	{
 	  rtx element0 = XVECEXP (vals, 0, 0);
 
-	  if (TARGET_P9_VECTOR)
-	    {
-	      if (MEM_P (element0))
-		element0 = rs6000_force_indexed_or_indirect_mem (element0);
-
-	      emit_insn (gen_vsx_splat_v4sf (target, element0));
-	    }
-
+	  if (MEM_P (element0))
+	    element0 = rs6000_force_indexed_or_indirect_mem (element0);
 	  else
-	    {
-	      rtx freg = gen_reg_rtx (V4SFmode);
-	      rtx sreg = force_reg (SFmode, element0);
-	      rtx cvt  = (TARGET_XSCVDPSPN
-			  ? gen_vsx_xscvdpspn_scalar (freg, sreg)
-			  : gen_vsx_xscvdpsp_scalar (freg, sreg));
+	    element0 = force_reg (SFmode, element0);
 
-	      emit_insn (cvt);
-	      emit_insn (gen_vsx_xxspltw_v4sf_direct (target, freg,
-						      const0_rtx));
-	    }
+	  emit_insn (gen_vsx_splat_v4sf (target, element0));
 	}
       else
 	{

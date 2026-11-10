@@ -1463,7 +1463,7 @@
     vmode = V2DImode;
   else if (mode == SImode && TARGET_P9_VECTOR)
     vmode = V4SImode;
-  else if (mode == SFmode && TARGET_P9_VECTOR)
+  else if (mode == SFmode && TARGET_VSX)
     vmode = V4SFmode;
   else
     return false;
