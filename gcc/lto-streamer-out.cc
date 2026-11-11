@@ -727,7 +727,7 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
       const char *sym;
       unsigned HOST_WIDE_INT off;
       if (debug_info_level > DINFO_LEVEL_NONE
-	  && debug_hooks->die_ref_for_decl (expr, &sym, &off))
+	  && debug_hooks->die_ref_for_decl (expr, DEBUG_DIE_REF, &sym, &off))
 	{
 	  streamer_write_string (ob, ob->main_stream, sym, true);
 	  streamer_write_uhwi (ob, off);

@@ -1675,8 +1675,8 @@ process_dref (class data_in *data_in, tree t, unsigned from)
 		  == streamer_tree_cache_get_tree (cache, from));
       const char *sym;
       unsigned HOST_WIDE_INT off;
-      if (!debug_hooks->die_ref_for_decl (t, &sym, &off))
-	debug_hooks->register_external_die (t, e.sym, e.off);
+      if (!debug_hooks->die_ref_for_decl (t, DEBUG_DIE_REF, &sym, &off))
+	debug_hooks->register_external_die (t, DEBUG_DIE_REF, e.sym, e.off);
     }
 }
 
@@ -1972,7 +1972,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	  while (!dref_queue.is_empty ())
 	    {
 	      dref_entry e = dref_queue.pop ();
-	      debug_hooks->register_external_die (e.decl, e.sym, e.off);
+	      debug_hooks->register_external_die (e.decl, DEBUG_DIE_REF,
+						  e.sym, e.off);
 	    }
 
 	  if (seen_type)

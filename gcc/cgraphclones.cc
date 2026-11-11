@@ -78,6 +78,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "tree-cfg.h"
 #include "tree-inline.h"
+#include "debug.h"
 #include "attribs.h"
 #include "dumpfile.h"
 #include "gimple-pretty-print.h"
@@ -687,6 +688,7 @@ cgraph_node::create_virtual_clone (const vec<cgraph_edge *> &redirect_callers,
   /* These pointers represent function body and will be populated only when clone
      is materialized.  */
   gcc_assert (new_decl != old_decl);
+  copy_debug_abstract_origin (new_decl, old_decl);
   DECL_STRUCT_FUNCTION (new_decl) = NULL;
   DECL_ARGUMENTS (new_decl) = NULL;
   DECL_INITIAL (new_decl) = NULL;

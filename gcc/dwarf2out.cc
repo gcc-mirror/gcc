@@ -2886,10 +2886,10 @@ static void dwarf2out_begin_function (tree);
 static void dwarf2out_end_function (unsigned int);
 static void dwarf2out_register_main_translation_unit (tree unit);
 static void dwarf2out_set_name (tree, tree);
-static void dwarf2out_register_external_die (tree decl, const char *sym,
-					     unsigned HOST_WIDE_INT off);
-static bool dwarf2out_die_ref_for_decl (tree decl, const char **sym,
-					unsigned HOST_WIDE_INT *off);
+static void dwarf2out_register_external_die
+  (tree, debug_external_ref_kind, const char *, unsigned HOST_WIDE_INT);
+static bool dwarf2out_die_ref_for_decl
+  (tree, debug_external_ref_kind, const char **, unsigned HOST_WIDE_INT *);
 
 /* The debug hooks structure.  */
 
@@ -3927,7 +3927,7 @@ static void add_alignment_attribute (dw_die_ref, tree);
 static void add_bit_offset_attribute (dw_die_ref, tree);
 static void add_bit_size_attribute (dw_die_ref, tree);
 static void add_prototyped_attribute (dw_die_ref, tree);
-static void add_abstract_origin_attribute (dw_die_ref, tree);
+static void add_abstract_origin_attribute (dw_die_ref, tree, tree);
 static void add_pure_or_virtual_attribute (dw_die_ref, tree);
 static void add_src_coords_attributes (dw_die_ref, tree);
 static void add_name_and_src_coords_attributes (dw_die_ref, tree, bool = false);
@@ -5978,6 +5978,21 @@ struct GTY(()) sym_off_pair
 };
 static GTY(()) hash_map<tree, sym_off_pair> *external_die_map;
 
+/* A distinct type avoids duplicate gengtype walkers for the ordinary
+   map and the weak cache.  */
+struct GTY (()) saved_die_ref
+{
+  const char *sym;
+  unsigned HOST_WIDE_INT off;
+};
+
+struct saved_die_ref_traits
+  : simple_cache_map_traits<default_hash_traits<tree>, saved_die_ref> { };
+typedef hash_map<tree, saved_die_ref, saved_die_ref_traits> saved_die_ref_map;
+
+/* Saved references must not keep dead declarations or blocks alive.  */
+static GTY ((cache)) saved_die_ref_map *external_abstract_origin_map;
+
 /* Returns a hash value for X (which really is a die_struct).  */
 
 inline hashval_t
@@ -6037,15 +6052,29 @@ equate_block_to_die (tree block, dw_die_ref die)
 #undef BLOCK_DIE
 
 
-/* For DECL which might have early dwarf output query a SYMBOL + OFFSET
-   style reference.  Return true if we found one referring to a DIE for
-   DECL, otherwise return false.  */
+/* Return the early-DWARF reference of KIND for DECL in SYM and OFF,
+   if available.  */
 
 static bool
-dwarf2out_die_ref_for_decl (tree decl, const char **sym,
+dwarf2out_die_ref_for_decl (tree decl, debug_external_ref_kind kind,
+			    const char **sym,
 			    unsigned HOST_WIDE_INT *off)
 {
   dw_die_ref die;
+
+  if (kind != DEBUG_DIE_REF)
+    {
+      /* Saved abstract origins are keyed by the instance, not by its
+	 possibly merged origin tree.  */
+      if (!external_abstract_origin_map)
+	return false;
+      saved_die_ref *ref = external_abstract_origin_map->get (decl);
+      if (!ref)
+	return false;
+      *sym = ref->sym;
+      *off = ref->off;
+      return true;
+    }
 
   if (in_lto_p)
     {
@@ -6105,15 +6134,30 @@ add_AT_external_die_ref (dw_die_ref die, enum dwarf_attribute attr_kind,
   add_AT_die_ref (die, attr_kind, ref);
 }
 
-/* Create a DIE for DECL if required and add a reference to a DIE
-   at SYMBOL + OFFSET which contains attributes dumped early.  */
+/* Record the early-DWARF reference of KIND for DECL at SYM + OFF.  */
 
 static void
-dwarf2out_register_external_die (tree decl, const char *sym,
+dwarf2out_register_external_die (tree decl, debug_external_ref_kind kind,
+				 const char *sym,
 				 unsigned HOST_WIDE_INT off)
 {
   if (debug_info_level == DINFO_LEVEL_NONE)
     return;
+
+  if (kind != DEBUG_DIE_REF)
+    {
+      if (!sym)
+	{
+	  if (external_abstract_origin_map)
+	    external_abstract_origin_map->remove (decl);
+	  return;
+	}
+      sym = IDENTIFIER_POINTER (get_identifier (sym));
+      if (!external_abstract_origin_map)
+	external_abstract_origin_map = saved_die_ref_map::create_ggc (127);
+      external_abstract_origin_map->put (decl, { sym, off });
+      return;
+    }
 
   if (!external_die_map)
     external_die_map = hash_map<tree, sym_off_pair>::create_ggc (1000);
@@ -22374,20 +22418,26 @@ add_prototyped_attribute (dw_die_ref die, tree func_type)
    the block mapping.  */
 
 static inline void
-add_abstract_origin_attribute (dw_die_ref die, tree origin)
+add_abstract_origin_attribute (dw_die_ref die, tree origin, tree instance)
 {
   dw_die_ref origin_die = NULL;
 
-  /* For late LTO debug output we want to refer directly to the abstract
-     DIE in the early debug rather to the possibly existing concrete
-     instance and avoid creating that just for this purpose.  */
-  sym_off_pair *desc;
+  /* In LTO, prefer INSTANCE's saved abstract-origin reference to
+     ORIGIN's DIE.  Saved references are recorded for FUNCTION_DECL
+     and BLOCK instances whose origin trees may be replaced by merging.
+     Body-local parameters and automatic variables retain their input
+     origins and use ORIGIN's DIE.  Keep this lookup also for instances
+     without a saved reference.  Avoid creating a concrete DIE just to
+     refer to its abstract origin.  */
+  const char *sym;
+  unsigned HOST_WIDE_INT off;
   if (in_lto_p
-      && external_die_map
-      && (desc = external_die_map->get (origin)))
+      && ((instance
+	   && dwarf2out_die_ref_for_decl (instance, DEBUG_ABSTRACT_ORIGIN_REF,
+					 &sym, &off))
+	  || dwarf2out_die_ref_for_decl (origin, DEBUG_DIE_REF, &sym, &off)))
     {
-      add_AT_external_die_ref (die, DW_AT_abstract_origin,
-			       desc->sym, desc->off);
+      add_AT_external_die_ref (die, DW_AT_abstract_origin, sym, off);
       return;
     }
 
@@ -23203,7 +23253,7 @@ gen_entry_point_die (tree decl, dw_die_ref context_die)
   dw_die_ref decl_die = new_die (DW_TAG_entry_point, context_die, decl);
 
   if (origin != NULL)
-    add_abstract_origin_attribute (decl_die, origin);
+    add_abstract_origin_attribute (decl_die, origin, decl);
   else
     {
       add_name_and_src_coords_attributes (decl_die, decl);
@@ -23478,7 +23528,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
 	goto add_location;
 
       if (origin != NULL)
-	add_abstract_origin_attribute (parm_die, origin);
+	add_abstract_origin_attribute (parm_die, origin, node);
       else if (emit_name_p)
 	add_name_and_src_coords_attributes (parm_die, node);
       if (origin == NULL
@@ -24076,7 +24126,7 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
       else
 	{
 	  subr_die = new_die (DW_TAG_subprogram, context_die, decl);
-	  add_abstract_origin_attribute (subr_die, origin);
+	  add_abstract_origin_attribute (subr_die, origin, decl);
 	  /*  This is where the actual code for a cloned function is.
 	      Let's emit linkage name attribute for it.  This helps
 	      debuggers to e.g, set breakpoints into
@@ -25104,7 +25154,7 @@ gen_variable_die (tree decl, tree origin, dw_die_ref context_die)
     var_die = new_die (DW_TAG_variable, context_die, decl);
 
   if (origin != NULL)
-    add_abstract_origin_attribute (var_die, origin);
+    add_abstract_origin_attribute (var_die, origin, decl);
 
   /* Loop unrolling can create multiple blocks that refer to the same
      static variable, so we must test for the DW_AT_declaration flag.
@@ -25277,7 +25327,7 @@ gen_label_die (tree decl, dw_die_ref context_die)
       equate_decl_number_to_die (decl, lbl_die);
 
       if (origin != NULL)
-	add_abstract_origin_attribute (lbl_die, origin);
+	add_abstract_origin_attribute (lbl_die, origin, decl);
       else
 	add_name_and_src_coords_attributes (lbl_die, decl);
     }
@@ -25501,7 +25551,7 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 
       tree origin = block_ultimate_origin (stmt);
       if (origin != NULL_TREE && (origin != stmt || old_die))
-	add_abstract_origin_attribute (stmt_die, origin);
+	add_abstract_origin_attribute (stmt_die, origin, stmt);
 
       old_die = NULL;
     }
@@ -25536,7 +25586,7 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
 
   if (call_arg_locations || debug_inline_points)
     equate_block_to_die (stmt, subr_die);
-  add_abstract_origin_attribute (subr_die, decl);
+  add_abstract_origin_attribute (subr_die, decl, stmt);
   if (TREE_ASM_WRITTEN (stmt))
     add_high_low_attributes (stmt, subr_die);
   add_call_src_coords_attributes (stmt, subr_die);

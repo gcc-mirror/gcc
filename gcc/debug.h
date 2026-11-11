@@ -25,6 +25,14 @@
    way to speak debug to the middle-end once we are able to get rid of
    the remaining targets.  If you need alternate output formats instead
    generate them off the DWARF representation.  */
+
+/* Kinds of references to early DWARF DIEs.  */
+enum debug_external_ref_kind
+{
+  DEBUG_DIE_REF,
+  DEBUG_ABSTRACT_ORIGIN_REF
+};
+
 struct gcc_debug_hooks
 {
   /* Initialize debug output.  MAIN_FILENAME is the name of the main
@@ -156,13 +164,15 @@ struct gcc_debug_hooks
 				    tree context, bool child,
 				    bool implicit);
 
-  /* Return true if a DIE for the tree is available and return a symbol
-     and offset that can be used to refer to it externally.  */
-  bool (* die_ref_for_decl) (tree, const char **, unsigned HOST_WIDE_INT *);
+  /* Return true if a DIE reference of KIND is available for the tree,
+     and return its symbol and offset for external use.  */
+  bool (* die_ref_for_decl) (tree, debug_external_ref_kind, const char **,
+			     unsigned HOST_WIDE_INT *);
 
-  /* Early debug information for the tree is available at symbol plus
-     offset externally.  */
-  void (* register_external_die) (tree, const char *, unsigned HOST_WIDE_INT);
+  /* Record an external early-DWARF reference of KIND for the tree.
+     A null symbol clears a saved abstract-origin reference.  */
+  void (* register_external_die) (tree, debug_external_ref_kind, const char *,
+				 unsigned HOST_WIDE_INT);
 
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
@@ -232,10 +242,12 @@ extern void debug_nothing_tree_tree_tree_bool_bool (tree, tree, tree,
 extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx_insn (rtx_insn *);
 extern void debug_nothing_rtx_code_label (rtx_code_label *);
-extern bool debug_false_tree_charstarstar_uhwistar (tree, const char **,
-						    unsigned HOST_WIDE_INT *);
-extern void debug_nothing_tree_charstar_uhwi (tree, const char *,
-					      unsigned HOST_WIDE_INT);
+extern bool debug_false_tree_charstarstar_uhwistar
+  (tree, debug_external_ref_kind, const char **, unsigned HOST_WIDE_INT *);
+extern void debug_nothing_tree_charstar_uhwi
+  (tree, debug_external_ref_kind, const char *, unsigned HOST_WIDE_INT);
+
+extern void copy_debug_abstract_origin (tree, tree);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;

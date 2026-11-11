@@ -807,6 +807,7 @@ remap_block (tree *block, copy_body_data *id)
   new_block = make_node (BLOCK);
   TREE_USED (new_block) = TREE_USED (old_block);
   BLOCK_ABSTRACT_ORIGIN (new_block) = BLOCK_ORIGIN (old_block);
+  copy_debug_abstract_origin (new_block, old_block);
   BLOCK_SOURCE_LOCATION (new_block) = BLOCK_SOURCE_LOCATION (old_block);
   BLOCK_NONLOCALIZED_VARS (new_block)
     = vec_safe_copy (BLOCK_NONLOCALIZED_VARS (old_block));
@@ -5050,6 +5051,7 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id,
 		(loc, get_discriminator_from_loc (gimple_location (stmt)));
       id->block = make_node (BLOCK);
       BLOCK_ABSTRACT_ORIGIN (id->block) = DECL_ORIGIN (fn);
+      copy_debug_abstract_origin (id->block, fn);
       BLOCK_SOURCE_LOCATION (id->block) = loc;
       prepend_lexical_block (block, id->block);
     }
@@ -6377,6 +6379,7 @@ tree_function_versioning (tree old_decl, tree new_decl,
 
   DECL_ARTIFICIAL (new_decl) = 1;
   DECL_ABSTRACT_ORIGIN (new_decl) = DECL_ORIGIN (old_decl);
+  copy_debug_abstract_origin (new_decl, old_decl);
   if (DECL_ORIGIN (old_decl) == old_decl)
     old_version_node->used_as_abstract_origin = true;
   DECL_FUNCTION_PERSONALITY (new_decl) = DECL_FUNCTION_PERSONALITY (old_decl);

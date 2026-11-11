@@ -160,14 +160,31 @@ debug_nothing_tree_int (tree decl ATTRIBUTE_UNUSED,
 }
 
 bool
-debug_false_tree_charstarstar_uhwistar (tree, const char **,
+debug_false_tree_charstarstar_uhwistar (tree, debug_external_ref_kind,
+					const char **,
 					unsigned HOST_WIDE_INT *)
 {
   return false;
 }
 
 void
-debug_nothing_tree_charstar_uhwi (tree, const char *,
+debug_nothing_tree_charstar_uhwi (tree, debug_external_ref_kind, const char *,
 				  unsigned HOST_WIDE_INT)
 {
+}
+
+/* Give DEST the saved abstract-origin reference of SOURCE, or none
+   if SOURCE has none.  */
+
+void
+copy_debug_abstract_origin (tree dest, tree source)
+{
+  if (!in_lto_p)
+    return;
+
+  const char *sym = nullptr;
+  unsigned HOST_WIDE_INT off = 0;
+  debug_hooks->die_ref_for_decl (source, DEBUG_ABSTRACT_ORIGIN_REF, &sym, &off);
+  debug_hooks->register_external_die
+    (dest, DEBUG_ABSTRACT_ORIGIN_REF, sym, off);
 }
