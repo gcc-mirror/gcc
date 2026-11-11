@@ -1,3 +1,9 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* trans-openmp.cc (gfc_omp_finish_clause): Update to use new
+	qualifier_set APIs.
+	* trans-types.cc (gfc_nonrestricted_type): Ditto.
+
 2026-11-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* coarray.cc (split_expr_at_caf_ref): Give the base dummy

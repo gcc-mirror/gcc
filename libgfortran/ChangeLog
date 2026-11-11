@@ -1,3 +1,10 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Use AC_CANONICAL_TARGET instead of
+	AC_CANONICAL_SYSTEM.  Remove unneeded AC_SUBST(target_alias).
+
 2026-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/118935

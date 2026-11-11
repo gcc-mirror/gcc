@@ -1,3 +1,11 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Use AC_CANONICAL_TARGET instead of
+	AC_CANONICAL_SYSTEM.  Remove unneeded AC_CANONICAL_HOST.
+	Remove unneeded AC_SUBST(target_alias).
+
 2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	PR algol68/128378

@@ -1,3 +1,19 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* backend/rust-tree.cc (rs_type_quals): Update to use and return
+	cv_qualifier.
+	(type_memfn_quals): Ditto.
+	(rs_build_qualified_type_real): Update to receive and use
+	cv_qualifiers.
+	(cv_unqualified): Update to use cv_qualifier.
+	(strip_top_quals): Replace literal zero with TYPE_UNQUALIFIED.
+	* backend/rust-tree.h (rs_type_quals): Update to return
+	cv_qualifier.
+	(type_memfn_quals): Ditto.
+	(rs_build_qualified_type_real): Update to receive
+	cv_qualifier. Remove duplicate declaration.
+	(rs_build_qualified_type): Remove duplicate definition.
+
 2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
 
 	* hir/tree/rust-hir-pattern-abstract.cc (StructPattern::is_refutable):

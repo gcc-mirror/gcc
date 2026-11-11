@@ -1,3 +1,55 @@
+2026-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/charconv (__to_chars_unsigned_type): Remove.
+	(__to_chars_unsigned_type): New constexpr function.
+	(__unsigned_least_t): Use __to_chars_unsigned_type.
+
+2026-11-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127693
+	* include/bits/atomic_base.h (__atomic_float::store)
+	(__atomic_float::load, __atomic_float::exchange)
+	(__atomic_float::compare_exchange_weak)
+	(__atomic_float::compare_exchange_strong)
+	(__atomic_float::fetch_add, __atomic_float::fetch_sub)
+	(__atomic_float::fetch_min, __atomic_float::fetch_max)
+	(__atomic_ref_base::load, __atomic_ref_base::store)
+	(__atomic_ref_base::exchange)
+	(__atomic_ref_base::compare_exchange_strong)
+	(__atomic_ref_base::compare_exchange_weak)
+	(__atomic_ref<integral-type>::fetch_add)
+	(__atomic_ref<integral-type>::fetch_sub)
+	(__atomic_ref<integral-type>::fetch_and)
+	(__atomic_ref<integral-type>::fetch_or)
+	(__atomic_ref<integral-type>::fetch_xor)
+	(__atomic_ref<integral-type>::fetch_min)
+	(__atomic_ref<integral-type>::fetch_max)
+	(__atomic_ref<floating-point-type>::fetch_add)
+	(__atomic_ref<floating-point-type>::fetch_sub)
+	(__atomic_ref<floating-point-type>::fetch_min)
+	(__atomic_ref<floating-point-type>::fetch_max): Add macro for
+	always_inline attribute.
+	* include/std/atomic (atomic<bool>::store)
+	(atomic<bool>::load, atomic<bool>::exchange)
+	(atomic<bool>::compare_exchange_weak)
+	(atomic<bool>::compare_exchange_strong, atomic<bool>::wait)
+	(atomic::store, atomic::load, atomic::exchange)
+	(atomic::compare_exchange_weak, atomic::compare_exchange_strong)
+	(atomic::wait, atomic<T*>::store, atomic<T*>::load)
+	(atomic<T*>::exchange, atomic<T*>::compare_exchange_weak)
+	(atomic<T*>::compare_exchange_strong, atomic<T*>::wait)
+	(atomic<T*>::fetch_add, atomic<T*>::fetch_sub)
+	(atomic<T*>::fetch_min, atomic<T*>::fetch_max): Likewise.
+	* testsuite/29_atomics/atomic/127693.cc: New test.
+	* testsuite/29_atomics/atomic_ref/127693.cc: New test.
+
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Use AC_CANONICAL_TARGET instead of
+	AC_CANONICAL_SYSTEM.
+
 2026-11-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* libsupc++/exception_ptr.h (exception_ptr): Declare as type

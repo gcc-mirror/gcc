@@ -1,3 +1,27 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* c-ada-spec.cc (dump_ada_node): Update to use new qualifier set
+	APIs.
+	* c-common.cc (c_apply_type_quals_to_decl): Update to receive
+	cv_qualifier.
+	(complete_array_type): Use qualifier_set instead of 'int' for
+	sets of qualifiers.
+	(get_atomic_generic_size): Update to use new qualifier set APIs.
+	* c-common.h (c_apply_type_quals_to_decl): Update to receive
+	cv_qualifier.  Provide an overload that takes a qualifier_set as
+	convenience.
+	(c_build_qualified_type): Update to receive qualifier_set
+	instead of an int.
+	* c-format.cc (deref_n_times): Use TYPE_UNQUALIFIED instead of
+	constant zero.
+	* c-pretty-print.cc (pp_c_cv_qualifiers): Update to receive
+	cv_qualifier.
+	(pp_c_type_qualifier_list): Stop using 'int' for CV-qualifier
+	sets.
+	(c_pretty_printer::direct_abstract_declarator): Ditto.
+	* c-pretty-print.h (pp_c_cv_qualifiers): Update to receive
+	cv_qualifier.
+
 2026-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/128111

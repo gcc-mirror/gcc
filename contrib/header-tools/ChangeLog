@@ -1,3 +1,8 @@
+2026-11-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* headerutils.py: Remove unused imports and semicolons.  Use raw
+	strings for regular expressions and identity comparisons with None.
+
 2026-10-08  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR target/127137

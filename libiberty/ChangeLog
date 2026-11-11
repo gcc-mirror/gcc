@@ -1,3 +1,8 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+	* configure.ac: Set libiberty_topdir to "${srcdir}/.." and remove AC_CONFIG_AUX_DIR.
+
 2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

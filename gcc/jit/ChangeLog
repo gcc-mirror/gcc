@@ -1,3 +1,8 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* dummy-frontend.cc (tree_type_to_jit_type):Update to use new
+	qualifier_set APIs.
+
 2026-10-20  Achim Gratz  <Achim.Gratz@Stromeko.DE>
 	    Zhongteng Gui  <dragon-archer@outlook.com>
 

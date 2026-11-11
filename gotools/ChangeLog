@@ -1,3 +1,9 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Update comment to reference
+	AC_CANONICAL_TARGET instead of AC_CANONICAL_SYSTEM.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

@@ -1,3 +1,7 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+
 2026-11-09  Alexandre Oliva  <oliva@adacore.com>
 
 	* Makefile.in (ADAC): New.

@@ -1,3 +1,549 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* attribs.cc (decl_attributes): Update to use qualifier_sets
+	instead of ints for qualifiers.
+	(build_type_attribute_qual_variant): Ditto.
+	(attr_access::array_as_string): Ditto.
+	* attribs.h (build_type_attribute_qual_variant): Ditto.
+	* config/avr/avr.cc (avr_addr_space_for_artificial_rodata): Fix
+	narrowing warning.
+	(avr_ftype_strlen): Update to use qualifier_sets instead of ints
+	for qualifiers.
+	(avr_init_builtins): Ditto.
+	* config/aarch64/aarch64-acle-builtins.cc
+	(function_resolver::infer_pointer_type): Use TYPE_UNQUALIFIED
+	instead of zero literal.
+	* config/arm/arm-c.cc (arm_resolve_cde_builtin): Use
+	TYPE_UNQUALIFIED instead of zero literal.
+	* config/arm/arm-mve-builtins.cc
+	(function_resolver::infer_pointer_type): Use TYPE_UNQUALIFIED
+	instead of zero literal.
+	* config/gcn/gcn-tree.cc (gcn_goacc_get_worker_red_decl): Update
+	not to use 'int' for qualifiers, and to use new qualifier_set
+	APIs.
+	(gcn_goacc_adjust_private_decl): Ditto.
+	(gcn_goacc_create_worker_broadcast_record): Ditto.
+	* config/i386/i386-builtins.cc (ix86_get_builtin_type): Use
+	cv_qualifier instead of 'int' when dealing with qualifiers.
+	* config/i386/i386.cc (ix86_stack_protect_guard): Update
+	not to use 'int' for qualifiers, and to use new qualifier_set
+	APIs.
+	* config/rl78/rl78.cc (rl78_insert_attributes): Update
+	not to use 'int' for qualifiers, and to use new qualifier_set
+	APIs.
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin):
+	Update not to use 'int' for qualifiers, and to use new
+	qualifier_set APIs.
+	* config/s390/s390-c.cc (s390_fn_types_compatible): Update to
+	use new qualifier APIs.
+	* coretypes.h (ADDR_SPACE_GENERIC): Make sure the constant is of
+	type addr_space_t.
+	* dwarf2out.cc (decl_quals): Use cv_qualifier instead of 'int'
+	for qualifiers.
+	(modified_type_die): Ditto.
+	(add_type_attribute): Ditto.
+	(subrange_type_die): Ditto.
+	(get_nearest_type_subqualifiers): Ditto.
+	(struct dwarf_qual_info_t): Ditto.
+	(qualified_die_p): Ditto.
+	(override_type_for_decl_p): Ditto.
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Use
+	new qualifier_set APIs.
+	(bitint_large_huge::build_bit_field_ref): Ditto.
+	(bitint_large_huge::lower_stmt): Ditto.
+	* gimplify.cc: Use new qualifier_set APIs.
+	* ipa-free-lang-data.cc (free_lang_data_in_type): Use new
+	qualifier_set APIs.
+	* langhooks.h (struct qualifier_set): Forward-declare.
+	(struct lang_hooks_for_tree_dump): Make TYPE_QUALS return
+	qualifier_set.
+	* langhooks-def.h (lhd_tree_dump_type_quals): Update signature
+	to match above change.
+	* langhooks.cc (lhd_tree_dump_dump_tree): Ditto.
+	* omp-low.cc (install_var_field): Update to use new
+	qualifier_set APIs.
+	* omp-oacc-neuter-broadcast.cc (install_var_field): Update to
+	use new qualifier_set APIs.
+	* omp-offload.cc (oacc_rewrite_var_decl): Update to use new
+	qualifier_set APIs.
+	* tree-core.h: Add C++ mode-line.
+	(tree_base): Use addr_space_t for 'address_space', to prevent
+	Wnarrowing.
+	(enum cv_qualifier): Set underlying type to 'unsigned char'.
+	(TYPE_QUAL_ALL): New.  Mask of all elements of cv_qualifier.
+	(operator|): New.  Returns union of two CV-qualifier sets.
+	(operator|=): New.  As above, but mutates LHS.
+	(operator&): New.  Returns intersection of two CV-qualifier
+	sets.
+	(operator&=): New.  As above, but mutates LHS.
+	(operator^): New.  Returns symmetric difference of two
+	CV-qualifier sets.
+	(operator^=): New.  As above, but mutates LHS.
+	(operator~): New.  Flips state of all CV-qualifiers from present
+	to absent in a CV-qualifier set and vice-versa, returning a new
+	CV-qualifier set.
+	* tree-dump.cc (dequeue_and_dump): Update to use new qualifier
+	set APIs, and handle address spaces.
+	* tree-pretty-print.cc (dump_generic_node): Update to use new
+	qualifier set APIs.
+	* tree-profile.cc (tree_profiling): Update to use new qualifier
+	set APIs.
+	* tree-sra.cc (build_ref_for_offset): Update to use new
+	qualifier set APIs.
+	* tree-ssa-address.cc (move_hint_to_base): Update to use new
+	qualifier set APIs.
+	* tree-switch-conversion.cc (switch_conversion::build_one_array):
+	Update to use new qualifier set APIs.
+	* tree-vect-stmts.cc (get_related_vectype_for_scalar_type):
+	Update to use new qualifier set APIs.
+	* tree.cc (set_type_quals): Update to use qualifier_set instead
+	of 'int'.
+	(qualifier_set::merge): New.
+	(qualifier_set::join): New.
+	(qualifier_set::superset_of): New.
+	(qualifier_set::debug): New.
+	(check_base_type): Update to use new qualifier_set APIs.
+	(check_qualified_type): Ditto.
+	(get_qualified_type): Ditto.
+	(build_qualified_type): Ditto.
+	* tree.h (ENCODE_QUAL_ADDR_SPACE): Drop.
+	(DECODE_QUAL_ADDR_SPACE): Drop.
+	(CLEAR_QUAL_ADDR_SPACE): Drop.
+	(KEEP_QUAL_ADDR_SPACE): Drop.
+	(struct qualifier_set): New.  Provides a representation for a
+	set of CV-qualifiers and an address space qualifier, as well as
+	various operations that pertain to such sets.
+	(TYPE_QUALS): Update to produce a qualifier_set.
+	(operator|): New.  Convenience operator for adding CV-qualifiers
+	to a qualifier_set.
+	(operator|=): New.  Like the above, but mutates LHS.
+	(operator^): New.  Convenience operator for taking the symmetric
+	difference between a qualifier_set and a CV-qualifier set.
+	(operator^=): New.  Like the above, but mutates LHS.
+	(TYPE_QUALS_NO_ADDR_SPACE):  Update to produce cv_qualifier.
+	(TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC): Ditto.
+	(check_qualified_type): Update signature to use qualifier_set
+	instead of ints.
+	(get_qualified_type): Ditto.
+	(build_qualified_type): Ditto.
+	(build_type_variant): Ditto.
+	* ubsan.cc (instrument_bool_enum_load): Update to use new
+	qualifier set APIs.
+	* vtable-verify.cc (vtbl_map_get_node): Update to use new
+	qualifier set APIs.
+	(find_or_create_vtbl_map_node): Ditto.
+	* doc/generic.texi (Types): Move information about
+	qualification...
+	(Qualifier Representation): ... to this new node.  Document how
+	qualifiers are represented.
+	(cv_qualifier): New node.  Document the cv_qualifier type.
+	(qualifier_set): New node.  Document the qualifier_set type.
+	(Avoiding qualifier_set): New node.  Document how do avoid the
+	extra complexity of qualifier_set, and how to later get it back.
+	(Types for C++): Remove non-applicable index entries.  Reword
+	documentation for cp_type_quals to reference the nodes above
+	where applicable.
+
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* stdbackport/gbits/assert.h: New file.
+	* stdbackport/gbits/enable_special_members.h: New file.
+	* stdbackport/gbits/exception_defines.h: New file.
+	* stdbackport/gbits/extras.h: New file.
+	* stdbackport/gbits/functional_hash.h: New file.
+	* stdbackport/gbits/inplace_tags.h: New file.
+	* stdbackport/gbits/invoke.h: New file.
+	* stdbackport/gbits/optional_ref.h: New file.
+	* stdbackport/gbits/stl_construct.h: New file.
+	* stdbackport/expectedfwd: New file.
+	* stdbackport/expected: New file.
+	* stdbackport/optionalfwd: New file.
+	* stdbackport/optional: New file.
+	* stdbackport/gbits/check_system_h.h: New file.
+
+2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* config/bpf/bpf.cc (emit_move_loop): Remove buggy negative
+	increment remainder handling.  Remove dead remainder updates.
+	(emit_move_loop_backwards): New function.
+	(bpf_expand_cpymem): Use it here instead of emit_move_loop with
+	negative increment.
+
+2026-11-10  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/predicates.md (read_only_operand): Check !TARGET_HPUX
+	when considering CONSTANT_POOL_ADDRESS_P for SYMBOL_REF.
+
+2026-11-10  Mallikarjuna Gouda  <mallikarjuna.gouda@globalfoundries.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add mips-i8500.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add mips_i8500.
+	* config/riscv/riscv.cc (riscv_tune_param):
+	Add mips_i8500_tune_info.
+	* config/riscv/riscv.md: Add mips_i8500.
+	* doc/riscv-mtune.texi: Document mips-i8500.
+	* config/riscv/mips-i8500.md: New file.
+
+2026-11-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* final.cc (test_output_operand_modifier_operand): Replace
+	gen_rtx_SUBREG by gen_lowpart_SUBREG.
+
+2026-11-10  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-cp.cc (ipcp_bits_lattice::get_value_and_mask): Remove
+	unused declaration.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128597
+	* gimple-fold.cc (decode_field_reference): Truncate a mask
+	applied before a narrowing conversion to the precision of the
+	narrow type.
+	(fold_truth_andor_for_ifcombine): Don't test the sign bit of a
+	field whose extension bits are all masked out in sign tests.
+	Reject combining compares of a zero-extended field with a
+	sign-extended one, considering fields whose extension bits are
+	masked out as zero-extended.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128458
+	* tree-ssa-reassoc.cc (attempt_builtin_powi): Expand powers
+	as multiplications if BUILT_IN_POWI does not exist for the
+	type instead of giving up.
+
+2026-11-10  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/126952
+	* wide-int.h (wi::copy): Check that len is non-zero before
+	copying the contents of wide-int.
+
+2026-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.cc (get_pointer_alignment_1): Use renamed routines.
+	* gimple-low.cc (lower_builtin_assume_aligned): Likewise.
+	* gimple-pretty-print.cc (dump_ssaname_info): Likewise.
+	* tree-ssa-pre.cc (create_expression_by_pieces): Likewise.
+	* tree-ssanames.cc (range_info_set_range):  Remove
+	alignment field references.
+	(get_ssa_name_alignment): Rename and remove alignment fields.
+	(mark_ssa_name_alignment_unknown): Likewise.
+	(set_ssa_name_alignment): Likewise.
+	(duplicate_ssa_name_range_info): Remove alignment fields.
+	* tree-ssanames.h (get_ssa_name_alignment): Renamed prototype.
+	(mark_ssa_name_alignment): Likewise.
+	(set_ssa_name_alignment): Likewise.
+	* tree-vect-stmts.cc (create_array_ref): Use renamed routines.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* value-range-storage.cc (prange_storage::prange_storage):
+	Remove alignment fields.
+	* value-range-storage.h (prange_storage::align): Remove.
+	(prange_storage::misalign): Remove.
+
+2026-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-inline.cc (remap_ssa_name): Drop local addresses from a
+	prange, and inline pointers.
+	* tree-ssanames.cc (duplicate_ssa_name_range_info): Remove
+	function local addresses if requested.
+	* tree-ssanames.h (duplicate_ssa_name_range_info): Adjust prototype.
+	* value-range.cc (prange::clear_function_local_addr): Remove
+	LABEL_DECLs as well.
+
+2026-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ipa-prop.cc (ipa_get_value_range_1): Rename from ipa_get_value_range.
+	(ipa_get_value_range): Remove any function local addresses first.
+	(ipa_set_jfunc_vr): Address stripping moved to ipa_get_value_range.
+	(ipa_record_return_value_range_1): Remove local address code.
+	* value-range.cc (prange::clear_function_local_addr): New.
+	* value-range.h (prange::clear_function_local_addr): New prototype.
+
+2026-11-10  Shiva S  <shivasubramanian@outlook.com>
+
+	* genmodes.cc (emit_mode_unit_size_inline): Move the
+	MODE_UNIT_SIZE_TYPE definition from here...
+	(emit_insn_modes_h): ...to here.
+
+2026-11-10  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/90824
+	* config/rs6000/predicates.md (splat_input_operand): Allow SFmode
+	with TARGET_VSX instead of TARGET_P9_VECTOR.
+	* config/rs6000/rs6000.cc (rs6000_expand_vector_init): Use
+	vsx_splat_v4sf for all V4SFmode splats.
+	* config/rs6000/vsx.md (vsx_splat_v4sf): Enable for all VSX
+	targets.  Add Power7 and Power8 memory-load alternatives.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp_reduction_group):
+	Add sub-group discovery here and handle failures by
+	recursing.
+	(vect_analyze_slp_reductions): Simplify with code
+	moved to vect_analyze_slp_reduction_group.
+
+2026-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (CODE_FOR_sdot_prodv4hf): Add
+	alias for CODE_FOR_sdot_prodv2sfv4hf.
+	(CODE_FOR_sdot_prodv8hf): Add alias for CODE_FOR_sdot_prodv4sfv8hf.
+	* config/aarch64/aarch64-simd-builtins.def (sdot_prod): Update the
+	comment to include both result and input modes in the pattern name.
+	* config/aarch64/aarch64-simd.md
+	(sdot_prod<VDQSF:vsi2qi><vczle><vczbe>): Rename to...
+	(sdot_prod<VDQSF:mode><vsi2qi><vczle><vczbe>): ...this, including the
+	result mode to match the sdot_prod optab.  Put the multiplicands in
+	operands 1 and 2 and the accumulator in operand 3.  Update the
+	assembly template to match.
+	(sdot_lane<VF:isquadop><VDQSF:vsi2qi><vczle><vczbe>): Use the number
+	of halfword pairs when mapping lane indices on big-endian targets.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svdot_impl::expand):
+	Use the result mode as the input mode for intrinsics with one type
+	suffix.  Use code_for_dot_prod for all dot intrinsics that do not
+	set FPMR, including floating-point dot products.
+	* config/aarch64/aarch64-sve.md (<sur>dot_prod<mode><vsi2qi>):
+	Rename to...
+	(@<sur>dot_prod<mode><vsi2qi>): ...this, generating an instruction
+	lookup.
+	* config/aarch64/aarch64-sve2.md (aarch64_sve_fdotvnx4sfvnx8hf):
+	Rename to...
+	(@<sur>dot_prod<VNx4SF_ONLY:mode><VNx8HF_ONLY:mode>): ...this.  Use
+	the VNx4SF_ONLY and VNx8HF_ONLY mode iterators and DOTPROD_FP integer
+	iterator to expose FDOT through the sdot_prod optab and generated
+	dot-product lookup.
+	* config/aarch64/arm_neon.h (vdot_f32_f16, vdotq_f32_f16): Update
+	builtin argument order to match the sdot_prod optab.
+	* config/aarch64/iterators.md (DOTPROD_FP): New integer iterator.
+	(sur): Add UNSPEC_FDOT mapping.
+
+2026-11-10  Sendao Yan  <yansendao@126.com>
+
+	* gimple-predicate-analysis.cc (predicate::simplify_2): Release
+	b_chain before removing it from m_preds.
+
+2026-11-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_return_in_memory): Handle
+	NULLPTR_TYPE.
+	(s390_diagnose_nullptr_return): New function.
+	(s390_function_and_libcall_value): Call new function.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/128592
+	* ipa-inline.cc (can_inline_edge_by_limits_p): Check
+	flag_wrapv_pointer matches.
+
+2026-11-10  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-tuning-flags.def (AARCH64_EXTRA_TUNING_OPTION):
+	Add PREFER_SVE_FULL_VECTORS tune parameter.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal):
+	Set param_vect_partial_vector_usage to 1.
+	* config/aarch64/tuning_models/hip12.h: Set tune parameter
+	PREFER_SVE_FULL_VECTORS.
+
+2026-11-10  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE):
+	Change scheduling model for hip12 core.
+	* config/aarch64/aarch64.md : Include hip12.md.
+	* config/aarch64/hip12.md: New file.
+
+2026-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/122716
+	* doc/extend.texi: Document named asm operand modifiers.
+	* doc/md.texi: Document bracketed operands and operand lists.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (PRINT_OPERAND): Document named modifier codes and
+	output_operand_modifier_operand.
+	(TARGET_PRINT_OPERAND_MODIFIER): Add hook reference.
+	* final.cc: Include selftest.h.
+	(current_modifier_operands, current_modifier_opnums): New variables.
+	(output_operand_modifier_operand, output_bracketed_operand): New
+	functions.
+	(output_asm_insn): Handle bracketed operands.
+	(selftest::test_parse_bracketed_operand): New test.
+	(selftest::test_referenced_operands): Likewise.
+	(selftest::test_output_operand_modifier_operand): Likewise.
+	(selftest::final_cc_tests): Run them.
+	* output.h (PRINT_OPERAND_MODIFIER_BASE): New constant.
+	(output_operand_modifier_operand): Declare.
+	* recog.cc (parse_bracketed_operand): New function.
+	(get_referenced_operands): Handle bracketed operands and operand lists.
+	Handle %ccN and a trailing percent sign.
+	* recog.h (bracketed_operand): New structure.
+	(parse_bracketed_operand): Declare.
+	* selftest-run-tests.cc (selftest::run_tests): Call final_cc_tests and
+	stmt_cc_tests.
+	* selftest.h (final_cc_tests, stmt_cc_tests): Declare.
+	* stmt.cc: Include selftest.h when checking is enabled.
+	(resolve_operand_name_1): Remove.
+	(asm_operand_name_number, asm_obstack_grow_opnum): New functions.
+	(resolve_asm_operand_names): Resolve bracketed operand lists and check
+	named modifiers.  Share bracket parsing and build strings from obstack
+	lengths.
+	(selftest::build_asm_operand, selftest::build_asm_label): New helpers.
+	(selftest::test_asm_operand_modifier): Likewise.
+	(selftest::test_resolve_asm_operand_names): New test.
+	(selftest::stmt_cc_tests): Run it.
+	* target.def (print_operand_modifier): New hook.
+	* targhooks.cc (default_print_operand_modifier): New function.
+	* targhooks.h (default_print_operand_modifier): Declare.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* config/aarch64/aarch64-protos.h (aarch64_expand_sve_clmul): Declare.
+	* config/aarch64/aarch64.cc (aarch64_expand_sve_clmul): New function.
+	* config/aarch64/aarch64-sve2.md (aarch64_sve_pmullb_scalar<mode>): New
+	pattern.
+	* config/aarch64/iterators.md (SVE_PMULL_SCALAR, Vpmull_etype)
+	(Vpmull_wetype): New iterator and attributes.
+	* config/aarch64/aarch64-simd.md (clmuldi3, clmul_widendi3): Also
+	enable for TARGET_SVE_AES and use aarch64_expand_sve_clmul when
+	Advanced SIMD PMULL is not usable.
+	(clmul_widensi3): New expander.
+	(clmul_widenqi3): Also enable for TARGET_SVE2.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* config/aarch64/aarch64-simd.md (clmuldi3, clmul_widendi3): New
+	expanders, enabled for TARGET_AES in non-streaming mode.
+	(clmul_widenqi3): New expander.
+
+2026-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_luti6<mode>):
+	New pattern.
+	* config/aarch64/aarch64.cc (aarch64_evpc_luti_indices): New function.
+	(aarch64_evpc_luti): Likewise.
+	(aarch64_expand_vec_perm_const_1): Try LUTI before falling back to TBL.
+	* config/aarch64/iterators.md (UNSPEC_SVE_LUTI6): New unspec.
+	* doc/sourcebuild.texi (aarch64_lut_hw): Document effective target.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* gimplify.cc (gimplify_bind_expr): Add minor C++ specific checks.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gimple-fold.cc (same_bool_comparison_p): Test the code of the
+	outer comparison, not that of the definition of OP1.  Honour NaNs
+	when inverting the definition.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gimple-fold.cc (canonicalize_bool): Honour NaNs when inverting a
+	comparison.  Return NULL_TREE if the inverse does not exist.
+	(and_var_with_comparison): Likewise.
+	(or_var_with_comparison): Likewise.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* doc/md.texi (clmul@var{m}3, clmul_widen@var{m}3): Document.
+
+2026-11-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (TARGET_ASM_OPEN_PAREN): Remove.
+	(TARGET_ASM_CLOSE_PAREN): Remove.
+	* config/s390/s390.h (TEXT_SECTION_ASM_OP): Add tab.
+	(DATA_SECTION_ASM_OP): Add tab.
+	(BSS_SECTION_ASM_OP): Add tab.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.h (number_of_iterations_exit): Make edge
+	argument const.
+	(number_of_iterations_exit_assumptions): Likewise.
+	* tree-ssa-loop-niter.cc (number_of_iterations_popcount): Likewise.
+	(number_of_iterations_cltz): Likewise.
+	(number_of_iterations_cltz_complement): Likewise.
+	(number_of_iterations_bitcount): Likewise.
+	(number_of_iterations_exit_assumptions): Likewise.
+	(number_of_iterations_exit): Likewise.
+
+2026-11-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* final.cc (output_addr_const): Adjust printing in MINUS case.
+
+2026-11-10  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/constraints.md (jR): Remove.
+	* config/i386/i386.md (UNSPEC_SIZEOF, UNSPEC_STACK_ALLOC)
+	(UNSPEC_LD_MPIC, UNSPEC_FXAM_MEM, UNSPECV_NLGR): Remove.
+	(COM_FALSE_S, COM_FALSE_P, COM_TRUE_S, COM_TRUE_P): Remove.
+	(PPERM_SRC, PPERM_INVERT, PPERM_REVERSE, PPERM_REV_INV)
+	(PPERM_ZERO, PPERM_ONES, PPERM_SIGN, PPERM_INV_SIGN, PPERM_SRC1)
+	(PPERM_SRC2): Remove.
+	(fpint_logic): Remove.
+	(strlenqi_1, *strlenqi_1): Remove.
+	(UNSPEC_SCAS): Remove.
+	(strlen<mode>): Use a plain operand list as the pattern.
+	* config/i386/predicates.md (x86_64_immediate_size_operand)
+	(const2367_operand, const_0_to_4_operand)
+	(const_0_to_5_operand): Remove.
+	* config/i386/sse.md (V_512, VF1_128_256VL, VF2_128_256)
+	(VI1_AVX512VNNI, VI2_AVX2, VI48_AVX2, VI4_256_8_512): Remove.
+	(vec_avx2): Remove.
+	(avx_cvtpd2dq256_2, avx_cvttpd2dq256_2): Remove.
+	(avx512f_perm<mode>): Remove.
+	(vcvt<convertph2fp8>v8hf, vcvt<convertps2fp8>v4sf)
+	(vcvt<convertps2fp8>v8sf, vcvt<biasps2fp8>v4sf)
+	(vcvt<biasps2fp8>v8sf): Remove.
+	(avx10v2aux_sym_truncatev4siv4qi2)
+	(avx10v2aux_sym_truncatev8siv8qi2): Remove.
+	* config/i386/subst.md (mask_prefix4, sdc_mask_op5)
+	(round_mask_operand4, round_mask_op4, round_codefor)
+	(round_opnum, round_saeonly_sdc_mask_operand5)
+	(round_saeonly_op3): Remove.
+	Assisted-by: Claude Opus 5.5
+
+2026-11-10  Shiva S  <shivasubramanian@outlook.com>
+
+	* config/i386/i386-features.h (scalar_chain, general_scalar_chain)
+	(timode_scalar_chain): Move from here...
+	* config/i386/i386-features.cc: ...to here.
+
+2026-11-10  Shiva S  <shivasubramanian@outlook.com>
+
+	* gimple-ssa-sprintf.cc (format_result::operator++ (int)): Remove.
+
+2026-11-10  Shiva S  <shivasubramanian@outlook.com>
+
+	* hwint.cc: Include bconfig.h for generator files.
+	* Makefile.in (BUILD_RTL): Add build/hwint.o.
+	(OBJS): Move hwint.o from here...
+	(OBJS-libcommon): ...to here.
+	(build/hwint.o): New rule.
+	(build/gencfn-macros, build/genmatch): Depend on build/hwint.o.
+
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+
+2026-11-10  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vect-permconst.cc (struct const_vector_hasher):
+	Derive from free_ptr_hash.
+	(vector_permconst::process_bb): Change vector_permconst_table to
+	automatic variable.
+
+2026-11-10  Peter Damianov  <peter0x44@disroot.org>
+	    Claude Sonnet 5.5  <noreply@anthropic.com>
+
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	missing colon between invalid and highlight-a in the default
+	GCC_COLORS.
+
 2026-11-10  Ezra Sitorus  <ezra.sitorus@arm.com>
 
 	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins):

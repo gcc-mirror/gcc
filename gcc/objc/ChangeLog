@@ -1,3 +1,8 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* objc-act.cc (objc_push_parm): Use TYPE_QUALS instead of
+	inlining its definition.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

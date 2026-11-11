@@ -1,3 +1,10 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Use AC_CANONICAL_TARGET instead of
+	AC_CANONICAL_SYSTEM.  Remove unneeded AC_SUBST(target_alias).
+
 2026-10-21  Yap Zhi Heng  <yapzhhg@gmail.com>
 
 	* rustc-lib-patches/patches/0001-core-ffi-c-str.for-rfl-patch: Backported patch to

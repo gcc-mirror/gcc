@@ -1,3 +1,42 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* c-decl.cc (diagnose_mismatched_decls): Ditto.
+	(quals_from_declspecs): Update to return qualifier sets.
+	(build_array_declarator): Use qualifier_set instead of ints.
+	(diagnose_uninitialized_cst_member): Update to use new
+	qualifier_set APIs.
+	(grokdeclarator): Ditto.
+	(get_parm_info): Update to use new qualifier_set APIs.
+	(c_update_type_canonical): Ditto.
+	(finish_struct): Ditto.
+	(make_pointer_declarator): Use qualifier_set instead of ints.
+	* c-objc-common.cc (c_tree_printer): Convert %v arg to
+	cv_qualifier.
+	* c-parser.cc (c_parser_typeof_specifier): Ditto.
+	(c_parser_postfix_expression_after_paren_type): Ditto.
+	* c-tree.h (struct c_declarator): Update to use qualifier_set
+	instead of ints.
+	(quals_from_declspecs): Update to use qualifier_set.
+	* c-typeck.cc (qualify_type): Update to use new qualifier_set
+	APIs.
+	(c_build_type_attribute_qual_variant): Update to use
+	qualifier_set.
+	(composite_type_internal): Ditto.
+	(common_pointer_type): Ditto.
+	(c_common_type): Ditto.
+	(function_types_compatible_p): Ditto.
+	(build_component_ref): Ditto.
+	(build_unary_op): Ditto.
+	(build_conditional_expr): Ditto.
+	(handle_warn_cast_qual): Ditto.
+	(convert_for_assignment): Ditto.
+	(build_binary_op): Ditto.
+	(c_build_qualified_type): Ditto.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_allocate): Change diagnostic.
+
 2026-11-09  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/128518

@@ -1,3 +1,14 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* gcc-interface/decl.cc (gnat_to_gnu_entity): Update uses of
+	qualifiers not to use 'int'.
+	(gnat_to_gnu_component_type): Ditto.
+	* gcc-interface/gigi.h (ada_type_quals): New.  Helper function
+	returning qualifiers for a type relevant to Ada.
+	(change_qualified_type): Update not to use 'int' for qualifiers.
+	* gcc-interface/utils.cc (update_pointer_to): Use ada_type_quals
+	instead of TYPE_QUALS.
+
 2026-11-09  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc-interface/Make-lang.in: Use ADAC to compile and detect

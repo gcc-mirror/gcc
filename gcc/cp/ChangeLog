@@ -1,3 +1,101 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* call.cc (strip_top_quals): Use TYPE_UNQUALIFIED instead of 0.
+	(standard_conversion): Update to use qualifier_set APIs.
+	* class.cc (build_simple_base_path): Update to use qualifier_set
+	instead of int.
+	* cp-objcp-common.h (cp_type_quals_as_set): New.
+	(LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN): Use the above.
+	* cp-objcp-common.cc (cp_type_quals_as_set): New.  Wraps
+	cp_type_quals, to converting its cv_qualifier to qualifier_set.
+	* cp-tree.h (cp_cv_quals): Change to be cv_qualifier.
+	(build_stub_type): Update to receive cv_qualifier.
+	(cp_build_qualified_type): Ditto.
+	(cp_type_quals): Update to return cv_qualifier.
+	(type_memfn_quals): Ditto.
+	(cp_apply_type_quals_to_decl): Update to take cv_qualifier.
+	* decl.cc (get_type_quals): Update to use and return
+	cv_qualifier.
+	(cp_finish_decomp): Replace usages of TYPE_QUALS with
+	cp_type_quals.
+	(grokdeclarator): Update to use cv_qualifier.
+	(grokparms): Use TYPE_UNQUALIFIED instead of literal zero.
+	* error.cc (dump_lambda_function): Update to use qualifier_set
+	APIs.
+	* mangle.cc (write_CV_qualifiers_for_type): Ditto.
+	* method.cc (do_build_copy_constructor): Update to use
+	cv_qualifier instead of int.
+	(do_build_copy_assign): Ditto.
+	(build_stub_type): Update to receive cv_qualifier.
+	(get_copy_ctor): Update to use cv_qualifier instead of int.
+	(get_copy_assign): Ditto.
+	(walk_field_subobs): Update to receive cv_qualifier.
+	(synthesized_method_base_walk): Ditto.
+	(synthesized_method_walk): Ditto.
+	(implicitly_declare_fn): Update to use cv_qualifier.
+	* module.cc (trees_in::tree_node): Cast read-in qualifiers to
+	cv_qualifier.
+	* pt.cc (tsubst): Update to use cv_qualifier instead of int.
+	(resolve_typename_type): Ditto.
+	* reflect.cc (type_of): Ditto.
+	(eval_remove_volatile): Ditto.
+	(eval_add_const): Ditto.
+	(eval_add_volatile): Ditto.
+	(eval_add_cv): Ditto.
+	(eval_make_signed): Ditto.
+	* semantics.cc (finish_non_static_data_member): Ditto.
+	(finish_decltype_type): Ditto.
+	* tree.cc (c_build_qualified_type): Update to receive
+	qualifier_set, in line with original.
+	(cp_build_qualified_type): Update to receive qualifier_set.
+	(cp_check_qualified_type): Update to receive cv_qualifier.
+	(cv_unqualified): Update to use cv_qualifier.
+	(build_cp_fntype_variant): Ditto.
+	(maybe_dummy_object): Ditto.
+	* typeck.cc (original_type): Ditto.
+	(composite_pointer_type_r): Ditto.
+	(merge_types): Ditto.
+	(build_class_member_access_expr): Ditto.
+	(cp_type_quals): Update to return cv_qualifier.
+	(type_memfn_quals): Ditto.
+	(cp_apply_type_quals_to_decl): Update to receive cv_qualifier.
+	(casts_away_constness_r): Use cv_qualifier instead of int for
+	representing CV-qualification.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	PR c/122892
+	* semantics.cc (finish_omp_allocate): Reject
+	omp_{cgroup,pteam,thread}_mem_alloc for static vars.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* parser.cc (cp_parser_omp_allocate): Add diagnostics, wrap a
+	location into allocator and alignment clause exprs.
+	* semantics.cc: Include gcc-rich-location.h.
+	(finish_omp_allocate): Improve and add diagnostics.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* constexpr.cc (cxx_eval_constant_expression)
+	<case OMP_ALLOCATE>: New.
+	(potential_constant_expression_1) <case OMP_ALLOCATE>: New.
+	* cp-tree.def (OMP_ALLOCATE): New tree code.
+	* cp-tree.h (OMP_ALLOCATE_VARS): Define.
+	(OMP_ALLOCATE_ALLOCATOR): Define.
+	(OMP_ALLOCATE_ALIGN): Define.
+	(finish_omp_allocate): New declaration.
+	* parser.cc (cp_parser_omp_allocate): Rework, remove sorry, call
+	finish_omp_allocate.
+	* pt.cc (tsubst_stmt) <case OMP_ALLOCATE>: New.
+	* semantics.cc (finish_omp_allocate): New definition.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* parser.cc (cp_parser_omp_construct)
+	<case PRAGMA_OMP_ALLOCATE>: Remove.
+	(cp_parser_pragma): Add comments.
+
 2026-11-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/128111

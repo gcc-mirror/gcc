@@ -1,3 +1,193 @@
+2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* gcc.target/bpf/memmove-5.c: New test.
+	* gcc.target/bpf/memmove-6.c: New test.
+	* gcc.target/bpf/memmove-7.c: New test.
+
+2026-11-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124262
+	* gcc.dg/fold-round-1.c: Require c99_runtime.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128597
+	* gcc.dg/torture/pr128597-1.c: New testcase.
+	* gcc.dg/torture/pr128597-2.c: New testcase.
+	* gcc.dg/pr128597-3.c: New testcase.
+	* gcc.dg/pr128597-4.c: New testcase.
+	* gcc.dg/pr128597-5.c: New testcase.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128458
+	* gcc.dg/pr128458.c: New testcase.
+
+2026-11-10  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/ipa/ipa-prange-local-addr-1.c: Adjust output check.
+
+2026-11-10  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/90824
+	* gcc.target/powerpc/pr90824-1.c: New test.
+	* gcc.target/powerpc/pr90824-2.c: New test.
+
+2026-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-1.c: Use fat LTO objects.
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-2.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/fdot-3.c: Likewise.
+	* gcc.target/aarch64/fdot-autovec-advsimd-run.c: New AdvSIMD runtime
+	test.
+	* gcc.target/aarch64/fdot-autovec-advsimd.c: New test.
+	* gcc.target/aarch64/fdot-autovec-noext.c: New test.
+	* gcc.target/aarch64/fdot-autovec-run.h: New shared runtime test
+	helper.  Check normal and subnormal inputs and lengths from 0 to 257.
+	* gcc.target/aarch64/sve2/fdot-autovec-run.c: New SVE2.1 runtime test.
+	* gcc.target/aarch64/sve2/fdot-autovec-scalable.c: New test.
+	* gcc.target/aarch64/sve2/fdot-autovec-sme2.c: New test.
+	* gcc.target/aarch64/sve2/fdot-fp8-vla.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_f16f32dot_hw): New procedure to check
+	whether the target can execute AdvSIMD FP16-to-FP32 dot products.
+
+2026-11-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* g++.target/s390/nullptr-1.C: New test.
+	* gcc.target/s390/lto/lto.exp: New file.
+	* gcc.target/s390/lto/nullptr-lto-1_0.c: New test.
+	* gcc.target/s390/lto/nullptr-lto-1_1.c: New test.
+	* gcc.target/s390/lto/nullptr-lto-1_2.c: New test.
+	* gcc.target/s390/nullptr-1.c: New test.
+	* gcc.target/s390/nullptr-2.c: New test.
+	* gcc.target/s390/nullptr-3.c: New test.
+	* gcc.target/s390/nullptr-4.c: New test.
+	* gcc.target/s390/nullptr-5.c: New test.
+
+2026-11-10  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/128592
+	* gcc.dg/lto/pr128592_0.c: New testcase.
+	* gcc.dg/lto/pr128592_1.c: Likewise.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* gcc.target/aarch64/sme/clmul_1.c: Replace.
+	* gcc.target/aarch64/sme/clmul_2.c: New test.
+	* gcc.target/aarch64/sve2/clmul_1.c: Likewise.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128111
+	* lib/target-supports.exp (check_effective_target_aarch64_pmull_hw):
+	New.
+	* gcc.target/aarch64/clmul_1.c: New test.
+	* gcc.target/aarch64/clmul_2.c: Likewise.
+	* gcc.target/aarch64/clmul_3.c: Likewise.
+	* gcc.target/aarch64/clmul_4.c: Likewise.
+	* gcc.target/aarch64/clmul_5.c: Likewise.
+	* gcc.target/aarch64/clmul_6.c: Likewise.
+	* gcc.target/aarch64/sme/clmul_1.c: Likewise.
+
+2026-11-10  Tamar Christina  <tamar.christina@arm.com>
+
+	* lib/target-supports.exp (check_effective_target_aarch64_lut_hw):
+	New effective-target check.
+	* gcc.target/aarch64/perm-luti-2-run.c: New test.
+	* gcc.target/aarch64/perm-luti-2.c: New test.
+	* gcc.target/aarch64/perm-luti-fallback.c: New test.
+	* gcc.target/aarch64/perm-luti-nolut.c: New test.
+	* gcc.target/aarch64/perm-luti-run.c: New test.
+	* gcc.target/aarch64/perm-luti.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_1.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_1_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_2.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_2_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_3.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_3_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_4.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_4_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_5.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_6.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_6_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_7.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_7_run.c: New test.
+	* gcc.target/aarch64/sve/perm_luti_8.c: New test.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	PR c/122892
+	* c-c++-common/gomp/allocate-20.c: Remove sorry, add tests, remove
+	static from globals.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* c-c++-common/gomp/allocate-9.c: Remove xfails.
+	* c-c++-common/gomp/allocate-19.c: Remove xfails.
+	* c-c++-common/gomp/allocate-21.c: New test.
+	* g++.dg/gomp/allocate-14.C: New test.
+	* g++.dg/gomp/allocate-15.C: New test.
+	* g++.dg/gomp/allocate-16.C: New test.
+	* g++.dg/gomp/allocate-17.C: New test.
+	* g++.dg/gomp/allocate-18.C: New test.
+	* g++.dg/gomp/allocate-19.C: New test.
+	* g++.dg/gomp/allocate-handles-1.C: Remove xfails.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* c-c++-common/gomp/allocate-5.c: Modify for C++, remove sorry.
+	* c-c++-common/gomp/allocate-9.c: Use header, add dg-line modify
+	for C++, remove sorry.
+	* c-c++-common/gomp/allocate-10.c: Enable for C++, add dg-bogus.
+	* c-c++-common/gomp/allocate-11.c: Enable and xfail for C++,
+	add -Wno-switch-unreachable.
+	* c-c++-common/gomp/allocate-12.c: Enable for C++, add new xfailing
+	cases, xfail C++ cases.
+	* c-c++-common/gomp/allocate-14.c: Enable for C++.
+	* c-c++-common/gomp/allocate-15.c: Enable for C++.
+	* c-c++-common/gomp/allocate-16.c: Minor changes, enable for C++,
+	xfail C++ cases.
+	* c-c++-common/gomp/allocate-17.c: Remove sorry.
+	* c-c++-common/gomp/allocate-18.c: Use header, remove sorry.
+	* c-c++-common/gomp/allocate-19.c: Remove sorry, add C++ diags.
+	* c-c++-common/gomp/allocate-20.c: Remove sorry.
+	* c-c++-common/gomp/allocate-allocator-handle.h: New header.
+	* c-c++-common/gomp/directive-1.c: Remove sorry.
+	* g++.dg/gomp/allocate-5.C: New test.
+	* g++.dg/gomp/allocate-6.C: New test.
+	* g++.dg/gomp/allocate-7.C: New test.
+	* g++.dg/gomp/allocate-8.C: New test.
+	* g++.dg/gomp/allocate-9.C: New test.
+	* g++.dg/gomp/allocate-10.C: New test.
+	* g++.dg/gomp/allocate-11.C: New test.
+	* g++.dg/gomp/allocate-12.C: New test.
+	* g++.dg/gomp/allocate-13.C: New test.
+	* g++.dg/gomp/allocate-handles-1.C: New test.
+	* g++.dg/gomp/allocate-handles-2.C: New test.
+	* g++.dg/gomp/allocate-allocator-handle.h: New header.
+
+2026-11-10  Waffl3x  <waffl3x@baylibre.com>
+
+	* c-c++-common/gomp/allocate-5.c: Match new diagnostic.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/reassoc-55.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-nan-3.c: New test.
+
+2026-11-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/reassoc-54.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-nan-1.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-nan-2.c: New test.
+
+2026-11-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* libgdiagnostics.dg/test-warning-with-path-c.py: Remove semicolons.
+
 2026-11-10  Ezra Sitorus  <ezra.sitorus@arm.com>
 
 	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Test new feature

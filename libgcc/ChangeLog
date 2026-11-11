@@ -1,3 +1,8 @@
+2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+	* configure.ac: Set libgcc_topdir to "${srcdir}/.." and remove AC_CONFIG_AUX_DIR.
+
 2026-11-09  Florian Fuchs  <fuchsfl@gmail.com>
 
 	PR target/128472

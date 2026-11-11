@@ -1,3 +1,25 @@
+2026-11-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* gcc-changelog/git_commit.py: Use posixpath for repository paths.
+	* git-backport.py: Pass argument lists to subprocess.run and use
+	sys.executable.
+	* git-commit-mklog.py: Pass an argument list to subprocess.run.
+	* git-fix-changelog.py: Pass argument lists to subprocess functions
+	and use sys.executable.
+	* mklog.py: Use posixpath for repository paths.  Pass argument lists
+	to subprocess functions.  Remove unreachable code.
+
+2026-11-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* analyze_brprob.py: Use identity comparisons with None and a raw
+	string for a regular expression.
+	* check_GNU_style_lib.py: Use identity comparisons with None.
+	* regenerate-sarif-spec-index.py: Remove a semicolon.
+	* testsuite-management/validate_failures.py: Use identity
+	comparisons with None.
+	* unicode/gen_libstdcxx_unicode_data.py: Remove semicolons.
+	* unused_functions.py: Likewise.
+
 2026-10-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* gcc_update: Add a new option, --no-fetch.  If specified, run

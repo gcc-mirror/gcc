@@ -1,3 +1,10 @@
+2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* d-codegen.cc (build_vthis_function): Update to use new
+	qualifier_set APIs.
+	* types.cc (insert_type_modifiers): Use cv_qualifier instead
+	of int.
+
 2026-11-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* d-codegen.cc (build_vec_cmp): New.
