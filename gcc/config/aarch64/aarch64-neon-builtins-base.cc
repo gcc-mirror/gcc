@@ -1311,7 +1311,14 @@ struct gimple_abs_diff : public gimple_function_base
     if (accumulate)
       {
 	auto acc = gimple_call_arg (f.call, 0);
-	ret = fold_build2 (PLUS_EXPR, TREE_TYPE (acc), acc, ret);
+	auto type = TREE_TYPE (acc);
+	/* The accumulation wraps, so do it in the unsigned type to avoid
+	   introducing signed overflow.  */
+	auto uns_type = unsigned_type_for (type);
+	ret = f.force_val (fold_build2 (PLUS_EXPR, uns_type,
+					f.force_val (build_cast (uns_type, acc)),
+					f.force_val (build_cast (uns_type, ret))));
+	ret = build_cast (type, ret);
       }
 
     return this->maybe_optimization_barrier (f, ret);
