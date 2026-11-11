@@ -1915,11 +1915,11 @@ diagnostic_manager::annotate_exploded_path (const path_builder &pb,
      rewind state.  */
   std::vector<region_model> src_models;
   std::vector<region_model> dst_models;
-  for (int idx = 0; idx < epath.m_elements.size (); ++idx)
+  for (unsigned int idx = 0; idx < epath.m_elements.size (); ++idx)
     {
       auto eedge = epath.m_elements[idx].m_eedge;
       if (logger)
-	logger->log ("edge[%i]: considering EN %i -> EN %i",
+	logger->log ("edge[%u]: considering EN %i -> EN %i",
 		     idx,
 		     eedge->m_src->m_index,
 		     eedge->m_dest->m_index);

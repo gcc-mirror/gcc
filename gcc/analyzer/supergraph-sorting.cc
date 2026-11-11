@@ -54,7 +54,7 @@ supergraph::reorder_nodes_and_ids (const std::vector<supernode *> &ordering,
 	  if ((size_t)snode->m_id == new_id)
 	    logger->log ("SN %i is unchanged", snode->m_id);
 	  else
-	    logger->log ("old SN %i is now SN %li", snode->m_id, new_id);
+	    logger->log ("old SN %i is now SN %zu", snode->m_id, new_id);
 	}
       m_nodes.safe_push (snode);
       snode->m_id = new_id;

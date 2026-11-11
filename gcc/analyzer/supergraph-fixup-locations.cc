@@ -75,7 +75,7 @@ public:
 	    node->m_loc = in_edge->m_src->m_loc;
 	    m_stats.m_num_copies++;
 	    if (m_logger)
-	      m_logger->log ("copying location 0x%lx from SN %i to SN %i",
+	      m_logger->log ("copying location 0x%wx from SN %i to SN %i",
 			     node->m_loc,
 			     in_edge->m_src->m_id, node->m_id);
 	    for (auto out_edge : node->m_succs)

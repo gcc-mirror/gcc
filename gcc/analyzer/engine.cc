@@ -328,7 +328,7 @@ public:
 			&& SSA_NAME_VAR (lhs) == SSA_NAME_VAR (m_var))
 		      {
 			if (logger)
-			  logger->log ("using location 0%lx from gassign",
+			  logger->log ("using location 0x%wx from gassign",
 				       assign->location);
 			ploc.m_event_loc_info.m_loc = assign->location;
 			return;
@@ -386,7 +386,7 @@ public:
 		    if (useful_location_p (stmt->location))
 		      {
 			if (logger)
-			  logger->log ("using location 0x%lx from stmt",
+			  logger->log ("using location 0x%wx from stmt",
 				       stmt->location);
 			ploc.m_event_loc_info.m_loc = stmt->location;
 			return;
@@ -1801,8 +1801,6 @@ interprocedural_return::add_events_to_path (checker_path *emission_path,
 bool
 interprocedural_return::try_to_rewind_data_flow (rewind_context &ctxt) const
 {
-  auto logger = ctxt.m_logger;
-
   tree lhs = gimple_call_lhs (&m_call_stmt);
   if (!lhs)
     return true;
@@ -1811,7 +1809,7 @@ interprocedural_return::try_to_rewind_data_flow (rewind_context &ctxt) const
   tree fndecl = src_enode_model.get_current_function ()->decl;
   tree fn_result = DECL_RESULT (fndecl);
 
-  ctxt.on_data_flow (DECL_RESULT (fndecl), lhs);
+  ctxt.on_data_flow (fn_result, lhs);
 
   return true;
 }
@@ -2199,8 +2197,10 @@ strongly_connected_components::dump () const
   for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     {
       const per_node_data &v = m_per_node[i];
-      fprintf (stderr, "SN %lu: index: %i lowlink: %i on_stack: %i\n",
-	       i, v.m_id, v.m_lowlink, v.m_on_stack);
+      fprintf (stderr,
+	       "SN " HOST_SIZE_T_PRINT_UNSIGNED
+	       ": index: %i lowlink: %i on_stack: %i\n",
+	       (fmt_size_t) i, v.m_id, v.m_lowlink, v.m_on_stack);
     }
 }
 

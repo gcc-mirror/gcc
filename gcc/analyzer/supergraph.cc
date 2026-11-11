@@ -251,7 +251,7 @@ supergraph::populate_for_basic_block (basic_block bb,
 	      /* We have an empty basic block with one out-edge,
 		 perhaps part of an empty infinite loop.  */
 	      if (logger)
-		logger->log ("using location 0x%lx from outedge",
+		logger->log ("using location 0x%wx from outedge",
 			     outedge->goto_locus);
 	      initial_snode_in_bb->m_loc = outedge->goto_locus;
 	    }
@@ -1007,7 +1007,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
     pp_string (pp, "<TR><TD>UNKNOWN_LOCATION</TD></TR>");
   else if (get_pure_location (m_loc) == UNKNOWN_LOCATION)
     {
-      pp_printf (pp, "<TR><TD>location: 0x%lx</TD></TR>", m_loc);
+      pp_printf (pp, "<TR><TD>location: 0x%wx</TD></TR>", m_loc);
       pp_string (pp, "<TR><TD>UNKNOWN_LOCATION</TD></TR>");
     }
   else
@@ -1024,7 +1024,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 	}
       if (show_location)
 	{
-	  pp_printf (pp, "<TR><TD>location: 0x%lx</TD></TR>", m_loc);
+	  pp_printf (pp, "<TR><TD>location: 0x%wx</TD></TR>", m_loc);
 
 	  /* Print changes to the expanded location (or all of it if
 	     we have multiple in-edges).  */
@@ -1074,7 +1074,7 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   if (args.m_node_annotator)
     args.m_node_annotator->add_node_annotations (gv, *this);
 
-  pp_printf (pp, "<TR><TD>m_stmt_loc: 0x%lx</TD></TR>", m_stmt_loc);
+  pp_printf (pp, "<TR><TD>m_stmt_loc: 0x%wx</TD></TR>", m_stmt_loc);
 
   pp_string (pp, "</TABLE>>];\n\n");
   pp_flush (pp);
@@ -1260,7 +1260,7 @@ superedge::dump_label_to_pp (pretty_printer *pp, bool user_facing) const
 	  pp_string (pp, ")");
 	}
       if (cfg_edge->goto_locus > BUILTINS_LOCATION)
-	pp_printf (pp, " (has goto_locus: 0x%lx)", cfg_edge->goto_locus);
+	pp_printf (pp, " (has goto_locus: 0x%wx)", cfg_edge->goto_locus);
     }
 }
 
