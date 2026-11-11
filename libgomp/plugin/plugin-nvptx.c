@@ -74,24 +74,14 @@ static void* create_target_indirect_map (size_t *, size_t,
 
 #define SOFTSTACK_CACHE_LIMIT 134217728
 
-#if CUDA_VERSION < 6000
-extern CUresult cuGetErrorString (CUresult, const char **);
-#define CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR 82
-#endif
-
-#if CUDA_VERSION >= 6050
+#if CUDA_VERSION < 8000
+# error "Compile against CUDA 8.0 or newer"
+#else
 #undef cuLinkCreate
 #undef cuLinkAddData
 CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
 			const char *, unsigned, CUjit_option *, void **);
 CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
-#else
-typedef size_t (*CUoccupancyB2DSize)(int);
-CUresult cuLinkAddData_v2 (CUlinkState, CUjitInputType, void *, size_t,
-			   const char *, unsigned, CUjit_option *, void **);
-CUresult cuLinkCreate_v2 (unsigned, CUjit_option *, void **, CUlinkState *);
-CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
-					  CUoccupancyB2DSize, size_t, int);
 #endif
 
 #define DO_PRAGMA(x) _Pragma (#x)
