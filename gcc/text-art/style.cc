@@ -142,21 +142,14 @@ style::color::print_sgr (pretty_printer *pp,
     case kind::BITS_8:
       {
 	ensure_separator (pp, need_separator);
-	if (fg)
-	  pp_string (pp, "38");
-	else
-	  pp_string (pp, "48");
-	pp_printf (pp, ";5;%i", (int)u.m_8bit);
+	pp_printf (pp, "%s;5;%i", fg ? "38" : "48", (int)u.m_8bit);
       }
       break;
     case kind::BITS_24:
       {
 	ensure_separator (pp, need_separator);
-	if (fg)
-	  pp_string (pp, "38");
-	else
-	  pp_string (pp, "48");
-	pp_printf (pp, ";2;%i;%i;%i",
+	pp_printf (pp, "%s;2;%i;%i;%i",
+		   fg ? "38" : "48",
 		   (int)u.m_24bit.r,
 		   (int)u.m_24bit.g,
 		   (int)u.m_24bit.b);

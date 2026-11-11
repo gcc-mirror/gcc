@@ -972,12 +972,20 @@ test_spans_3 ()
 	table.set_cell (c, styled_string ((cppchar_t)str[i]));
     }
 
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
   table.set_cell_span (table::rect_t (table::coord_t (0, 2),
 				      table::size_t (buf_size, 1)),
 		       styled_string::from_fmt (sm,
 						     nullptr,
 						     "'buf' (char[%i])",
 						     (int)buf_size));
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
   table.set_cell_span (table::rect_t (table::coord_t (buf_size + 1, 2),
 				      table::size_t (str_size - buf_size, 1)),
 		       styled_string (sm, "overflow"));
