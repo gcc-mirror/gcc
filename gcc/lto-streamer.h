@@ -505,6 +505,38 @@ struct lto_tree_ref_encoder
 };
 
 
+/* An early DIE reference independent of its tree.  */
+struct GTY (()) lto_die_ref
+{
+  const char *sym;
+  unsigned HOST_WIDE_INT off;
+};
+
+/* Origin encoding appended to FUNCTION_DECL and BLOCK records after their
+   ordinary DIE reference.  LGEN permits TREE.  WPA and incremental LTO
+   write DIE or NONE for newly streamed trees; copied bodies retain their
+   input encoding.  */
+enum lto_origin_ref_kind
+{
+  /* Use the original tree reference.  No additional fields.  */
+  LTO_ORIGIN_REF_TREE,
+  /* No saved origin; do not derive one from the tree.
+     No additional fields.  */
+  LTO_ORIGIN_REF_NONE,
+  /* Followed by a symbol string reference and an unsigned DIE offset.  */
+  LTO_ORIGIN_REF_DIE
+};
+
+/* Return true if T's LTO record includes an origin reference encoding.  */
+inline bool
+lto_origin_ref_node_p (const_tree t)
+{
+  return TREE_CODE (t) == FUNCTION_DECL || TREE_CODE (t) == BLOCK;
+}
+
+typedef hash_map<int_hash<unsigned, UINT_MAX>, lto_die_ref>
+  lto_die_ref_map;
+
 /* Structure to hold states of input scope.  */
 struct GTY((for_user)) lto_in_decl_state
 {
@@ -783,6 +815,14 @@ struct output_block
 };
 
 
+struct lto_pending_origin_ref
+{
+  unsigned index;
+  /* Encoded abstract-origin reference.  */
+  int origin;
+  lto_die_ref ref;
+};
+
 /* Data and descriptors used when reading from an LTO file.  */
 class data_in
 {
@@ -802,12 +842,22 @@ public:
   /* Cache of pickled nodes.  */
   struct streamer_tree_cache_d *reader_cache;
 
+  /* Cache slots keep their input identity when SCC unification replaces
+     their trees.  Values contain no references to the discarded trees.  */
+  lto_die_ref_map *die_refs = nullptr;
+
+  /* Input references awaiting registration for the current batch of trees.  */
+  auto_vec<lto_pending_origin_ref> pending_origin_refs;
+
   /* Cache of source code location.  */
   lto_location_cache location_cache;
 
   explicit data_in (lto_file_decl_data *data_for_loc)
     : location_cache{data_for_loc}
   {}
+
+  void save_die_ref (unsigned index, lto_die_ref ref);
+  void register_origin_refs ();
 };
 
 
@@ -919,7 +969,8 @@ hashval_t lto_input_scc (class lto_input_block *, class data_in *,
 tree lto_input_tree_1 (class lto_input_block *, class data_in *,
 		       enum LTO_tags, hashval_t hash);
 tree lto_input_tree (class lto_input_block *, class data_in *);
-tree stream_read_tree_ref (class lto_input_block *, class data_in *);
+tree stream_read_tree_ref (class lto_input_block *, class data_in *,
+			   int * = nullptr);
 
 
 /* In lto-streamer-out.cc  */

@@ -1796,6 +1796,7 @@ unify_scc (class data_in *data_in, unsigned from,
 	     ???  Do as in the size-one SCC case which involves sorting
 	     the queue.  */
 	  dref_queue.truncate (0);
+	  data_in->pending_origin_refs.truncate (0);
 
 	  break;
 	}
@@ -1996,6 +1997,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      process_new_tree (t, &hm, from, &total, data_in);
 	    }
 	}
+      data_in->register_origin_refs ();
     }
 
   /* Dump type statistics.  */

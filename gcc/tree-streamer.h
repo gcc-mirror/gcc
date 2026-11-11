@@ -61,7 +61,8 @@ struct streamer_tree_cache_d
 tree streamer_read_string_cst (class data_in *, class lto_input_block *);
 tree streamer_alloc_tree (class lto_input_block *, class data_in *,
 		          enum LTO_tags);
-void streamer_read_tree_body (class lto_input_block *, class data_in *, tree);
+void streamer_read_tree_body (class lto_input_block *, class data_in *, tree,
+			      int *);
 tree streamer_get_pickled_tree (class lto_input_block *, class data_in *);
 void streamer_read_tree_bitfields (class lto_input_block *,
 				   class data_in *, tree);

@@ -771,12 +771,13 @@ lto_input_ts_decl_minimal_tree_pointers (class lto_input_block *ib,
 
 static void
 lto_input_ts_decl_common_tree_pointers (class lto_input_block *ib,
-					class data_in *data_in, tree expr)
+					class data_in *data_in, tree expr,
+					int *origin_ref)
 {
   DECL_SIZE (expr) = stream_read_tree_ref (ib, data_in);
   DECL_SIZE_UNIT (expr) = stream_read_tree_ref (ib, data_in);
   DECL_ATTRIBUTES (expr) = stream_read_tree_ref (ib, data_in);
-  DECL_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in);
+  DECL_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in, origin_ref);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -978,12 +979,13 @@ lto_input_ts_exp_tree_pointers (class lto_input_block *ib,
 
 static void
 lto_input_ts_block_tree_pointers (class lto_input_block *ib,
-				  class data_in *data_in, tree expr)
+				  class data_in *data_in, tree expr,
+				  int *origin_ref)
 {
   BLOCK_VARS (expr) = streamer_read_chain (ib, data_in);
 
   BLOCK_SUPERCONTEXT (expr) = stream_read_tree_ref (ib, data_in);
-  BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in);
+  BLOCK_ABSTRACT_ORIGIN (expr) = stream_read_tree_ref (ib, data_in, origin_ref);
   /* We may end up prevailing a decl with DECL_ORIGIN (t) != t here
      which breaks the invariant that BLOCK_ABSTRACT_ORIGIN is the
      ultimate origin.  Fixup here.
@@ -1107,7 +1109,7 @@ lto_input_ts_omp_clause_tree_pointers (class lto_input_block *ib,
 
 void
 streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
-			 tree expr)
+			 tree expr, int *origin_ref)
 {
   enum tree_code code;
 
@@ -1129,7 +1131,7 @@ streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
     lto_input_ts_decl_minimal_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
-    lto_input_ts_decl_common_tree_pointers (ib, data_in, expr);
+    lto_input_ts_decl_common_tree_pointers (ib, data_in, expr, origin_ref);
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_NON_COMMON))
     lto_input_ts_decl_non_common_tree_pointers (ib, data_in, expr);
@@ -1159,7 +1161,7 @@ streamer_read_tree_body (class lto_input_block *ib, class data_in *data_in,
     lto_input_ts_exp_tree_pointers (ib, data_in, expr);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BLOCK))
-    lto_input_ts_block_tree_pointers (ib, data_in, expr);
+    lto_input_ts_block_tree_pointers (ib, data_in, expr, origin_ref);
 
   if (CODE_CONTAINS_STRUCT (code, TS_BINFO))
     lto_input_ts_binfo_tree_pointers (ib, data_in, expr);

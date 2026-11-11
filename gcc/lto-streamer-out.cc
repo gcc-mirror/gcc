@@ -735,6 +735,24 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
       else
 	streamer_write_string (ob, ob->main_stream, NULL, true);
     }
+
+  if (lto_origin_ref_node_p (expr))
+    {
+      const char *sym;
+      unsigned HOST_WIDE_INT off;
+      if (debug_info_level > DINFO_LEVEL_NONE
+	  && debug_hooks->die_ref_for_decl (expr, DEBUG_ABSTRACT_ORIGIN_REF,
+					    &sym, &off))
+	{
+	  streamer_write_uhwi (ob, LTO_ORIGIN_REF_DIE);
+	  streamer_write_string (ob, ob->main_stream, sym, true);
+	  streamer_write_uhwi (ob, off);
+	}
+      else if (flag_wpa || flag_incremental_link == INCREMENTAL_LINK_LTO)
+	streamer_write_uhwi (ob, LTO_ORIGIN_REF_NONE);
+      else
+	streamer_write_uhwi (ob, LTO_ORIGIN_REF_TREE);
+    }
 }
 
 /* Write a physical representation of tree node EXPR to output block

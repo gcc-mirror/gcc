@@ -1767,11 +1767,44 @@ lto_input_variable_constructor (struct lto_file_decl_data *file_data,
    are only applied to prevailing tree nodes during tree merging.  */
 vec<dref_entry> dref_queue;
 
+/* Save REF for reader-cache slot INDEX before its tree can be replaced.  */
+
+void
+data_in::save_die_ref (unsigned index, lto_die_ref ref)
+{
+  if (!die_refs)
+    die_refs = new lto_die_ref_map;
+  ref.sym = IDENTIFIER_POINTER (get_identifier (ref.sym));
+  die_refs->put (index, ref);
+}
+
+/* Resolve and register origins for retained trees.  SCC unification does
+   not change the saved slot-to-DIE mappings.  */
+
+void
+data_in::register_origin_refs ()
+{
+  for (const auto &entry : pending_origin_refs)
+    {
+      const lto_die_ref *ref = &entry.ref;
+      if (entry.origin > 0 && die_refs)
+	ref = die_refs->get (entry.origin - 1);
+      if (ref && ref->sym)
+	{
+	  tree owner = streamer_tree_cache_get_tree (reader_cache, entry.index);
+	  debug_hooks->register_external_die
+	    (owner, DEBUG_ABSTRACT_ORIGIN_REF, ref->sym, ref->off);
+	}
+    }
+  pending_origin_refs.truncate (0);
+}
+
 /* Read the physical representation of a tree node EXPR from
    input block IB using the per-file context in DATA_IN.  */
 
 static void
-lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
+lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr,
+		 unsigned index)
 {
   /* Read all the bitfield values in EXPR.  Note that for LTO, we
      only write language-independent bitfields, so no more unpacking is
@@ -1779,7 +1812,8 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
   streamer_read_tree_bitfields (ib, data_in, expr);
 
   /* Read all the pointer fields in EXPR.  */
-  streamer_read_tree_body (ib, data_in, expr);
+  int origin = 0;
+  streamer_read_tree_body (ib, data_in, expr, &origin);
 
   /* Read any LTO-specific data not read by the tree streamer.  Do not use
      stream_read_tree here since that flushes the dref_queue in mids of
@@ -1804,12 +1838,33 @@ lto_read_tree_1 (class lto_input_block *ib, class data_in *data_in, tree expr)
 	  unsigned HOST_WIDE_INT off = streamer_read_uhwi (ib);
 	  dref_entry e = { expr, str, off };
 	  dref_queue.safe_push (e);
+	  if (debug_info_level > DINFO_LEVEL_NONE
+	      && lto_origin_ref_node_p (expr))
+	    data_in->save_die_ref (index, { str, off });
 	}
       /* When there's no early DIE to refer to but dwarf2out set up
 	 things in a way to expect that fixup.  This tends to happen
 	 with -g1, see for example PR113488.  */
       else if (DECL_P (expr) && DECL_ABSTRACT_ORIGIN (expr) == expr)
 	DECL_ABSTRACT_ORIGIN (expr) = NULL_TREE;
+    }
+
+  if (lto_origin_ref_node_p (expr))
+    {
+      lto_die_ref ref = {};
+
+      unsigned kind = streamer_read_uhwi (ib);
+      if (kind != LTO_ORIGIN_REF_TREE)
+	origin = 0;
+      if (kind == LTO_ORIGIN_REF_DIE)
+	{
+	  const char *sym = streamer_read_string (data_in, ib);
+	  ref = { IDENTIFIER_POINTER (get_identifier (sym)),
+		  streamer_read_uhwi (ib) };
+	}
+      if (debug_info_level > DINFO_LEVEL_NONE
+	  && (ref.sym || (origin && origin != (int) index + 1)))
+	data_in->pending_origin_refs.safe_push ({ index, origin, ref });
     }
 
 #ifdef ACCEL_COMPILER
@@ -1851,7 +1906,8 @@ lto_read_tree (class lto_input_block *ib, class data_in *data_in,
      structure can be resolved in subsequent calls to stream_read_tree.  */
   streamer_tree_cache_append (data_in->reader_cache, result, hash);
 
-  lto_read_tree_1 (ib, data_in, result);
+  lto_read_tree_1 (ib, data_in, result,
+		   data_in->reader_cache->nodes.length () - 1);
 
   return result;
 }
@@ -1908,7 +1964,7 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 	{
 	  result = streamer_tree_cache_get_tree (data_in->reader_cache,
 						 first + i);
-	  lto_read_tree_1 (ib, data_in, result);
+	  lto_read_tree_1 (ib, data_in, result, first + i);
 	}
     }
 
@@ -1920,12 +1976,15 @@ lto_input_scc (class lto_input_block *ib, class data_in *data_in,
 /* Read reference to tree from IB and DATA_IN.
    This is used for streaming tree bodies where we know that
    the tree is already in cache or is indexable and
-   must be matched with stream_write_tree_ref.  */
+   must be matched with stream_write_tree_ref.  If REF is nonnull,
+   also return the encoded reference before resolving it to a tree.  */
 
 tree
-stream_read_tree_ref (lto_input_block *ib, data_in *data_in)
+stream_read_tree_ref (lto_input_block *ib, data_in *data_in, int *ref)
 {
   int ix = streamer_read_hwi (ib);
+  if (ref)
+    *ref = ix;
   if (!ix)
     return NULL_TREE;
   if (ix > 0)
@@ -2030,6 +2089,7 @@ lto_input_tree (class lto_input_block *ib, class data_in *data_in)
 					  e.sym, e.off);
       gcc_checking_assert (dref_queue.is_empty ());
     }
+  data_in->register_origin_refs ();
   return t;
 }
 
@@ -2291,5 +2351,6 @@ lto_data_in_delete (class data_in *data_in)
 {
   data_in->globals_resolution.release ();
   streamer_tree_cache_delete (data_in->reader_cache);
+  delete data_in->die_refs;
   delete data_in;
 }
