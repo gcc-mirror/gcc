@@ -4274,7 +4274,7 @@ private:
 #  pragma GCC diagnostic push
 #  pragma GCC diagnostic ignored "-Wformat-diag"
 #endif
-    pp_printf (&pp_header, "Content-Length: %li\n\n", content_length);
+    pp_printf (&pp_header, "Content-Length: %zu\n\n", content_length);
 #if __GNUC__ >= 10
 #  pragma GCC diagnostic pop
 #endif

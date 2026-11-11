@@ -37,6 +37,12 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "selftest.h"
 
+/* Disable -Wformat-diag; pp_printf here builds dot labels, not diagnostics.  */
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+
 namespace diagnostics {
 namespace digraphs {
 namespace to_dot {
@@ -321,3 +327,7 @@ make_converter_from_cfg ()
 } // namespace to_dot
 } // namespace digraphs
 } // namespace diagnostics
+
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
