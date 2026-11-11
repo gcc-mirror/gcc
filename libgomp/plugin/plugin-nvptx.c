@@ -78,6 +78,16 @@ static void* create_target_indirect_map (size_t *, size_t,
 # error "Compile against CUDA 8.0 or newer"
 #endif
 
+#if CUDA_VERSION < 9020
+/* Added in CUDA 9.2.  */
+CUresult cuDeviceGetUuid(CUuuid *, CUdevice);
+#endif
+
+#if CUDA_VERSION < 11040
+/* Added in CUDA 11.4.0.  */
+CUresult cuDeviceGetUuid_v2(CUuuid *, CUdevice);
+#endif
+
 #define DO_PRAGMA(x) _Pragma (#x)
 
 #ifndef PLUGIN_NVPTX_LINK_LIBCUDA
