@@ -123,7 +123,8 @@ enum {
 #define CU_LAUNCH_PARAM_END ((void *) 0)
 #define CU_LAUNCH_PARAM_BUFFER_POINTER ((void *) 1)
 #define CU_LAUNCH_PARAM_BUFFER_SIZE ((void *) 2)
-#define CU_MEMHOSTALLOC_DEVICEMAP 0x02U
+
+#define CU_MEMHOSTALLOC_DEVICEMAP 0x02
 
 enum {
   CU_STREAM_DEFAULT = 0,
