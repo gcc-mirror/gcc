@@ -136,3 +136,7 @@ Tune expected memory latency.
 mtls-size=
 Target RejectNegative Joined UInteger Var(alpha_tls_size) Init(32)
 Specify bit size of immediate TLS offsets.
+
+mlra
+Target Var(alpha_lra_p) Init(-1) Undocumented
+Use LRA instead of reload (transitional).

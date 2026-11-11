@@ -89,3 +89,5 @@ UrlSuffix(gcc/DEC-Alpha-Options.html#index-mmemory-latency)
 mtls-size=
 UrlSuffix(gcc/DEC-Alpha-Options.html#index-mtls-size-1)
 
+; skipping UrlSuffix for 'mlra' due to finding no URLs
+
