@@ -126,8 +126,9 @@
        (eq_attr "type" "jsr"))
   "ev6_l0")
 
-; Ftoi/itof only issue to lower pipes.
-(define_insn_reservation "ev6_itof" 3
+; Ftoi/itof only issue to lower pipes.  Table 2-4 of the Compiler Writer's
+; Guide gives itof a latency of 4.
+(define_insn_reservation "ev6_itof" 4
   (and (eq_attr "tune" "ev6")
        (eq_attr "type" "itof"))
   "ev6_l")
@@ -136,6 +137,10 @@
   (and (eq_attr "tune" "ev6")
        (eq_attr "type" "ftoi"))
   "ev6_fst,nothing,ev6_l")
+
+; An itof feeding an ftoi directly costs 8 cycles rather than 4.  Routing the
+; value through a floating-point operate avoids the penalty.
+(define_bypass 8 "ev6_itof" "ev6_ftoi")
 
 (define_insn_reservation "ev6_fmul" 4
   (and (eq_attr "tune" "ev6")
