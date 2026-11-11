@@ -4,7 +4,7 @@
 struct X
 {
     X (int x) noexcept
-     pre (x>1)
+     pre (x>1)			// { dg-error "false" "" { target implicit_constexpr } }
     {
       try {
        int i = 1;

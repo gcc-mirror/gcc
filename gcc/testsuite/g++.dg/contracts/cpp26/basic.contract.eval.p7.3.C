@@ -9,6 +9,7 @@ extern bool runtime_check ();
 
 consteval void foo( auto x ) pre ( runtime_check () ) {}
 // { dg-error {contract condition is not constant} "" { target *-*-* } .-1 }
+// { dg-message {runtime_check} "" { target *-*-* } .-2 }
 int main() {
   foo( 42 ); // { dg-error {call to consteval function 'foo<int>\(42\)' is not a constant expression} }
 }

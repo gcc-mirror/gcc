@@ -53,6 +53,7 @@ do {									\
 static HOST_WIDE_INT find_array_ctor_elt (tree ary, tree dindex,
 					  bool insert = false);
 static int array_index_cmp (tree key, tree index);
+static bool check_for_failed_contracts (const constexpr_ctx *ctx);
 
 /* Returns true iff FUN is an instantiation of a constexpr function
    template or a defaulted constexpr function.  */
@@ -11260,42 +11261,43 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	r = void_node;
 	/* Only record the first fail, and do not go further is the semantic
 	   is 'ignore'.  */
-	if (*non_constant_p || ctx->global->contract_statement
+	if (*non_constant_p
+	    || (ctx->global->contract_statement
+		&& contract_terminating_p (ctx->global->contract_statement))
 	    || contract_ignored_p (t))
 	  break;
 
 	tree cond = CONTRACT_CONDITION (t);
- 	if (!potential_rvalue_constant_expression (cond))
+	bool ctrct_non_const_p = !potential_rvalue_constant_expression (cond);
+	tree eval = boolean_true_node;
+	if (!ctrct_non_const_p)
  	  {
- 	    ctx->global->contract_statement = t;
- 	    ctx->global->contract_condition_non_const = true;
- 	    break;
+	    /* We need to evaluate and stash the result of this here, since
+	       whether it needs to be reported (and how) depends on whether the
+	       containing expression is otherwise const.  */
+	    bool ctrct_overflow_p = false;
+	    tree jmp_target = NULL_TREE;
+	    constexpr_ctx new_ctx = *ctx;
+	    new_ctx.quiet = true;
+	    /* Avoid modification of existing values.  */
+	    modifiable_tracker ms (new_ctx.global);
+	    eval = (cxx_eval_constant_expression
+		    (&new_ctx, cond, vc_prvalue, &ctrct_non_const_p,
+		     &ctrct_overflow_p, &jmp_target));
 	  }
 
-	/* We need to evaluate and stash the result of this here, since whether
-	   it needs to be reported (and how) depends on whether the containing
-	   expression is otherwise const.  */
-	bool ctrct_non_const_p = false;
-	bool ctrct_overflow_p = false;
-	tree jmp_target = NULL_TREE;
-	constexpr_ctx new_ctx = *ctx;
-	new_ctx.quiet = true;
-	/* Avoid modification of existing values.  */
-	modifiable_tracker ms (new_ctx.global);
-	tree eval =
-	  cxx_eval_constant_expression (&new_ctx, cond, vc_prvalue,
-					&ctrct_non_const_p,
-					&ctrct_overflow_p, &jmp_target);
-	/* Not a constant.  */
-	if (ctrct_non_const_p)
+	/* Not a constant or check failed.  */
+	if (ctrct_non_const_p || integer_zerop (eval))
  	  {
  	    ctx->global->contract_statement = t;
- 	    ctx->global->contract_condition_non_const = true;
- 	    break;
+	    ctx->global->contract_condition_non_const = ctrct_non_const_p;
 	  }
-	/* Constant, but check failed.  */
-	if (integer_zerop (eval))
-	  ctx->global->contract_statement = t;
+
+	/* If diagnosing, do it while we have the cx_call_context.  */
+	if (!ctx->quiet
+	    && check_for_failed_contracts (ctx))
+	  /* And for a terminating semantic, stop evaluating.  */
+	  *non_constant_p = true;
       }
       break;
 
@@ -11521,13 +11523,15 @@ mark_non_constant (tree t)
    a failed or non-constant contract that would invalidate this.  */
 
 static bool
-check_for_failed_contracts (constexpr_ctx *ctx)
+check_for_failed_contracts (const constexpr_ctx *ctx)
 {
   constexpr_global_ctx *const global_ctx = ctx->global;
   if (!flag_contracts || !global_ctx->contract_statement)
     return false;
 
   location_t loc = EXPR_LOCATION (global_ctx->contract_statement);
+  tree cond = CONTRACT_CONDITION (global_ctx->contract_statement);
+  loc = cp_expr_loc_or_loc (cond, loc);
   enum diagnostics::kind kind;
   bool error = false;
   /* [intro.compliance.general]/2.3.4. */
@@ -11545,16 +11549,24 @@ check_for_failed_contracts (constexpr_ctx *ctx)
   else
     kind = diagnostics::kind::warning;
 
+  auto_diagnostic_group d;
+
   /* [basic.contract.eval]/7.3 */
   if (global_ctx->contract_condition_non_const)
     {
       emit_diagnostic (kind, loc, 0, "contract condition is not constant");
+      if (error)
+	cxx_constant_value (cond);
       return error;
     }
 
   /* Otherwise, the evaluation was const, but determined to be false.  */
   emit_diagnostic (kind, loc, 0,
 		   "contract predicate is false in constant expression");
+  /* Workaround: Avoid redundant "in expansion of macro".  */
+  loc = linemap_resolve_location (line_table, loc,
+				  LRK_SPELLING_LOCATION, NULL);
+  diagnose_failing_condition (cond, loc, /*show_expr*/true, ctx);
   return error;
 }
 
@@ -11873,6 +11885,57 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (!non_constant_p && overflow_p)
     non_constant_p = true;
 
+  /* If allow_non_constant, we delay diagnosing contracts until we know
+     that the expression is otherwise constant.
+
+     Various constexpr contract violation scenarios:
+     * MCE, non-SFINAE, terminating: diagnose and mark non-constant
+       during evaluation
+     * MCE, non-SFINAE, non-terminating: diagnose during evaluation
+     * MCE, SFINAE, terminating: diagnose in repeated eval, return
+       error_mark_node for SFINAE
+     * MCE, SFINAE, non-terminating: diagnose in repeated eval
+     * non-MCE: diagnose in repeated eval, set non-constant so run-time
+       violation handler also sees the violation
+
+     For MCE+terminating, the necessary semantics are just a hard error; what
+     happens after that is error-recovery.
+
+     In the non-SFINAE (!allow_non_constant) case I think it's clearly
+     preferable to stop evaluation after the violation, which we do by marking
+     the evaluation non-constant.  We could work harder to return
+     error_mark_node instead like the SFINAE case below, but that seems
+     unnecessary.
+
+     The allow_non_constant case is trickier, because that expresses both
+     actual SFINAE and cases like finish_static_assert where we do one trial
+     evaluation to see if it's constant, and then another to get the actual
+     error if needed.  So if we set non_constant_p like for the
+     !allow_non_constant case, we get SFINAE consistent with
+     e.g. _GLIBCXX_ASSERT_FAIL, but we get redundant errors with static_assert.
+     We can finesse it a bit more by returning error_mark_node, which
+     finish_static_assert distinguishes from non-constant.
+
+     ??? cp_fold_immediate_r should change to follow the finish_static_assert
+     pattern (using maybe_constant_value instead of cxx_constant_value for the
+     trial evaluation) once the consteval-only values overhaul goes in.  */
+
+  if (!non_constant_p && allow_non_constant
+      && global_ctx.contract_statement)
+    {
+      /* Repeat evaluation to get cx_call_context for the diagnostic.  */
+      cxx_eval_outermost_constant_expr (t, /*allow*/false, strict,
+					manifestly_const_eval,
+					constexpr_dtor, object);
+      if (ctx.manifestly_const_eval != mce_true)
+	/* Treat it as non-constant so the violation is also detectable at
+	   runtime (if the compile succeeds because we're observing).  */
+	non_constant_p = true;
+      else if (contract_terminating_p (global_ctx.contract_statement))
+	/* Substitution failure (see discussion above).  */
+	return error_mark_node;
+    }
+
   /* Unshare the result.  */
   bool should_unshare = true;
   if (r == t || (TREE_CODE (t) == TARGET_EXPR
@@ -11881,19 +11944,6 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
 
   if (non_constant_p && !allow_non_constant)
     return error_mark_node;
-  else if (check_for_failed_contracts (&ctx))
-    {
-      if (manifestly_const_eval == mce_true)
-	/* If MCE, we gave a hard error and return error_mark_node.  */
-	return error_mark_node;
-      else
-	{
-	  /* Otherwise treat it as non-constant so the violation is still
-	     detectable at run-time.  */
-	  gcc_checking_assert (allow_non_constant);
-	  return t;
-	}
-    }
   else if (non_constant_p && TREE_CONSTANT (r))
     r = mark_non_constant (r);
   else if (non_constant_p)

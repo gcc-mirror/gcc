@@ -35,7 +35,7 @@ void handle_contract_violation(const std::contracts::contract_violation& violati
 struct X
 {
 
-    X(const int x) noexcept post(x>1) try
+    X(const int x) noexcept post(x>1) try // { dg-warning "false" "" { target implicit_constexpr } }
     {
        int i = 1;
     }
