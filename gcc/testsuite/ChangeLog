@@ -1,3 +1,11 @@
+2026-11-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-11-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124262
+	* gcc.dg/fold-round-1.c: Require c99_runtime.
+
 2026-11-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
