@@ -14,7 +14,7 @@
 **	.p2align 3
 **.L16:
 **	vpxor	%xmm0, %xmm0, %xmm0
-**	vpternlogd	\$0xFF, %zmm0, %zmm0, %zmm0
+**	vpternlogd	\$255, %zmm0, %zmm0, %zmm0
 **	cmpl	\$64, %esi
 **	jnb	.L17
 **	cmpl	\$32, %esi

@@ -15,4 +15,4 @@ v8di foo_v8di (const long long *a)
     return (__extension__ (v8di) {~*a, ~*a, ~*a, ~*a, ~*a, ~*a, ~*a, ~*a});
 }
 
-/* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$0x55, \\(%(?:eax|rdi|edi)\\)\\\{1to\[1-8\]+\\\}" 2 } } */
+/* { dg-final { scan-assembler-times "vpternlog\[dq\]\[ \\t\]+\\\$85, \\(%(?:eax|rdi|edi)\\)\\\{1to\[1-8\]+\\\}" 2 } } */

@@ -1101,13 +1101,6 @@
 	    (ior (match_test "op == const1_rtx")
 		 (match_test "op == constm1_rtx")))))
 
-;; True for registers, or (not: registers).  Used to optimize 3-operand
-;; bitwise operation.
-(define_predicate "regmem_or_bitnot_regmem_operand"
-  (ior (match_operand 0 "nonimmediate_operand")
-       (and (match_code "not")
-	    (match_test "nonimmediate_operand (XEXP (op, 0), mode)"))))
-
 ;; True for expressions valid for 3-operand ternlog instructions.
 (define_predicate "ternlog_operand"
   (and (match_code "not,and,ior,xor")
