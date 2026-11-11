@@ -307,8 +307,7 @@ CUresult cuModuleGetGlobal (CUdeviceptr *, size_t *, CUmodule, const char *);
 CUresult cuModuleLoad (CUmodule *, const char *);
 CUresult cuModuleLoadData (CUmodule *, const void *);
 CUresult cuModuleUnload (CUmodule);
-CUresult cuPointerGetAttribute (CUmemorytype *, CUpointer_attribute,
-				CUdeviceptr);
+CUresult cuPointerGetAttribute (void *, CUpointer_attribute, CUdeviceptr);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
 typedef void (*CUstreamCallback)(CUstream, CUresult, void *);
