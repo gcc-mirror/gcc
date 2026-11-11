@@ -1844,7 +1844,8 @@ c_parser_gimple_postfix_expression (gimple_parser &parser, tree ret_type)
 		  if (VECTOR_TYPE_P (type)
 		      && !c_parser_next_token_is (parser, CPP_CLOSE_BRACE))
 		    {
-		      vec_alloc (v, TYPE_VECTOR_SUBPARTS (type).to_constant ());
+		      vec_alloc (v, constant_lower_bound (
+				      TYPE_VECTOR_SUBPARTS (type)));
 		      do
 			{
 			  tree val
