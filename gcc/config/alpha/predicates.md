@@ -201,14 +201,14 @@
       return op == CONST0_RTX (mode);
 
     case CONST_VECTOR:
-      if (reload_in_progress || reload_completed)
+      if (lra_in_progress || reload_in_progress || reload_completed)
 	return alpha_legitimate_constant_p (mode, op);
       return op == CONST0_RTX (mode);
 
     case CONST_INT:
       if (mode == QImode || mode == HImode)
 	return true;
-      if (reload_in_progress || reload_completed)
+      if (lra_in_progress || reload_in_progress || reload_completed)
 	return alpha_legitimate_constant_p (mode, op);
       return add_operand (op, mode);
 
