@@ -1811,6 +1811,44 @@
   [(set_attr "type" "sop2,sop2,vop2")
    (set_attr "length" "8")])
 
+; Without these, the middle end sets the two halves via subregs, which
+; leaves the DImode pseudo live (partially undefined) all the way back
+; to the function entry.  Splitting after reload avoids that.
+
+(define_insn_and_split "zero_extendsidi2"
+  [(set (match_operand:DI 0 "register_operand")
+	(zero_extend:DI (match_operand:SI 1 "register_operand")))]
+  ""
+  {@ [cons: =0,1; attrs: type,length]
+   [Sg,Sg;mult,8] #
+   [v ,v ;mult,8] #
+  }
+  "&& reload_completed"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 3) (const_int 0))]
+  {
+    operands[2] = gcn_operand_part (DImode, operands[0], 0);
+    operands[3] = gcn_operand_part (DImode, operands[0], 1);
+  })
+
+(define_insn_and_split "extendsidi2"
+  [(set (match_operand:DI 0 "register_operand")
+	(sign_extend:DI (match_operand:SI 1 "register_operand")))
+   (clobber (match_scratch:BI 2))]
+  ""
+  {@ [cons: =0,1,=2; attrs: type,length]
+   [Sg,Sg,cs;mult,12] #
+   [v ,v ,X ;mult,12] #
+  }
+  "&& reload_completed"
+  [(set (match_dup 3) (match_dup 1))
+   (parallel [(set (match_dup 4) (ashiftrt:SI (match_dup 3) (const_int 31)))
+	      (clobber (match_dup 2))])]
+  {
+    operands[3] = gcn_operand_part (DImode, operands[0], 0);
+    operands[4] = gcn_operand_part (DImode, operands[0], 1);
+  })
+
 ;; }}}
 ;; {{{ ALU: generic 128-bit binop
 
