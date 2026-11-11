@@ -1045,13 +1045,18 @@ get_unit_stream (gfc_unit *u)
 #endif
 }
 
+/* 64-bit atomics only where inline; libgfortran does not link libatomic.  */
+#if defined (HAVE_ATOMIC_FETCH_ADD) && __GCC_ATOMIC_LLONG_LOCK_FREE == 2
+# define GFC_ATOMIC_FILE_ID 1
+#endif
+
 /* Record the unit's file identity.  Must be called before the matching
    set_unit_stream.  */
 
 static inline void
 set_unit_file_id (gfc_unit *u, uint64_t dev, uint64_t ino)
 {
-#ifdef HAVE_ATOMIC_FETCH_ADD
+#ifdef GFC_ATOMIC_FILE_ID
   __atomic_store_n (&u->file_dev, dev, __ATOMIC_RELAXED);
   __atomic_store_n (&u->file_ino, ino, __ATOMIC_RELAXED);
 #else
@@ -1063,7 +1068,7 @@ set_unit_file_id (gfc_unit *u, uint64_t dev, uint64_t ino)
 static inline bool
 unit_file_id_matches (gfc_unit *u, uint64_t dev, uint64_t ino)
 {
-#ifdef HAVE_ATOMIC_FETCH_ADD
+#ifdef GFC_ATOMIC_FILE_ID
   return (__atomic_load_n (&u->file_dev, __ATOMIC_RELAXED) == dev
 	  && __atomic_load_n (&u->file_ino, __ATOMIC_RELAXED) == ino);
 #else
