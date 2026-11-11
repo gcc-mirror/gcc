@@ -5541,6 +5541,7 @@ cxx_init_operator_new_delete_decls (void)
       bad_alloc_decl
 	= create_implicit_typedef (bad_alloc_id, bad_alloc_type_node);
       DECL_CONTEXT (bad_alloc_decl) = current_namespace;
+      TREE_PUBLIC (bad_alloc_decl) = true;
       pop_nested_namespace (std_node);
 
       new_eh_spec

@@ -365,6 +365,7 @@ lookup_std_type (tree name_id)
       create_implicit_typedef (name_id, res_type);
       DECL_SOURCE_LOCATION (TYPE_NAME (res_type)) = BUILTINS_LOCATION;
       DECL_CONTEXT (TYPE_NAME (res_type)) = current_namespace;
+      TREE_PUBLIC (TYPE_NAME (res_type)) = true;
       pushdecl_namespace_level (TYPE_NAME (res_type), /*hidden*/true);
       pop_nested_namespace (std_node);
     }
@@ -2441,6 +2442,7 @@ lookup_std_contracts_type (tree name_id)
       create_implicit_typedef (name_id, res_type);
       DECL_SOURCE_LOCATION (TYPE_NAME (res_type)) = BUILTINS_LOCATION;
       DECL_CONTEXT (TYPE_NAME (res_type)) = current_namespace;
+      TREE_PUBLIC (TYPE_NAME (res_type)) = true;
       pushdecl_namespace_level (TYPE_NAME (res_type), /*hidden*/true);
       pop_namespace ();
       pop_nested_namespace (std_node);
