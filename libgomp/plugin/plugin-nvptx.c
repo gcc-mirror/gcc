@@ -76,12 +76,6 @@ static void* create_target_indirect_map (size_t *, size_t,
 
 #if CUDA_VERSION < 8000
 # error "Compile against CUDA 8.0 or newer"
-#else
-#undef cuLinkCreate
-#undef cuLinkAddData
-CUresult cuLinkAddData (CUlinkState, CUjitInputType, void *, size_t,
-			const char *, unsigned, CUjit_option *, void **);
-CUresult cuLinkCreate (unsigned, CUjit_option *, void **, CUlinkState *);
 #endif
 
 #define DO_PRAGMA(x) _Pragma (#x)
@@ -195,9 +189,6 @@ cuda_error (CUresult r)
 {
   const char *fallback = "unknown cuda error";
   const char *desc;
-
-  if (!CUDA_CALL_EXISTS (cuGetErrorString))
-    return fallback;
 
   r = CUDA_CALL_NOCHECK (cuGetErrorString, r, &desc);
   if (r == CUDA_SUCCESS)
@@ -515,19 +506,8 @@ nvptx_open_device (int n)
 		  &pi, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_BLOCK, dev);
   ptx_dev->regs_per_block = pi;
 
-  /* CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR is defined only
-     in CUDA 6.0 and newer.  */
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR,
-			 dev);
-  /* Fallback: use limit of registers per block, which is usually equal.  */
-  if (r == CUDA_ERROR_INVALID_VALUE)
-    pi = ptx_dev->regs_per_block;
-  else if (r != CUDA_SUCCESS)
-    {
-      GOMP_PLUGIN_error ("cuDeviceGetAttribute error: %s", cuda_error (r));
-      return NULL;
-    }
+  CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
+		  &pi, CU_DEVICE_ATTRIBUTE_MAX_REGISTERS_PER_MULTIPROCESSOR, dev);
   ptx_dev->regs_per_sm = pi;
 
   CUDA_CALL_ERET (NULL, cuDeviceGetAttribute,
@@ -779,24 +759,16 @@ link_ptx (CUmodule *module, const struct targ_ptx_obj *ptx_objs,
       nopts++;
     }
 
-  if (CUDA_CALL_EXISTS (cuLinkCreate_v2))
-    CUDA_CALL (cuLinkCreate_v2, nopts, opts, optvals, &linkstate);
-  else
-    CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
+  CUDA_CALL (cuLinkCreate, nopts, opts, optvals, &linkstate);
 
   for (; num_objs--; ptx_objs++)
     {
       /* cuLinkAddData's 'data' argument erroneously omits the const
 	 qualifier.  */
       GOMP_PLUGIN_debug (0, "Loading:\n---\n%s\n---\n", ptx_objs->code);
-      if (CUDA_CALL_EXISTS (cuLinkAddData_v2))
-	r = CUDA_CALL_NOCHECK (cuLinkAddData_v2, linkstate, CU_JIT_INPUT_PTX,
-			       (char *) ptx_objs->code, ptx_objs->size,
-			       0, 0, 0, 0);
-      else
-	r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
-			       (char *) ptx_objs->code, ptx_objs->size,
-			       0, 0, 0, 0);
+      r = CUDA_CALL_NOCHECK (cuLinkAddData, linkstate, CU_JIT_INPUT_PTX,
+			     (char *) ptx_objs->code, ptx_objs->size,
+			     0, 0, 0, 0);
       if (r != CUDA_SUCCESS)
 	{
 	  GOMP_PLUGIN_error ("Link error log %s\n", &elog[0]);
@@ -939,24 +911,7 @@ nvptx_exec (void (*fn), unsigned *dims, void *targ_mem_desc,
 	for (i = 0; i != GOMP_DIM_MAX; i++)
 	  default_dim_p[i] = !dims[i];
 
-	if (!CUDA_CALL_EXISTS (cuOccupancyMaxPotentialBlockSize))
-	  {
-	    for (i = 0; i != GOMP_DIM_MAX; i++)
-	      if (default_dim_p[i])
-		dims[i] = nvthd->ptx_dev->default_dims[i];
-
-	    if (default_dim_p[GOMP_DIM_VECTOR])
-	      dims[GOMP_DIM_VECTOR]
-		= MIN (dims[GOMP_DIM_VECTOR],
-		       (targ_fn->max_threads_per_block / warp_size
-			* warp_size));
-
-	    if (default_dim_p[GOMP_DIM_WORKER])
-	      dims[GOMP_DIM_WORKER]
-		= MIN (dims[GOMP_DIM_WORKER],
-		       targ_fn->max_threads_per_block / dims[GOMP_DIM_VECTOR]);
-	  }
-	else
+	if (true)
 	  {
 	    /* Handle the case that the compiler allows the runtime to choose
 	       the vector-length conservatively, by ignoring
@@ -1344,7 +1299,6 @@ GOMP_OFFLOAD_get_uid (int ord)
 int
 GOMP_OFFLOAD_get_numa_node (int ord)
 {
-  CUresult r = CUDA_ERROR_NOT_FOUND;
   char bus_id[14] = {};
   struct ptx_device *dev = ptx_devices[ord];
 
@@ -1354,9 +1308,8 @@ GOMP_OFFLOAD_get_numa_node (int ord)
 
   dev->numa_node = -1;
 
-  if (CUDA_CALL_EXISTS (cuDeviceGetPCIBusId))
-    r = CUDA_CALL_NOCHECK (cuDeviceGetPCIBusId, bus_id, sizeof (bus_id)-1,
-			   dev->dev);
+  CUresult r = CUDA_CALL_NOCHECK (cuDeviceGetPCIBusId,
+				  bus_id, sizeof (bus_id)-1, dev->dev);
   if (bus_id[0] == '\0' || r != CUDA_SUCCESS)
     return -1;
 
