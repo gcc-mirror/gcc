@@ -57,11 +57,8 @@
 
 /* Create hash-table for declare target's indirect clause on the host;
    see build-target-indirect-htab.h for details.  */
-#define USE_HASHTAB_LOOKUP_FOR_INDIRECT
-#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
 static void* create_target_indirect_map (size_t *, size_t,
 					 uint64_t *, uint64_t *);
-#endif
 
 /* These probably won't be in elf.h for a while.  */
 #ifndef R_AMDGPU_NONE
@@ -4263,13 +4260,11 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 
       hsa_executable_symbol_t symbol;
       bool host_init_htab = true;
-      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
       status
 	= hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
 						XSTRING (GOMP_INDIRECT_ADDR_HMAP),
 						agent->id, 0, &symbol);
       if (status != HSA_STATUS_SUCCESS)
-      #endif
 	{
 	  host_init_htab = false;
 	  status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
@@ -4315,7 +4310,6 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	  GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
 				 (void*) ind_fn_map, sizeof (ind_fn_map));
 	}
-      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
       else
 	{
 	  /* FIXME: Handle multi-kernel load and unload, cf. PR 114690.  */
@@ -4333,7 +4327,6 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	  GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
 				 host_map, host_map_size);
 	}
-      #endif
 
       GCN_DEBUG ("Allocated indirect map at %p\n", map_target_addr);
 
@@ -6012,8 +6005,6 @@ GOMP_OFFLOAD_openacc_destroy_thread_data (void *data)
   free (data);
 }
 
-#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
-  #include "build-target-indirect-htab.h"
-#endif
+#include "build-target-indirect-htab.h"
 
 /* }}} */

@@ -30,10 +30,6 @@
 
 void *GOMP_INDIRECT_ADDR_MAP = NULL;
 
-#define USE_HASHTAB_LOOKUP
-
-#ifdef USE_HASHTAB_LOOKUP
-
 #include <string.h>  /* For memset.  */
 
 /* Use a hashtab to lookup the target address instead of using a linear
@@ -118,29 +114,3 @@ build_indirect_map (void)
       *slot = element;
     }
 }
-
-#else
-
-void
-build_indirect_map (void)
-{
-}
-
-void *
-GOMP_target_map_indirect_ptr (void *ptr)
-{
-  /* NULL pointers always resolve to NULL.  */
-  if (!ptr)
-    return ptr;
-
-  assert (GOMP_INDIRECT_ADDR_MAP);
-
-  for (void **map_entry = GOMP_INDIRECT_ADDR_MAP; *map_entry;
-       map_entry += 2)
-    if (*map_entry == ptr)
-      return (void *) *(map_entry + 1);
-
-  return ptr;
-}
-
-#endif

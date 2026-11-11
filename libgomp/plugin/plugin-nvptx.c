@@ -62,11 +62,8 @@
 
 /* Create hash-table for declare target's indirect clause on the host;
    see build-target-indirect-htab.h for details.  */
-#define USE_HASHTAB_LOOKUP_FOR_INDIRECT
-#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
 static void* create_target_indirect_map (size_t *, size_t,
 					 uint64_t *, uint64_t *);
-#endif
 
 /* An arbitrary fixed limit (128MB) for the size of the OpenMP soft stacks
    block to cache between kernel invocations.  For soft-stacks blocks bigger
@@ -1817,11 +1814,9 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
       CUdeviceptr varptr;
       size_t varsize;
       bool host_init_htab = true;
-      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
       r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
 			     module, XSTRING (GOMP_INDIRECT_ADDR_HMAP));
       if (r != CUDA_SUCCESS)
-      #endif
 	{
 	  host_init_htab = false;
 	  r = CUDA_CALL_NOCHECK (cuModuleGetGlobal, &varptr, &varsize,
@@ -1853,7 +1848,6 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	  GOMP_OFFLOAD_host2dev (ord, map_target_addr,
 				 (void *) ind_fn_map, sizeof (ind_fn_map));
 	}
-      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
       else
 	{
 	  /* FIXME: Handle multi-kernel load and unload, cf. PR 114690.  */
@@ -1869,7 +1863,6 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	  map_target_addr = GOMP_OFFLOAD_alloc (ord, host_map_size);
 	  GOMP_OFFLOAD_host2dev (ord, map_target_addr, host_map, host_map_size);
 	}
-      #endif
 
       GOMP_PLUGIN_debug (0, "Allocated indirect map at %p\n", map_target_addr);
 
@@ -3230,6 +3223,4 @@ GOMP_OFFLOAD_run (struct gomp_offload_session *session, void *tgt_fn, void **arg
 
 /* TODO: Implement GOMP_OFFLOAD_async_run. */
 
-#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
-  #include "build-target-indirect-htab.h"
-#endif
+#include "build-target-indirect-htab.h"
