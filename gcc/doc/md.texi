@@ -6010,10 +6010,11 @@ String compare instruction, with five operands.  Operand 0 is the output;
 it has mode @var{m}.  The remaining four operands are like the operands
 of @samp{cpymem@var{m}}.  The two memory blocks specified are compared
 byte by byte in lexicographic order starting at the beginning of each
-string.  The instruction is not allowed to prefetch more than one byte
-at a time since either string may end in the first byte and reading past
-that may access an invalid page or segment and cause a fault.  The
-comparison terminates early if the fetched bytes are different or if
+string.  Since either string may end in the first byte, the instruction
+is not allowed to read more than one byte at a time unless the target
+knows that the wider reads cannot fault, for example because they stay
+within an aligned block that contains a byte the comparison has to read.
+The comparison terminates early if the fetched bytes are different or if
 they are equal to zero.  The effect of the instruction is to store a
 value in operand 0 whose sign indicates the result of the comparison.
 
@@ -6030,11 +6031,11 @@ compiler knows that both source and destination are word-aligned,
 it may provide the value 4 for this operand.
 
 The two memory blocks specified are compared byte by byte in lexicographic
-order starting at the beginning of each string.  The instruction is not allowed
-to prefetch more than one byte at a time since either string may end in the
-first byte and reading past that may access an invalid page or segment and
-cause a fault.  The comparison will terminate when the fetched bytes
-are different or if they are equal to zero.  The effect of the
+order starting at the beginning of each string.  As for
+@samp{cmpstrn@var{m}}, the instruction is not allowed to read more than one
+byte at a time unless the target knows that the wider reads cannot fault.
+The comparison will terminate when the fetched bytes are different or if
+they are equal to zero.  The effect of the
 instruction is to store a value in operand 0 whose sign indicates the
 result of the comparison.
 
