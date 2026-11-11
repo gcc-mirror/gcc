@@ -1473,12 +1473,15 @@
 	    (const_int 32))))]
   ""
 {
-  if (REG_P (operands[2]))
-    emit_insn (gen_<su>mulsi3_highpart_reg (operands[0], operands[1],
-					    operands[2]));
-  else
+  /* The _imm insn reads the DImode constant as the extended SImode
+     value, so only use it where the two are the same.  */
+  if (CONST_INT_P (operands[2])
+      && ('<su>' == 's' || INTVAL (operands[2]) >= 0))
     emit_insn (gen_<su>mulsi3_highpart_imm (operands[0], operands[1],
 					    operands[2]));
+  else
+    emit_insn (gen_<su>mulsi3_highpart_reg (operands[0], operands[1],
+					    force_reg (SImode, operands[2])));
 
   DONE;
 })
@@ -1509,7 +1512,9 @@
 		(match_operand:SI 1 "register_operand"         "Sg,Sg,v"))
 	      (match_operand:DI 2 "gcn_32bit_immediate_operand" "A, B,A"))
 	    (const_int 32))))]
-  ""
+  "CONST_INT_P (operands[2])
+   && INTVAL (operands[2]) == trunc_int_for_mode (INTVAL (operands[2]), SImode)
+   && ('<su>' == 's' || INTVAL (operands[2]) >= 0)"
   "@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
@@ -1525,10 +1530,14 @@
 		   (match_operand:SI 2 "nonmemory_operand" ""))))]
   ""
 {
-  if (REG_P (operands[2]))
-    emit_insn (gen_<su>mulsidi3_reg (operands[0], operands[1], operands[2]));
-  else
+  /* The _imm insn reads the DImode constant as the extended SImode
+     value, so only use it where the two are the same.  */
+  if (CONST_INT_P (operands[2])
+      && ('<su>' == 's' || INTVAL (operands[2]) >= 0))
     emit_insn (gen_<su>mulsidi3_imm (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_<su>mulsidi3_reg (operands[0], operands[1],
+				     force_reg (SImode, operands[2])));
 
   DONE;
 })
@@ -1557,7 +1566,9 @@
 		   (match_operand:SI 1 "register_operand"       "Sg, Sg, v"))
 		 (match_operand:DI 2 "gcn_32bit_immediate_operand"
 								 "A,  B, A")))]
-  ""
+  "CONST_INT_P (operands[2])
+   && INTVAL (operands[2]) == trunc_int_for_mode (INTVAL (operands[2]), SImode)
+   && ('<su>' == 's' || INTVAL (operands[2]) >= 0)"
   "#"
   "&& reload_completed"
   [(const_int 0)]
@@ -1586,7 +1597,16 @@
     rtx op1hi = gcn_operand_part (DImode, operands[1], 1);
     rtx op2lo = gcn_operand_part (DImode, operands[2], 0);
     rtx op2hi = gcn_operand_part (DImode, operands[2], 1);
-    emit_insn (gen_umulsidi3 (operands[0], op1lo, op2lo));
+    rtx op2lo_ext = op2lo;
+    /* The low part is unsigned, so the expander would force a negative
+       constant into a new register, which we can't do after reload.
+       Use TMP (which is not needed yet) instead.  */
+    if (CONST_INT_P (op2lo) && INTVAL (op2lo) < 0)
+      {
+	emit_move_insn (tmp, op2lo);
+	op2lo_ext = tmp;
+      }
+    emit_insn (gen_umulsidi3 (operands[0], op1lo, op2lo_ext));
     emit_insn (gen_mulsi3 (tmp, op1lo, op2hi));
     rtx add = gen_rtx_SET (dsthi, gen_rtx_PLUS (SImode, dsthi, tmp));
     rtx clob = gen_rtx_CLOBBER (VOIDmode, operands[4]);
