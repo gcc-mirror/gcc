@@ -4794,8 +4794,7 @@ test_referenced_operands ()
 static void
 test_output_operand_modifier_operand ()
 {
-  rtx operands[] = { GEN_INT (10),
-		     gen_lowpart_SUBREG (QImode, gen_rtx_REG (HImode, 0)) };
+  rtx operands[] = { GEN_INT (10), gen_rtx_REG (QImode, 0) };
   auto_vec<unsigned long, 2> opnums;
   opnums.safe_push (1);
   opnums.safe_push (0);
