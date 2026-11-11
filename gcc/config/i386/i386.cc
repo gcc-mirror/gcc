@@ -2701,10 +2701,10 @@ classify_argument (machine_mode mode, const_tree type,
     case E_V8BFmode:
     case E_V2DFmode:
     case E_V2DImode:
+    case E_V1TImode:
       classes[0] = X86_64_SSE_CLASS;
       classes[1] = X86_64_SSEUP_CLASS;
       return 2;
-    case E_V1TImode:
     case E_V1DImode:
     case E_V2SFmode:
     case E_V2SImode:
