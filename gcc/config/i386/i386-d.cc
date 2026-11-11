@@ -45,7 +45,7 @@ ix86_d_target_versions (void)
   else
     d_add_builtin_version ("D_SoftFloat");
 
-  if (flag_cf_protection != CF_NONE)
+  if (flag_cf_protection & (CF_BRANCH | CF_RETURN))
     d_add_builtin_version ("GNU_CET");
 }
 
@@ -87,7 +87,8 @@ ix86_d_handle_target_object_format (void)
 static tree
 ix86_d_handle_target_cf_protection (void)
 {
-  return build_int_cst_type (uint32_type_node, flag_cf_protection & ~CF_SET);
+  return build_int_cst_type (uint32_type_node,
+			     flag_cf_protection & (CF_BRANCH | CF_RETURN));
 }
 
 /* Implement TARGET_D_REGISTER_CPU_TARGET_INFO.  */
