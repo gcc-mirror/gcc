@@ -9059,14 +9059,18 @@
 )
 
 (define_insn "aarch64_gcsss1"
-  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")] UNSPECV_GCSSS1)]
+  [(unspec_volatile [(match_operand:DI 0 "register_operand" "r")]
+		    UNSPECV_GCSSS1)
+   (clobber (mem:BLK (scratch)))]
   ""
   "sys\\t#3, c7, c7, #2, %0 // gcsss1"
 )
 
 (define_insn "aarch64_gcsss2"
   [(set (match_operand:DI 0 "register_operand" "=r")
-  	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")] UNSPECV_GCSSS2))]
+	(unspec_volatile:DI [(match_operand:DI 1 "register_operand" "0")]
+			    UNSPECV_GCSSS2))
+   (clobber (mem:BLK (scratch)))]
   ""
   "sysl\\t%0, #3, c7, c7, #3 // gcsss2"
 )
