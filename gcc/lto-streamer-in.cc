@@ -1789,6 +1789,14 @@ data_in::register_origin_refs ()
       const lto_die_ref *ref = &entry.ref;
       if (entry.origin > 0 && die_refs)
 	ref = die_refs->get (entry.origin - 1);
+      else if (entry.origin < 0)
+	{
+	  /* Decode the decl-state slot as in stream_read_tree_ref.  */
+	  unsigned ix = -entry.origin - 1;
+	  gcc_checking_assert (!(ix & 1));
+	  ref = lto_decl_origin_ref_at
+	    (file_data->current_decl_state, ix / 2);
+	}
       if (ref && ref->sym)
 	{
 	  tree owner = streamer_tree_cache_get_tree (reader_cache, entry.index);

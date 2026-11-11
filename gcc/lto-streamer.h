@@ -427,6 +427,10 @@ struct lto_decl_header : lto_simple_header_with_strings
   /* Size of region for decl state. */
   int32_t decl_state_size;
 
+  /* Slot provenance follows the tree stream, so raw function bodies can
+     retain different DIE references for slots naming the same tree.  */
+  int32_t debug_ref_size;
+
   /* Number of nodes in globals stream.  */
   int32_t num_nodes;
 };
@@ -512,6 +516,13 @@ struct GTY (()) lto_die_ref
   unsigned HOST_WIDE_INT off;
 };
 
+/* Source DIE for a decl-state slot.  */
+struct GTY (()) lto_decl_origin_ref
+{
+  unsigned index;
+  lto_die_ref ref;
+};
+
 /* Origin encoding appended to FUNCTION_DECL and BLOCK records after their
    ordinary DIE reference.  LGEN permits TREE.  WPA and incremental LTO
    write DIE or NONE for newly streamed trees; copied bodies retain their
@@ -542,6 +553,9 @@ struct GTY((for_user)) lto_in_decl_state
 {
   /* Array of lto_in_decl_buffers to store type and decls streams. */
   vec<tree, va_gc> *streams[LTO_N_DECL_STREAMS];
+
+  /* Source DIEs ordered by slot index, retained for unread bodies.  */
+  vec<lto_decl_origin_ref, va_gc> *origin_refs;
 
   /* If this in-decl state is associated with a function. FN_DECL
      point to the FUNCTION_DECL. */
@@ -579,6 +593,8 @@ struct lto_out_decl_state
   /* The buffers contain the sets of decls of various kinds and types we have
      seen so far and the indexes assigned to them.  */
   struct lto_tree_ref_encoder streams[LTO_N_DECL_STREAMS];
+
+  vec<lto_decl_origin_ref> origin_refs;
 
   /* Encoder for cgraph nodes.  */
   lto_symtab_encoder_t symtab_node_encoder;
@@ -896,6 +912,8 @@ extern void lto_record_renamed_decl (struct lto_file_decl_data *,
 extern const char *lto_get_decl_name_mapping (struct lto_file_decl_data *,
 					      const char *);
 extern struct lto_in_decl_state *lto_new_in_decl_state (void);
+extern const lto_die_ref *lto_decl_origin_ref_at (const lto_in_decl_state *,
+						  unsigned);
 extern void lto_delete_in_decl_state (struct lto_in_decl_state *);
 extern struct lto_in_decl_state *lto_get_function_in_decl_state (
 				      struct lto_file_decl_data *, tree);

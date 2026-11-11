@@ -180,7 +180,8 @@ lto_splay_tree_new (void)
 
 static const uint32_t *
 lto_read_in_decl_state (class data_in *data_in, const uint32_t *data,
-			struct lto_in_decl_state *state)
+			struct lto_in_decl_state *state,
+			lto_input_block *ib_refs)
 {
   uint32_t ix;
   tree decl;
@@ -199,6 +200,10 @@ lto_read_in_decl_state (class data_in *data_in, const uint32_t *data,
     state->linemap_id = *data++;
 
   state->fn_decl = decl;
+  /* Zero means derive the list from input slots; otherwise COUNT is the
+     number of saved references plus one, including an empty saved list.  */
+  unsigned count = streamer_read_uhwi (ib_refs);
+  auto_vec<lto_decl_origin_ref> refs;
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     {
@@ -207,13 +212,39 @@ lto_read_in_decl_state (class data_in *data_in, const uint32_t *data,
       vec_alloc (decls, size);
 
       for (j = 0; j < size; j++)
-	vec_safe_push (decls,
-		       streamer_tree_cache_get_tree (data_in->reader_cache,
-						     data[j]));
+	{
+	  tree t = streamer_tree_cache_get_tree (data_in->reader_cache,
+						 data[j]);
+	  vec_safe_push (decls, t);
+	  if (!count && state->fn_decl && data_in->die_refs)
+	    if (const lto_die_ref *ref = data_in->die_refs->get (data[j]))
+	      refs.safe_push ({ j, *ref });
+	}
 
       state->streams[i] = decls;
       data += size;
     }
+
+  /* A copied WPA body still uses its input slot numbers, even when the
+     outgoing decl stream contains just one prevailing tree for them.  */
+  for (unsigned n = 1; n < count; ++n)
+    {
+      lto_decl_origin_ref entry;
+      entry.index = streamer_read_uhwi (ib_refs);
+      entry.ref.sym = streamer_read_string (data_in, ib_refs);
+      entry.ref.off = streamer_read_uhwi (ib_refs);
+      if (debug_info_level > DINFO_LEVEL_NONE)
+	{
+	  entry.ref.sym = IDENTIFIER_POINTER (get_identifier (entry.ref.sym));
+	  refs.safe_push (entry);
+	}
+    }
+
+  /* These lists survive until the bodies are consumed.  Avoid retaining
+     spare capacity in every function's decl state.  */
+  vec_safe_reserve_exact (state->origin_refs, refs.length ());
+  for (const auto &ref : refs)
+    state->origin_refs->quick_push (ref);
 
   return data;
 }
@@ -1891,7 +1922,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   const struct lto_decl_header *header = (const struct lto_decl_header *) data;
   const int decl_offset = sizeof (struct lto_decl_header);
   const int main_offset = decl_offset + header->decl_state_size;
-  const int string_offset = main_offset + header->main_size;
+  const int debug_ref_offset = main_offset + header->main_size;
+  const int string_offset = debug_ref_offset + header->debug_ref_size;
   class data_in *data_in;
   unsigned int i;
   const uint32_t *data_ptr, *data_end;
@@ -1899,6 +1931,8 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   lto_input_block ib_main ((const char *) data + main_offset,
 			   header->main_size, decl_data);
+  lto_input_block ib_refs ((const char *) data + debug_ref_offset,
+			   header->debug_ref_size, decl_data);
 
   data_in = lto_data_in_create (decl_data, (const char *) data + string_offset,
 				header->string_size, resolutions);
@@ -2026,7 +2060,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
   gcc_assert (num_decl_states > 0);
   decl_data->global_decl_state = lto_new_in_decl_state ();
   data_ptr = lto_read_in_decl_state (data_in, data_ptr,
-				     decl_data->global_decl_state);
+				     decl_data->global_decl_state, &ib_refs);
 
   /* Read in per-function decl states and enter them in hash table.  */
   decl_data->function_decl_states
@@ -2036,7 +2070,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
     {
       struct lto_in_decl_state *state = lto_new_in_decl_state ();
 
-      data_ptr = lto_read_in_decl_state (data_in, data_ptr, state);
+      data_ptr = lto_read_in_decl_state (data_in, data_ptr, state, &ib_refs);
       lto_in_decl_state **slot
 	= decl_data->function_decl_states->find_slot (state, INSERT);
       gcc_assert (*slot == NULL);
@@ -2045,6 +2079,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 
   if (data_ptr != data_end)
     internal_error ("bytecode stream: garbage at the end of symbols section");
+  gcc_checking_assert (ib_refs.p == ib_refs.len);
 
   /* Set the current decl state to be the global state.  */
   decl_data->current_decl_state = decl_data->global_decl_state;

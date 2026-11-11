@@ -10,6 +10,7 @@
 /* { dg-final { scan-lto-assembler "DW_TAG_subprogram\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_0\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,4}\[^\n\]*DW_AT_(?:low_pc|ranges)(?:\[^\n\]*\n){1,8}\[^\n\]*DW_TAG_formal_parameter\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_0\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,4}\[^\n\]*DW_TAG_variable\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_0\[^\n\]*DW_AT_abstract_origin" } } */
 /* { dg-final { scan-lto-assembler "DW_TAG_subprogram\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,4}\[^\n\]*DW_AT_(?:low_pc|ranges)(?:\[^\n\]*\n){1,8}\[^\n\]*DW_TAG_formal_parameter\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,4}\[^\n\]*DW_TAG_variable\\)(?:\[^\n\]*\n){1,6}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin" } } */
 
+/* { dg-final { scan-lto-assembler "DW_TAG_inlined_subroutine\\)(?:\[^\n\]*\n){1,3}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,10}\[^\n\]*DW_TAG_formal_parameter\\)(?:\[^\n\]*\n){1,3}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin(?:\[^\n\]*\n){1,8}\[^\n\]*DW_TAG_variable\\)(?:\[^\n\]*\n){1,3}\[^\n\]*pr126348_1\[^\n\]*DW_AT_abstract_origin" } } */
 
 #include "pr126348.h"
 

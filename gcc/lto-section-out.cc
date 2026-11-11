@@ -222,6 +222,8 @@ lto_delete_out_decl_state (struct lto_out_decl_state *state)
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     lto_destroy_tree_ref_encoder (&state->streams[i]);
 
+  state->origin_refs.release ();
+
   free (state);
 }
 

@@ -391,6 +391,26 @@ lto_new_in_decl_state (void)
   return ggc_cleared_alloc<lto_in_decl_state> ();
 }
 
+/* Return the source DIE for slot INDEX in STATE, if one was saved.  */
+
+const lto_die_ref *
+lto_decl_origin_ref_at (const lto_in_decl_state *state, unsigned index)
+{
+  unsigned first = 0, last = vec_safe_length (state->origin_refs);
+  while (first < last)
+    {
+      unsigned mid = first + (last - first) / 2;
+      const lto_decl_origin_ref &entry = (*state->origin_refs)[mid];
+      if (entry.index < index)
+	first = mid + 1;
+      else if (entry.index > index)
+	last = mid;
+      else
+	return &entry.ref;
+    }
+  return nullptr;
+}
+
 /* Delete STATE and its components. */
 
 void
@@ -400,6 +420,7 @@ lto_delete_in_decl_state (struct lto_in_decl_state *state)
 
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     vec_free (state->streams[i]);
+  vec_free (state->origin_refs);
   ggc_free (state);
 }
 
@@ -426,6 +447,7 @@ lto_free_function_in_decl_state (struct lto_in_decl_state *state)
   int i;
   for (i = 0; i < LTO_N_DECL_STREAMS; i++)
     vec_free (state->streams[i]);
+  vec_free (state->origin_refs);
   ggc_free (state);
 }
 
