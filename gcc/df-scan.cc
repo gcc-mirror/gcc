@@ -3780,9 +3780,9 @@ df_record_exit_block_uses (bitmap exit_block_uses)
 }
 
 
-/* Update the uses in the exit block.  */
+/* Update the uses in the exit block.  Return true if they changed.  */
 
-void
+bool
 df_update_exit_block_uses (void)
 {
   bool changed = false;
@@ -3805,6 +3805,8 @@ df_update_exit_block_uses (void)
       bitmap_copy (df->exit_block_uses, refs);
       df_set_bb_dirty (BASIC_BLOCK_FOR_FN (cfun, EXIT_BLOCK));
     }
+
+  return changed;
 }
 
 static bool initialized = false;
@@ -3832,27 +3834,23 @@ df_hard_reg_init (void)
 }
 
 /* Recompute the parts of scanning that are based on regs_ever_live
-   because something changed in that array.  */
+   because something changed in that array.  The refs of a call insn depend
+   on the exit block uses only for sibling calls, see df_get_call_refs, so
+   rescan only those, and only if the exit block uses changed.  */
 
 void
 df_update_entry_exit_and_calls (void)
 {
-  basic_block bb;
-
   df_update_entry_block_defs ();
-  df_update_exit_block_uses ();
+  if (!df_update_exit_block_uses ())
+    return;
 
-  /* The call insns need to be rescanned because there may be changes
-     in the set of registers clobbered across the call.  */
+  basic_block bb;
+  rtx_insn *insn;
   FOR_EACH_BB_FN (bb, cfun)
-    {
-      rtx_insn *insn;
-      FOR_BB_INSNS (bb, insn)
-	{
-	  if (INSN_P (insn) && CALL_P (insn))
-	    df_insn_rescan (insn);
-	}
-    }
+    FOR_BB_INSNS (bb, insn)
+      if (CALL_P (insn) && SIBLING_CALL_P (insn))
+	df_insn_rescan (insn);
 }
 
 

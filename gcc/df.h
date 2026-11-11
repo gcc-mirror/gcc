@@ -1085,7 +1085,7 @@ extern void df_ref_change_reg_with_loc (rtx, unsigned int);
 extern void df_notes_rescan (rtx_insn *);
 extern void df_hard_reg_init (void);
 extern void df_update_entry_block_defs (void);
-extern void df_update_exit_block_uses (void);
+extern bool df_update_exit_block_uses (void);
 extern void df_update_entry_exit_and_calls (void);
 extern bool df_hard_reg_used_p (unsigned int);
 extern unsigned int df_hard_reg_used_count (unsigned int);

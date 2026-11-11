@@ -99,9 +99,9 @@ pass_stack_ptr_mod::execute (function *fun)
 
   /* The value coming into this pass was 0, and the exit block uses
      are based on this.  If the value is now 1, we need to redo the
-     exit block uses.  */
+     exit block uses and the sibling calls that depend on them.  */
   if (df && crtl->sp_is_unchanging)
-    df_update_exit_block_uses ();
+    df_update_entry_exit_and_calls ();
 
   return 0;
 }
