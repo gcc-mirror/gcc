@@ -6116,16 +6116,17 @@ c_parse_final_cleanups (void)
 	reconsider = true;
     }
 
-  if (flag_contracts)
-    {
-      emit_contract_wrapper_func (/*done*/true);
-      maybe_emit_violation_handler_wrappers ();
-    }
-
   /* All templates have been instantiated.  */
   at_eof = 2;
 
   void *module_cookie = finish_module_processing (parse_in);
+
+  if (flag_contracts)
+    {
+      /* Keep these out of the module to avoid duplicate definitions.  */
+      emit_contract_wrapper_func (/*done*/true);
+      maybe_emit_violation_handler_wrappers ();
+    }
 
   lower_var_init ();
 
