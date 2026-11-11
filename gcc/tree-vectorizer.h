@@ -310,6 +310,7 @@ struct vect_load_store_data : vect_data {
   auto_vec<int> elsvals;
   /* True if the load requires a load permutation.  */
   bool slp_perm;    // SLP_TREE_LOAD_PERMUTATION
+  auto_vec<std::pair<tree, unsigned>> perms;
   unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
   unsigned n_loads; // SLP_TREE_LOAD_PERMUTATION
   /* Whether the load permutation is consecutive and simple.  */
@@ -317,6 +318,16 @@ struct vect_load_store_data : vect_data {
   /* Whether the gather offset is the same for all lanes of each vector,
      so a scalar load plus broadcast can replace the gather.  */
   bool gs_offset_uniform_p; // VMAT_GATHER_SCATTER_EMULATED
+};
+
+/* Analysis data from vectorizable_slp_permutation.  */
+struct vect_permute_data : vect_data {
+  auto_vec<std::pair<tree, unsigned>> perms;
+};
+
+/* Analysis data from vectorizable_call.  */
+struct vect_call_data : vect_data {
+  auto_vec<std::pair<tree, unsigned>> perms;
 };
 
 struct match_elt_t {
@@ -2775,7 +2786,7 @@ extern void vect_slp_fini (void);
 extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> &,
 					  gimple_stmt_iterator *, poly_uint64,
-					  bool, unsigned *,
+					  bool, vect_load_store_data *, unsigned *,
 					  unsigned * = nullptr, bool = false);
 extern bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
 					  slp_tree, stmt_vector_for_cost *);

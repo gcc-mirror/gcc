@@ -61,12 +61,13 @@ static bool vect_transform_slp_perm_load_1 (vec_info *, slp_tree,
 					    const vec<tree> &,
 					    gimple_stmt_iterator *,
 					    poly_uint64, bool, bool,
-					    unsigned *,
+					    vect_load_store_data *, unsigned *,
 					    unsigned * = nullptr,
 					    bool = false);
 static int vectorizable_slp_permutation_1 (vec_info *, gimple_stmt_iterator *,
 					   slp_tree, lane_permutation_t &,
-					   vec<slp_tree> &, bool);
+					   vec<slp_tree> &, bool,
+					   vect_permute_data *);
 static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
 static bool vect_slp_can_convert_to_external (const vec<stmt_vec_info> &);
 
@@ -7166,7 +7167,7 @@ vect_optimize_slp_pass::change_layout_cost (slp_tree node,
   if (to_layout_i > 0)
     vect_slp_permute (m_perms[to_layout_i], perm, true);
   auto count = vectorizable_slp_permutation_1 (m_vinfo, nullptr, node, perm,
-					       children, false);
+					       children, false, nullptr);
   if (count >= 0)
     return MAX (count, 1);
 
@@ -7262,7 +7263,7 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
       int count = vectorizable_slp_permutation_1 (m_vinfo, nullptr,
 						  node, tmp_perm,
 						  SLP_TREE_CHILDREN (node),
-						  false);
+						  false, nullptr);
       if (count < 0)
 	{
 	  if (in_layout_i == 0 && out_layout_i == 0)
@@ -7302,7 +7303,8 @@ vect_optimize_slp_pass::internal_node_cost (slp_tree node, int in_layout_i,
 	vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
       unsigned int n_perms;
       if (!vect_transform_slp_perm_load_1 (m_vinfo, node, tmp_perm, vNULL,
-					   nullptr, vf, true, false, &n_perms))
+					   nullptr, vf, true, false, nullptr,
+					   &n_perms))
 	{
 	  auto rep = SLP_TREE_REPRESENTATIVE (node);
 	  if (out_layout_i == 0)
@@ -8021,7 +8023,7 @@ vect_optimize_slp_pass::get_result_with_layout (slp_tree node,
 	  if (vectorizable_slp_permutation_1 (m_vinfo, nullptr, node,
 					      tmp_perm,
 					      SLP_TREE_CHILDREN (node),
-					      false) >= 0)
+					      false, nullptr) >= 0)
 	    num_inputs = SLP_TREE_CHILDREN (node).length ();
 	  else
 	    tmp_perm.truncate (0);
@@ -8118,7 +8120,7 @@ vect_optimize_slp_pass::materialize ()
 	  if (vectorizable_slp_permutation_1 (m_vinfo, nullptr, node,
 					      tmp_perm,
 					      SLP_TREE_CHILDREN (node),
-					      false) >= 0)
+					      false, nullptr) >= 0)
 	    {
 	      if (dump_enabled_p ()
 		  && !std::equal (tmp_perm.begin (), tmp_perm.end (),
@@ -9253,7 +9255,13 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
   if (!res)
     {
       while (visited_vec.length () >= visited_rec_start)
-	visited_set.remove (visited_vec.pop ());
+	{
+	  slp_tree nd = visited_vec.pop ();
+	  visited_set.remove (nd);
+	  SLP_TREE_TYPE (nd) = undef_vec_info_type;
+	  delete nd->data;
+	  nd->data = nullptr;
+	}
       cost_vec->truncate (cost_vec_rec_start);
     }
 
@@ -11390,6 +11398,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 				const vec<tree> &dr_chain,
 				gimple_stmt_iterator *gsi, poly_uint64 vf,
 				bool analyze_only, bool dump_p,
+				vect_load_store_data *perm_data,
 				unsigned *n_perms, unsigned int *n_loads,
 				bool dce_chain)
 {
@@ -11450,6 +11459,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   int second_vec_index = -1;
   bool noop_p = true;
   *n_perms = 0;
+  unsigned int perm_count = 0;
 
   vec_perm_builder mask;
   unsigned int nelts_to_build;
@@ -11559,8 +11569,17 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 		}
 
 	      tree mask_vec = NULL_TREE;
-	      if (!analyze_only)
-		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
+	      if (perm_data)
+		{
+		  if (analyze_only)
+		    {
+		      mask_vec = vect_gen_perm_mask_checked (vectype, indices);
+		      perm_data->perms.safe_push ({mask_vec, nvectors_per_build});
+		    }
+		  else
+		    mask_vec = perm_data->perms[perm_count].first;
+		  perm_count++;
+		}
 
 	      if (second_vec_index == -1)
 		second_vec_index = first_vec_index;
@@ -11676,14 +11695,18 @@ bool
 vect_transform_slp_perm_load (vec_info *vinfo,
 			      slp_tree node, const vec<tree> &dr_chain,
 			      gimple_stmt_iterator *gsi, poly_uint64 vf,
-			      bool analyze_only, unsigned *n_perms,
-			      unsigned int *n_loads, bool dce_chain)
+			      bool analyze_only, vect_load_store_data *ls_data,
+			      unsigned *n_perms, unsigned int *n_loads,
+			      bool dce_chain)
 {
-  return vect_transform_slp_perm_load_1 (vinfo, node,
-					 SLP_TREE_LOAD_PERMUTATION (node),
-					 dr_chain, gsi, vf, analyze_only,
-					 dump_enabled_p (), n_perms, n_loads,
-					 dce_chain);
+  if (analyze_only && ls_data)
+    ls_data->perms.truncate (0);
+  bool ok = vect_transform_slp_perm_load_1 (vinfo, node,
+					    SLP_TREE_LOAD_PERMUTATION (node),
+					    dr_chain, gsi, vf, analyze_only,
+					    dump_enabled_p (), ls_data,
+					    n_perms, n_loads, dce_chain);
+  return ok;
 }
 
 /* Produce the next vector result for SLP permutation NODE by adding a vector
@@ -11800,7 +11823,8 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 static int
 vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 				slp_tree node, lane_permutation_t &perm,
-				vec<slp_tree> &children, bool dump_p)
+				vec<slp_tree> &children, bool dump_p,
+				vect_permute_data *perm_data)
 {
   tree vectype = SLP_TREE_VECTYPE (node);
 
@@ -12049,6 +12073,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
   mask.quick_grow (count);
   vec_perm_indices indices;
   unsigned nperms = 0;
+  unsigned int perm_count = 0;
   /* When REPEATING_P is true, we only have UNPACK_FACTOR unique permute
      vectors to check during analysis, but we need to generate NOUTPUTS
      vectors during transformation.  */
@@ -12067,6 +12092,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       unsigned vi = i / olanes * (pack_p ? 2 : 1);
       unsigned ei = i % olanes;
       mask_element = vperm[ei].second;
+      if (ei == 0)
+	perm_count = 0;
       if (pack_p)
 	{
 	  /* In this case, we have N outputs and the single child provides 2N
@@ -12134,8 +12161,23 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	      return -1;
 	    }
 
+	  tree mask_vec = NULL_TREE;
+	  unsigned perm_num
+	    = CEIL (total_nelts, process_nelts) - (ei > last_ei);
+	  if (!identity_p && perm_data)
+	    {
+	      if (!gsi)
+		{
+		  mask_vec = vect_gen_perm_mask_any (vectype, indices);
+		  perm_data->perms.safe_push ({mask_vec, perm_num});
+		}
+	      else
+		mask_vec = perm_data->perms[perm_count].first;
+	      perm_count++;
+	    }
+
 	  if (!identity_p)
-	    nperms += CEIL (total_nelts, process_nelts) - (ei > last_ei);
+	    nperms += perm_num;
 	  if (gsi)
 	    {
 	      if (second_vec.first == -1U)
@@ -12144,10 +12186,6 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
 	      slp_tree
 		first_node = children[first_vec.first],
 		second_node = children[second_vec.first];
-
-	      tree mask_vec = NULL_TREE;
-	      if (!identity_p)
-		mask_vec = vect_gen_perm_mask_checked (vectype, indices);
 
 	      tree first_def
 		= vect_get_slp_vect_def (first_node, first_vec.second + vi);
@@ -12183,14 +12221,22 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 {
   tree vectype = SLP_TREE_VECTYPE (node);
   lane_permutation_t &perm = SLP_TREE_LANE_PERMUTATION (node);
+  vect_permute_data _data;
+  vect_permute_data &data = node->get_data (_data);
+
+  if (!gsi)
+    gcc_checking_assert (!node->data);
   int nperms = vectorizable_slp_permutation_1 (vinfo, gsi, node, perm,
 					       SLP_TREE_CHILDREN (node),
-					       dump_enabled_p ());
+					       dump_enabled_p (), &data);
   if (nperms < 0)
     return false;
 
   if (!gsi && nperms != 0)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
+
+  if (!gsi && !node->data)
+    node->data = new vect_permute_data (std::move (data));
 
   return true;
 }

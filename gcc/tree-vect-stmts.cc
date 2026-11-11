@@ -2119,7 +2119,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 
   if (SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
     perm_ok = vect_transform_slp_perm_load (vinfo, slp_node, vNULL, NULL,
-					    vf, true, n_perms, n_loads);
+					    vf, true, ls, n_perms, n_loads);
 
   if (STMT_VINFO_GROUPED_ACCESS (stmt_info))
     {
@@ -2788,6 +2788,11 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       *slp_perm = true;
     }
 
+  /* If we didn't end up using the permute, clear them in the costing structure
+     as well.  */
+  if (!*slp_perm)
+    ls->perms.truncate (0);
+
   return true;
 }
 
@@ -3325,6 +3330,8 @@ vectorizable_bswap (vec_info *vinfo,
 {
   tree vectype = SLP_TREE_VECTYPE (slp_node);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
+  vect_call_data _data{};
+  vect_call_data &data = slp_node->get_data (_data);
 
   if (TYPE_SIZE (vectype_in) != TYPE_SIZE (vectype))
     {
@@ -3365,17 +3372,24 @@ vectorizable_bswap (vec_info *vinfo,
 	  return false;
 	}
 
+      unsigned int vec_num = vect_get_num_copies (vinfo, slp_node);
+      /* Store the permute in the node data.  */
+      data.perms.safe_push ({vec_perm_indices_to_tree (char_vectype, indices),
+			     vec_num});
+
       SLP_TREE_TYPE (slp_node) = call_vec_info_type;
       DUMP_VECT_SCOPE ("vectorizable_bswap");
       record_stmt_cost (cost_vec,
 			1, vector_stmt, slp_node, 0, vect_prologue);
-      record_stmt_cost (cost_vec,
-			vect_get_num_copies (vinfo, slp_node),
-			vec_perm, slp_node, 0, vect_body);
+      record_stmt_cost (cost_vec, vec_num,
+			vec_perm, slp_node, char_vectype, 0, vect_body);
+      slp_node->data = new vect_call_data (std::move (data));
       return true;
     }
 
-  tree bswap_vconst = vec_perm_indices_to_tree (char_vectype, indices);
+  /* Get the permute that we created during costing.  */
+  gcc_assert (data.perms.length () == 1);
+  tree bswap_vconst = data.perms[0].first;
 
   /* Transform.  */
   vec<tree> vec_oprnds = vNULL;
@@ -9475,17 +9489,20 @@ vectorizable_store (vec_info *vinfo,
       if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	{
 	  if (costing_p)
-	    inside_cost += record_stmt_cost (cost_vec, 1, vec_perm,
-					     slp_node, 0, vect_body);
-	  else
 	    {
 	      tree perm_mask = perm_mask_for_reverse (vectype);
+	      ls.perms.safe_push ({perm_mask, 1});
+	      inside_cost += record_stmt_cost (cost_vec, 1, vec_perm,
+					       slp_node, 0, vect_body);
+	    }
+	  else
+	    {
 	      tree new_temp = make_ssa_name (vectype);
 
 	      /* Generate the permute statement.  */
 	      gimple *perm_stmt
 		= gimple_build_assign (new_temp, VEC_PERM_EXPR, vec_oprnd,
-				       vec_oprnd, perm_mask);
+				       vec_oprnd, ls.perms.last ().first);
 	      vect_finish_stmt_generation (vinfo, stmt_info, perm_stmt, gsi);
 
 	      perm_stmt = SSA_NAME_DEF_STMT (new_temp);
@@ -10612,7 +10629,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      unsigned n_perms2;
 	      vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-					    false, &n_perms2);
+					    false, &ls, &n_perms2);
 	      gcc_assert (ls.n_perms == n_perms2);
 	    }
 	}
@@ -11487,7 +11504,7 @@ vectorizable_load (vec_info *vinfo,
 	    {
 	      unsigned n_perms2;
 	      vect_transform_slp_perm_load (vinfo, slp_node, dr_chain, gsi, vf,
-					    false, &n_perms2);
+					    false, &ls, &n_perms2);
 	      gcc_assert (ls.n_perms == n_perms2);
 	    }
 	}
@@ -12066,13 +12083,17 @@ vectorizable_load (vec_info *vinfo,
       if (memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	{
 	  if (costing_p)
-	    inside_cost = record_stmt_cost (cost_vec, 1, vec_perm,
-					    slp_node, 0, vect_body);
-	  else
 	    {
 	      tree perm_mask = perm_mask_for_reverse (vectype);
+	      ls.perms.safe_push ({perm_mask, 1});
+	      inside_cost = record_stmt_cost (cost_vec, 1, vec_perm,
+					      slp_node, 0, vect_body);
+	    }
+	  else
+	    {
 	      new_temp = permute_vec_elements (vinfo, new_temp, new_temp,
-					       perm_mask, stmt_info, gsi);
+					       ls.perms.last ().first,
+					       stmt_info, gsi);
 	      new_stmt = SSA_NAME_DEF_STMT (new_temp);
 	    }
 	}
@@ -12138,8 +12159,8 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  unsigned n_perms2, n_loads2;
 	  bool ok = vect_transform_slp_perm_load (vinfo, slp_node, dr_chain,
-						  gsi, vf, false, &n_perms2,
-						  &n_loads2, true);
+						  gsi, vf, false, &ls,
+						  &n_perms2, &n_loads2, true);
 	  gcc_assert (ok && ls.n_perms == n_perms2 && ls.n_loads == n_loads2);
 	}
     }
