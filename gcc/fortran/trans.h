@@ -769,7 +769,7 @@ void gfc_allocate_using_caf_lib (stmtblock_t *, tree, tree, tree, tree, tree,
 void gfc_allocate_allocatable (stmtblock_t*, tree, tree, tree, tree,
 			       tree, tree, tree, gfc_expr*, int,
 			       tree = NULL_TREE, tree = NULL_TREE,
-			       tree = NULL_TREE);
+			       tree = NULL_TREE, tree = NULL_TREE);
 
 /* Allocate memory, with optional status variable.  */
 void gfc_allocate_using_malloc (stmtblock_t *, tree, tree, tree,

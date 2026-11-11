@@ -6672,7 +6672,7 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
 
 	  gfc_start_block (&set_status_block);
 	  gfc_add_modify (&set_status_block, status,
-			  build_int_cst (status_type, LIBERROR_ALLOCATION));
+			  build_int_cst (status_type, LIBERROR_NO_MEMORY));
 	  error = gfc_finish_block (&set_status_block);
 	}
     }
@@ -6760,7 +6760,8 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
     gfc_allocate_allocatable (&elseblock, pointer, size, token,
 			      status, errmsg, errlen, label_finish, expr,
 			      coref != NULL ? coref->u.ar.as->corank : 0,
-			      omp_cond, omp_alt_alloc, succ_add_expr);
+			      omp_cond, omp_alt_alloc, succ_add_expr,
+			      var_overflow);
   else if (non_ulimate_coarray_ptr_comp && token)
     /* The token is set only for GFC_FCOARRAY_LIB mode.  */
     gfc_allocate_using_caf_lib (&elseblock, pointer, size, token, status,
@@ -6770,7 +6771,9 @@ gfc_array_allocate (gfc_se * se, gfc_expr * expr, tree status, tree errmsg,
     gfc_allocate_using_malloc (&elseblock, pointer, size, status,
 			       omp_cond, omp_alt_alloc, succ_add_expr);
 
-  if (dimension)
+  /* When STATUS is present, we give precedence to "already allocated variable"
+     error over overflow error in gfc_allocate_allocatable.  */
+  if (dimension && !(allocatable && status))
     {
       cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
 			   logical_type_node, var_overflow, integer_zero_node),

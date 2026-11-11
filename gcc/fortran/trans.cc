@@ -981,7 +981,8 @@ void
 gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 			  tree token, tree status, tree errmsg, tree errlen,
 			  tree label_finish, gfc_expr* expr, int corank,
-			  tree cond, tree alt_alloc, tree extra_success_expr)
+			  tree cond, tree alt_alloc, tree extra_success_expr,
+			  tree var_overflow)
 {
   stmtblock_t alloc_block;
   tree tmp, null_mem, alloc, error;
@@ -1110,6 +1111,23 @@ gfc_allocate_allocatable (stmtblock_t * block, tree mem, tree size,
 
       error = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
 	      status, build_int_cst (status_type, LIBERROR_ALLOCATION));
+    }
+
+  /* When STATUS and a size overflow check are present, we give precedence to
+     "already allocated variable" error over overflow error.  */
+  if (status != NULL_TREE && var_overflow != NULL_TREE)
+    {
+      tree status_type = TREE_TYPE (status);
+      tree cond = gfc_unlikely (fold_build2_loc (input_location, NE_EXPR,
+						 logical_type_node,
+						 var_overflow,
+						 integer_zero_node),
+				PRED_FORTRAN_OVERFLOW);
+      tmp = fold_build2_loc (input_location, MODIFY_EXPR, status_type,
+			     status, build_int_cst (status_type,
+						    LIBERROR_NO_MEMORY));
+      alloc = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+			       cond, tmp, alloc);
     }
 
   tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node, null_mem,
