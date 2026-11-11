@@ -20701,7 +20701,7 @@ ix86_veclibabi_aocl (combined_fn fn, tree type_out, tree type_in)
      are used to fill out unused positions in the arrays.  */
   static const int supported_n[][2][3] = {
   /*   Single prec. ,  Double prec.  */
-    { { 16,  0,  0 }, {  2,  4,  8 } }, /* TAN.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* TAN.  */
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* EXP.  */
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* EXP2.  */
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* LOG.  */
@@ -20710,15 +20710,18 @@ ix86_veclibabi_aocl (combined_fn fn, tree type_out, tree type_in)
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* SIN.  */
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* POW.  */
     { {  4,  8, 16 }, {  2,  4,  8 } }, /* ERF.  */
-    { {  4,  8, 16 }, {  2,  8,  0 } }, /* ATAN.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* ATAN.  */
     { {  4,  8, 16 }, {  2,  0,  0 } }, /* LOG10.  */
-    { {  4,  0,  0 }, {  2,  0,  0 } }, /* EXP10.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* EXP10.  */
     { {  4,  0,  0 }, {  2,  0,  0 } }, /* LOG1P.  */
-    { {  4,  8, 16 }, {  8,  0,  0 } }, /* ASIN.  */
-    { {  4, 16,  0 }, {  0,  0,  0 } }, /* ACOS.  */
-    { {  4,  8, 16 }, {  0,  0,  0 } }, /* TANH.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* ASIN.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* ACOS.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* TANH.  */
     { {  4,  0,  0 }, {  0,  0,  0 } }, /* EXPM1.  */
-    { {  4,  8,  0 }, {  0,  0,  0 } }, /* COSH.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* COSH.  */
+    { {  4,  8, 16 }, {  2,  4,  8 } }, /* ERFC.  */
+    { {  4,  8,  0 }, {  2,  0,  0 } }, /* CBRT.  */
+    { {  0,  0,  0 }, {  2,  4,  8 } }, /* ATAN2.  */
   };
 
   /* We cannot simply index the supported_n array with FN since multiple FNs
@@ -20745,6 +20748,9 @@ ix86_veclibabi_aocl (combined_fn fn, tree type_out, tree type_in)
     CASE_CFN_TANH  : i = 15; break;
     CASE_CFN_EXPM1 : i = 16; break;
     CASE_CFN_COSH  : i = 17; break;
+    CASE_CFN_ERFC  : i = 18; break;
+    CASE_CFN_CBRT  : i = 19; break;
+    CASE_CFN_ATAN2 : i = 20; break;
     default: return NULL_TREE;
     }
 
@@ -20781,6 +20787,8 @@ ix86_veclibabi_aocl (combined_fn fn, tree type_out, tree type_in)
   /* Append the operation name (steal it from the name of a builtin).  */
   tree fndecl = mathfn_built_in (el_mode == DFmode
 				 ? double_type_node : float_type_node, fn);
+  if (!fndecl)
+    return NULL_TREE;
   bname = IDENTIFIER_POINTER (DECL_NAME (fndecl));
   sprintf (name + name_len, "%s", bname + 10);
 

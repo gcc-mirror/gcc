@@ -22,6 +22,8 @@ float asinf(float);
 float acosf(float);
 float tanhf(float);
 float coshf(float);
+float erfcf(float);
+float cbrtf(float);
 
 double tan(double);
 double exp(double);
@@ -41,6 +43,9 @@ double asin(double);
 double acos(double);
 double tanh(double);
 double cosh(double);
+double erfc(double);
+double cbrt(double);
+double atan2(double, double);
 
 #define gentest1(FUN, BASE, VF)					\
   extern BASE s_##FUN##_##BASE##_##VF[VF];			\
@@ -66,12 +71,12 @@ double cosh(double);
   }								\
 
 
-gentest1(tan, float, 16)
-
 #define COMMON_FLOAT_TESTS1(FUN)			\
   gentest1(FUN, float, 4)			\
   gentest1(FUN, float, 8)			\
   gentest1(FUN, float, 16)
+
+COMMON_FLOAT_TESTS1(tanf)
 
 COMMON_FLOAT_TESTS1(exp)
 COMMON_FLOAT_TESTS1(exp2)
@@ -90,22 +95,24 @@ COMMON_FLOAT_TESTS1(erf)
 //gentest1(fabsf, float, 4)  provided by an instruction
 //gentest1(fabsf, float, 8)  provided by an instruction
 
-COMMON_FLOAT_TESTS1(atan)
-COMMON_FLOAT_TESTS1(log10)
+COMMON_FLOAT_TESTS1(atanf)
+COMMON_FLOAT_TESTS1(log10f)
 
-gentest1(exp10f, float, 4)
+COMMON_FLOAT_TESTS1(exp10f)
 gentest1(expm1f, float, 4)
 gentest1(log1pf, float, 4)
 
 COMMON_FLOAT_TESTS1(asinf)
-
-gentest1(acosf, float, 4)
-gentest1(acosf, float, 16)
+COMMON_FLOAT_TESTS1(acosf)
 
 COMMON_FLOAT_TESTS1(tanhf)
 
-gentest1(coshf, float, 4)
-gentest1(coshf, float, 8)
+COMMON_FLOAT_TESTS1(coshf)
+
+COMMON_FLOAT_TESTS1(erfcf)
+
+gentest1(cbrtf, float, 4)
+gentest1(cbrtf, float, 8)
 
 #define COMMON_DOUBLE_TESTS1(FUN)			\
   gentest1(FUN, double, 2)			\
@@ -131,15 +138,25 @@ COMMON_DOUBLE_TESTS1(erf)
 //gentest1(fabs, double, 2)  provided by an instruction
 //gentest1(fabs, double, 4)  provided by an instruction
 
-gentest1(atan, double, 2)
-gentest1(atan, double, 8)
+COMMON_DOUBLE_TESTS1(atan)
+COMMON_DOUBLE_TESTS1(exp10)
 
 gentest1(log10, double, 2)
-gentest1(exp10, double, 2)
 gentest1(expm1, double, 2)
 gentest1(log1p, double, 2)
 
-gentest1(asin, double, 8)
+COMMON_DOUBLE_TESTS1(asin)
+COMMON_DOUBLE_TESTS1(acos)
+COMMON_DOUBLE_TESTS1(erfc)
+
+gentest1(cbrt, double, 2)
+
+COMMON_DOUBLE_TESTS1(tanh)
+COMMON_DOUBLE_TESTS1(cosh)
+
+gentest2(atan2, double, 2)
+gentest2(atan2, double, 4)
+gentest2(atan2, double, 8)
 
 
 /* { dg-final { scan-assembler-times "amd_vrs8_expf" 1 } } */
@@ -180,31 +197,31 @@ gentest1(asin, double, 8)
 /* { dg-final { scan-assembler-times "amd_vrs4_sinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs8_sinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrd4_sin" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd4_cos" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd4_tan" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd2_cos" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd4_cos\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd4_tan\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd2_cos\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrd2_sin" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd2_tan" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd2_tan\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_cosf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_sinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_tanf" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd8_cos" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd8_cos\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrd8_sin" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd8_tan" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd8_tan\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_acosf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_asinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs8_asinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_atanf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs8_atanf" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd2_atan" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd2_atan\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_atanf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_asinf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_acosf" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd8_atan" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd8_atan\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrd8_asin" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_coshf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_tanhf" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrs8_coshf" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrs8_coshf\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs8_tanhf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_tanhf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_powf" 1 } } */
@@ -214,11 +231,40 @@ gentest1(asin, double, 8)
 /* { dg-final { scan-assembler-times "amd_vrs16_powf" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrd8_pow" 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs4_erff" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd2_erf" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd2_erf\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs8_erff" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd4_erf" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd4_erf\M} 1 } } */
 /* { dg-final { scan-assembler-times "amd_vrs16_erff" 1 } } */
-/* { dg-final { scan-assembler-times "amd_vrd8_erf" 1 } } */
-
-
-
+/* { dg-final { scan-assembler-times {\mamd_vrd8_erf\M} 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs4_tanf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs8_tanf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs8_acosf" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd4_atan\M} 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_cosh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs8_exp10f" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs16_exp10f" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_exp10" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_asin" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_asin" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_acos" 1 } } */
+/* { dg-final { scan-assembler-times {\mamd_vrd4_acos\M} 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs4_erfcf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs8_erfcf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs16_erfcf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_erfc" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_erfc" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_erfc" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs4_cbrtf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs8_cbrtf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_cbrt" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_exp10" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_acos" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrs16_coshf" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_cosh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_cosh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_tanh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_tanh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_tanh" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd2_atan2" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd4_atan2" 1 } } */
+/* { dg-final { scan-assembler-times "amd_vrd8_atan2" 1 } } */
