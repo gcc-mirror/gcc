@@ -1372,7 +1372,9 @@
     UNSPEC_PERMUTE_PRED
 
     ;; All used in aarch64-sve2.md
+    UNSPEC_ADDQP
     UNSPEC_ADDQV
+    UNSPEC_ADDSUBP
     UNSPEC_ANDQV
     UNSPEC_DUPQ
     UNSPEC_EORQV
@@ -1402,6 +1404,7 @@
     UNSPEC_ST1_TRUNCQ
     UNSPEC_ST1Q_SCATTER
     UNSPEC_STNQ
+    UNSPEC_SUBP
     UNSPEC_UMAXQV
     UNSPEC_UMINQV
     UNSPEC_UQCVT
@@ -4124,7 +4127,9 @@
 					     UNSPEC_UQXTNT])
 
 (define_int_iterator SVE2_INT_BINARY [UNSPEC_SQDMULH
-				      UNSPEC_SQRDMULH])
+				      UNSPEC_SQRDMULH
+				      (UNSPEC_ADDQP "TARGET_SVE2p3_OR_SME2p3")
+				      (UNSPEC_ADDSUBP "TARGET_SVE2p3_OR_SME2p3")])
 
 (define_int_iterator SVE2_INT_BINARY_LANE [UNSPEC_SQDMULH
 					   UNSPEC_SQRDMULH])
@@ -4173,6 +4178,7 @@
 (define_int_iterator SVE2_INT_BINARY_PAIR [UNSPEC_ADDP
 					   UNSPEC_SMAXP
 					   UNSPEC_SMINP
+					   (UNSPEC_SUBP "TARGET_SVE2p3_OR_SME2p3")
 					   UNSPEC_UMAXP
 					   UNSPEC_UMINP])
 
@@ -5071,6 +5077,8 @@
 			     (UNSPEC_ADCLT "adclt")
 			     (UNSPEC_ADDHNB "addhnb")
 			     (UNSPEC_ADDHNT "addhnt")
+			     (UNSPEC_ADDQP "addqp")
+			     (UNSPEC_ADDSUBP "addsubp")
 			     (UNSPEC_ADDP "addp")
 			     (UNSPEC_ANDV "andv")
 			     (UNSPEC_ASHIFTRT_WIDE "asr")
@@ -5180,6 +5188,7 @@
 			     (UNSPEC_SSUBWT "ssubwt")
 			     (UNSPEC_SUBHNB "subhnb")
 			     (UNSPEC_SUBHNT "subhnt")
+			     (UNSPEC_SUBP "subp")
 			     (UNSPEC_SUQADD "suqadd")
 			     (UNSPEC_UABAL "uabal")
 			     (UNSPEC_UABDLB "uabdlb")

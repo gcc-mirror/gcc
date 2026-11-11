@@ -59,7 +59,6 @@
 ;; ---- [INT] Unpredicated high-part multiplication
 ;; ---- [INT] Scaled high-part multiplication
 ;; ---- [INT] General binary arithmetic that maps to unspecs
-;; ---- [INT] Saturating binary arithmetic
 ;; ---- [INT] Saturating left shifts
 ;; ---- [FP] Non-widening bfloat16 arithmetic
 ;; ---- [FP] Clamp to minimum/maximum
@@ -1037,9 +1036,13 @@
 ;; ---- [INT] General binary arithmetic that maps to unspecs
 ;; -------------------------------------------------------------------------
 ;; Includes:
+;; - ADDQP
+;; - ADDSUBP
 ;; - SHADD
 ;; - SHSUB
 ;; - SHSUBR
+;; - SQDMULH
+;; - SQRDMULH
 ;; - SQRSHL
 ;; - SQRSHLR
 ;; - SRHADD
@@ -1283,14 +1286,7 @@
    (set_attr "sve_type" "sve_int_general")]
 )
 
-;; -------------------------------------------------------------------------
-;; ---- [INT] Saturating binary arithmetic
-;; -------------------------------------------------------------------------
-;; Includes:
-;; - SQDMULH
-;; - SQRDMULH
-;; -------------------------------------------------------------------------
-
+; Unpredicated binary arithmetic.
 (define_insn "@aarch64_sve_<sve_int_op><mode>"
   [(set (match_operand:SVE_FULL_I 0 "register_operand" "=w")
 	(unspec:SVE_FULL_I
@@ -3287,6 +3283,7 @@
 ;; - ADDP
 ;; - SMAXP
 ;; - SMINP
+;; - SUBP
 ;; - UMAXP
 ;; - UMINP
 ;; -------------------------------------------------------------------------

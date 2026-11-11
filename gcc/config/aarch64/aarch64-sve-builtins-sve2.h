@@ -39,7 +39,9 @@ namespace aarch64_acle
     extern const function_base *const svaddlbt;
     extern const function_base *const svaddlt;
     extern const function_base *const svaddp;
+    extern const function_base *const svaddqp;
     extern const function_base *const svaddqv;
+    extern const function_base *const svaddsubp;
     extern const function_base *const svaddwb;
     extern const function_base *const svaddwt;
     extern const function_base *const svaesd;
@@ -249,6 +251,7 @@ namespace aarch64_acle
     extern const function_base *const svsublbt;
     extern const function_base *const svsublt;
     extern const function_base *const svsubltb;
+    extern const function_base *const svsubp;
     extern const function_base *const svsubwb;
     extern const function_base *const svsubwt;
     extern const function_base *const svtbl2;

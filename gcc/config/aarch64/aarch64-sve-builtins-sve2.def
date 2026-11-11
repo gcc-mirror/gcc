@@ -298,6 +298,12 @@ DEF_SVE_FUNCTION_GS (svwhilelt, compare_scalar, while_x, x2, none)
 DEF_SVE_FUNCTION (svwhilelt, compare_scalar_count, while_x_c, none)
 #undef REQUIRED_EXTENSIONS
 
+#define REQUIRED_EXTENSIONS sve_and_sme (AARCH64_FL_SVE2p3, AARCH64_FL_SME2p3)
+DEF_SVE_FUNCTION (svaddqp, binary, all_integer, none)
+DEF_SVE_FUNCTION (svaddsubp, binary, all_integer, none)
+DEF_SVE_FUNCTION (svsubp, binary, all_integer, mx)
+#undef REQUIRED_EXTENSIONS
+
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE2p1)
 DEF_SVE_FUNCTION (svld1q_gather, load_gather64_sv_offset, all_data, implicit)
 DEF_SVE_FUNCTION (svld1q_gather, load_gather64_sv_index, hsd_data, implicit)
