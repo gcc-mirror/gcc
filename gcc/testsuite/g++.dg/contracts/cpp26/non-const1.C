@@ -1,3 +1,4 @@
+// { dg-do compile { target c++14 } }
 // { dg-additional-options -fcontracts }
 
 struct A {
