@@ -444,6 +444,12 @@ find_conditions (basic_block bb,
 	    || info->m_ranges[i].in_p != in_p)
 	  goto exit;
 
+      /* The IOR of several ranges is the union of the ranges only when
+	 each range is an IN_P range.  The IOR of anti-ranges is the
+	 complement of their intersection.  */
+      if (info->m_ranges.length () > 1 && !in_p)
+	goto exit;
+
       info->record_phi_mapping (info->m_true_edge,
 				&info->m_true_edge_phi_mapping);
       info->record_phi_mapping (info->m_false_edge,
