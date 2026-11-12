@@ -2610,6 +2610,18 @@ classify_argument (machine_mode mode, const_tree type,
   static bool warned = false;
   int n = classify_argument (mode, type, classes, bit_offset,
 			     zero_width_bitfields);
+  /* More than 2 classes is only possible for a single 256-bit or
+     512-bit vector register: SSE followed by all SSEUP.  This is
+     relied upon by function_arg_advance_64, function_arg_64 and
+     ix86_gimplify_va_arg, which pass unnamed 256-bit and 512-bit
+     vector parameters on stack when classify_argument returns more
+     than 2 classes.  */
+  if (flag_checking && n > 2)
+    {
+      gcc_assert ((n == 4 || n == 8) && classes[0] == X86_64_SSE_CLASS);
+      for (int i = 1; i < n; i++)
+	gcc_assert (classes[i] == X86_64_SSEUP_CLASS);
+    }
   if (!zero_width_bitfields || warned || !warn_psabi)
     return n;
   enum x86_64_reg_class alt_classes[MAX_CLASSES];
@@ -3101,10 +3113,11 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
 			 const_tree type, HOST_WIDE_INT words, bool named)
 {
   int int_nregs, sse_nregs;
+  enum x86_64_reg_class regclass[MAX_CLASSES];
 
-  /* Unnamed 512 and 256bit vector mode parameters are passed on stack.  */
-  if (!named && (VALID_AVX512F_REG_MODE (mode)
-		 || VALID_AVX256_REG_MODE (mode)))
+  /* Unnamed 512 and 256bit vector parameters are passed on stack.  See
+     function_arg_64.  */
+  if (!named && classify_argument (mode, type, regclass, 0) > 2)
     return 0;
 
   if (!examine_argument (mode, type, 0, &int_nregs, &sse_nregs)
@@ -3354,32 +3367,14 @@ function_arg_64 (const CUMULATIVE_ARGS *cum, machine_mode mode,
 		       : cum->sse_regno)
 		    : -1);
 
-  switch (mode)
-    {
-    default:
-      break;
-
-    case E_V16HFmode:
-    case E_V16BFmode:
-    case E_V8SFmode:
-    case E_V8SImode:
-    case E_V32QImode:
-    case E_V16HImode:
-    case E_V4DFmode:
-    case E_V4DImode:
-    case E_V32HFmode:
-    case E_V32BFmode:
-    case E_V16SFmode:
-    case E_V16SImode:
-    case E_V64QImode:
-    case E_V32HImode:
-    case E_V8DFmode:
-    case E_V8DImode:
-      /* Unnamed 256 and 512bit vector mode parameters are passed on stack.  */
-      if (!named)
-	return NULL;
-      break;
-    }
+  /* Unnamed 256 and 512bit vector parameters are passed on stack.
+     classify_argument returns more than 2 classes only for SSE followed
+     by all SSEUP, i.e. a single 256-bit or 512-bit vector register.
+     Besides the vector modes, this covers BLKmode aggregates such as a
+     union with such a vector member.  */
+  enum x86_64_reg_class regclass[MAX_CLASSES];
+  if (!named && classify_argument (mode, type, regclass, 0) > 2)
+    return NULL;
 
   return construct_container (mode, orig_mode, type, 0, cum->nregs,
 			      cum->sse_nregs,
@@ -4849,39 +4844,16 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   rsize = CEIL (size, UNITS_PER_WORD);
 
   nat_mode = type_natural_mode (type, NULL, false);
-  switch (nat_mode)
-    {
-    case E_V16HFmode:
-    case E_V16BFmode:
-    case E_V8SFmode:
-    case E_V8SImode:
-    case E_V32QImode:
-    case E_V16HImode:
-    case E_V4DFmode:
-    case E_V4DImode:
-    case E_V32HFmode:
-    case E_V32BFmode:
-    case E_V16SFmode:
-    case E_V16SImode:
-    case E_V64QImode:
-    case E_V32HImode:
-    case E_V8DFmode:
-    case E_V8DImode:
-      /* Unnamed 256 and 512bit vector mode parameters are passed on stack.  */
-      if (!TARGET_64BIT_MS_ABI)
-	{
-	  container = NULL;
-	  break;
-	}
-      /* FALLTHRU */
-
-    default:
-      container = construct_container (nat_mode, TYPE_MODE (type),
-				       type, 0, X86_64_REGPARM_MAX,
-				       X86_64_SSE_REGPARM_MAX, intreg,
-				       0);
-      break;
-    }
+  /* Unnamed 256 and 512bit vector parameters are passed on stack.  See
+     function_arg_64.  */
+  enum x86_64_reg_class regclass[MAX_CLASSES];
+  if (!TARGET_64BIT_MS_ABI
+      && classify_argument (nat_mode, type, regclass, 0) > 2)
+    container = NULL;
+  else
+    container = construct_container (nat_mode, TYPE_MODE (type),
+				     type, 0, X86_64_REGPARM_MAX,
+				     X86_64_SSE_REGPARM_MAX, intreg, 0);
 
   /* Pull the value out of the saved registers.  */
 
