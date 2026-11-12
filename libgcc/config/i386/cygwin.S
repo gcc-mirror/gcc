@@ -79,7 +79,7 @@ ___chkstk:
 ___chkstk:
 __alloca:
 	pushl	%ecx			/* save temp */
-	cfi_push(%eax)
+	cfi_push(%ecx)
 	leal	8(%esp), %ecx		/* point past return addr */
 	cmpl	$0x1000, %eax		/* > 4k ?*/
 	jb	2f
