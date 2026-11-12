@@ -43,22 +43,24 @@ extern const struct scoped_attribute_specs grs_langhook_gnu_attribute_table;
 extern const struct scoped_attribute_specs grs_langhook_common_attribute_table;
 
 /* Internal attribute handlers for built-in functions.  */
-static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree rust_handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree rust_handle_const_attribute (tree *, tree, tree, int, bool *);
-static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_malloc_attribute (tree *, tree, tree, int, bool *);
 static tree rust_handle_pure_attribute (tree *, tree, tree, int, bool *);
 static tree rust_handle_novops_attribute (tree *, tree, tree, int, bool *);
-static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_nonnull_attribute (tree *, tree, tree, int, bool *);
 static tree rust_handle_nothrow_attribute (tree *, tree, tree, int, bool *);
-static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_transaction_pure_attribute (tree *, tree, tree, int,
+						    bool *);
 static tree rust_handle_returns_twice_attribute (tree *, tree, tree, int,
 						 bool *);
-static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_omp_declare_simd_attribute (tree *, tree, tree, int,
+						    bool *);
 
 /* Rust attribute handlers for user defined attributes.  */
-static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
-static tree handle_hot_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree rust_handle_hot_attribute (tree *, tree, tree, int, bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)                              \
@@ -103,24 +105,24 @@ static const struct attribute_spec::exclusions rust_attr_const_pure_exclusions[]
    For internal use (marking of built-ins) only.  */
 static const attribute_spec grs_langhook_common_attributes[] = {
   ATTR_SPEC ("noreturn", 0, 0, true, false, false, false,
-	     handle_noreturn_attribute, rust_attr_noreturn_exclusions),
+	     rust_handle_noreturn_attribute, rust_attr_noreturn_exclusions),
   ATTR_SPEC ("leaf", 0, 0, true, false, false, false,
 	     rust_handle_leaf_attribute, NULL),
   ATTR_SPEC ("const", 0, 0, true, false, false, false,
 	     rust_handle_const_attribute, rust_attr_const_pure_exclusions),
-  ATTR_SPEC ("malloc", 0, 0, true, false, false, false, handle_malloc_attribute,
-	     NULL),
+  ATTR_SPEC ("malloc", 0, 0, true, false, false, false,
+	     rust_handle_malloc_attribute, NULL),
   ATTR_SPEC ("returns_twice", 0, 0, true, false, false, false,
 	     rust_handle_returns_twice_attribute,
 	     attr_returns_twice_exclusions),
   ATTR_SPEC ("pure", 0, 0, true, false, false, false,
 	     rust_handle_pure_attribute, rust_attr_const_pure_exclusions),
   ATTR_SPEC ("nonnull", 0, -1, false, true, true, false,
-	     handle_nonnull_attribute, NULL),
+	     rust_handle_nonnull_attribute, NULL),
   ATTR_SPEC ("nothrow", 0, 0, true, false, false, false,
 	     rust_handle_nothrow_attribute, NULL),
   ATTR_SPEC ("transaction_pure", 0, 0, false, true, true, false,
-	     handle_transaction_pure_attribute, NULL),
+	     rust_handle_transaction_pure_attribute, NULL),
   ATTR_SPEC ("no vops", 0, 0, true, false, false, false,
 	     rust_handle_novops_attribute, NULL),
   ATTR_SPEC ("type generic", 0, 0, false, true, true, false,
@@ -128,16 +130,16 @@ static const attribute_spec grs_langhook_common_attributes[] = {
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false, handle_fnspec_attribute,
 	     NULL),
   ATTR_SPEC ("omp declare simd", 0, -1, true, false, false, false,
-	     handle_omp_declare_simd_attribute, NULL),
+	     rust_handle_omp_declare_simd_attribute, NULL),
 };
 
 const scoped_attribute_specs grs_langhook_common_attribute_table
   = {"gnu", {grs_langhook_common_attributes}};
 
 static const attribute_spec grs_langhook_gnu_attributes[] = {
-  ATTR_SPEC ("cold", 0, 0, true, false, false, false, handle_cold_attribute,
-	     attr_cold_hot_exclusions),
-  ATTR_SPEC ("hot", 0, 0, true, false, false, false, handle_hot_attribute,
+  ATTR_SPEC ("cold", 0, 0, true, false, false, false,
+	     rust_handle_cold_attribute, attr_cold_hot_exclusions),
+  ATTR_SPEC ("hot", 0, 0, true, false, false, false, rust_handle_hot_attribute,
 	     attr_cold_hot_exclusions),
 };
 
@@ -152,7 +154,7 @@ const scoped_attribute_specs grs_langhook_gnu_attribute_table
    struct attribute_spec.handler.  */
 
 static tree
-handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
+rust_handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
 {
   tree type = TREE_TYPE (*node);
 
@@ -215,7 +217,7 @@ rust_handle_const_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_malloc_attribute (tree *node, tree, tree, int, bool *)
+rust_handle_malloc_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))));
@@ -274,7 +276,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 /* Handle the "nonnull" attribute.  */
 
 static tree
-handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
+rust_handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
 {
   tree type = *node;
 
@@ -340,7 +342,7 @@ rust_handle_nothrow_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
+rust_handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
@@ -370,8 +372,8 @@ rust_handle_returns_twice_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_omp_declare_simd_attribute (tree *node, tree name, tree, int,
-				   bool *no_add_attrs)
+rust_handle_omp_declare_simd_attribute (tree *node, tree name, tree, int,
+					bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -390,7 +392,8 @@ handle_omp_declare_simd_attribute (tree *node, tree name, tree, int,
    struct attribute_spec.handler.  */
 
 static tree
-handle_cold_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+rust_handle_cold_attribute (tree *node, tree name, tree, int,
+			    bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -402,7 +405,7 @@ handle_cold_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 }
 
 static tree
-handle_hot_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
+rust_handle_hot_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
