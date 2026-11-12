@@ -163,22 +163,22 @@ chrec_fold_multiply_poly_poly (tree type,
   gcc_checking_assert (useless_type_conversion_p (type, chrec_type (poly0))
 		       && useless_type_conversion_p (type, chrec_type (poly1)));
 
-  /* {a, +, b}_1 * {c, +, d}_2  ->  {c*{a, +, b}_1, +, d}_2,
-     {a, +, b}_2 * {c, +, d}_1  ->  {a*{c, +, d}_1, +, b}_2,
+  /* {a, +, b}_1 * {c, +, d}_2  ->  {c*{a, +, b}_1, +, d*{a, +, b}_1}_2,
+     {a, +, b}_2 * {c, +, d}_1  ->  {a*{c, +, d}_1, +, b*{c, +, d}_1}_2,
      {a, +, b}_x * {c, +, d}_x  ->  {a*c, +, a*d + b*c + b*d, +, 2*b*d}_x.  */
   if (flow_loop_nested_p (loop0, loop1))
     /* poly0 is a constant wrt. poly1.  */
     return build_polynomial_chrec
       (CHREC_VARIABLE (poly1),
        chrec_fold_multiply (type, CHREC_LEFT (poly1), poly0),
-       CHREC_RIGHT (poly1));
+       chrec_fold_multiply (type, CHREC_RIGHT (poly1), poly0));
 
   if (flow_loop_nested_p (loop1, loop0))
     /* poly1 is a constant wrt. poly0.  */
     return build_polynomial_chrec
       (CHREC_VARIABLE (poly0),
        chrec_fold_multiply (type, CHREC_LEFT (poly0), poly1),
-       CHREC_RIGHT (poly0));
+       chrec_fold_multiply (type, CHREC_RIGHT (poly0), poly1));
 
   if (loop0 != loop1)
     {
