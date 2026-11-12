@@ -1,3 +1,24 @@
+2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* config/bpf/bpf.cc (emit_move_loop): Remove buggy negative
+	increment remainder handling.  Remove dead remainder updates.
+	(emit_move_loop_backwards): New function.
+	(bpf_expand_cpymem): Use it here instead of emit_move_loop with
+	negative increment.
+
+2026-11-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-11-11  Tobias Burnus  <tburnus@baylibre.com>
+		    Jeremy Robinson  <jrobinson@baylibre.com>
+
+	* config/gcn/mkoffload.cc (process_obj): Use lbasename on the
+	gcn_o_name file name.
+
 2026-11-09  Martin Jambor  <mjambor@suse.cz>
 
 	Backported from master:
