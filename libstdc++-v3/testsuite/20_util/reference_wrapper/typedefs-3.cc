@@ -44,24 +44,33 @@ struct S12 : S1, S2 { };
 
 struct S012 : S0, S1, S2 { };
 
-using std::true_type;
-using std::false_type;
-using std::__void_t;
+template<typename> using void_t = void;
 
-_GLIBCXX_HAS_NESTED_TYPE(argument_type)
-_GLIBCXX_HAS_NESTED_TYPE(first_argument_type)
-_GLIBCXX_HAS_NESTED_TYPE(second_argument_type)
-
+template<typename T, typename = void>
+  struct has_arg_type
+  : std::false_type
+  { };
 template<typename T>
-  struct has_arg_type : __has_argument_type<T>
+  struct has_arg_type<T, void_t<typename T::argument_type>>
+  : std::true_type
   { };
 
+template<typename T, typename = void>
+  struct has_1st_arg_type
+  : std::false_type
+  { };
 template<typename T>
-  struct has_1st_arg_type : __has_first_argument_type<T>
+  struct has_1st_arg_type<T, void_t<typename T::first_argument_type>>
+  : std::true_type
   { };
 
+template<typename T, typename = void>
+  struct has_2nd_arg_type
+  : std::false_type
+  { };
 template<typename T>
-  struct has_2nd_arg_type : __has_second_argument_type<T>
+  struct has_2nd_arg_type<T, void_t<typename T::second_argument_type>>
+  : std::true_type
   { };
 
 template<typename T, bool = has_arg_type<T>::value>

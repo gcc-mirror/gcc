@@ -3045,20 +3045,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using __detected_or_t
       = typename __detected_or<_Default, _Op, _Args...>::type;
 
-  /**
-   *  Use SFINAE to determine if the type _Tp has a publicly-accessible
-   *  member type _NTYPE.
-   */
-#define _GLIBCXX_HAS_NESTED_TYPE(_NTYPE)				\
-  template<typename _Tp, typename = __void_t<>>				\
-    struct __has_##_NTYPE						\
-    : false_type							\
-    { };								\
-  template<typename _Tp>						\
-    struct __has_##_NTYPE<_Tp, __void_t<typename _Tp::_NTYPE>>		\
-    : true_type								\
-    { };
-
   template <typename _Tp>
     struct __is_swappable;
 
