@@ -44,15 +44,16 @@ using namespace gcc::jit;
 /* Attribute handling.  These are the libgccjit-specific attribute handlers;
    the handlers shared with the C family live in gcc/attr-handlers.cc.  */
 
-static tree handle_cold_attribute (tree *, tree, tree, int, bool *);
-static tree handle_format_arg_attribute (tree *, tree, tree, int, bool *);
-static tree handle_format_attribute (tree *, tree, tree, int, bool *);
-static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
-static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
-static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
-						       int, bool *);
-static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
-static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_cold_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_format_arg_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_format_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_patchable_function_entry_attribute (tree *, tree, tree,
+							   int, bool *);
+static tree jit_handle_sentinel_attribute (tree *, tree, tree, int, bool *);
+static tree jit_handle_transaction_pure_attribute (tree *, tree, tree, int,
+						   bool *);
 
 /* Helper to define attribute exclusions.  */
 #define ATTR_EXCL(name, function, type, variable)	\
@@ -77,7 +78,7 @@ static const attribute_spec jit_gnu_attributes[] =
 			      handle_always_inline_attribute,
 			      attr_always_inline_exclusions },
   { "cold",		      0, 0, true,  false, false, false,
-			      handle_cold_attribute,
+			      jit_handle_cold_attribute,
 			      attr_cold_hot_exclusions },
   /* The same comments as for noreturn attributes apply to const ones.  */
   { "const",		      0, 0, true,  false, false, false,
@@ -91,7 +92,7 @@ static const attribute_spec jit_gnu_attributes[] =
   { "malloc",		      0, 0, true,  false, false, false,
 			      handle_malloc_common, attr_alloc_exclusions },
   { "noreturn",		      0, 0, true,  false, false, false,
-			      handle_noreturn_attribute,
+			      jit_handle_noreturn_attribute,
 			      attr_noreturn_exclusions },
   { "no vops",		      0, 0, true,  false, false, false,
 			      handle_novops_attribute, NULL },
@@ -99,11 +100,11 @@ static const attribute_spec jit_gnu_attributes[] =
 			      handle_noinline_attribute,
 			      attr_noinline_exclusions },
   { "nonnull",		      0, -1, false, true, true, false,
-			      handle_nonnull_attribute, NULL },
+			      jit_handle_nonnull_attribute, NULL },
   { "nothrow",		      0, 0, true,  false, false, false,
 			      handle_nothrow_attribute, NULL },
   { "patchable_function_entry", 1, 2, true, false, false, false,
-			      handle_patchable_function_entry_attribute,
+			      jit_handle_patchable_function_entry_attribute,
 			      NULL },
   { "pure",		      0, 0, true,  false, false, false,
 			      handle_pure_attribute,
@@ -112,13 +113,13 @@ static const attribute_spec jit_gnu_attributes[] =
 			      handle_returns_twice_attribute,
 			      attr_returns_twice_exclusions },
   { "sentinel",		      0, 1, false, true, true, false,
-			      handle_sentinel_attribute, NULL },
+			      jit_handle_sentinel_attribute, NULL },
   { "target",		      1, -1, true, false, false, false,
 			      handle_target_attribute, attr_target_exclusions },
   { "type generic",	      0, 0, false, true, true, false,
 			      handle_type_generic_attribute, NULL },
   { "transaction_pure",	      0, 0, false, true, true, false,
-			      handle_transaction_pure_attribute, NULL },
+			      jit_handle_transaction_pure_attribute, NULL },
   { "used",         0, 0, true,  false, false, false,
             handle_used_attribute, NULL },
   { "visibility",       1, 1, false, false, false, false,
@@ -144,9 +145,9 @@ static const attribute_spec jit_format_attributes[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "format",		      3, 3, false, true,  true, false,
-			      handle_format_attribute, NULL },
+			      jit_handle_format_attribute, NULL },
   { "format_arg",             1, 1, false, true,  true, false,
-			      handle_format_arg_attribute, NULL }
+			      jit_handle_format_arg_attribute, NULL }
 };
 
 static const scoped_attribute_specs jit_format_attribute_table =
@@ -171,9 +172,9 @@ static const scoped_attribute_specs *const jit_attribute_table[] =
    struct attribute_spec.handler.  */
 
 static tree
-handle_noreturn_attribute (tree *node, tree ARG_UNUSED (name),
-			   tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			   bool * ARG_UNUSED (no_add_attrs))
+jit_handle_noreturn_attribute (tree *node, tree ARG_UNUSED (name),
+			       tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			       bool * ARG_UNUSED (no_add_attrs))
 {
   tree type = TREE_TYPE (*node);
 
@@ -208,9 +209,9 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 /* Handle the "nonnull" attribute.  */
 
 static tree
-handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
-			  tree args, int ARG_UNUSED (flags),
-			  bool * ARG_UNUSED (no_add_attrs))
+jit_handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+			      int ARG_UNUSED (flags),
+			      bool * ARG_UNUSED (no_add_attrs))
 {
   tree type = *node;
 
@@ -259,9 +260,9 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 /* Handle a "sentinel" attribute.  */
 
 static tree
-handle_sentinel_attribute (tree *node, tree ARG_UNUSED (name), tree args,
-			   int ARG_UNUSED (flags),
-			   bool * ARG_UNUSED (no_add_attrs))
+jit_handle_sentinel_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+			       int ARG_UNUSED (flags),
+			       bool * ARG_UNUSED (no_add_attrs))
 {
   gcc_assert (stdarg_p (*node));
 
@@ -279,10 +280,10 @@ handle_sentinel_attribute (tree *node, tree ARG_UNUSED (name), tree args,
 /* Handle a "transaction_pure" attribute.  */
 
 static tree
-handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
-				   tree ARG_UNUSED (args),
-				   int ARG_UNUSED (flags),
-				   bool * ARG_UNUSED (no_add_attrs))
+jit_handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
+				       tree ARG_UNUSED (args),
+				       int ARG_UNUSED (flags),
+				       bool * ARG_UNUSED (no_add_attrs))
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
@@ -294,8 +295,8 @@ handle_transaction_pure_attribute (tree *node, tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 static tree
-handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
-		       int ARG_UNUSED (flags), bool *no_add_attrs)
+jit_handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			   int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   if (TREE_CODE (*node) == FUNCTION_DECL
       || TREE_CODE (*node) == LABEL_DECL)
@@ -312,7 +313,7 @@ handle_cold_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 }
 
 static tree
-handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
+jit_handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
 {
   /* Nothing to be done here.  */
   return NULL_TREE;
@@ -322,9 +323,9 @@ handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_format_attribute (tree * ARG_UNUSED (node), tree ARG_UNUSED (name),
-			 tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			 bool *no_add_attrs)
+jit_handle_format_attribute (tree * ARG_UNUSED (node), tree ARG_UNUSED (name),
+			     tree ARG_UNUSED (args), int ARG_UNUSED (flags),
+			     bool *no_add_attrs)
 {
   *no_add_attrs = true;
   return NULL_TREE;
@@ -335,9 +336,9 @@ handle_format_attribute (tree * ARG_UNUSED (node), tree ARG_UNUSED (name),
    struct attribute_spec.handler.  */
 
 tree
-handle_format_arg_attribute (tree * ARG_UNUSED (node), tree ARG_UNUSED (name),
-			     tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			     bool *no_add_attrs)
+jit_handle_format_arg_attribute (tree * ARG_UNUSED (node),
+				 tree ARG_UNUSED (name), tree ARG_UNUSED (args),
+				 int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   *no_add_attrs = true;
   return NULL_TREE;
