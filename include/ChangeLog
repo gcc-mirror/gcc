@@ -1,3 +1,20 @@
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h (__ll_check_output): New macro.
+	[__arc__, __arm__, __hppa, __i386__, __x86_64__, __M32R__,
+	__mc68000__, __mc68020__, __m88000__, __ibm032__, __sh__,
+	__sparc__, __sparc_v8__, __sparc_v9__, __sparclite__, __vax__]:
+	Use it for the casts on asm output operands.
+
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h: Say the file is part of GCC, not the GNU C Library.
+	(attribute_hidden): Update comment.
+
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h [__z8000__]: Remove.
+
 2026-10-30  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR bootstrap/128228

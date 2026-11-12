@@ -1,3 +1,9 @@
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	PR c/125418
+	* decl.cc (duplicate_decls): Call weak_decl_tls_model for a weak
+	thread-local variable.
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* call.cc (strip_top_quals): Use TYPE_UNQUALIFIED instead of 0.

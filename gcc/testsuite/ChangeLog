@@ -1,3 +1,105 @@
+2026-11-11  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/builtin-memset-7c.c: Update test to decimal.
+	* gcc.target/i386/pr100711-6.c: Likewise.
+
+2026-11-11  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128625
+	* gcc.target/i386/pr128625.c: New test.
+
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	PR c/125418
+	* c-c++-common/tls-pragma-weak-1.c: New test.
+	* c-c++-common/tls-pragma-weak-2.c: New test.
+	* c-c++-common/tls-pragma-weak-3.c: New test.
+	* c-c++-common/tls-pragma-weak-4.c: New test.
+	* gcc.dg/tls/pragma-weak-alias.c: New test.
+
+2026-11-11  Ezra Sitorus  <ezra.sitorus@arm.com>
+
+	* gcc.target/aarch64/sve2/acle/asm/addqp_s16.c: New test.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addqp_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/addsubp_u8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_s16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_s32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_s64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_s8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_u16.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_u32.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_u64.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/subp_u8.c: Likewise.
+
+2026-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-65.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-66.c: New test.
+
+2026-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u8-mf8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv_vs1-u32-mf2.c: New test.
+
+2026-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h
+	(LOOP_WIDEN_BINARY_WV_BODY_OVERLAP_X2): New macro for the vs1
+	comes from the vs2 register group.
+	(DEF_GROUP_OVERLAP_BINARY_4): New macro.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i8-mf8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv_vs1-i32-mf2.c: New test.
+
+2026-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i8-m4.c: Adjust
+	asm check.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i16-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwadd_wv-i32-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u8-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u16-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwaddu_wv-u32-m4.c: Ditto.
+
 2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
 
 	PR target/128440

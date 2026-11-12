@@ -1,3 +1,14 @@
+2026-11-11  Matt Turner  <mattst88@gmail.com>
+
+	PR c/125418
+	* c-attribs.cc (parse_tls_model): New function, split out of...
+	(handle_tls_model_attribute): ...here.  Use it.  Do not add the
+	attribute if its argument is not a string.
+	(weak_decl_tls_model): New function.
+	* c-common.h (parse_tls_model, weak_decl_tls_model): Declare.
+	* c-pragma.cc (apply_pragma_weak): Call weak_decl_tls_model after
+	declaring a symbol weak.
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* c-ada-spec.cc (dump_ada_node): Update to use new qualifier set
