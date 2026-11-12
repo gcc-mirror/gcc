@@ -4231,7 +4231,7 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (minus:VWEXTI
-	    (match_operand:VWEXTI 3 "register_operand"             " vr, vr, vr, vr")
+	    (match_operand:VWEXTI 3 "register_operand"             "Wn4,Wn4,Wn4,Wn4")
 	    (any_extend:VWEXTI
 	      (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "Wvr,Wvr,Wvr,Wvr")))
 	  (match_operand:VWEXTI 2 "vector_merge_operand"           " vu,  0, vu,  0")))]
