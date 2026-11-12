@@ -444,8 +444,9 @@ typedef struct {
      sufficiently aligned for it.  This code must work in C++, so we
      use __float128 here; that is only available on some
      architectures, but only on i386 is extra alignment needed for
-     __float128.  */
-#ifdef __i386__
+     __float128.  When using the 32-bit Microsoft runtime, the
+     alignment should be 8, to keep binary compatibility.  */
+#if defined(__i386__) && !defined(__MINGW32__)
   __float128 __max_align_f128 __attribute__((__aligned__(__alignof(__float128))));
 #endif
 } max_align_t;
