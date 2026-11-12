@@ -2525,6 +2525,9 @@ package body Exp_Ch4 is
       Atyp : constant Entity_Id := Base_Type (Etype (Cnode));
       --  Result type of concatenation
 
+      Rtyp : constant Entity_Id := First_Subtype (Root_Type (Atyp));
+      --  First subtype of ultimate ancestor of result type
+
       Ctyp : constant Entity_Id := Base_Type (Component_Type (Etype (Cnode)));
       --  Component type. Elements of this component type can appear as one
       --  of the operands of concatenation as well as arrays.
@@ -2844,7 +2847,7 @@ package body Exp_Ch4 is
                Result_May_Be_Null := False;
             end if;
 
-            --  Capture last operand low and high bound if result could be null
+            --  Capture last operand's bounds if result could be null
 
             if J = N and then Result_May_Be_Null then
                Last_Opnd_Low_Bound :=
@@ -2898,7 +2901,7 @@ package body Exp_Ch4 is
                      Result_May_Be_Null := False;
                   end if;
 
-                  --  Capture last operand bounds if result could be null
+                  --  Capture last operand's bounds if result could be null
 
                   if J = N and then Result_May_Be_Null then
                      Last_Opnd_Low_Bound :=
@@ -2959,7 +2962,7 @@ package body Exp_Ch4 is
                       Attribute_Name => Name_First);
                end if;
 
-               --  Capture last operand bounds if result could be null
+               --  Capture last operand's bounds if result could be null
 
                if J = N and Result_May_Be_Null then
                   Last_Opnd_Low_Bound :=
@@ -3093,24 +3096,20 @@ package body Exp_Ch4 is
 
       --  Cases where we have a real concatenation
 
-      --  Next step is to find the low bound for the result array that we
-      --  will allocate. The rules for this are in (RM 4.5.6(5-7)).
+      --  The next step is to find the lower bound for the result array that
+      --  we will allocate. The rules for this are in RM 4.5.3(5-7).
 
-      --  If the ultimate ancestor of the index subtype is a constrained array
-      --  definition, then the lower bound is that of the index subtype as
-      --  specified by (RM 4.5.3(6)).
+      --  If the ultimate ancestor of the array type comes from a constrained
+      --  array definition, then the lower bound is that of the index subtype
+      --  as specified by RM 4.5.3(6).
 
-      --  The right test here is to go to the root type, and then the ultimate
-      --  ancestor is the first subtype of this root type.
-
-      if Is_Constrained (First_Subtype (Root_Type (Atyp))) then
+      if Is_Constrained (Rtyp) then
          Low_Bound :=
            Make_Attribute_Reference (Loc,
-             Prefix         =>
-               New_Occurrence_Of (First_Subtype (Root_Type (Atyp)), Loc),
+             Prefix         => New_Occurrence_Of (Rtyp, Loc),
              Attribute_Name => Name_First);
 
-      --  If the first operand in the list has known length we know that
+      --  If the first operand in the list has known length, then we know that
       --  the lower bound of the result is the lower bound of this operand.
 
       elsif Is_Fixed_Length (1) then
@@ -3130,7 +3129,7 @@ package body Exp_Ch4 is
       --  The nesting ends either when we hit an operand whose length is known
       --  at compile time, or on reaching the last operand, whose low bound we
       --  take unconditionally whether or not it is null. It's easiest to do
-      --  this with a recursive procedure:
+      --  this with a recursive procedure.
 
       --  We fold the common case where all the low bounds are the same
 
@@ -3238,17 +3237,22 @@ package body Exp_Ch4 is
 
       --  Handle the exceptional case where the result is null, in which case
       --  case the bounds come from the last operand (so that we get the proper
-      --  bounds if the last operand is superflat).
+      --  bounds if the last operand is superflat). Note that, if the ultimate
+      --  ancestor comes from an unconstrained array definition, then the lower
+      --  bound has already been computed above as being that of the leftmost
+      --  nonnull operand, so there is no need for anything more in this case.
 
       if Result_May_Be_Null then
-         Low_Bound :=
-           Make_If_Expression (Loc,
-             Expressions => New_List (
-               Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Copy_Tree (Aggr_Length (NN)),
-                 Right_Opnd => Make_Artyp_Literal (Uint_0)),
-               Last_Opnd_Low_Bound,
-               Low_Bound));
+         if Is_Constrained (Rtyp) then
+            Low_Bound :=
+              Make_If_Expression (Loc,
+                Expressions => New_List (
+                  Make_Op_Eq (Loc,
+                    Left_Opnd  => New_Copy_Tree (Aggr_Length (NN)),
+                    Right_Opnd => Make_Artyp_Literal (Uint_0)),
+                  Last_Opnd_Low_Bound,
+                  Low_Bound));
+         end if;
 
          High_Bound :=
            Make_If_Expression (Loc,
@@ -3280,7 +3284,7 @@ package body Exp_Ch4 is
                    (Expr_Value (Low_Bound) +  Max_Aggr_Length - 1));
 
          begin
-            if not Is_Out_Of_Range (Known_High_Bound, Ityp) then
+            if not Is_Out_Of_Range (Known_High_Bound, Istyp) then
                Slice_Rng  := Make_Range (Loc, Low_Bound, High_Bound);
                High_Bound := Known_High_Bound;
 
