@@ -324,6 +324,10 @@ statement_sink_location (gimple *stmt, basic_block frombb,
 
      We can't sink statements that have volatile operands.
 
+     We can't sink statements that may throw when dead exceptions must be
+     preserved, since sinking into a conditional block drops the exception
+     on the paths that bypass it.
+
      We don't want to sink dead code, so anything with 0 immediate uses is not
      sunk.
 
@@ -335,6 +339,8 @@ statement_sink_location (gimple *stmt, basic_block frombb,
   */
   if (stmt_ends_bb_p (stmt)
       || gimple_has_side_effects (stmt)
+      || (!cfun->can_delete_dead_exceptions
+	  && stmt_could_throw_p (cfun, stmt))
       || (cfun->has_local_explicit_reg_vars
 	  && TYPE_MODE (TREE_TYPE (gimple_get_lhs (stmt))) == BLKmode))
     return false;
