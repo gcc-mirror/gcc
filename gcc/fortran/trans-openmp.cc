@@ -494,10 +494,11 @@ gfc_is_polymorphic_nonptr (tree type)
   return GFC_CLASS_TYPE_P (type);
 }
 
-/* Return true if TYPE is a class container for a POINTER entity.  */
+/* If TYPE is a class container, return 'p', 'a' or 't' for a POINTER,
+   ALLOCATABLE or other entity (cf. gfc_build_class_symbol), else 0.  */
 
-static bool
-gfc_is_class_pointer_type (tree type)
+static char
+gfc_class_container_kind (tree type)
 {
   tree name;
   const char *s;
@@ -506,16 +507,16 @@ gfc_is_class_pointer_type (tree type)
     type = TREE_TYPE (type);
 
   if (!GFC_CLASS_TYPE_P (type))
-    return false;
+    return 0;
 
   name = TYPE_NAME (type);
   if (name && TREE_CODE (name) == TYPE_DECL)
     name = DECL_NAME (name);
   if (!name)
-    return false;
+    return 0;
 
   s = IDENTIFIER_POINTER (name);
-  return startswith (s, "__class_") && s[strlen (s) - 1] == 'p';
+  return startswith (s, "__class_") ? s[strlen (s) - 1] : 0;
 }
 
 /* Return true if TYPE is unlimited polymorphic but not with pointer attribute;
@@ -584,6 +585,19 @@ gfc_omp_private_outer_ref (tree decl)
     return true;
 
   return false;
+}
+
+/* Return true if CLAUSE privatizes a decl that gfc_omp_private_outer_ref
+   accepts, but without an outer reference: gimplify adds such a clause for
+   an addressable decl local to a SIMD body, which the body itself
+   initializes and finalizes.  */
+
+static bool
+gfc_omp_body_local_private_p (tree clause)
+{
+  return (OMP_CLAUSE_CODE (clause) == OMP_CLAUSE_PRIVATE
+	  && !OMP_CLAUSE_PRIVATE_OUTER_REF (clause)
+	  && gfc_omp_private_outer_ref (OMP_CLAUSE_DECL (clause)));
 }
 
 /* Callback for gfc_omp_unshare_expr.  */
@@ -839,6 +853,9 @@ gfc_omp_clause_default_ctor (tree clause, tree decl, tree outer)
       gcc_unreachable ();
     }
 
+  if (gfc_omp_body_local_private_p (clause))
+    return NULL_TREE;
+
   if ((! GFC_DESCRIPTOR_TYPE_P (type)
        || GFC_TYPE_ARRAY_AKIND (type) != GFC_ARRAY_ALLOCATABLE)
       && (!GFC_DECL_GET_SCALAR_ALLOCATABLE (OMP_CLAUSE_DECL (clause))
@@ -971,7 +988,7 @@ gfc_omp_clause_copy_ctor (tree clause, tree dest, tree src)
   if (DECL_P (orig_decl)
       && (GFC_DECL_ASSOCIATE_VAR_P (orig_decl)
 	  || GFC_DECL_GET_SCALAR_POINTER (orig_decl)
-	  || gfc_is_class_pointer_type (decl_type)))
+	  || gfc_class_container_kind (decl_type) == 'p'))
     return build2 (MODIFY_EXPR, TREE_TYPE (dest), dest, src);
 
   if (gfc_is_polymorphic_nonptr (decl_type))
@@ -1495,7 +1512,15 @@ gfc_omp_clause_dtor (tree clause, tree decl)
   if (DECL_P (orig_decl)
       && (GFC_DECL_ASSOCIATE_VAR_P (orig_decl)
 	  || GFC_DECL_GET_SCALAR_POINTER (orig_decl)
-	  || gfc_is_class_pointer_type (decl_type)))
+	  || gfc_class_container_kind (decl_type) == 'p'))
+    return NULL_TREE;
+  if (gfc_omp_body_local_private_p (clause))
+    return NULL_TREE;
+  /* Only gfc_omp_clause_copy_ctor gives a nonallocatable CLASS copy data of
+     its own.  */
+  if (gfc_class_container_kind (decl_type) == 't'
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_FIRSTPRIVATE
+      && OMP_CLAUSE_CODE (clause) != OMP_CLAUSE_LINEAR)
     return NULL_TREE;
   if (gfc_is_polymorphic_nonptr (decl_type))
     {
