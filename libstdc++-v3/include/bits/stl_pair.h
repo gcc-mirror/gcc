@@ -133,6 +133,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
     get(const tuple<_Elements...>&& __t) noexcept;
 
+  /// @cond undocumented
+  // Deleted overload chosen for invalid indices.
+  template<size_t __i, typename... _Elements>
+    constexpr __enable_if_t<(__i >= sizeof...(_Elements))>
+    get(const tuple<_Elements...>&) = delete;
+  /// @endcond
+
   template<size_t _Int, typename _Tp, size_t _Nm>
     constexpr _Tp&
     get(array<_Tp, _Nm>&) noexcept;
@@ -1284,24 +1291,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<size_t _Int, class _Tp1, class _Tp2>
     constexpr typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&
-    get(pair<_Tp1, _Tp2>& __in) noexcept
+    ::std::get(pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__get(__in); }
 
   template<size_t _Int, class _Tp1, class _Tp2>
     constexpr typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&&
-    get(pair<_Tp1, _Tp2>&& __in) noexcept
+    ::std::get(pair<_Tp1, _Tp2>&& __in) noexcept
     { return __pair_get<_Int>::__move_get(std::move(__in)); }
 
   template<size_t _Int, class _Tp1, class _Tp2>
     constexpr const typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&
-    get(const pair<_Tp1, _Tp2>& __in) noexcept
+    ::std::get(const pair<_Tp1, _Tp2>& __in) noexcept
     { return __pair_get<_Int>::__const_get(__in); }
 
   template<size_t _Int, class _Tp1, class _Tp2>
     constexpr const typename tuple_element<_Int, pair<_Tp1, _Tp2>>::type&&
-    get(const pair<_Tp1, _Tp2>&& __in) noexcept
+    ::std::get(const pair<_Tp1, _Tp2>&& __in) noexcept
     { return __pair_get<_Int>::__const_move_get(std::move(__in)); }
-
 
 #ifdef __glibcxx_tuples_by_type // C++ >= 14
   template <typename _Tp, typename _Up>

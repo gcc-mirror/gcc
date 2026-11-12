@@ -2462,22 +2462,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __enable_if_t<(__i >= sizeof...(_Types))>
     __get_helper(const tuple<_Types...>&) = delete;
 
+  // Declared in bits/stl_pair.h
   /// Return a reference to the ith element of a tuple.
   template<size_t __i, typename... _Elements>
     constexpr __tuple_element_t<__i, tuple<_Elements...>>&
-    get(tuple<_Elements...>& __t) noexcept
+    ::std::get(tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
   /// Return a const reference to the ith element of a const tuple.
   template<size_t __i, typename... _Elements>
     constexpr const __tuple_element_t<__i, tuple<_Elements...>>&
-    get(const tuple<_Elements...>& __t) noexcept
+    ::std::get(const tuple<_Elements...>& __t) noexcept
     { return std::__get_helper<__i>(__t); }
 
   /// Return an rvalue reference to the ith element of a tuple rvalue.
   template<size_t __i, typename... _Elements>
     constexpr __tuple_element_t<__i, tuple<_Elements...>>&&
-    get(tuple<_Elements...>&& __t) noexcept
+    ::std::get(tuple<_Elements...>&& __t) noexcept
     {
       typedef __tuple_element_t<__i, tuple<_Elements...>> __element_type;
       return std::forward<__element_type>(std::__get_helper<__i>(__t));
@@ -2486,18 +2487,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Return a const rvalue reference to the ith element of a const tuple rvalue.
   template<size_t __i, typename... _Elements>
     constexpr const __tuple_element_t<__i, tuple<_Elements...>>&&
-    get(const tuple<_Elements...>&& __t) noexcept
+    ::std::get(const tuple<_Elements...>&& __t) noexcept
     {
       typedef __tuple_element_t<__i, tuple<_Elements...>> __element_type;
       return std::forward<const __element_type>(std::__get_helper<__i>(__t));
     }
-
-  /// @cond undocumented
-  // Deleted overload chosen for invalid indices.
-  template<size_t __i, typename... _Elements>
-    constexpr __enable_if_t<(__i >= sizeof...(_Elements))>
-    get(const tuple<_Elements...>&) = delete;
-  /// @endcond
 
 #ifdef __cpp_lib_tuples_by_type // C++ >= 14
   /// Return a reference to the unique element of type _Tp of a tuple.

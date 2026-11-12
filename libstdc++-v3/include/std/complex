@@ -638,10 +638,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 
 #if __glibcxx_tuple_like >= 202311L // >= C++26
+  // Forward declared in bits/stl_pair.h
   template<size_t _Int, typename _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr _Tp&
-    get(complex<_Tp>& __z) noexcept
+    ::std::get(complex<_Tp>& __z) noexcept
     {
       static_assert(_Int < 2);
       return __z.__get_part(_Int);
@@ -650,7 +651,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t _Int, typename _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr _Tp&&
-    get(complex<_Tp>&& __z) noexcept
+    ::std::get(complex<_Tp>&& __z) noexcept
     {
       static_assert(_Int < 2);
       return std::move(__z.__get_part(_Int));
@@ -659,7 +660,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t _Int, typename _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr const _Tp&
-    get(const complex<_Tp>& __z) noexcept
+    ::std::get(const complex<_Tp>& __z) noexcept
     {
       static_assert(_Int < 2);
       return __z.__get_part(_Int);
@@ -668,7 +669,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<size_t _Int, typename _Tp>
     [[nodiscard,__gnu__::__always_inline__]]
     constexpr const _Tp&&
-    get(const complex<_Tp>&& __z) noexcept
+    ::std::get(const complex<_Tp>&& __z) noexcept
     {
       static_assert(_Int < 2);
       return std::move(__z.__get_part(_Int));

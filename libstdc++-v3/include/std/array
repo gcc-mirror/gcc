@@ -392,7 +392,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     [[__nodiscard__]]
     constexpr _Tp&
-    get(array<_Tp, _Nm>& __arr) noexcept
+    ::std::get(array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
       return __arr._M_elems[_Int];
@@ -401,7 +401,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     [[__nodiscard__]]
     constexpr _Tp&&
-    get(array<_Tp, _Nm>&& __arr) noexcept
+    ::std::get(array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
       return std::move(std::get<_Int>(__arr));
@@ -410,7 +410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     [[__nodiscard__]]
     constexpr const _Tp&
-    get(const array<_Tp, _Nm>& __arr) noexcept
+    ::std::get(const array<_Tp, _Nm>& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
       return __arr._M_elems[_Int];
@@ -419,7 +419,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<std::size_t _Int, typename _Tp, std::size_t _Nm>
     [[__nodiscard__]]
     constexpr const _Tp&&
-    get(const array<_Tp, _Nm>&& __arr) noexcept
+    ::std::get(const array<_Tp, _Nm>&& __arr) noexcept
     {
       static_assert(_Int < _Nm, "array index is within bounds");
       return std::move(std::get<_Int>(__arr));
