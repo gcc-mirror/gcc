@@ -1,3 +1,13 @@
+2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* gcc.target/bpf/memmove-5.c: New test.
+	* gcc.target/bpf/memmove-6.c: New test.
+	* gcc.target/bpf/memmove-7.c: New test.
+
 2026-11-09  Christopher Albert  <albert@tugraz.at>
 
 	Backported from master:
