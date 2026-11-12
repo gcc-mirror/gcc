@@ -733,7 +733,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	      __glibcxx_requires_valid_range(__first, __last);
 	      if constexpr (is_pointer_v<_InputIterator>)
 		_M_compile(__first, __last, __flags);
-	      else // __normal_iterator<_T*, C>
+	      else // __normal_iterator<T*, C>
 		_M_compile(__first.base(), __last.base(), __flags);
 	    }
 	  else
