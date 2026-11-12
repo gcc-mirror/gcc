@@ -279,7 +279,8 @@ eat_esc_sequence (HANDLE h, int esc_code,
   /* Numbers in an escape sequence cannot be negative, because
      a minus sign in the middle of it would have terminated it.  */
   long n1, n2;
-  char *eptr, *delim;
+  char *eptr;
+  const char *delim;
   CONSOLE_SCREEN_BUFFER_INFO sb;
   COORD cr;
   /* ED and EL parameters.  */
@@ -476,8 +477,8 @@ eat_esc_sequence (HANDLE h, int esc_code,
 	  n1 = 1;
 	  n2 = 1;
 	}
-      else if (!(delim = (char *) memchr (esc_head, ';',
-					  esc_term - esc_head)))
+      else if (!(delim = (const char *) memchr (esc_head, ';',
+						esc_term - esc_head)))
 	{
 	  /* Only the first parameter is given.  The second one is
 	     set to 1 by default.  */
