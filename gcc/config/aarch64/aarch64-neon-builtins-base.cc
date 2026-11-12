@@ -189,7 +189,7 @@ build_var (tree type)
    Handles singleton vector arguments specially: they are cast to their
    inner element type before the function is called, and then the return value
    is cast back to the expected singleton vector type.  */
-tree
+static tree
 build_ifn_call (gimple_folder &f, internal_fn ifn, tree ret_type,
 		vec<tree> &args)
 {
@@ -1291,6 +1291,32 @@ struct gimple_minmax : public gimple_function_base
   }
 };
 
+template <bool min_p>
+struct gimple_reduce_minmax : public gimple_function_base
+{
+  rtx expand (function_expander &e) const override
+  {
+    auto arg_mode = e.args[0]->mode;
+    auto unspec = min_p ? UNSPEC_FMINV : UNSPEC_FMAXV;
+    auto icode = code_for_reduc_scal (unspec, arg_mode);
+    gcc_assert (icode != CODE_FOR_nothing);
+    return e.use_exact_insn (icode);
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto arg = gimple_call_arg (f.call, 0);
+    auto ret_type = TREE_TYPE (f.lhs);
+    if (FLOAT_TYPE_P (ret_type))
+      return nullptr;
+
+    auto_vec<tree> args{};
+    args.safe_push (arg);
+    auto ifn = min_p ? IFN_REDUC_MIN : IFN_REDUC_MAX;
+    return gimple_build_assign (f.lhs, build_ifn_call (f, ifn, ret_type, args));
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1363,8 +1389,8 @@ NEON_FUNCTION (vminnm, vminnmq, gimple_ifn,  (IFN_FMIN))
 
 // Reductions
 NEON_FUNCTION (vaddv,   vaddvq,   gimple_ifn, (IFN_REDUC_PLUS))
-NEON_FUNCTION (vmaxv,   vmaxvq,   gimple_ifn, (IFN_REDUC_MAX))
-NEON_FUNCTION (vminv,   vminvq,   gimple_ifn, (IFN_REDUC_MIN))
+NEON_FUNCTION (vmaxv,   vmaxvq,   gimple_reduce_minmax<false>,)
+NEON_FUNCTION (vminv,   vminvq,   gimple_reduce_minmax<true>,)
 NEON_FUNCTION (vmaxnmv, vmaxnmvq, gimple_ifn, (IFN_REDUC_FMAX))
 NEON_FUNCTION (vminnmv, vminnmvq, gimple_ifn, (IFN_REDUC_FMIN))
 

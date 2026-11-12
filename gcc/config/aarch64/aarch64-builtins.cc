@@ -5268,18 +5268,6 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	  break;
 	}
 
-      BUILTIN_VDQIF (UNOP, reduc_smax_scal_, 10, ALL)
-      BUILTIN_VDQ_BHSI (UNOPU, reduc_umax_scal_, 10, ALL)
-	new_stmt = gimple_build_call_internal (IFN_REDUC_MAX,
-					       1, args[0]);
-	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-	break;
-      BUILTIN_VDQIF (UNOP, reduc_smin_scal_, 10, ALL)
-      BUILTIN_VDQ_BHSI (UNOPU, reduc_umin_scal_, 10, ALL)
-	new_stmt = gimple_build_call_internal (IFN_REDUC_MIN,
-					       1, args[0]);
-	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
-	break;
       BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, DEFAULT)
 	if (TREE_CODE (args[1]) == INTEGER_CST
 	    && wi::ltu_p (wi::to_wide (args[1]), element_precision (args[0])))
