@@ -2174,8 +2174,10 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
       /* A wide character can result in as few as zero bytes.  */
       res.range.min = 0;
 
+      /* A negative value is represented by -1.  It converts to a wide
+	 character outside the ASCII range.  */
       HOST_WIDE_INT min, max;
-      if (get_int_range (arg, dir.info->callstmt, &min, &max, false, 0,
+      if (get_int_range (arg, dir.info->callstmt, &min, &max, false, -1,
 			 ptr_qry.rvals))
 	{
 	  if (min == 0 && max == 0)
@@ -2188,7 +2190,7 @@ format_character (const directive &dir, tree arg, pointer_query &ptr_qry)
 	      res.range.max = 1;
 	      res.range.likely = res.range.unlikely = 1;
 	    }
-	  else if (min >= 0 && min < 128)
+	  else if (min >= 0 && max < 128)
 	    {
 	      /* Be conservative if the target execution character set
 		 is not a 1-to-1 mapping to the source character set or
