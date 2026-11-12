@@ -35,16 +35,16 @@
 #endif /* __PCONFIG__ */
 
 #define __pconfig_b(leaf, b, retval)			\
-  __asm__ __volatile__ ("pconfig\n\t"			\
+  __asm__ __volatile__ ("pconfig"			\
 	: "=a" (retval)					\
 	: "a" (leaf), "b" (b)				\
-	: "cc")
+	: "cc", "memory")
 
 #define __pconfig_generic(leaf, b, c, d, retval)	\
-  __asm__ __volatile__ ("pconfig\n\t"			\
+  __asm__ __volatile__ ("pconfig"			\
 	: "=a" (retval), "=b" (b), "=c" (c), "=d" (d)	\
 	: "a" (leaf), "b" (b), "c" (c), "d" (d)		\
-	: "cc")
+	: "cc", "memory")
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
@@ -52,7 +52,7 @@ _pconfig_u32 (const unsigned int __L, size_t __D[])
 {
   enum __pconfig_type
   {
-    __PCONFIG_KEY_PROGRAM = 0x01,
+    __PCONFIG_KEY_PROGRAM = 0x00,
   };
 
   unsigned int __R = 0;

@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-Ofast" } */
+/* { dg-require-effective-target c99_runtime } */
 
 extern void link_error (void);
 

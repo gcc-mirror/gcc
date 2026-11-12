@@ -1,3 +1,24 @@
+2026-11-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-06-03  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125512
+	* gm2-compiler/P3Build.bnf (SubDesignator): Rewrite to
+	include spell checking.
+
+2026-11-08  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-06-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125544
+	* gm2-libs-iso/Storage.def (REALLOCATE): Updated comment
+	describing new behavior.
+	* gm2-libs-iso/Storage.mod (REALLOCATE): Check addr
+	and call ALLOCATE if NIL else call lowerReallocate.
+	(lowerReallocate): New procedure.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

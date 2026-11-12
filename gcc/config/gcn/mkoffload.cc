@@ -740,7 +740,7 @@ process_obj (const char *fname_in, FILE *cfile, uint32_t omp_requires)
   fprintf (cfile,
 	   "static unsigned char gcn_code[] = {\n"
 	   "#embed \"%s\" if_empty (error_file_is_empty)\n"
-	   "};\n\n", fname_in);
+	   "};\n\n", lbasename (fname_in));
 
   fprintf (cfile,
 	   "static const struct gcn_image {\n"
