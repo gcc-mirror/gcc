@@ -588,7 +588,7 @@ __extension__ extern __inline float16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmaxh_f16 (float16_t __a, float16_t __b)
 {
-  return __builtin_aarch64_fmaxhf (__a, __b);
+  return __builtin_aarch64_fmax_nanhf (__a, __b);
 }
 
 __extension__ extern __inline float16_t
@@ -602,7 +602,7 @@ __extension__ extern __inline float16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vminh_f16 (float16_t __a, float16_t __b)
 {
-  return __builtin_aarch64_fminhf (__a, __b);
+  return __builtin_aarch64_fmin_nanhf (__a, __b);
 }
 
 __extension__ extern __inline float16_t

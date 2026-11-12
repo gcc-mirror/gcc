@@ -9959,38 +9959,6 @@ vld4q_lane_p64 (const poly64_t * __ptr, poly64x2x4_t __b, const int __c)
 	(__builtin_aarch64_simd_di *) __ptr, __b, __c);
 }
 
-/* vmax */
-
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmax_f32 (float32x2_t __a, float32x2_t __b)
-{
-  return __builtin_aarch64_fmax_nanv2sf (__a, __b);
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmax_f64 (float64x1_t __a, float64x1_t __b)
-{
-    return (float64x1_t)
-      { __builtin_aarch64_fmax_nandf (vget_lane_f64 (__a, 0),
-				      vget_lane_f64 (__b, 0)) };
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmaxq_f32 (float32x4_t __a, float32x4_t __b)
-{
-  return __builtin_aarch64_fmax_nanv4sf (__a, __b);
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmaxq_f64 (float64x2_t __a, float64x2_t __b)
-{
-  return __builtin_aarch64_fmax_nanv2df (__a, __b);
-}
-
 /* vmulx */
 
 __extension__ extern __inline float32x2_t
@@ -10468,38 +10436,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmaxvq_f64 (float64x2_t __a)
 {
   return __builtin_aarch64_reduc_smax_nan_scal_v2df (__a);
-}
-
-/* vmin  */
-
-__extension__ extern __inline float32x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmin_f32 (float32x2_t __a, float32x2_t __b)
-{
-  return __builtin_aarch64_fmin_nanv2sf (__a, __b);
-}
-
-__extension__ extern __inline float64x1_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmin_f64 (float64x1_t __a, float64x1_t __b)
-{
-    return (float64x1_t)
-	  { __builtin_aarch64_fmin_nandf (vget_lane_f64 (__a, 0),
-					  vget_lane_f64 (__b, 0)) };
-}
-
-__extension__ extern __inline float32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vminq_f32 (float32x4_t __a, float32x4_t __b)
-{
-  return __builtin_aarch64_fmin_nanv4sf (__a, __b);
-}
-
-__extension__ extern __inline float64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vminq_f64 (float64x2_t __a, float64x2_t __b)
-{
-  return __builtin_aarch64_fmin_nanv2df (__a, __b);
 }
 
 /* vminv  */
@@ -16119,34 +16055,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcvtq_n_u16_f16 (float16x8_t __a, const int __b)
 {
   return __builtin_aarch64_fcvtzuv8hf_uss (__a, __b);
-}
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmax_f16 (float16x4_t __a, float16x4_t __b)
-{
-  return __builtin_aarch64_fmax_nanv4hf (__a, __b);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmaxq_f16 (float16x8_t __a, float16x8_t __b)
-{
-  return __builtin_aarch64_fmax_nanv8hf (__a, __b);
-}
-
-__extension__ extern __inline float16x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmin_f16 (float16x4_t __a, float16x4_t __b)
-{
-  return __builtin_aarch64_fmin_nanv4hf (__a, __b);
-}
-
-__extension__ extern __inline float16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vminq_f16 (float16x8_t __a, float16x8_t __b)
-{
-  return __builtin_aarch64_fmin_nanv8hf (__a, __b);
 }
 
 __extension__ extern __inline float16x4_t

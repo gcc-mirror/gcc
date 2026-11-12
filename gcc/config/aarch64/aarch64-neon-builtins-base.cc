@@ -1254,6 +1254,43 @@ struct gimple_fused_mla : public gimple_function_base
 template <arith_kind kind> using gimple_fma = gimple_fused_mla<kind, false>;
 template <arith_kind kind> using gimple_fms = gimple_fused_mla<kind, true>;
 
+template <bool min_p>
+struct gimple_minmax : public gimple_function_base
+{
+  rtx expand (function_expander &e) const override
+  {
+    auto ret_mode = e.result_mode ();
+    auto singleton_p = (ret_mode == V1DFmode);
+    auto unspec = min_p ? UNSPEC_FMIN : UNSPEC_FMAX;
+
+    if (singleton_p)
+      {
+	for (int i = 0; i < 2; i++)
+	  e.args[i] = simplify_gen_subreg (DFmode, e.args[i], V1DFmode, 0);
+	ret_mode = DFmode;
+      }
+
+    auto ret = gen_reg_rtx (ret_mode);
+    auto args = gen_rtvec_v (e.args.length (), e.args.address ());
+    emit_insn (gen_rtx_SET (ret, gen_rtx_UNSPEC (ret_mode, args, unspec)));
+
+    if (singleton_p)
+      ret = simplify_gen_subreg (V1DFmode, ret, DFmode, 0);
+
+    return ret;
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto lhs = gimple_call_arg (f.call, 0);
+    auto rhs = gimple_call_arg (f.call, 1);
+    auto ret_type = TREE_TYPE (f.lhs);
+    if (FLOAT_TYPE_P (ret_type))
+      return nullptr;
+    return gimple_build_assign (f.lhs, min_p ? MIN_EXPR : MAX_EXPR, lhs, rhs);
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1319,8 +1356,8 @@ NEON_FUNCTION (vqaddb, vqaddh, vqadds, vqaddd, vqadd, vqaddq, gimple_ifn, (IFN_S
 NEON_FUNCTION (vqsubb, vqsubh, vqsubs, vqsubd, vqsub, vqsubq, gimple_ifn, (IFN_SAT_SUB))
 
 // Max/min
-NEON_FUNCTION (vmax,   vmaxq,   gimple_expr, (MAX_EXPR))
-NEON_FUNCTION (vmin,   vminq,   gimple_expr, (MIN_EXPR))
+NEON_FUNCTION (vmax,   vmaxq,   gimple_minmax<false>,)
+NEON_FUNCTION (vmin,   vminq,   gimple_minmax<true>,)
 NEON_FUNCTION (vmaxnm, vmaxnmq, gimple_ifn,  (IFN_FMAX))
 NEON_FUNCTION (vminnm, vminnmq, gimple_ifn,  (IFN_FMIN))
 
