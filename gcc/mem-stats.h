@@ -382,11 +382,6 @@ public:
   reverse_object_map_t *m_reverse_object_map;
 
 private:
-  /* Register overhead of SIZE bytes of ORIGIN type. PTR pointer is allocated
-     in NAME source file, at LINE in source code, in FUNCTION.  */
-  T *register_overhead (size_t size, mem_alloc_origin origin, const char *name,
-			int line, const char *function, const void *ptr);
-
   /* Allocation location coupled to the description.  */
   mem_location m_location;
 
@@ -495,24 +490,6 @@ mem_alloc_description<T>::register_object_overhead (T *usage, size_t size,
   /* In case of GGC, it is possible to have already occupied the memory
      location.  */
   m_reverse_object_map->put (ptr, std::pair<T *, size_t> (usage, size));
-}
-
-/* Register overhead of SIZE bytes of ORIGIN type. PTR pointer is allocated
-   in NAME source file, at LINE in source code, in FUNCTION.  */
-
-template <class T>
-inline T*
-mem_alloc_description<T>::register_overhead (size_t size,
-					     mem_alloc_origin origin,
-					     const char *filename,
-					     int line,
-					     const char *function,
-					     const void *ptr)
-{
-  T *usage = register_descriptor (ptr, origin, filename, line, function);
-  usage->register_overhead (size);
-
-  return usage;
 }
 
 /* Release PTR pointer of SIZE bytes.  */
