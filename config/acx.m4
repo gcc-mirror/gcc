@@ -399,6 +399,7 @@ AC_CHECK_TOOL(GNATBIND, gnatbind, no)
 AC_CHECK_TOOL(GNATMAKE, gnatmake, no)
 test x"$ADAC" != x || ADAC=$CC
 AC_SUBST(ADAC)
+AC_ARG_VAR(ADAC, [Ada compiler command])
 AC_CACHE_CHECK([whether $ADAC understands Ada and is recent enough],
 		 acx_cv_cc_gcc_supports_ada,
 [cat >conftest.adb <<EOF

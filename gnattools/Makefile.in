@@ -35,7 +35,7 @@ LN_S=@LN_S@
 target_noncanonical=@target_noncanonical@
 GNATMAKE=@GNATMAKE@
 GNATBIND=@GNATBIND@
-ADAC=$(CC)
+ADAC=@ADAC@
 
 # Variables for the user (or the top level) to override.
 exeext = @EXEEXT@

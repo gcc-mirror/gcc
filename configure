@@ -892,6 +892,7 @@ CPPFLAGS
 CXX
 CXXFLAGS
 CCC
+ADAC
 build_configargs
 host_configargs
 target_configargs
@@ -1695,6 +1696,7 @@ Some influential environment variables:
               you have headers in a nonstandard directory <include dir>
   CXX         C++ compiler command
   CXXFLAGS    C++ compiler flags
+  ADAC        Ada compiler command
   build_configargs
               additional configure arguments for build directories
   host_configargs
@@ -5839,6 +5841,7 @@ else
 fi
 
 test x"$ADAC" != x || ADAC=$CC
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ADAC understands Ada and is recent enough" >&5
 $as_echo_n "checking whether $ADAC understands Ada and is recent enough... " >&6; }

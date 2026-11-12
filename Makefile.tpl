@@ -201,6 +201,7 @@ HOST_SUBDIR = @host_subdir@
 HOST_EXPORTS = \
 	$(BASE_EXPORTS) \
 	CC="$(CC)"; export CC; \
+	ADAC="$(ADAC)"; export ADAC; \
 	ADA_CFLAGS="$(ADA_CFLAGS)"; export ADA_CFLAGS; \
 	CRAB1_LIBS="$(CRAB1_LIBS)"; export CRAB1_LIBS; \
 	CFLAGS="$(CFLAGS)"; export CFLAGS; \
@@ -281,6 +282,7 @@ POSTSTAGE1_HOST_EXPORTS = \
 	  -B$$r/$(HOST_SUBDIR)/prev-gcc/ -B$(build_tooldir)/bin/ \
 	  $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export CC; \
 	CC_FOR_BUILD="$$CC"; export CC_FOR_BUILD; \
+	ADAC="$$CC"; export ADAC; \
 	$(POSTSTAGE1_CXX_EXPORT) \
 	$(LTO_EXPORTS) \
 	A68="$$r/$(HOST_SUBDIR)/prev-gcc/ga68$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/ \

@@ -671,7 +671,8 @@ CC
 CFLAGS
 LDFLAGS
 LIBS
-CPPFLAGS'
+CPPFLAGS
+ADAC'
 
 
 # Initialize some variables set by options.
@@ -1298,6 +1299,7 @@ Some influential environment variables:
   LIBS        libraries to pass to the linker, e.g. -l<library>
   CPPFLAGS    (Objective) C/C++ preprocessor flags, e.g. -I<include dir> if
               you have headers in a nonstandard directory <include dir>
+  ADAC        Ada compiler command
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -3000,6 +3002,7 @@ else
 fi
 
 test x"$ADAC" != x || ADAC=$CC
+
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ADAC understands Ada and is recent enough" >&5
 $as_echo_n "checking whether $ADAC understands Ada and is recent enough... " >&6; }
