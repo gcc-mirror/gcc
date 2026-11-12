@@ -27,7 +27,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, CARDINAL64, (* @SYSTEM_DATATYPES@  *)
+                 (* <SYSTEM_DATATYPES> *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T,
+                 CARDINAL64,
+                 (* </SYSTEM_DATATYPES> *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE ;
                  (* SIZE is also exported if -fpim2 is used.  *)
 
@@ -47,17 +50,16 @@ CONST
    COMPLEX64, COMPLEX128, CSIZE_T, CSSIZE_T.
 
    Also note that the non-standard data types will
-   move into another module in the future.  *)
+   move into another module in the future.
 
-
-(* The following types are supported on this target:
 TYPE
-   @SYSTEM_TYPES@
+   <SYSTEM_TYPES>
+   </SYSTEM_TYPES>
 *)
 
 
 (*
-   all the functions below are declared internally to gm2
+   All the functions below are declared internally to gm2
    ======================================================
 
 PROCEDURE ADR (VAR v: <anytype>): ADDRESS;

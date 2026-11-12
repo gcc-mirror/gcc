@@ -78,6 +78,7 @@ VAR
    UselistFilename,
    RuntimeModuleOverride,
    CppArgs              : String ;
+   DumpBuiltinsFlag,
    EnableForward,
    DebugFunctionLineNumbers,
    DebugTraceQuad,   (* -fm2-debug-trace=quad.  *)
@@ -1271,6 +1272,26 @@ END SetDumpSystemExports ;
 
 
 (*
+   SetDumpBuiltins - set the value of -fdump-builtins.
+*)
+
+PROCEDURE SetDumpBuiltins (value: BOOLEAN) ;
+BEGIN
+   DumpBuiltinsFlag := value
+END SetDumpBuiltins ;
+
+
+(*
+   GetDumpBuiltins - return the value of -fdump-builtins.
+*)
+
+PROCEDURE GetDumpBuiltins () : BOOLEAN ;
+BEGIN
+   RETURN DumpBuiltinsFlag
+END GetDumpBuiltins ;
+
+
+(*
    SetSearchPath -
 *)
 
@@ -2219,4 +2240,5 @@ BEGIN
    EnableForward                     := TRUE ;
    OffTBits                          := 0 ;  (* Default to CSSIZE_T.  *)
    WidesetFlag                       := TRUE ;
+   DumpBuiltinsFlag                  := FALSE ;
 END M2Options.

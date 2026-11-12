@@ -108,7 +108,8 @@ target_triplet = @target@
 @BUILD_LOGLIB_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -nodefaultrpaths -Wl,-rpath,@loader_path/
 subdir = libm2log
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
+am__aclocal_m4_deps = $(top_srcdir)/ax_python_interpreter.m4 \
+	$(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/clang-plugin.m4 \
 	$(top_srcdir)/../config/depstand.m4 \
 	$(top_srcdir)/../config/gcc-plugin.m4 \
@@ -116,10 +117,10 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/override.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/../config/gc++filt.m4 \
+	$(top_srcdir)/../config/picflag.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
 	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -303,6 +304,9 @@ PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PICFLAG = @PICFLAG@
+PYTHON = @PYTHON@
+PYTHON_VERSION = @PYTHON_VERSION@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -321,6 +325,7 @@ am__leading_dot = @am__leading_dot@
 am__quote = @am__quote@
 am__tar = @am__tar@
 am__untar = @am__untar@
+ax_python_interpreter_found = @ax_python_interpreter_found@
 bindir = @bindir@
 build = @build@
 build_alias = @build_alias@
@@ -478,6 +483,12 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@         Strings.mod  Termbase.mod \
 @BUILD_LOGLIB_TRUE@         Terminal.mod  TimeDate.mod
 
+@BUILD_LOGLIB_TRUE@GENERATED = \
+@BUILD_LOGLIB_TRUE@ ../libm2pim/SYSTEM.def \
+@BUILD_LOGLIB_TRUE@ ../libm2pim/Builtins.def \
+@BUILD_LOGLIB_TRUE@ ../libm2pim/Builtins.mod \
+@BUILD_LOGLIB_TRUE@ ../libm2pim/cbuiltin.def
+
 @BUILD_LOGLIB_TRUE@libm2logdir = libm2log
 @BUILD_LOGLIB_TRUE@toolexeclib_LTLIBRARIES = libm2log.la
 @BUILD_LOGLIB_TRUE@libm2log_la_SOURCES = $(M2MODS) Break.c
@@ -497,10 +508,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@libm2log_la_link_flags = -Wl,-undefined,dynamic_lookup \
 @BUILD_LOGLIB_TRUE@@TARGET_DARWIN_TRUE@	$(am__append_1)
 @BUILD_LOGLIB_TRUE@libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags) -lm
-@BUILD_LOGLIB_TRUE@BUILT_SOURCES = ../libm2pim/SYSTEM.def
 @BUILD_LOGLIB_TRUE@M2LIBDIR = /m2/m2log/
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .mod .def .o .obj .lo .a .la
@@ -666,15 +675,13 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
+check: check-am
 all-am: Makefile $(LTLIBRARIES)
 installdirs:
 	for dir in "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -704,7 +711,6 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 @BUILD_LOGLIB_FALSE@install-data-local:
 clean: clean-am
 
@@ -777,7 +783,7 @@ ps-am:
 
 uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am check check-am clean clean-generic \
 	clean-libtool clean-toolexeclibLTLIBRARIES cscopelist-am ctags \
@@ -797,11 +803,46 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 .PRECIOUS: Makefile
 
 
-@BUILD_LOGLIB_TRUE@../libm2pim/SYSTEM.def: ../libm2pim/Makefile
+@BUILD_LOGLIB_TRUE@../libm2pim/SYSTEM.def:
 @BUILD_LOGLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) SYSTEM.def
 
+@BUILD_LOGLIB_TRUE@../libm2pim/Builtins.def:
+@BUILD_LOGLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.def
+
+@BUILD_LOGLIB_TRUE@../libm2pim/Builtins.mod:
+@BUILD_LOGLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.mod
+
+@BUILD_LOGLIB_TRUE@../libm2pim/cbuiltin.def:
+@BUILD_LOGLIB_TRUE@	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) cbuiltin.def
+
+@BUILD_LOGLIB_TRUE@BitBlockOps.lo: $(GENERATED) BitBlockOps.mod
+@BUILD_LOGLIB_TRUE@BitByteOps.lo: $(GENERATED) BitByteOps.mod
+@BUILD_LOGLIB_TRUE@BitWordOps.lo: $(GENERATED) BitWordOps.mod
+@BUILD_LOGLIB_TRUE@BlockOps.lo: $(GENERATED) BlockOps.mod
+@BUILD_LOGLIB_TRUE@CardinalIO.lo: $(GENERATED) CardinalIO.mod
+@BUILD_LOGLIB_TRUE@Conversions.lo: $(GENERATED) Conversions.mod
+@BUILD_LOGLIB_TRUE@DebugPMD.lo: $(GENERATED) DebugPMD.mod
+@BUILD_LOGLIB_TRUE@DebugTrace.lo: $(GENERATED) DebugTrace.mod
+@BUILD_LOGLIB_TRUE@Delay.lo: $(GENERATED) Delay.mod
+@BUILD_LOGLIB_TRUE@Display.lo: $(GENERATED) Display.mod
+@BUILD_LOGLIB_TRUE@ErrorCode.lo: $(GENERATED) ErrorCode.mod
+@BUILD_LOGLIB_TRUE@FileSystem.lo: $(GENERATED) FileSystem.mod
+@BUILD_LOGLIB_TRUE@FloatingUtilities.lo: $(GENERATED) FloatingUtilities.mod
+@BUILD_LOGLIB_TRUE@InOut.lo: $(GENERATED) InOut.mod
+@BUILD_LOGLIB_TRUE@Keyboard.lo: $(GENERATED) Keyboard.mod
+@BUILD_LOGLIB_TRUE@LongIO.lo: $(GENERATED) LongIO.mod
+@BUILD_LOGLIB_TRUE@NumberConversion.lo: $(GENERATED) NumberConversion.mod
+@BUILD_LOGLIB_TRUE@Random.lo: $(GENERATED) Random.mod
+@BUILD_LOGLIB_TRUE@RealConversions.lo: $(GENERATED) RealConversions.mod
+@BUILD_LOGLIB_TRUE@RealInOut.lo: $(GENERATED) RealInOut.mod
+@BUILD_LOGLIB_TRUE@Strings.lo: $(GENERATED) Strings.mod
+@BUILD_LOGLIB_TRUE@Termbase.lo: $(GENERATED) Termbase.mod
+@BUILD_LOGLIB_TRUE@Terminal.lo: $(GENERATED) Terminal.mod
+@BUILD_LOGLIB_TRUE@TimeDate.lo: $(GENERATED) TimeDate.mod
+
 @BUILD_LOGLIB_TRUE@.mod.lo:
-@BUILD_LOGLIB_TRUE@	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+@BUILD_LOGLIB_TRUE@	$(LIBTOOL) --tag=CC \
+@BUILD_LOGLIB_TRUE@                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
 @BUILD_LOGLIB_TRUE@                   $(GM2_FOR_TARGET) -c \
 @BUILD_LOGLIB_TRUE@                   $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
 

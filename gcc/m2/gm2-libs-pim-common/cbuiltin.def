@@ -55,17 +55,14 @@ EXPORT UNQUALIFIED alloca, memcpy,
                    csqrtf, csqrt, csqrtl,
                    cexpf, cexp, cexpl,
                    clogf, clog, clogl,
-                   csinf, csin, csinl,
-                   ccosf, ccos, ccosl,
-                   ctanf, ctan, ctanl,
-                   casinf, casin, casinl,
-                   cacosf, cacos, cacosl,
-                   catanf, catan, catanl,
+                   (* <CBUILTIN_EXPORT_LIST> *)
 
                    index, rindex,
                    memcmp, memset, memmove,
-                   strcat, strncat, strcpy, strncpy, strcmp, strncmp,
-                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr,
+                   strcat, strncat, strcpy,
+                   strncpy, strcmp, strncmp,
+                   strlen, strstr, strpbrk,
+                   strspn, strcspn, strchr, strrchr,
 
                    clz, clzll,
                    ctz, ctzll ;
@@ -165,29 +162,29 @@ PROCEDURE clogf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
 PROCEDURE clog (z: COMPLEX) : COMPLEX ;
 PROCEDURE clogl (z: LONGCOMPLEX) : LONGCOMPLEX ;
 
-PROCEDURE csinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE csin (z: COMPLEX) : COMPLEX ;
-PROCEDURE csinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(csins,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_csinf,cbuiltin.csinf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(csin,COMPLEX,COMPLEX,__builtin_csin,cbuiltin.csin)> *)
+(* <DEF_CBUILTIN_PROCEDURE(csinl,LONGCOMPLEX,LONGCOMPLEX,__builtin_csinl,cbuiltin.csinl)> *)
 
-PROCEDURE ccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE ccos (z: COMPLEX) : COMPLEX ;
-PROCEDURE ccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(ccoss,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ccosf,cbuiltin.ccosf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ccos,COMPLEX,COMPLEX,__builtin_ccos,cbuiltin.ccos)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ccosl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ccosl,cbuiltin.ccosl)> *)
 
-PROCEDURE ctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE ctan (z: COMPLEX) : COMPLEX ;
-PROCEDURE ctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(ctans,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ctan,COMPLEX,COMPLEX,__builtin_ctan,cbuiltin.ctan)> *)
+(* <DEF_CBUILTIN_PROCEDURE(ctanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
-PROCEDURE casinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE casin (z: COMPLEX) : COMPLEX ;
-PROCEDURE casinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(casinf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_casinf,cbuiltin.casinf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(casin,COMPLEX,COMPLEX,__builtin_casin,cbuiltin.casin)> *)
+(* <DEF_CBUILTIN_PROCEDURE(casinl,LONGCOMPLEX,LONGCOMPLEX,__builtin_casinl,cbuiltin.casinl)> *)
 
-PROCEDURE cacosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE cacos (z: COMPLEX) : COMPLEX ;
-PROCEDURE cacosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(cacosf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_cacosf,cbuiltin.cacosf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(cacos,COMPLEX,COMPLEX,__builtin_cacos,cbuiltin.cacos)> *)
+(* <DEF_CBUILTIN_PROCEDURE(cacosl,LONGCOMPLEX,LONGCOMPLEX,__builtin_cacosl,cbuiltin.cacosl)> *)
 
-PROCEDURE catanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE catan (z: COMPLEX) : COMPLEX ;
-PROCEDURE catanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_CBUILTIN_PROCEDURE(catanf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_catanf,cbuiltin.catanf)> *)
+(* <DEF_CBUILTIN_PROCEDURE(catan,COMPLEX,COMPLEX,__builtin_catan,cbuiltin.catan)> *)
+(* <DEF_CBUILTIN_PROCEDURE(catanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_catanl,cbuiltin.catanl)> *)
 
 PROCEDURE index (s: ADDRESS; c: INTEGER) : ADDRESS ;
 PROCEDURE rindex (s: ADDRESS; c: INTEGER) : ADDRESS ;

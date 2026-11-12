@@ -12807,8 +12807,7 @@ PROCEDURE BuildComponentValue ;
 VAR
    e1tok,
    e2tok,
-   consttok,
-   virtpos  : CARDINAL ;
+   consttok : CARDINAL ;
    const,
    e1, e2   : CARDINAL ;
    nuldotdot,

@@ -27,7 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@ *)
+                 (* <SYSTEM_DATATYPES> *)
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T,
+                 (* </SYSTEM_DATATYPES> *)
                  ADR, TSIZE ;
                  (* SIZE is also exported if -fpim2 is used *)
 
@@ -38,7 +40,8 @@ CONST
 
 (* all the following types are declared internally to gm2
 TYPE
-   @SYSTEM_TYPES@
+   <SYSTEM_TYPES>
+   </SYSTEM_TYPES>
 *)
 
 

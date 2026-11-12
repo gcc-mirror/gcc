@@ -91,6 +91,8 @@ EXTERN bool M2Options_GetDebugFunctionLineNumbers (void);
 EXTERN void M2Options_SetSources (bool value);
 EXTERN bool M2Options_SetUnboundedByReference (bool value);
 EXTERN void M2Options_SetDumpSystemExports (bool value);
+EXTERN void M2Options_SetDumpBuiltins (bool value);
+EXTERN bool M2Options_GetDumpBuiltins (void);
 EXTERN void M2Options_SetOptimizing (unsigned int value);
 EXTERN bool M2Options_SetQuiet (bool value);
 EXTERN void M2Options_SetCC1Quiet (bool value);
