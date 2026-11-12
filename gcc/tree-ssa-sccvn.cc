@@ -328,6 +328,10 @@ typedef struct vn_tables_s
   vn_nary_op_table_type *nary;
   vn_phi_table_type *phis;
   vn_reference_table_type *references;
+  /* Expressions inserted by vn_nary_build_or_lookup_1, keyed on the
+     operands of the inserted statement rather than their value numbers.
+     This is not unwound on iteration.  Only allocated when iterating.  */
+  vn_nary_op_table_type *inserted_exprs;
 } *vn_tables_t;
 
 
@@ -2597,6 +2601,7 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
       mprts_hook = NULL;
     }
   gimple *new_stmt = NULL;
+  bool reused = false;
   if (res
       && gimple_simplified_result_is_gimple_val (res_op))
     {
@@ -2618,12 +2623,47 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
 	  && res_op->code.is_tree_code ()
 	  && (tree_code) res_op->code != ADDR_EXPR)
 	{
-	  gimple_seq stmts = NULL;
-	  result = maybe_push_res_to_seq (res_op, &stmts);
-	  if (result)
+	  /* When iterating, re-use the SSA name we created for the same
+	     expression in a previous iteration instead of creating a new
+	     one each time.  */
+	  vn_nary_op_t vno1 = NULL;
+	  vn_nary_op_s **slot = NULL;
+	  if (valid_info->inserted_exprs)
 	    {
-	      gcc_assert (gimple_seq_singleton_p (stmts));
-	      new_stmt = gimple_seq_first_stmt (stmts);
+	      vno1 = XALLOCAVAR (struct vn_nary_op_s,
+				 sizeof_vn_nary_op
+				   (vn_nary_length_from_match_op (res_op)));
+	      init_vn_nary_op_from_match_op (vno1, res_op);
+	      vno1->hashcode = vn_nary_op_compute_hash (vno1);
+	      slot = valid_info->inserted_exprs->find_slot_with_hash
+		       (vno1, vno1->hashcode, NO_INSERT);
+	    }
+	  if (slot)
+	    {
+	      result = (*slot)->u.result;
+	      new_stmt = gimple_seq_first_stmt (VN_INFO (result)->expr);
+	      reused = true;
+	    }
+	  else
+	    {
+	      gimple_seq stmts = NULL;
+	      result = maybe_push_res_to_seq (res_op, &stmts);
+	      if (result)
+		{
+		  gcc_assert (gimple_seq_singleton_p (stmts));
+		  new_stmt = gimple_seq_first_stmt (stmts);
+		  if (vno1)
+		    {
+		      slot = valid_info->inserted_exprs->find_slot_with_hash
+			       (vno1, vno1->hashcode, INSERT);
+		      vn_nary_op_t entry
+			= alloc_vn_nary_op_noinit (vno1->length,
+						   &vn_tables_insert_obstack);
+		      memcpy (entry, vno1, sizeof_vn_nary_op (vno1->length));
+		      entry->u.result = result;
+		      *slot = entry;
+		    }
+		}
 	    }
 	}
       else
@@ -2634,14 +2674,17 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
     {
       /* The expression is not yet available, value-number lhs to
 	 the new SSA_NAME we created.  */
-      /* Initialize value-number information properly.  */
-      vn_ssa_aux_t result_info = VN_INFO (result);
-      result_info->valnum = result;
-      result_info->value_id = get_next_value_id ();
-      result_info->visited = 1;
-      gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
-					  new_stmt);
-      result_info->needs_insertion = true;
+      if (!reused)
+	{
+	  /* Initialize value-number information properly.  */
+	  vn_ssa_aux_t result_info = VN_INFO (result);
+	  result_info->valnum = result;
+	  result_info->value_id = get_next_value_id ();
+	  result_info->visited = 1;
+	  gimple_seq_add_stmt_without_update (&VN_INFO (result)->expr,
+					      new_stmt);
+	  result_info->needs_insertion = true;
+	}
       /* ???  PRE phi-translation inserts NARYs without corresponding
          SSA name result.  Re-use those but set their result according
 	 to the stmt we just built.  */
@@ -2652,31 +2695,17 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
 	  gcc_assert (! nary->predicated_values && nary->u.result == NULL_TREE);
 	  nary->u.result = gimple_assign_lhs (new_stmt);
 	}
-      /* As all "inserted" statements are singleton SCCs, insert
-	 to the valid table.  This is strictly needed to
-	 avoid re-generating new value SSA_NAMEs for the same
-	 expression during SCC iteration over and over (the
-	 optimistic table gets cleared after each iteration).
-	 We do not need to insert into the optimistic table, as
-	 lookups there will fall back to the valid table.  */
       else
 	{
-	  unsigned int length = vn_nary_length_from_stmt (new_stmt);
-	  vn_nary_op_t vno1
-	    = alloc_vn_nary_op_noinit (length, &vn_tables_insert_obstack);
-	  vno1->value_id = result_info->value_id;
-	  vno1->length = length;
-	  vno1->predicated_values = 0;
-	  vno1->u.result = result;
-	  init_vn_nary_op_from_stmt (vno1, as_a <gassign *> (new_stmt));
-	  vn_nary_op_insert_into (vno1, valid_info->nary);
-	  /* Also do not link it into the undo chain.  */
-	  last_inserted_nary = vno1->next;
-	  vno1->next = (vn_nary_op_t)(void *)-1;
+	  /* Record the expression in the hashtable.  The entry is keyed
+	     on the current, possibly optimistic, value numbers of the
+	     operands, so unlike the inserted_exprs entry it has to be
+	     unwound on iteration like any other entry.  */
+	  vn_nary_op_insert_stmt (new_stmt, result);
 	}
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
-	  fprintf (dump_file, "Inserting name ");
+	  fprintf (dump_file, reused ? "Re-using name " : "Inserting name ");
 	  print_generic_expr (dump_file, result);
 	  fprintf (dump_file, " for expression ");
 	  print_gimple_expr (dump_file, new_stmt, 0, TDF_SLIM);
@@ -6898,6 +6927,7 @@ allocate_vn_table (vn_tables_t table, unsigned size)
   table->phis = new vn_phi_table_type (size);
   table->nary = new vn_nary_op_table_type (size);
   table->references = new vn_reference_table_type (size);
+  table->inserted_exprs = NULL;
 }
 
 /* Free a value number table.  */
@@ -6916,6 +6946,8 @@ free_vn_table (vn_tables_t table)
   table->nary = NULL;
   delete table->references;
   table->references = NULL;
+  delete table->inserted_exprs;
+  table->inserted_exprs = NULL;
 }
 
 /* Set *ID according to RESULT.  */
@@ -9004,6 +9036,10 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
   gcc_obstack_init (&vn_tables_insert_obstack);
   valid_info = XCNEW (struct vn_tables_s);
   allocate_vn_table (valid_info, region_size);
+  /* Without iteration nothing is unwound so there's no need to remember
+     inserted expressions for re-use.  */
+  if (iterate)
+    valid_info->inserted_exprs = new vn_nary_op_table_type (16);
   last_inserted_ref = NULL;
   last_inserted_phi = NULL;
   last_inserted_nary = NULL;
