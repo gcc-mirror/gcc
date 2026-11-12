@@ -32,7 +32,7 @@
 
 @deftypefn Supplemental {long long int} strtoll (const char *@var{string}, @
   char **@var{endptr}, int @var{base})
-@deftypefnx Supplemental {unsigned long long int} strtoul (@
+@deftypefnx Supplemental {unsigned long long int} strtoull (@
   const char *@var{string}, char **@var{endptr}, int @var{base})
 
 The @code{strtoll} function converts the string in @var{string} to a
