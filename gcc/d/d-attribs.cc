@@ -47,11 +47,13 @@ along with GCC; see the file COPYING3.  If not see
 
 
 /* Internal attribute handlers for built-in functions.  */
-static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
-static tree handle_malloc_attribute (tree *, tree, tree, int, bool *);
-static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
-static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
-static tree handle_omp_declare_simd_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_noreturn_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_malloc_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree d_handle_transaction_pure_attribute (tree *, tree, tree, int,
+						 bool *);
+static tree d_handle_omp_declare_simd_attribute (tree *, tree, tree, int,
+						 bool *);
 
 /* D attribute handlers for user defined attributes.  */
 static tree d_handle_always_inline_attribute (tree *, tree, tree, int, bool *);
@@ -99,23 +101,23 @@ static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
 static const attribute_spec d_langhook_common_attributes[] =
 {
   ATTR_SPEC ("noreturn", 0, 0, true, false, false, false,
-	     handle_noreturn_attribute, attr_noreturn_exclusions),
+	     d_handle_noreturn_attribute, attr_noreturn_exclusions),
   ATTR_SPEC ("leaf", 0, 0, true, false, false, false,
 	     handle_leaf_attribute, NULL),
   ATTR_SPEC ("const", 0, 0, true, false, false, false,
 	     handle_const_attribute, attr_const_pure_exclusions),
   ATTR_SPEC ("malloc", 0, 0, true, false, false, false,
-	     handle_malloc_attribute, NULL),
+	     d_handle_malloc_attribute, NULL),
   ATTR_SPEC ("returns_twice", 0, 0, true, false, false, false,
 	     handle_returns_twice_attribute, attr_returns_twice_exclusions),
   ATTR_SPEC ("pure", 0, 0, true, false, false, false,
 	     handle_pure_attribute, attr_const_pure_exclusions),
   ATTR_SPEC ("nonnull", 0, -1, false, true, true, false,
-	     handle_nonnull_attribute, NULL),
+	     d_handle_nonnull_attribute, NULL),
   ATTR_SPEC ("nothrow", 0, 0, true, false, false, false,
 	     handle_nothrow_attribute, NULL),
   ATTR_SPEC ("transaction_pure", 0, 0, false, true, true, false,
-	     handle_transaction_pure_attribute, NULL),
+	     d_handle_transaction_pure_attribute, NULL),
   ATTR_SPEC ("no vops", 0, 0, true, false, false, false,
 	     handle_novops_attribute, NULL),
   ATTR_SPEC ("type generic", 0, 0, false, true, true, false,
@@ -123,7 +125,7 @@ static const attribute_spec d_langhook_common_attributes[] =
   ATTR_SPEC ("fn spec", 1, 1, false, true, true, false,
 	     handle_fnspec_attribute, NULL),
   ATTR_SPEC ("omp declare simd", 0, -1, true,  false, false, false,
-	     handle_omp_declare_simd_attribute, NULL),
+	     d_handle_omp_declare_simd_attribute, NULL),
 };
 
 const scoped_attribute_specs d_langhook_common_attribute_table =
@@ -388,7 +390,7 @@ apply_user_attributes (Dsymbol *sym, tree node)
    struct attribute_spec.handler.  */
 
 static tree
-handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
+d_handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
 {
   tree type = TREE_TYPE (*node);
 
@@ -410,7 +412,7 @@ handle_noreturn_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 tree
-handle_malloc_attribute (tree *node, tree, tree, int, bool *)
+d_handle_malloc_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL
 	      && POINTER_TYPE_P (TREE_TYPE (TREE_TYPE (*node))));
@@ -435,7 +437,7 @@ get_nonnull_operand (tree arg_num_expr, unsigned HOST_WIDE_INT *valp)
 /* Handle the "nonnull" attribute.  */
 
 static tree
-handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
+d_handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
 {
   tree type = *node;
 
@@ -485,7 +487,7 @@ handle_nonnull_attribute (tree *node, tree, tree args, int, bool *)
    struct attribute_spec.handler.  */
 
 static tree
-handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
+d_handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
 {
   /* Ensure we have a function type.  */
   gcc_assert (TREE_CODE (*node) == FUNCTION_TYPE);
@@ -497,7 +499,7 @@ handle_transaction_pure_attribute (tree *node, tree, tree, int, bool *)
    struct attribute_spec.handler.  */
 
 tree
-handle_omp_declare_simd_attribute (tree *node, tree, tree, int, bool *)
+d_handle_omp_declare_simd_attribute (tree *node, tree, tree, int, bool *)
 {
   gcc_assert (TREE_CODE (*node) == FUNCTION_DECL);
   return NULL_TREE;
