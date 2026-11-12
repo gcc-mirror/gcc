@@ -861,6 +861,14 @@ users:
   account: dehao
   inactive: true
 - sn: Chen
+  cn: Jiawei
+  email:
+  - jiawei@iscas.ac.cn
+  - jiawei@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: jiawei
+- sn: Chen
   cn: Zhongyao Chen
   email:
   - chenzhongyao.hit@gmail.com
