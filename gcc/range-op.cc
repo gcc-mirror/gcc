@@ -2090,7 +2090,7 @@ operator_minus::lhs_op1_relation (const irange &, const irange &op1,
 
 bool
 minus_op1_op2_relation_effect (irange &lhs_range, tree type,
-			       const irange &op1_range ATTRIBUTE_UNUSED,
+			       const irange &op1_range,
 			       const irange &op2_range ATTRIBUTE_UNUSED,
 			       relation_kind rel)
 {
@@ -2107,12 +2107,51 @@ minus_op1_op2_relation_effect (irange &lhs_range, tree type,
   else if (rel == VREL_NE)
     rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec),
 			      VR_ANTI_RANGE);
+  else if (TYPE_UNSIGNED (type))
+    {
+      wide_int ub1 = op1_range.upper_bound ();
+      wide_int ub2 = op2_range.upper_bound ();
+      switch (rel)
+	{
+	  // op1 > op2, so the subtraction cannot wrap : [1, UB (op1)].
+	  case VREL_GT:
+	    // [0, 0] > op2 is undefined, so just return.
+	    if (ub1 == 0)
+	      return false;
+	    rel_range = int_range<2> (type, wi::one (prec), ub1);
+	    break;
+	  // op1 >= op2 >= 0, so the subtraction cannot wrap : [0, UB (op1)].
+	  case VREL_GE:
+	    rel_range = int_range<2> (type, wi::zero (prec), ub1);
+	    break;
+	  // op1 < op2, so the subtraction always wraps : [-UB (op2), -1].
+	  case VREL_LT:
+	    // op1 < [0, 0] is undefined, so just return.
+	    if (ub2 == 0)
+	      return false;
+	    rel_range = int_range<2> (type, wi::neg (ub2),
+				      wi::minus_one (prec));
+	    break;
+	  // As VREL_LT, except that op1 == op2 also produces zero.
+	  case VREL_LE:
+	    // If UB (op2) is MAX_INT the result won't change, plus
+	    // we dont want to construct an illegal  [1, 0] range next.
+	    if (ub2 == wi::max_value (prec, UNSIGNED))
+	      return false;
+	    rel_range = int_range<2> (type, wi::one (prec),
+				      wi::sub (wi::minus_one (prec), ub2),
+				      VR_ANTI_RANGE);
+	    break;
+	  default:
+	    return false;
+	}
+    }
   else if (TYPE_OVERFLOW_WRAPS (type))
     {
       switch (rel)
 	{
-	  // For wrapping signed values and unsigned, if op1 > op2 or
-	  // op1 < op2, then op1 - op2 can be restricted to ~[0, 0].
+	  // For wrapping signed values , if op1 > op2 or op1 < op2,
+	  // then op1 - op2 can be restricted to ~[0, 0].
 	  case VREL_GT:
 	  case VREL_LT:
 	      rel_range = int_range<2> (type, wi::zero (prec), wi::zero (prec),
