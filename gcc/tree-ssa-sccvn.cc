@@ -2521,6 +2521,44 @@ vn_reference_lookup_or_insert_for_pieces (tree vuse,
 				     type, operands.copy (), value, value_id);
 }
 
+/* Return true if RES_OP is a CONSTRUCTOR in GENERIC form.  ???  We're
+   arriving here with SCCVNs view, decomposed CONSTRUCTOR and GIMPLEs /
+   match-and-simplifies, CONSTRUCTOR as GENERIC tree.  */
+
+static bool
+match_op_generic_constructor_p (gimple_match_op *res_op)
+{
+  return (res_op->code == CONSTRUCTOR
+	  && TREE_CODE (res_op->ops[0]) == CONSTRUCTOR);
+}
+
+/* Return the number of operands for a vn_nary ops structure from RES_OP.  */
+
+static unsigned int
+vn_nary_length_from_match_op (gimple_match_op *res_op)
+{
+  if (match_op_generic_constructor_p (res_op))
+    return CONSTRUCTOR_NELTS (res_op->ops[0]);
+  return res_op->num_ops;
+}
+
+/* Initialize VNO from RES_OP.  The operands are taken as-is, they are
+   not valueized.  */
+
+static void
+init_vn_nary_op_from_match_op (vn_nary_op_t vno, gimple_match_op *res_op)
+{
+  vno->opcode = (tree_code) res_op->code;
+  vno->length = vn_nary_length_from_match_op (res_op);
+  vno->type = res_op->type;
+  if (match_op_generic_constructor_p (res_op))
+    for (unsigned i = 0; i < vno->length; ++i)
+      vno->op[i] = CONSTRUCTOR_ELT (res_op->ops[0], i)->value;
+  else
+    memcpy (&vno->op[0], res_op->ops, sizeof (tree) * vno->length);
+  vno->predicated_values = 0;
+}
+
 /* Return a value-number for RCODE OPS... either by looking up an existing
    value-number for the possibly simplified result or by inserting the
    operation if INSERT is true.  If SIMPLIFY is false, return a value
@@ -8153,21 +8191,12 @@ vn_lookup_simplify_result (gimple_match_op *res_op)
 {
   if (!res_op->code.is_tree_code ())
     return NULL_TREE;
-  tree *ops = res_op->ops;
-  unsigned int length = res_op->num_ops;
-  if (res_op->code == CONSTRUCTOR
-      /* ???  We're arriving here with SCCVNs view, decomposed CONSTRUCTOR
-         and GIMPLEs / match-and-simplifies, CONSTRUCTOR as GENERIC tree.  */
-      && TREE_CODE (res_op->ops[0]) == CONSTRUCTOR)
-    {
-      length = CONSTRUCTOR_NELTS (res_op->ops[0]);
-      ops = XALLOCAVEC (tree, length);
-      for (unsigned i = 0; i < length; ++i)
-	ops[i] = CONSTRUCTOR_ELT (res_op->ops[0], i)->value;
-    }
+  vn_nary_op_t vno1 = XALLOCAVAR (struct vn_nary_op_s,
+				  sizeof_vn_nary_op
+				    (vn_nary_length_from_match_op (res_op)));
+  init_vn_nary_op_from_match_op (vno1, res_op);
   vn_nary_op_t vnresult = NULL;
-  tree res = vn_nary_op_lookup_pieces (length, (tree_code) res_op->code,
-				       res_op->type, ops, &vnresult);
+  tree res = vn_nary_op_lookup_1 (vno1, &vnresult);
   /* If this is used from expression simplification make sure to
      return an available expression.  */
   if (res && TREE_CODE (res) == SSA_NAME && mprts_hook && rpo_avail)
