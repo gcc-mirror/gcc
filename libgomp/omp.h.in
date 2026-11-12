@@ -593,6 +593,36 @@ template <typename __T>
 struct thread_mem
   : __detail::__allocator_templ <__T, omp_thread_mem_alloc> {};
 
+template <typename __T>
+struct user_mem
+{
+  using value_type = __T;
+  using pointer = __T *;
+  using const_pointer = const __T *;
+  using size_type = __SIZE_TYPE__;
+  using difference_type = __PTRDIFF_TYPE__;
+
+  omp_allocator_handle_t my_alloc;
+
+  user_mem(omp_allocator_handle_t h) : my_alloc(h) { }
+  __T *
+  allocate (size_type __n)
+  {
+    if (__SIZE_MAX__ / sizeof (__T) < __n)
+      std::__throw_bad_array_new_length ();
+    void *__p = omp_aligned_alloc (alignof(__T), __n * sizeof(__T), my_alloc);
+    if (!__p)
+      std::__throw_bad_alloc ();
+    return static_cast <__T *> (__p);
+  }
+
+  void
+  deallocate (__T *__p, size_type) __GOMP_NOTHROW
+  {
+    omp_free (static_cast <void *> (__p), my_alloc);
+  }
+};
+
 } /* namespace allocator */
 
 } /* namespace omp */

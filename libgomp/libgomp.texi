@@ -716,7 +716,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item New @code{omp_default_device} identifier as conforming device number
       @tab Y @tab
 @item @code{user_mem} class template added to the @code{omp::allocator} namespace
-      @tab N @tab
+      @tab Y @tab See also @ref{Memory allocation}
 @item @code{omp-tools.h} providing types to avoid @code{omp.h} for tools
       @tab N @tab
 @item @code{omp_get_filtered_devices} API routines @tab N @tab
@@ -7836,6 +7836,18 @@ The following allocator templates are supported:
 @item ompx_gnu_pinned_mem_alloc @tab ompx::allocator::gnu_pinned_mem
 @item ompx_gnu_managed_mem_alloc @tab ompx::allocator::gnu_managed_mem
 @end multitable
+
+For user-defined allocators, the class template @code{user_mem} can
+be used as in the following example:
+
+@smallexample
+omp_allocator_handle_t my_alloc /* = omp_init_allocator (...) */ ;
+
+omp::allocator::user_mem<int> my_alloc_class(my_alloc);
+std::vector<int, decltype (my_alloc_class)> vec1 (my_alloc_class);
+
+std::vector<int, omp::allocator::user_mem<int>> vec2 (@{omp::allocator::user_mem<int>(my_alloc)@});
+@end smallexample
 
 The following traits are available when constructing a new allocator;
 if a trait is not specified or with the value @code{default}, the
