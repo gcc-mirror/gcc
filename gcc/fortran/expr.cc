@@ -4018,7 +4018,7 @@ bool gfc_pdt_requires_hidden_arg (gfc_symbol *arg)
 
   if (IS_CLASS_PDT (arg)
       && (CLASS_DATA (arg)->attr.allocatable
-	  || CLASS_DATA (arg)->attr.pointer))
+	  || CLASS_DATA (arg)->attr.class_pointer))
     return true;
 
   return false;

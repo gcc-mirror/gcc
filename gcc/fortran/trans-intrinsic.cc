@@ -440,6 +440,19 @@ build_fix_expr (stmtblock_t * pblock, tree arg, tree type,
 }
 
 
+/* Copy the PDT components of the result for MERGE and TRAQNSFER.  */
+
+static void
+copy_pdt_components (gfc_se *se, gfc_expr *expr)
+{
+  tree tmp, pdt_tmp;
+  pdt_tmp = gfc_evaluate_now (se->expr, &se->pre);
+  tmp = gfc_copy_alloc_comp (expr->ts.u.derived,
+			     pdt_tmp, se->expr, expr->rank, 0);
+  gfc_add_expr_to_block (&se->pre, tmp);
+}
+
+
 /* Round a real value using the specified rounding mode.
    We use a temporary integer of that same kind size as the result.
    Values larger than those that can be represented by this kind are
@@ -7950,6 +7963,9 @@ gfc_conv_intrinsic_merge (gfc_se * se, gfc_expr * expr)
   type = TREE_TYPE (tsource);
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, mask, tsource,
 			      fold_convert (type, fsource));
+  se->expr = gfc_evaluate_now (se->expr, &se->pre);
+  if (IS_PDT (expr))
+    copy_pdt_components (se, expr);
 }
 
 
@@ -9098,6 +9114,8 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
 					   dest_word_len, tmp);
     }
 
+  if (IS_PDT (expr))
+      copy_pdt_components (se, expr);
   return;
 
 /* Deal with scalar results.  */
@@ -9187,8 +9205,10 @@ scalar_transfer:
       /* For CLASS results, set the _vptr.  */
       if (mold_expr->ts.type == BT_CLASS)
 	gfc_reset_vptr (&se->pre, nullptr, tmpdecl, source_expr->ts.u.derived);
-
       se->expr = tmpdecl;
+
+      if (IS_PDT (expr))
+	copy_pdt_components (se, expr);
     }
 }
 

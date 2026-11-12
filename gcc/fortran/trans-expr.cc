@@ -9474,13 +9474,15 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  && isym->id != GFC_ISYM_REDUCE
 	  && arg->expr
 	  && arg->expr->ts.type == BT_DERIVED
-	  && arg->expr->ts.u.derived->attr.alloc_comp)
+	  && (arg->expr->ts.u.derived->attr.alloc_comp
+	      || arg->expr->ts.u.derived->attr.pdt_type))
 	{
 	  tree tmp2;
 	  /* Copy the allocatable components.  We have to use a
 	     temporary here to prevent source allocatable components
 	     from being corrupted.  */
 	  tmp2 = gfc_evaluate_now (result, &se->pre);
+
 	  tmp = gfc_copy_alloc_comp (arg->expr->ts.u.derived,
 				     result, tmp2, expr->rank, 0);
 	  gfc_add_expr_to_block (&se->pre, tmp);
@@ -9488,6 +9490,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				           expr->rank);
 	  gfc_add_expr_to_block (&se->pre, tmp);
 
+	  /* Free the result PST components if not direct_byref.  */
+	  if (!se->direct_byref && arg->expr->ts.u.derived->attr.pdt_type)
+	    {
+	      tmp = gfc_deallocate_pdt_comp (arg->expr->ts.u.derived, result,
+					     expr->rank);
+	      gfc_add_expr_to_block (&se->pre, tmp);
+	    }
 	  /* Finally free the temporary's data field.  */
 	  tmp = gfc_conv_descriptor_data_get (tmp2);
 	  tmp = gfc_deallocate_with_status (tmp, NULL_TREE, NULL_TREE,
@@ -12946,6 +12955,16 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
       tmp = build_fold_indirect_ref_loc (input_location, se.expr);
       tmp = gfc_deallocate_alloc_comp_no_caf (expr1->ts.u.derived, tmp,
 					      expr1->rank);
+      gfc_add_expr_to_block (&se.pre, tmp);
+    }
+  else if (expr1->ts.type == BT_DERIVED
+	   && has_parameterized_comps (expr1->ts.u.derived) && expr1->rank > 0
+	   && expr2->value.function.isym
+	   && expr2->value.function.isym->transformational
+	   && expr2->value.function.isym->id != GFC_ISYM_REDUCE)
+    {
+      tmp = build_fold_indirect_ref_loc (input_location, se.expr);
+      tmp = gfc_deallocate_pdt_comp (expr1->ts.u.derived, tmp, expr1->rank);
       gfc_add_expr_to_block (&se.pre, tmp);
     }
 
