@@ -2226,6 +2226,10 @@ may_be_nonaddressable_p (tree expr)
 	return true;
       return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
 
+    case REALPART_EXPR:
+    case IMAGPART_EXPR:
+      return may_be_nonaddressable_p (TREE_OPERAND (expr, 0));
+
     CASE_CONVERT:
       return true;
 
