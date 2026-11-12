@@ -1082,6 +1082,10 @@ extern Entity_Id get_debug_scope (Node_Id gnat_node, bool *is_subprogram);
    should be synchronized with Exp_Dbug.Debug_Renaming_Declaration.  */
 extern bool can_materialize_object_renaming_p (Node_Id expr);
 
+/* Return true if GNAT_RANGE, denoting a discrete range, cannot be superflat,
+   i.e. if HB >= LB - 1 holds, where LB and HB are the low and high bounds.  */
+extern bool range_cannot_be_superflat (Node_Id gnat_range);
+
 /* Return whether GNAT_ENTITY is a simple constant, i.e. it represents only
    its value and reading it has no side effects.  */
 extern bool simple_constant_p (Entity_Id gnat_entity);

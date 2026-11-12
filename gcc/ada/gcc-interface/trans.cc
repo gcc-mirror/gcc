@@ -1702,7 +1702,8 @@ check_inlining_for_nested_subprog (tree fndecl)
 }
 
 /* Return an expression for the length of TYPE, an integral type, computed in
-   RESULT_TYPE, another integral type.
+   RESULT_TYPE, another integral type. If CANNOT_BE_SUPERFLAT is true, then we
+   are guaranteed that hb >= lb - 1 and, therefore, can use the simple formula.
 
    We used to compute the length as MAX (hb - lb + 1, 0) which could overflow
    when lb == TYPE'First.  We now compute it as (hb >= lb) ? hb - lb + 1 : 0
@@ -1713,7 +1714,7 @@ check_inlining_for_nested_subprog (tree fndecl)
    base index type in order to avoid any overflow during the conversion.  */
 
 static tree
-get_type_length (tree type, tree result_type)
+get_type_length (tree type, tree result_type, bool cannot_be_superflat)
 {
   tree comp_type = get_base_type (result_type);
   tree base_type = maybe_character_type (get_base_type (type));
@@ -1725,11 +1726,12 @@ get_type_length (tree type, tree result_type)
 					convert (comp_type, hb),
 					convert (comp_type, lb)),
 		       build_int_cst (comp_type, 1));
-  length
-    = build_cond_expr (result_type,
-		       build_binary_op (GE_EXPR, boolean_type_node, hb, lb),
-		       convert (result_type, length),
-		       build_int_cst (result_type, 0));
+  if (!cannot_be_superflat)
+    length
+      = build_cond_expr (result_type,
+			 build_binary_op (GE_EXPR, boolean_type_node, hb, lb),
+			 convert (result_type, length),
+			 build_int_cst (result_type, 0));
   return length;
 }
 
@@ -2143,7 +2145,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	  else if (attribute == Attr_Last)
 	    gnu_result = TYPE_MAX_VALUE (gnu_type);
 	  else
-	    gnu_result = get_type_length (gnu_type, gnu_result_type);
+	    gnu_result
+	      = get_type_length (gnu_type, gnu_result_type,
+				 range_cannot_be_superflat (gnat_prefix));
 	  break;
 	}
 
@@ -2151,19 +2155,23 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 
     case Attr_Length:
       {
-	int Dimension = (Present (Expressions (gnat_node))
-			 ? UI_To_Int (Intval (First (Expressions (gnat_node))))
-			 : 1), i;
+	const Entity_Id gnat_type
+	  = Is_Access_Type (Etype (gnat_prefix))
+	    ? Underlying_Type (Directly_Designated_Type (Etype (gnat_prefix)))
+	    : Underlying_Type (Etype (gnat_prefix));
+	gcc_assert (Is_Array_Type (gnat_type));
+	const int n_dim = Number_Dimensions (gnat_type);
+	const int dim
+	  = Present (Expressions (gnat_node))
+	    ? UI_To_Int (Intval (First (Expressions (gnat_node))))
+	    : 1;
 	struct parm_attr_d *pa = NULL;
 	Entity_Id gnat_param = Empty;
 	bool unconstrained_ptr_deref = false;
 
-	gnu_prefix = maybe_padded_object (gnu_prefix);
-	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
-
 	/* We treat unconstrained array In parameters specially.  We also note
 	   whether we are dereferencing a pointer to unconstrained array.  */
-	if (!Is_Constrained (Etype (gnat_prefix)))
+	if (!Is_Constrained (gnat_type))
 	  switch (Nkind (gnat_prefix))
 	    {
 	    case N_Identifier:
@@ -2189,6 +2197,9 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	      break;
 	  }
 
+	gnu_prefix = maybe_padded_object (gnu_prefix);
+	gnu_prefix = maybe_unconstrained_array (gnu_prefix);
+
 	/* If the prefix is the view conversion of a constrained array to an
 	   unconstrained form, we retrieve the constrained array because we
 	   might not be able to substitute the PLACEHOLDER_EXPR coming from
@@ -2203,27 +2214,17 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	else
 	  gnu_type = TREE_TYPE (gnu_prefix);
 
-	prefix_unused = true;
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
-
-	if (TYPE_CONVENTION_FORTRAN_P (gnu_type))
-	  {
-	    int ndim;
-	    tree gnu_type_temp;
-
-	    for (ndim = 1, gnu_type_temp = gnu_type;
-		 TREE_CODE (TREE_TYPE (gnu_type_temp)) == ARRAY_TYPE
-		 && TYPE_MULTI_ARRAY_P (TREE_TYPE (gnu_type_temp));
-		 ndim++, gnu_type_temp = TREE_TYPE (gnu_type_temp))
-	      ;
-
-	    Dimension = ndim + 1 - Dimension;
-	  }
-
-	for (i = 1; i < Dimension; i++)
+	for (int i = 1;
+	     i < (TYPE_CONVENTION_FORTRAN_P (gnu_type)
+		  ? n_dim + 1 - dim
+		  : dim);
+	     i++)
 	  gnu_type = TREE_TYPE (gnu_type);
 
 	gcc_assert (TREE_CODE (gnu_type) == ARRAY_TYPE);
+
+	prefix_unused = true;
+	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
 	/* When not optimizing, look up the slot associated with the parameter
 	   and the dimension in the cache and create a new one on failure.
@@ -2237,15 +2238,17 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	    && !(Present (Actual_Subtype (gnat_param))
 		 && Needs_Debug_Info (Actual_Subtype (gnat_param))))
 	  {
+	    unsigned i;
+
 	    FOR_EACH_VEC_SAFE_ELT (f_parm_attr_cache, i, pa)
-	      if (pa->id == gnat_param && pa->dim == Dimension)
+	      if (pa->id == gnat_param && pa->dim == dim)
 		break;
 
 	    if (!pa)
 	      {
 		pa = ggc_cleared_alloc<parm_attr_d> ();
 		pa->id = gnat_param;
-		pa->dim = Dimension;
+		pa->dim = dim;
 		vec_safe_push (f_parm_attr_cache, pa);
 	      }
 	  }
@@ -2275,7 +2278,7 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 	      = TYPE_MAX_VALUE (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)));
 	  }
 
-	else /* attribute == Attr_Range_Length || attribute == Attr_Length  */
+	else /* attribute == Attr_Length  */
 	  {
 	    if (pa && pa->length)
 	      {
@@ -2283,9 +2286,15 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p,
 		break;
 	      }
 
+	    Node_Id gnat_index = First_Index (gnat_type);
+	    for (int i = 1; i < dim; i++)
+	      gnat_index = Next_Index (gnat_index);
+
 	    gnu_result
 	      = get_type_length (TYPE_INDEX_TYPE (TYPE_DOMAIN (gnu_type)),
-				 gnu_result_type);
+				 gnu_result_type,
+				 Is_Constrained (gnat_type)
+				 && range_cannot_be_superflat (gnat_index));
 	  }
 
 	/* If this has a PLACEHOLDER_EXPR, qualify it by the object we are

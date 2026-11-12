@@ -213,7 +213,6 @@ static bool same_discriminant_p (Entity_Id, Entity_Id);
 static bool array_type_has_nonaliased_component (tree, Entity_Id);
 static bool compile_time_known_address_p (Node_Id);
 static bool flb_cannot_be_superflat (Node_Id);
-static bool range_cannot_be_superflat (Node_Id);
 static bool constructor_address_p (tree);
 static bool allocatable_size_p (tree, bool, bool);
 static bool initial_value_needs_conversion (tree, tree);
@@ -2755,8 +2754,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 		 deal with the "superflat" case.  There are three ways to do
 		 this.  If we can prove that the array can never be superflat,
 		 we can just use the high bound of the index type.  */
-	      else if ((Nkind (gnat_index) == N_Range
-		        && range_cannot_be_superflat (gnat_index))
+	      else if (range_cannot_be_superflat (gnat_index)
 		       /* Bit-Packed Array Impl. Types are never superflat.  */
 		       || (Is_Packed_Array_Impl_Type (gnat_entity)
 			   && Is_Bit_Packed_Array
@@ -7038,19 +7036,27 @@ flb_cannot_be_superflat (Node_Id gnat_indic)
   return !tree_int_cst_lt (gnu_hb, gnu_lb_minus_one);
 }
 
-/* Return true if GNAT_RANGE, a N_Range node, cannot be superflat, i.e. if the
-   inequality HB >= LB - 1 is true.  LB and HB are the low and high bounds.  */
+/* Return true if GNAT_RANGE, denoting a discrete range, cannot be superflat,
+   i.e. if HB >= LB - 1 holds, where LB and HB are the low and high bounds.  */
 
-static bool
+bool
 range_cannot_be_superflat (Node_Id gnat_range)
 {
-  Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
-  Node_Id gnat_scalar_range;
-  tree gnu_lb, gnu_hb, gnu_lb_minus_one;
+  /* We expected either an N_Range node or a name denoting a discrete subtype
+     whose Scalar_Range is an N_Range node.  */
+  if (Is_Entity_Name (gnat_range))
+    gnat_range = Scalar_Range (Entity (gnat_range));
+
+  if (Nkind (gnat_range) != N_Range)
+    return false;
 
   /* This is the easy case.  */
   if (Cannot_Be_Superflat (gnat_range))
     return true;
+
+  Node_Id gnat_lb = Low_Bound (gnat_range), gnat_hb = High_Bound (gnat_range);
+  Node_Id gnat_scalar_range;
+  tree gnu_lb, gnu_hb, gnu_lb_minus_one;
 
   /* If the low bound is not constant, take the worst case by finding an upper
      bound for its type, repeatedly if need be.  */
