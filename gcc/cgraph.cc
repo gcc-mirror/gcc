@@ -870,10 +870,10 @@ cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
      one indirect); always hash the direct one.  */
   if (e->speculative && e->indirect_unknown_callee)
     return;
-  /* We always want to hash the carrying edge of a callback, not the edges
-     pointing to the callbacks themselves, as their call statement doesn't
-     exist.  */
-  if (e->callback)
+  /* Callback edges share the call statement of the carrying edge, so hash
+     the carrying edge instead.  Internal callback edges have no carrying
+     edge, so hash the callback edge directly.  */
+  if (e->callback_with_carrying_edge_p ())
     return;
   cgraph_edge **slot = e->caller->call_site_hash->find_slot_with_hash
       (e->call_stmt, cgraph_edge_hasher::hash (e->call_stmt), INSERT);
