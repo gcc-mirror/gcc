@@ -12335,7 +12335,15 @@ vect_schedule_slp_node (vec_info *vinfo,
 		  && !SSA_NAME_IS_DEFAULT_DEF (vdef))
 		{
 		  gimple *vstmt = SSA_NAME_DEF_STMT (vdef);
-		  if (!last_stmt)
+		  /* Ignore existing external vector defs so we insert
+		     at region boundary.  Those can leak to an
+		     internal identity permute node.  */
+		  if (is_a <bb_vec_info> (vinfo)
+		      && vinfo->bbs[0] != gimple_bb (vstmt)
+		      && dominated_by_p (CDI_DOMINATORS, vinfo->bbs[0],
+					 gimple_bb (vstmt)))
+		    ;
+		  else if (!last_stmt)
 		    last_stmt = vstmt;
 		  else if (vect_stmt_dominates_stmt_p (last_stmt, vstmt))
 		    last_stmt = vstmt;
@@ -12395,15 +12403,6 @@ vect_schedule_slp_node (vec_info *vinfo,
 		    }
 	      }
 	  }
-
-      /* When we face existing vector defs that are external, make sure
-	 to insert at region boundary.  */
-      if (last_stmt
-	  && is_a <bb_vec_info> (vinfo)
-	  && vinfo->bbs[0] != gimple_bb (last_stmt)
-	  && dominated_by_p (CDI_DOMINATORS, vinfo->bbs[0],
-			     gimple_bb (last_stmt)))
-	last_stmt = NULL;
 
       /* We split regions to vectorize at control altering stmts
 	 with a definition so this can only be an external.  */
