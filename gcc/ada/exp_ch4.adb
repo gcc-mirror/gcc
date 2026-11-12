@@ -6087,12 +6087,12 @@ package body Exp_Ch4 is
       --         Cnn (<else low bound .. else high-bound>) := else-expr;
       --      end if;
 
-      --  and replace the if expression by a slice of Cnn, provided that Txx
+      --  and replace the if_expression by a slice of Cnn, provided that Txx
       --  is not too large. This will create a static temporary instead of the
       --  dynamic one of the next case and thus help the code generator.
 
-      --  Note that we need to deal with the case where the else expression is
-      --  itself such a slice, in order to catch if expressions with more than
+      --  Note that we need to deal with the case where the else_expression is
+      --  itself such a slice, in order to catch if_expressions with more than
       --  two dependent expressions in the source code.
 
       --  Also note that this creates variables on branches without an explicit
@@ -6199,15 +6199,23 @@ package body Exp_Ch4 is
             end To_Ityp;
 
             Ent                  : Node_Id;
+            Rng                  : Node_Id;
             Slice_Lo, Slice_Hi   : Node_Id;
             Subtyp_Ind           : Node_Id;
             Else_Lo, Else_Hi     : Uint;
             Min_Lo, Max_Hi       : Uint;
             Then_Lo, Then_Hi     : Uint;
-            Then_List, Else_List : List_Id;
+            Else_List            : List_Id;
+            Then_List            : List_Id;
+
+            Range_Cannot_Be_Superflat : Boolean := True;
+            --  Whether the range of the slice to be built cannot be superflat
 
          begin
             Get_First_Index_Bounds (Etype (Thenx), Then_Lo, Then_Hi);
+            if Then_Hi < Then_Lo - 1 then
+               Range_Cannot_Be_Superflat := False;
+            end if;
 
             --  See the rationale in Build_New_Bound
 
@@ -6216,6 +6224,9 @@ package body Exp_Ch4 is
             then
                Slice_Lo := Low_Bound (Discrete_Range (Elsex));
                Slice_Hi := High_Bound (Discrete_Range (Elsex));
+               if not Cannot_Be_Superflat (Discrete_Range (Elsex)) then
+                  Range_Cannot_Be_Superflat := False;
+               end if;
                Get_First_Index_Bounds
                  (Etype (Prefix (Elsex)), Else_Lo, Else_Hi);
 
@@ -6223,6 +6234,9 @@ package body Exp_Ch4 is
                Slice_Lo := Empty;
                Slice_Hi := Empty;
                Get_First_Index_Bounds (Etype (Elsex), Else_Lo, Else_Hi);
+               if Else_Hi < Else_Lo - 1 then
+                  Range_Cannot_Be_Superflat := False;
+               end if;
             end if;
 
             Min_Lo := UI_Min (Then_Lo, Else_Lo);
@@ -6309,12 +6323,16 @@ package body Exp_Ch4 is
                 Then_Statements => Then_List,
                 Else_Statements => Else_List);
 
+            Rng :=
+              Make_Range (Loc,
+                Low_Bound  => Build_New_Bound (Then_Lo, Else_Lo, Slice_Lo),
+                High_Bound => Build_New_Bound (Then_Hi, Else_Hi, Slice_Hi));
+            Set_Cannot_Be_Superflat (Rng, Range_Cannot_Be_Superflat);
+
             New_N :=
               Make_Slice (Loc,
                 Prefix         => New_Occurrence_Of (Ent, Loc),
-                Discrete_Range => Make_Range (Loc,
-                  Low_Bound  => Build_New_Bound (Then_Lo, Else_Lo, Slice_Lo),
-                  High_Bound => Build_New_Bound (Then_Hi, Else_Hi, Slice_Hi)));
+                Discrete_Range => Rng);
          end;
 
       --  If the type cannot be copied, then we expand as follows to avoid the
