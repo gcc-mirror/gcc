@@ -476,6 +476,11 @@ package body Accessibility is
             then
                return Type_Access_Level (Etype (Prefix (Name (N))));
 
+            --  Objects of a named access type get their level from their type
+
+            elsif Is_Named_Access_Type (Etype (N)) then
+               return Type_Access_Level (Etype (N));
+
             --  Otherwise the accessibility level of the innermost master
 
             else
