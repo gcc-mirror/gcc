@@ -1,3 +1,31 @@
+2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-10  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* gcc.target/bpf/memmove-5.c: New test.
+	* gcc.target/bpf/memmove-6.c: New test.
+	* gcc.target/bpf/memmove-7.c: New test.
+
+2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* gcc.target/bpf/memmove-3.c: New.
+	* gcc.target/bpf/memmove-4.c: New.
+
+2026-11-11  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2025-10-17  David Faust  <david.faust@oracle.com>
+
+	PR target/122139
+	* gcc.target/bpf/memset-3.c: New.
+	* gcc.target/bpf/memset-4.c: New.
+
 2026-11-09  Di Zhao  <dizhao@os.amperecomputing.com>
 
 	Backported from master:
