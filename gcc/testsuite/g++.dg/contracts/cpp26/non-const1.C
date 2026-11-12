@@ -8,7 +8,7 @@ struct A {
   constexpr const char&
   operator[] (unsigned i) const
   {
-    contract_assert (i < len);
+    __contract_assert (i < len);
     return p[i];
   }
 };
