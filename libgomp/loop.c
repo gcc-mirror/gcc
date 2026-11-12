@@ -1209,8 +1209,7 @@ GOMP_loop_ordered_guided_next (long *istart, long *iend)
    number of iterations.  */
 
 _Complex int
-GOMP_loop_static_worksharing (unsigned long long niter
-			      __attribute__ ((unused)))
+GOMP_loop_static_worksharing ()
 {
   struct gomp_team *team = gomp_thread ()->ts.team;
   unsigned tid = GOMP_TID_TO_OMP_TID (gomp_thread ()->ts.team_id);

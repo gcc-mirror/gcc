@@ -993,6 +993,7 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
   insert_temp_slot_address (XEXP (p->slot, 0), p);
 
   /* Select this SIMT thread's copy.  */
+  rtx addr = XEXP (p->slot, 0);
   rtx lane_addr = simt_stack_object_address (addr, lane_size);
   if (lane_addr != addr)
     {
@@ -1001,7 +1002,7 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
     }
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
-  slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
+  slot = gen_rtx_MEM (mode, addr);
   vec_safe_push (stack_slot_list, slot);
 
   /* If we know the alias set for the memory that will be used, use
