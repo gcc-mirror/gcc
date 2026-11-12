@@ -524,6 +524,16 @@ find_unswitching_predicates_for_bb (basic_block bb, class loop *loop,
 	  if (is_maybe_undefined (use, stmt, loop))
 	    return;
 	}
+      /* A condition that may trap must not be evaluated where the original
+	 program does not evaluate it.  Only the header of LOOP is known to
+	 execute once LOOP is entered, so require that, and do not hoist the
+	 condition out of any enclosing loop, which might not be entered.  */
+      if (gimple_could_trap_p (stmt))
+	{
+	  if (bb != loop->header)
+	    return;
+	  outer_loop = loop;
+	}
       /* Narrow OUTER_LOOP.  */
       if (outer_loop != loop)
 	FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
