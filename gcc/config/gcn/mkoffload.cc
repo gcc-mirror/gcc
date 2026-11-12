@@ -956,8 +956,11 @@ check_for_missing_lib (enum elf_arch_code elf_arch,
 	  && startswith (&q[-strlen ("march=")], "march="))
 	{
 	  const char r = q[strlen (isa_name)];
-	  if (r != '\0' && r != '/')
-	    continue;
+	  if (r != '\0' && r != '/' && r != ' ')
+	    {
+	      p = q + 1;
+	      continue;
+	    }
 	  break;
 	}
       p++;
@@ -978,8 +981,11 @@ check_for_missing_lib (enum elf_arch_code elf_arch,
 	      && startswith (&q[-strlen ("march=")], "march="))
 	    {
 	      const char r = q[strlen (gen_name)];
-	      if (r != '\0' && r != '/')
-		continue;
+	      if (r != '\0' && r != '/' && r != ' ')
+		{
+		  p = q + 1;
+		  continue;
+		}
 	      break;
 	    }
 	  p++;
