@@ -1,6 +1,6 @@
 /* PR target/78103 */
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mno-lzcnt" } */
+/* { dg-options "-O2 -mno-lzcnt -mtune-ctrl=^avoid_false_dep_for_bsr" } */
 /* { dg-final { scan-assembler-not {\mcltq\M} } } */
 
 long long

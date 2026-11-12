@@ -362,6 +362,12 @@ DEF_TUNE (X86_TUNE_USE_BT, "use_bt",
 	  | m_AMD_MULTIPLE | m_ZHAOXIN | m_GOLDMONT | m_GOLDMONT_PLUS
 	  | m_TREMONT | m_CORE_HYBRID | m_CORE_ATOM | m_C86_4G | m_GENERIC)
 
+/* X86_TUNE_AVOID_FALSE_DEP_FOR_BSR: BSR leaves its destination unmodified
+   for a zero source, so the hardware treats it as an input.  */
+DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BSR, "avoid_false_dep_for_bsr",
+	  m_NEHALEM | m_SANDYBRIDGE | m_CORE_AVX2 | m_TREMONT | m_CORE_HYBRID
+	  | m_CORE_ATOM | m_ZNVER4 | m_ZNVER5 | m_ZNVER6 | m_GENERIC)
+
 /* X86_TUNE_AVOID_FALSE_DEP_FOR_BMI: Avoid false dependency
    for bit-manipulation instructions.  */
 DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BMI, "avoid_false_dep_for_bmi",

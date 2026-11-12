@@ -1,6 +1,6 @@
 /* PR target/78103 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-lzcnt" } */
+/* { dg-options "-O2 -mno-lzcnt -mtune-ctrl=^avoid_false_dep_for_bsr" } */
 /* Cope with --enable-frame-pointer.  */
 /* { dg-additional-options "-fomit-frame-pointer" } */
 /* { dg-final { scan-assembler-not {\mmovl\M} } } */
