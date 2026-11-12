@@ -5931,7 +5931,9 @@ visit_nary_op (tree lhs, gassign *stmt)
     case RDIV_EXPR:
     case MULT_EXPR:
       /* Match up ([-]a){/,*}([-])b with v=a{/,*}b, replacing it with -v.  */
-      if (! HONOR_SIGN_DEPENDENT_ROUNDING (type))
+      if (! HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	  && (! COMPLEX_FLOAT_TYPE_P (type)
+	      || ! HONOR_SIGNED_ZEROS (type)))
 	{
 	  tree rhs[2];
 	  rhs[0] = rhs1;
