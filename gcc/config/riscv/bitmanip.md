@@ -1101,6 +1101,32 @@
   "operands[1] = gen_lowpart (word_mode, operands[1]);"
   [(set_attr "type" "bitmanip")])
 
+;; Split inverted bit extraction with a masked count into bext and seqz.
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X
+	  (not:X
+	    (lshiftrt:X
+	      (match_operand:X 1 "register_operand")
+	      (match_operator 4 "subreg_lowpart_operator"
+		[(and:GPR (match_operand:GPR 2 "register_operand")
+			  (match_operand 3 "<X:shiftm1>"))])))
+	  (const_int 1)))]
+  "TARGET_ZBS"
+  [(set (match_dup 0)
+	(zero_extract:X (match_dup 1)
+			(const_int 1)
+			(match_dup 4)))
+   (set (match_dup 0) (eq:X (match_dup 0) (const_int 0)))]
+{
+  /* Keep the bit position in range in the split RTL.  The masked bext
+     patterns omit this mask when emitting the instruction.  */
+  operands[4] = gen_rtx_AND (<GPR:MODE>mode, operands[2],
+			    GEN_INT (GET_MODE_BITSIZE (<X:MODE>mode) - 1));
+  if (<GPR:MODE>mode != <X:MODE>mode)
+    operands[4] = gen_rtx_ZERO_EXTEND (<X:MODE>mode, operands[4]);
+})
+
 ;; The logical-and against 0x1 implicitly extends the result.   So we can treat
 ;; an SImode bext as-if it's DImode without any explicit extension.
 (define_insn "*bextdisi"
