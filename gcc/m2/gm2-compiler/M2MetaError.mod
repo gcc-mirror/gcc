@@ -73,7 +73,9 @@ IMPORT M2Error ;
 IMPORT FilterError ;
 
 FROM FilterError IMPORT Filter, AddSymError, IsSymError ;
-FROM M2StackSpell IMPORT GetDefModuleSpellHint, GetSpellHint ;
+
+FROM M2StackSpell IMPORT GetDefModuleSpellHint, GetSpellHint,
+                         FilterConst, FilterVariable, FilterType ;
 
 
 CONST
@@ -101,6 +103,9 @@ TYPE
                    ini       : INTEGER ;
                    vowel,
                    filterDef,
+                   filterVar,
+                   filterType,
+                   filterConst,
                    importHint,
                    exportHint,
                    withStackHint,
@@ -534,7 +539,10 @@ BEGIN
       ini        := 0 ;
       glyph      := FALSE ;  (* Nothing to output yet.  *)
       vowel      := FALSE ;  (* Check for a vowel when outputing string?  *)
-      filterDef  := FALSE ;  (* Filter on definition module list?  *)
+      filterDef  := FALSE ;  (* Filter on definition module list.  *)
+      filterType := FALSE ;  (* Filter on type.  *)
+      filterConst := FALSE ;  (* Filter on const.  *)
+      filterVar  := FALSE ;  (* Filter on variable.  *)
       importHint := FALSE;
       exportHint := FALSE ;
       withStackHint := FALSE ;
@@ -1842,7 +1850,7 @@ END op ;
 
 
 (*
-   continuation := {':'|'1'|'2'|'3'|'4'|'i'|'s'|'x'|'w'|'D'} =:
+   continuation := {':'|'1'|'2'|'3'|'4'|'i'|'s'|'x'|'w'|'D'|'T'|'V'|'C'} =:
 *)
 
 PROCEDURE continuation (VAR eb: errorBlock;
@@ -1863,10 +1871,13 @@ BEGIN
       's':  SpellHint (eb, sym, bol) |
       'x':  AddExportsHint (eb) |
       'w':  AddWithStackHint (eb) |
-      'D':  FilterOnDefinitionModule (eb)
+      'D':  FilterOnDefinitionModule (eb) |
+      'T':  FilterOnType (eb) |
+      'V':  FilterOnVariable (eb) |
+      'C':  FilterOnConst (eb)
 
       ELSE
-         InternalFormat (eb, 'expecting one of [:1234isxw]',
+         InternalFormat (eb, 'expecting one of [:1234isxwDT]',
                          __LINE__)
       END ;
       INC (eb.ini)
@@ -1954,6 +1965,27 @@ END JoinSentances ;
 
 
 (*
+   ConfigureFilter -
+*)
+
+PROCEDURE ConfigureFilter (eb: errorBlock) ;
+BEGIN
+   IF eb.filterType
+   THEN
+      FilterType
+   END ;
+   IF eb.filterVar
+   THEN
+      FilterVariable
+   END ;
+   IF eb.filterConst
+   THEN
+      FilterConst
+   END
+END ConfigureFilter ;
+
+
+(*
    SpellHint -
 *)
 
@@ -1966,6 +1998,7 @@ BEGIN
          JoinSentances (eb, GetDefModuleSpellHint (sym[bol]))
       ELSIF IsUnknown (sym[bol]) OR IsError (sym[bol])
       THEN
+         ConfigureFilter (eb) ;
          JoinSentances (eb, GetSpellHint (sym[bol]))
       END
    END
@@ -2010,6 +2043,36 @@ PROCEDURE FilterOnDefinitionModule (VAR eb: errorBlock) ;
 BEGIN
    eb.filterDef := TRUE
 END FilterOnDefinitionModule ;
+
+
+(*
+   FilterOnType -
+*)
+
+PROCEDURE FilterOnType (VAR eb: errorBlock) ;
+BEGIN
+   eb.filterType := TRUE
+END FilterOnType ;
+
+
+(*
+   FilterOnConst -
+*)
+
+PROCEDURE FilterOnConst (VAR eb: errorBlock) ;
+BEGIN
+   eb.filterConst := TRUE
+END FilterOnConst ;
+
+
+(*
+   FilterOnVariable -
+*)
+
+PROCEDURE FilterOnVariable (VAR eb: errorBlock) ;
+BEGIN
+   eb.filterVar := TRUE
+END FilterOnVariable ;
 
 
 (*

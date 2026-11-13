@@ -25,6 +25,7 @@ FROM SymbolTable IMPORT NulSym, IsModule, IsDefImp, IsRecord,
                         IsEnumeration, IsProcedure, GetNth,
                         GetSymName, GetSym, GetLocalSym, GetScope,
                         UnknownReported, IsUnknown,
+                        IsAModula2Type, IsConst, IsVar,
                         GetUnknownOnImport, GetUnknownDeclScope,
                         ForeachExportedDo,
                         ForeachProcedureDo, ForeachLocalSymDo,
@@ -47,8 +48,13 @@ IMPORT m2spellcheck ;
 FROM m2spellcheck IMPORT Candidates ;
 
 
+TYPE
+   FilterKind = (constant, type, variable) ;
+   FilterSet  = SET OF FilterKind ;
+
 VAR
-   DefaultStack: StackOfWord ;
+   DefaultStack : StackOfWord ;
+   CurrentFilter: FilterSet ;
 
 
 (*
@@ -192,9 +198,35 @@ VAR
 BEGIN
    str := InitStringCharStar (KeyToCharStar (GetSymName (sym))) ;
    m2spellcheck.Push (PushCandidate, string (str)) ;
-   (* str := KillString (str) *)
+   (* str := KillString (str) ;  *)
    INC (PushCount)
 END PushName ;
+
+
+(*
+   PushNameFilter - push a name to the candidate vec provided
+                    the filter allows.
+*)
+
+PROCEDURE PushNameFilter (sym: CARDINAL) ;
+BEGIN
+   IF CurrentFilter = FilterSet {}
+   THEN
+      (* No filtering.  *)
+      PushName (sym)
+   ELSE
+      IF (constant IN CurrentFilter) AND IsConst (sym)
+      THEN
+         PushName (sym)
+      ELSIF (type IN CurrentFilter) AND IsAModula2Type (sym)
+      THEN
+         PushName (sym)
+      ELSIF (variable IN CurrentFilter) AND IsVar (sym)
+      THEN
+         PushName (sym)
+      END
+   END
+END PushNameFilter ;
 
 
 (*
@@ -228,14 +260,14 @@ BEGIN
    PushCandidate := cand ;
    IF IsModule (sym) OR IsDefImp (sym)
    THEN
-      ForeachProcedureDo (sym, PushName) ;
-      ForeachLocalSymDo (sym, PushName)
+      ForeachProcedureDo (sym, PushNameFilter) ;
+      ForeachLocalSymDo (sym, PushNameFilter)
    ELSIF IsEnumeration (sym)
    THEN
-      ForeachFieldEnumerationDo (sym, PushName)
+      ForeachFieldEnumerationDo (sym, PushNameFilter)
    ELSIF IsRecord (sym)
    THEN
-      ForeachRecordFieldDo (sym, PushName)
+      ForeachRecordFieldDo (sym, PushNameFilter)
    END ;
    RETURN PushCount
 END PushCandidates ;
@@ -309,10 +341,11 @@ END AddPunctuation ;
 
 
 (*
-   GetSpellHint - return a string describing a spelling hint.
+   GetSpellHintFilter - return a string describing a spelling hint.
+                        The hint may be filtered.
 *)
 
-PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
+PROCEDURE GetSpellHintFilter (unknown: CARDINAL) : String ;
 BEGIN
    IF IsUnknown (unknown) AND
       GetUnknownOnImport (unknown) AND
@@ -322,7 +355,55 @@ BEGIN
       RETURN GetExportedSpellHint (unknown, GetUnknownDeclScope (unknown))
    END ;
    RETURN GetScopeSpellHint (unknown)
+END GetSpellHintFilter ;
+
+
+(*
+   GetSpellHint - return a string describing a spelling hint.
+                  The spell candidates can be filtered using
+                  the attributes below.  Note that the
+                  GetDefModuleSpellHint and GetRecordField
+                  are not filtered.
+*)
+
+PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
+VAR
+   hint: String ;
+BEGIN
+   hint := GetSpellHintFilter (unknown) ;
+   CurrentFilter := FilterSet {} ;  (* Reset for the next time.  *)
+   RETURN hint
 END GetSpellHint ;
+
+
+(*
+   FilterConst - filter on constants.
+*)
+
+PROCEDURE FilterConst ;
+BEGIN
+   INCL (CurrentFilter, constant)
+END FilterConst ;
+
+
+(*
+   FilterVariable - filter on variables.
+*)
+
+PROCEDURE FilterVariable ;
+BEGIN
+   INCL (CurrentFilter, variable)
+END FilterVariable ;
+
+
+(*
+   FilterType - filter on types.
+*)
+
+PROCEDURE FilterType ;
+BEGIN
+   INCL (CurrentFilter, type)
+END FilterType ;
 
 
 (*
@@ -372,11 +453,6 @@ BEGIN
    WHILE (i <= n) AND (HintStr = NIL) DO
       sym := PeepWord (DefaultStack, i) ;
       HintStr := CheckForHintStr (sym, HintStr, misspell) ;
-      IF IsModule (sym) OR IsDefImp (sym)
-      THEN
-         (* Cannot see beyond a module scope.  *)
-         RETURN AddPunctuation (HintStr, '?')
-      END ;
       INC (i)
    END ;
    RETURN AddPunctuation (HintStr, '?')
@@ -389,7 +465,8 @@ END GetScopeSpellHint ;
 
 PROCEDURE Init ;
 BEGIN
-   DefaultStack := InitStackWord ()
+   DefaultStack := InitStackWord () ;
+   CurrentFilter := FilterSet {}
 END Init ;
 
 

@@ -54,7 +54,7 @@ FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
 
 FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
-                        GetModuleScope,
+                        GetModuleScope, GetBaseModule,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
                         GetExported,
                         IsDefImp, IsModule,
@@ -237,6 +237,7 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingDefinitionModule()) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
    M2StackSpell.Push (ModuleSym) ;
    PushT(name) ;
    M2Error.EnterDefinitionScope (name)
@@ -267,6 +268,7 @@ BEGIN
    Assert(CompilingDefinitionModule()) ;
    CheckForUnknownInModule (tokno) ;
    EndScope ;
+   M2StackSpell.Pop ;
    M2StackSpell.Pop ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -309,6 +311,7 @@ BEGIN
    Assert(CompilingImplementationModule()) ;
    PushTtok(name, tok) ;
    M2Error.EnterImplementationScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
    M2StackSpell.Push (ModuleSym)
 END PCStartBuildImpModule ;
 
@@ -337,6 +340,7 @@ BEGIN
    Assert(CompilingImplementationModule()) ;
    CheckForUnknownInModule (tokno) ;
    EndScope ;
+   M2StackSpell.Pop ;
    M2StackSpell.Pop ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -384,6 +388,7 @@ BEGIN
    Assert(NOT IsDefImp(ModuleSym)) ;
    PushTtok(name, tok) ;
    M2Error.EnterProgramScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
    M2StackSpell.Push (ModuleSym)
 END PCStartBuildProgModule ;
 
@@ -423,6 +428,7 @@ BEGIN
       FlushErrors
    END ;
    M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop ;
    M2StackSpell.Pop
 END PCEndBuildProgModule ;
 
@@ -456,6 +462,7 @@ BEGIN
    SetCurrentModule(ModuleSym) ;
    PushTtok(name, tok) ;
    M2Error.EnterModuleScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
    M2StackSpell.Push (ModuleSym)
 END PCStartBuildInnerModule ;
 
@@ -495,6 +502,7 @@ BEGIN
    END ;
    SetCurrentModule(GetModuleScope(GetCurrentModule())) ;
    M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop ;
    M2StackSpell.Pop
 END PCEndBuildInnerModule ;
 
