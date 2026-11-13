@@ -33,11 +33,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/svalue.h"
 #include "analyzer/region.h"
 
+#include "selftest.h"
+
 #if ENABLE_ANALYZER
 
 namespace ana {
 
 /* struct complexity.  */
+
+/* Get complexity for a new node that references NODE
+   (the complexity of NODE, plus one for the new node).  */
+
+complexity::complexity (const symbolic::node &node)
+: m_num_nodes (node.get_complexity ().m_num_nodes + 1),
+  m_max_depth (node.get_complexity ().m_max_depth + 1)
+{
+}
 
 /* Get complexity for a new node that references REG
    (the complexity of REG, plus one for the new node).  */
@@ -82,6 +93,56 @@ complexity::from_vec_svalue (const vec<const svalue *> &vec)
     }
   return complexity (num_nodes + 1, max_depth + 1);
 }
+
+/* Get complexity for a new node which has children with overall
+   complexity CHILD_COMPLEXITIES.  */
+
+complexity
+complexity::from_child_complexities (const complexity &child_complexities)
+{
+  /* One extra node for the node itself; one more level of depth.  */
+  return complexity (child_complexities.m_num_nodes + 1,
+		     child_complexities.m_max_depth + 1);
+}
+
+/* The sum of two complexity instances is the sum of their
+   numbers of nodes and the maximum of the maxima of their depths.  */
+
+complexity
+complexity::operator+ (const complexity &other) const
+{
+  return complexity (m_num_nodes + other.m_num_nodes,
+		     std::max (m_max_depth, other.m_max_depth));
+}
+
+complexity &
+complexity::operator+= (const complexity &other)
+{
+  *this = *this + other;
+  return *this;
+}
+
+#if CHECKING_P
+
+namespace selftest {
+
+void
+analyzer_complexity_cc_tests ()
+{
+  ASSERT_EQ (complexity (1, 1) + complexity (1, 1),
+	     complexity (2, 1));
+
+  ASSERT_EQ (complexity (3, 2) + complexity (3, 1),
+	     complexity (6, 2));
+
+  ASSERT_EQ (complexity::from_child_complexities (complexity (3, 2)),
+	     complexity (4, 3));
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P */
+
 
 } // namespace ana
 

@@ -49,6 +49,7 @@ run_analyzer_selftests ()
 {
 #if ENABLE_ANALYZER
   analyzer_access_diagram_cc_tests ();
+  analyzer_complexity_cc_tests ();
   analyzer_concrete_ranges_cc_tests ();
   analyzer_constraint_manager_cc_tests ();
   analyzer_function_set_cc_tests ();

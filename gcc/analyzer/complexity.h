@@ -33,10 +33,31 @@ struct complexity
   : m_num_nodes (num_nodes), m_max_depth (max_depth)
   {}
 
+  complexity (const symbolic::node &n);
   complexity (const region *reg);
   complexity (const svalue *sval);
-  static complexity from_pair (const complexity &c1, const complexity &c);
-  static complexity from_vec_svalue (const vec<const svalue *> &vec);
+
+  static complexity
+  from_pair (const complexity &c1, const complexity &c);
+
+  static complexity
+  from_vec_svalue (const vec<const svalue *> &vec);
+
+  static complexity
+  from_child_complexities (const complexity &child_complexities);
+
+  bool
+  operator== (const complexity &other) const
+  {
+    return (m_num_nodes == other.m_num_nodes
+	    && m_max_depth == other.m_max_depth);
+  }
+
+  complexity
+  operator+ (const complexity &other) const;
+
+  complexity &
+  operator+= (const complexity &other);
 
   /* The total number of nodes in the tree of this
      entity, including the entity itself.  */
