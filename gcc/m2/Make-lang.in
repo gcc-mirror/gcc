@@ -189,8 +189,6 @@ m2.install-pdf: $(M2_PDFFILES)
 	  $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(pdfdir)/gcc/$$f"; \
 	done
 
-.INTERMEDIATE: m2.pod
-
 m2.pod: $(TEXISRC) | $(objdir)/m2/images/gnu.eps $(TEXILIBSRC)
 	-$(TEXI2POD) -I $(objdir)/m2 -D m2 < $< > $@
 
@@ -412,6 +410,7 @@ endif
 
 m2.mostlyclean:
 	-rm -f m2/*.o
+	-rm -f m2.pod
 
 m2.clean:
 	-rm -f m2/*.o
