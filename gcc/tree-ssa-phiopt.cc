@@ -889,6 +889,68 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
   return NULL;
 }
 
+
+/* Returns true if the uses of the sequence SEQ contains only references to
+   BB0 or BB1 (but not both) or the references are outside of either BB0/BB1. */
+
+static bool
+check_uses (gimple_seq seq, basic_block bb0, basic_block bb1)
+{
+  if (!seq)
+    return true;
+  gcc_checking_assert (bb0);
+  gcc_checking_assert (bb1);
+  struct bb_info {
+    basic_block bb0;
+    basic_block bb1;
+    bool bb0_referenced;
+    bool bb1_referenced;
+  };
+  bb_info info = { bb0, bb1, false, false };
+
+  walk_stmt_info wi = {};
+  wi.info = &info;
+  auto fn = [](tree *tp, int *, void *data) -> tree
+	    {
+	      walk_stmt_info *wi = (walk_stmt_info*)data;
+	      if (wi->is_lhs)
+		return NULL_TREE;
+	      bb_info *uses = (bb_info*)wi->info;
+	      tree use = *tp;
+	      if (TREE_CODE (use) != SSA_NAME)
+	        return NULL_TREE;
+	      gimple *stmt = SSA_NAME_DEF_STMT (use);
+	      basic_block sbb = gimple_bb (stmt);
+	      // A stmt with a null bb is ok, either it is the sequnce
+	      // or is outside default defined one.
+	      if (sbb == nullptr)
+		return NULL_TREE;
+	      else if (sbb == uses->bb0)
+		{
+		  if (uses->bb1_referenced)
+		    return use;
+		  uses->bb0_referenced = true;
+		}
+	      else if (sbb == uses->bb1)
+		{
+		  if (uses->bb0_referenced)
+		    return use;
+		  uses->bb1_referenced = true;
+		}
+	      return NULL_TREE;
+	    };
+
+
+  gimple_stmt_iterator gsi = gsi_last (seq);
+  for( ; !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *s = *gsi;
+      if (walk_gimple_op (s, fn, &wi))
+	return false;
+    }
+  return true;
+}
+
 /* one_feeding_comparison_into_p returns true if BB has one comparison
    statement and it sets STMT to that statement.  Note the comparison can
    be trapping too.  */
@@ -1299,6 +1361,18 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       statistics_counter_event (cfun, "Non-IEEE FP MIN/MAX PHI replacement",
 				1);
     }
+
+  // Make sure the sequence does not reference both basic blocks.
+  if (threeway_p && middle_bb != middle_bb_alt
+      && !check_uses (seq, middle_bb, middle_bb_alt))
+    {
+      if (dump_file && (dump_flags & TDF_FOLDING))
+	fprintf (dump_file, "rejected the phiopt match-simplify as it uses"
+		 "both conditional statements.\n");
+      gimple_seq_discard (seq);
+      return false;
+    }
+
   if (dump_file && (dump_flags & TDF_FOLDING))
     fprintf (dump_file, "accepted the phiopt match-simplify.\n");
 
