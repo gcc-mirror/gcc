@@ -2,7 +2,7 @@ This directory contains the GNU Compiler Collection (GCC).
 
 The GNU Compiler Collection is free software.  See the files whose
 names start with COPYING for copying permission.  The manuals, and
-some of the runtime libraries, are under different terms; see the
+some of the runtime libraries, are under different terms: see the
 individual source files for details.
 
 The directory INSTALL contains copies of the installation information
