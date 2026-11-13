@@ -3458,8 +3458,8 @@ test_constraint_conditions ()
 
   /* Self-comparisons.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
     ASSERT_CONDITION_TRUE (model, x, EQ_EXPR, x);
     ASSERT_CONDITION_TRUE (model, x, LE_EXPR, x);
     ASSERT_CONDITION_TRUE (model, x, GE_EXPR, x);
@@ -3470,23 +3470,23 @@ test_constraint_conditions ()
 
   /* Adding self-equality shouldn't add equiv classes.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, x);
     ADD_SAT_CONSTRAINT (model, int_42, EQ_EXPR, int_42);
     /* ...even when done directly via svalues: */
     const svalue *sval_int_42 = model.get_rvalue (int_42, nullptr);
     bool sat = model.get_constraints ()->add_constraint (sval_int_42,
-							  EQ_EXPR,
-							  sval_int_42);
+							 EQ_EXPR,
+							 sval_int_42);
     ASSERT_TRUE (sat);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
   }
 
   /* x == y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
@@ -3517,8 +3517,8 @@ test_constraint_conditions ()
 
   /* x == y, then y == z  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
@@ -3534,8 +3534,8 @@ test_constraint_conditions ()
 
   /* x != y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, y);
 
@@ -3565,8 +3565,8 @@ test_constraint_conditions ()
 
   /* x < y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, LT_EXPR, y);
 
@@ -3588,8 +3588,8 @@ test_constraint_conditions ()
 
   /* x <= y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, LE_EXPR, y);
 
@@ -3611,8 +3611,8 @@ test_constraint_conditions ()
 
   /* x > y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, GT_EXPR, y);
 
@@ -3634,8 +3634,8 @@ test_constraint_conditions ()
 
   /* x >= y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, GE_EXPR, y);
 
@@ -3659,8 +3659,9 @@ test_constraint_conditions ()
 
   /* Constants.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ASSERT_CONDITION_FALSE (model, int_0, EQ_EXPR, int_42);
     ASSERT_CONDITION_TRUE (model, int_0, NE_EXPR, int_42);
     ASSERT_CONDITION_TRUE (model, int_0, LT_EXPR, int_42);
@@ -3671,8 +3672,9 @@ test_constraint_conditions ()
 
   /* x == 0, y == 42.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, y, EQ_EXPR, int_42);
 
@@ -3688,48 +3690,54 @@ test_constraint_conditions ()
 
   /* x == y && x != y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, NE_EXPR, y);
   }
 
   /* x == 0 then x == 42.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, EQ_EXPR, int_42);
   }
 
   /* x == 0 then x != 0.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, NE_EXPR, int_0);
   }
 
   /* x == 0 then x > 0.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_UNSAT_CONSTRAINT (model, x, GT_EXPR, int_0);
   }
 
   /* x != y && x == y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, EQ_EXPR, y);
   }
 
   /* x <= y && x > y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, x, LE_EXPR, y);
     ADD_UNSAT_CONSTRAINT (model, x, GT_EXPR, y);
   }
@@ -3749,8 +3757,9 @@ test_transitivity ()
 
   /* a == b, then c == d, then c == b.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ASSERT_CONDITION_UNKNOWN (model, a, EQ_EXPR, b);
     ASSERT_CONDITION_UNKNOWN (model, b, EQ_EXPR, c);
     ASSERT_CONDITION_UNKNOWN (model, c, EQ_EXPR, d);
@@ -3770,8 +3779,9 @@ test_transitivity ()
 
   /* Transitivity: "a < b", "b < c" should imply "a < c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, LT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
 
@@ -3781,8 +3791,9 @@ test_transitivity ()
 
   /* Transitivity: "a <= b", "b < c" should imply "a < c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
 
@@ -3792,8 +3803,9 @@ test_transitivity ()
 
   /* Transitivity: "a <= b", "b <= c" should imply "a <= c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, LE_EXPR, c);
 
@@ -3803,8 +3815,9 @@ test_transitivity ()
 
   /* Transitivity: "a > b", "b > c" should imply "a > c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
 
@@ -3814,8 +3827,9 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b > c" should imply " a > c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
 
@@ -3825,8 +3839,9 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b >= c" should imply "a >= c".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, c);
 
@@ -3841,8 +3856,9 @@ test_transitivity ()
      but also that:
        (a < d).  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, LT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, c, LT_EXPR, d);
     ADD_SAT_CONSTRAINT (model, b, LT_EXPR, c);
@@ -3854,8 +3870,9 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b >= a" should imply that a == b.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, a);
 
@@ -3869,8 +3886,9 @@ test_transitivity ()
 
   /* Transitivity: "a >= b", "b > a" should be impossible.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_UNSAT_CONSTRAINT (model, b, GT_EXPR, a);
   }
@@ -3878,8 +3896,9 @@ test_transitivity ()
   /* Transitivity: "a >= b", "b >= c", "c >= a" should imply
      that a == b == c.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GE_EXPR, c);
     ADD_SAT_CONSTRAINT (model, c, GE_EXPR, a);
@@ -3890,8 +3909,9 @@ test_transitivity ()
   /* Transitivity: "a > b", "b > c", "c > a"
      should be impossible.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, b, GT_EXPR, c);
     ADD_UNSAT_CONSTRAINT (model, c, GT_EXPR, a);
@@ -3920,16 +3940,18 @@ test_constant_comparisons ()
 
   /* Given a >= 1024, then a <= 1023 should be impossible.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_1024);
     ADD_UNSAT_CONSTRAINT (model, a, LE_EXPR, int_1023);
   }
 
   /* a > 4.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_TRUE (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_TRUE (model, a, NE_EXPR, int_3);
@@ -3938,8 +3960,9 @@ test_constant_comparisons ()
 
   /* a <= 4.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
     ASSERT_CONDITION_FALSE (model, a, GT_EXPR, int_4);
     ASSERT_CONDITION_FALSE (model, a, GT_EXPR, int_5);
@@ -3948,8 +3971,9 @@ test_constant_comparisons ()
 
   /* If "a > b" and "a == 3", then "b == 4" ought to be unsatisfiable.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, b);
     ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_3);
     ADD_UNSAT_CONSTRAINT (model, b, EQ_EXPR, int_4);
@@ -3960,8 +3984,8 @@ test_constant_comparisons ()
     /* If "a <= 4" && "a > 3", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model_manager mgr;
-      region_model model (&mgr);
+      symbolic::node_manager node_mgr;
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -3970,8 +3994,8 @@ test_constant_comparisons ()
     /* If "a > 3" && "a <= 4", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model_manager mgr;
-      region_model model (&mgr);
+      symbolic::node_manager node_mgr;
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -3979,8 +4003,9 @@ test_constant_comparisons ()
     /* If "a > 3" && "a < 5", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model_manager mgr;
-      region_model model (&mgr);
+      symbolic::node_manager node_mgr;
+      region_model model (node_mgr);
+
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -3988,16 +4013,18 @@ test_constant_comparisons ()
     /* If "a >= 4" && "a < 5", then "a == 4",
        assuming a is of integral type.  */
     {
-      region_model_manager mgr;
-      region_model model (&mgr);
+      symbolic::node_manager node_mgr;
+      region_model model (node_mgr);
+
       ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
     }
     /* If "a >= 4" && "a <= 4", then "a == 4".  */
     {
-      region_model_manager mgr;
-      region_model model (&mgr);
+      symbolic::node_manager node_mgr;
+      region_model model (node_mgr);
+
       ADD_SAT_CONSTRAINT (model, a, GE_EXPR, int_4);
       ADD_SAT_CONSTRAINT (model, a, LE_EXPR, int_4);
       ASSERT_CONDITION_TRUE (model, a, EQ_EXPR, int_4);
@@ -4011,8 +4038,9 @@ test_constant_comparisons ()
     tree float_3 = build_real_from_int_cst (double_type_node, int_3);
     tree float_4 = build_real_from_int_cst (double_type_node, int_4);
 
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, f, GT_EXPR, float_3);
     ADD_SAT_CONSTRAINT (model, f, LE_EXPR, float_4);
     ASSERT_CONDITION_UNKNOWN (model, f, EQ_EXPR, float_4);
@@ -4021,22 +4049,23 @@ test_constant_comparisons ()
 
   /* "a > 3 && a <= 3" should be impossible.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
     ADD_UNSAT_CONSTRAINT (model, a, LE_EXPR, int_3);
   }
 
   /* "(a + 1) > 3 && a < 3" should be impossible.  */
   {
-    region_model_manager mgr;
+    symbolic::node_manager node_mgr;
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a_plus_one, GT_EXPR, int_3);
       ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_3);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_3);
       ADD_UNSAT_CONSTRAINT (model, a_plus_one, GT_EXPR, int_3);
     }
@@ -4044,38 +4073,38 @@ test_constant_comparisons ()
 
   /* "3 < a < 4" should be impossible for integer a.  */
   {
-    region_model_manager mgr;
+    symbolic::node_manager node_mgr;
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
       ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, int_1, LT_EXPR, a);
       ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, int_1, LT_EXPR, a);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_5);
       ADD_SAT_CONSTRAINT (model, int_3, LT_EXPR, a);
       ADD_UNSAT_CONSTRAINT (model, a, LT_EXPR, int_4);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a, LT_EXPR, int_4);
       ADD_UNSAT_CONSTRAINT (model, int_3, LT_EXPR, a);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, a, GT_EXPR, int_3);
       ADD_UNSAT_CONSTRAINT (model, int_4, GT_EXPR, a);
     }
     {
-      region_model model (&mgr);
+      region_model model (node_mgr);
       ADD_SAT_CONSTRAINT (model, int_4, GT_EXPR, a);
       ADD_UNSAT_CONSTRAINT (model, a, GT_EXPR, int_3);
     }
@@ -4097,8 +4126,8 @@ test_constraint_impl ()
 
   /* x == y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, y);
 
@@ -4110,8 +4139,9 @@ test_constraint_impl ()
 
   /* y <= z; x == y.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
     ASSERT_CONDITION_UNKNOWN (model, x, GE_EXPR, z);
 
@@ -4132,8 +4162,9 @@ test_constraint_impl ()
 
   /* y <= z; y == x.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, y);
     ASSERT_CONDITION_UNKNOWN (model, x, GE_EXPR, z);
 
@@ -4154,8 +4185,8 @@ test_constraint_impl ()
 
   /* x == 0, then x != 42.  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, x, NE_EXPR, int_42);
@@ -4182,9 +4213,10 @@ test_equality ()
   tree y = build_global_decl ("y", integer_type_node);
 
   {
-    region_model_manager mgr;
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    symbolic::node_manager node_mgr;
+
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
 
     constraint_manager *cm0 = model0.get_constraints ();
     constraint_manager *cm1 = model1.get_constraints ();
@@ -4202,7 +4234,7 @@ test_equality ()
     ASSERT_NE (model0.hash (), model1.hash ());
     ASSERT_NE (model0, model1);
 
-    region_model model2 (&mgr);
+    region_model model2 (node_mgr);
     constraint_manager *cm2 = model2.get_constraints ();
     /* Make the same change to cm2.  */
     ADD_SAT_CONSTRAINT (model2, x, EQ_EXPR, y);
@@ -4219,11 +4251,12 @@ test_equality ()
 static void
 test_many_constants ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   program_point point (program_point::origin (mgr));
   tree a = build_global_decl ("a", integer_type_node);
 
-  region_model model (&mgr);
+  region_model model (node_mgr);
   auto_vec<tree> constants;
   for (int i = 0; i < 20; i++)
     {
@@ -4234,7 +4267,7 @@ test_many_constants ()
       /* Merge, and check the result.  */
       region_model other (model);
 
-      region_model merged (&mgr);
+      region_model merged (node_mgr);
       ASSERT_TRUE (model.can_merge_with_p (other, point, &merged));
       model.canonicalize ();
       merged.canonicalize ();
@@ -4257,8 +4290,9 @@ test_purging (void)
 
   /*  "a != 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 1);
@@ -4274,8 +4308,9 @@ test_purging (void)
 
   /*  "a != 0" && "b != 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, b, NE_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 3);
@@ -4293,8 +4328,9 @@ test_purging (void)
 
   /*  "a != 0" && "b == 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, NE_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, b, EQ_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4312,8 +4348,9 @@ test_purging (void)
 
   /*  "a == 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
     ASSERT_EQ (model.get_constraints ()->m_constraints.length (), 0);
@@ -4329,8 +4366,9 @@ test_purging (void)
 
   /*  "a == 0" && "b != 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, b, NE_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4348,8 +4386,9 @@ test_purging (void)
 
   /*  "a == 0" && "b == 0".  */
   {
-    region_model_manager mgr;
-    region_model model (&mgr);
+    symbolic::node_manager node_mgr;
+    region_model model (node_mgr);
+
     ADD_SAT_CONSTRAINT (model, a, EQ_EXPR, int_0);
     ADD_SAT_CONSTRAINT (model, b, EQ_EXPR, int_0);
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
@@ -4683,7 +4722,7 @@ test_bounded_ranges ()
 static void
 test_bits (void)
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
 
   tree int_0 = integer_zero_node;
   tree int_0x80 = build_int_cst (integer_type_node, 0x80);
@@ -4695,7 +4734,7 @@ test_bits (void)
 
   /* "x & 0x80 == 0x80".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0x80, EQ_EXPR, int_0x80);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0x80);
@@ -4703,7 +4742,7 @@ test_bits (void)
 
   /* "x & 0x80 != 0x80".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0x80, NE_EXPR, int_0x80);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0x80);
@@ -4711,7 +4750,7 @@ test_bits (void)
 
   /* "x & 0x80 == 0".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x_bit_and_0x80, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0);
@@ -4720,7 +4759,7 @@ test_bits (void)
 
   /* "x & 0x80 != 0".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0x80, NE_EXPR, int_0);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0x80);
@@ -4730,7 +4769,7 @@ test_bits (void)
 
   /* "x & 0xff == 0x80".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0xff, EQ_EXPR, int_0x80);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0x80);
@@ -4739,7 +4778,7 @@ test_bits (void)
 
   /* "x & 0xff != 0x80".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0xff, NE_EXPR, int_0x80);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0x80);
@@ -4748,7 +4787,7 @@ test_bits (void)
 
   /* "x & 0xff == 0".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
 
     ADD_SAT_CONSTRAINT (model, x_bit_and_0xff, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0);
@@ -4758,7 +4797,7 @@ test_bits (void)
 
   /* "x & 0xff != 0".  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     ADD_SAT_CONSTRAINT (model, x_bit_and_0xff, NE_EXPR, int_0);
     ASSERT_CONDITION_FALSE (model, x, EQ_EXPR, int_0);
     ASSERT_CONDITION_UNKNOWN (model, x, EQ_EXPR, int_0x80);

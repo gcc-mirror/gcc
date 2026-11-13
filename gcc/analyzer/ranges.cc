@@ -232,8 +232,9 @@ namespace selftest {
 
 static void test_intersects (void)
 {
-  region_model_manager mgr;
-  region_model m (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model m (node_mgr);
 
   /* Test various concrete ranges.  */
   symbolic_byte_offset zero (0, mgr);

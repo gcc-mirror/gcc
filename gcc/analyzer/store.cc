@@ -1325,7 +1325,7 @@ static const svalue *
 get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
 {
   /* Reuse the get_rvalue logic from region_model.  */
-  region_model m (mgr);
+  region_model m (mgr->get_node_manager ());
   return m.get_rvalue (path_var (val, 0), nullptr);
 }
 
@@ -4403,7 +4403,8 @@ test_binding_key_overlap ()
 static void
 test_binding_map_ops ()
 {
-  region_model_manager region_mgr;
+  symbolic::node_manager node_mgr;
+  auto &region_mgr = node_mgr.get_region_model_manager ();
   store_manager store_mgr (&region_mgr);
 
   /* Assignment of empty.  */

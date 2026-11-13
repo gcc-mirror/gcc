@@ -73,6 +73,10 @@ public:
   std::unique_ptr<json::object> to_json () const;
 
   engine *get_engine () const { return m_engine; }
+
+  symbolic::node_manager &
+  get_node_manager () const;
+
   region_model_manager *get_model_manager () const;
 
   bool get_sm_idx_by_name (const char *name, unsigned *out) const;

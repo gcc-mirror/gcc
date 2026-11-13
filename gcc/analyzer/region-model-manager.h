@@ -31,11 +31,12 @@ namespace ana {
 class region_model_manager
 {
 public:
-  region_model_manager (logger *logger = nullptr);
+  region_model_manager (symbolic::node_manager &node_mgr,
+			logger *logger = nullptr);
   ~region_model_manager ();
 
-  unsigned get_num_nodes () const { return m_next_node_id; }
-  unsigned alloc_node_id () { return m_next_node_id++; }
+  unsigned
+  alloc_node_id () { return m_node_mgr.alloc_node_id (); }
 
   /* call_string consolidation.  */
   const call_string &get_empty_call_string () const
@@ -153,6 +154,12 @@ public:
 				       tree t,
 				       const dump_location_t &loc);
 
+  symbolic::node_manager &
+  get_node_manager () const
+  {
+    return m_node_mgr;
+  }
+
   store_manager *get_store_manager () { return &m_store_mgr; }
   bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
 
@@ -203,9 +210,8 @@ private:
   const svalue *maybe_fold_asm_output_svalue (tree type,
 					      const vec<const svalue *> &inputs);
 
+  symbolic::node_manager &m_node_mgr;
   logger *m_logger;
-
-  unsigned m_next_node_id;
 
   const call_string m_empty_call_string;
 

@@ -1913,7 +1913,7 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
     return get_svalue_for_constructor (init, mgr);
 
   /* Reuse the get_rvalue logic from region_model.  */
-  region_model m (mgr);
+  region_model m (mgr->get_node_manager ());
   return m.get_rvalue (path_var (init, 0), nullptr);
 }
 

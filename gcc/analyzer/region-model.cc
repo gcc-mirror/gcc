@@ -408,19 +408,24 @@ exception_node::add_to_reachable_regions (reachable_regions &regs) const
 
 /* Ctor for region_model: construct an "empty" model.  */
 
-region_model::region_model (region_model_manager *mgr)
-: m_mgr (mgr), m_store (), m_current_frame (nullptr),
+region_model::region_model (symbolic::node_manager &node_mgr)
+: m_node_mgr (node_mgr),
+  m_mgr (&node_mgr.get_region_model_manager ()),
+  m_store (),
+  m_current_frame (nullptr),
   m_thrown_exceptions_stack (),
   m_caught_exceptions_stack (),
   m_dynamic_extents ()
 {
-  m_constraints = new constraint_manager (mgr);
+  m_constraints = new constraint_manager (m_mgr);
 }
 
 /* region_model's copy ctor.  */
 
 region_model::region_model (const region_model &other)
-: m_mgr (other.m_mgr), m_store (other.m_store),
+: m_node_mgr (other.m_node_mgr),
+  m_mgr (other.m_mgr),
+  m_store (other.m_store),
   m_constraints (new constraint_manager (*other.m_constraints)),
   m_current_frame (other.m_current_frame),
   m_thrown_exceptions_stack (other.m_thrown_exceptions_stack),
@@ -7567,9 +7572,9 @@ rejected_ranges_constraint::to_json () const
 
 /* engine's ctor.  */
 
-engine::engine (region_model_manager &mgr,
+engine::engine (symbolic::node_manager &node_mgr,
 		const supergraph *sg)
-: m_mgr (mgr),
+: m_node_mgr (node_mgr),
   m_sg (sg)
 {
 }
@@ -7579,7 +7584,7 @@ engine::engine (region_model_manager &mgr,
 void
 engine::log_stats (logger *logger) const
 {
-  m_mgr.log_stats (logger, true);
+  m_node_mgr.log_stats (logger, true);
 }
 
 namespace ana {
@@ -7711,8 +7716,8 @@ assert_dump_eq (const location &loc,
 static void
 test_dump ()
 {
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
 
   ASSERT_DUMP_EQ (model, false,
 		  "stack depth: 0\n"
@@ -7802,8 +7807,9 @@ test_struct ()
   tree int_17 = build_int_cst (integer_type_node, 17);
   tree int_m3 = build_int_cst (integer_type_node, -3);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model model (node_mgr);
   /* Set fields in order y, then x.  */
   model.set_value (c_y, int_m3, nullptr);
   model.set_value (c_x, int_17, nullptr);
@@ -7856,8 +7862,8 @@ test_array_1 ()
 
   tree a = build_global_decl ("a", arr_type);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
   tree int_0 = integer_zero_node;
   tree a_0 = build4 (ARRAY_REF, char_type_node,
 		     a, int_0, NULL_TREE, NULL_TREE);
@@ -7870,12 +7876,12 @@ test_array_1 ()
 static void
 test_get_representative_tree ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
 
   /* STRING_CST.  */
   {
     tree string_cst = build_string (4, "foo");
-    region_model m (&mgr);
+    region_model m (node_mgr);
     const svalue *str_sval = m.get_rvalue (string_cst, nullptr);
     tree rep = m.get_representative_tree (str_sval);
     ASSERT_EQ (rep, string_cst);
@@ -7884,7 +7890,7 @@ test_get_representative_tree ()
   /* String literal.  */
   {
     tree string_cst_ptr = build_string_literal (4, "foo");
-    region_model m (&mgr);
+    region_model m (node_mgr);
     const svalue *str_sval = m.get_rvalue (string_cst_ptr, nullptr);
     tree rep = m.get_representative_tree (str_sval);
     ASSERT_DUMP_TREE_EQ (rep, "&\"foo\"[0]");
@@ -7895,13 +7901,13 @@ test_get_representative_tree ()
     tree tlen = size_int (10);
     tree arr_type = build_array_type (char_type_node, build_index_type (tlen));
     tree a = build_global_decl ("a", arr_type);
-    placeholder_svalue test_sval (mgr.alloc_node_id (),
+    placeholder_svalue test_sval (node_mgr.alloc_node_id (),
 				  char_type_node, "test value");
 
     /* Value of a[3].  */
     {
       test_region_model_context ctxt;
-      region_model model (&mgr);
+      region_model model (node_mgr);
       tree int_3 = build_int_cst (integer_type_node, 3);
       tree a_3 = build4 (ARRAY_REF, char_type_node,
 			 a, int_3, NULL_TREE, NULL_TREE);
@@ -7914,7 +7920,7 @@ test_get_representative_tree ()
     /* Value of a[0].  */
     {
       test_region_model_context ctxt;
-      region_model model (&mgr);
+      region_model model (node_mgr);
       tree idx = integer_zero_node;
       tree a_0 = build4 (ARRAY_REF, char_type_node,
 			 a, idx, NULL_TREE, NULL_TREE);
@@ -7939,9 +7945,9 @@ test_get_representative_tree ()
 
     /* Value of initial field.  */
     {
-      region_model m (&mgr);
+      region_model m (node_mgr);
       const region *c_x_reg = m.get_lvalue (c_x, &ctxt);
-      placeholder_svalue test_sval_x (mgr.alloc_node_id (),
+      placeholder_svalue test_sval_x (node_mgr.alloc_node_id (),
 				      integer_type_node, "test x val");
       m.set_value (c_x_reg, &test_sval_x, &ctxt);
       tree rep = m.get_representative_tree (&test_sval_x);
@@ -7950,9 +7956,9 @@ test_get_representative_tree ()
 
     /* Value of non-initial field.  */
     {
-      region_model m (&mgr);
+      region_model m (node_mgr);
       const region *c_y_reg = m.get_lvalue (c_y, &ctxt);
-      placeholder_svalue test_sval_y (mgr.alloc_node_id (),
+      placeholder_svalue test_sval_y (node_mgr.alloc_node_id (),
 				      integer_type_node, "test y val");
       m.set_value (c_y_reg, &test_sval_y, &ctxt);
       tree rep = m.get_representative_tree (&test_sval_y);
@@ -7971,8 +7977,8 @@ test_unique_constants ()
   tree int_42 = build_int_cst (integer_type_node, 42);
 
   test_region_model_context ctxt;
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
   ASSERT_EQ (model.get_rvalue (int_0, &ctxt), model.get_rvalue (int_0, &ctxt));
   ASSERT_EQ (model.get_rvalue (int_42, &ctxt),
 	     model.get_rvalue (int_42, &ctxt));
@@ -7999,7 +8005,8 @@ test_unique_constants ()
 static void
 test_unique_unknowns ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   const svalue *unknown_int
     = mgr.get_or_create_unknown_svalue (integer_type_node);
   /* Repeated calls with the same type should get the same "unknown"
@@ -8024,12 +8031,13 @@ test_unique_unknowns ()
 static void
 test_initial_svalue_folding ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
 
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
   const svalue *x_init = model.get_rvalue (x, &ctxt);
   const svalue *y_init = model.get_rvalue (y, &ctxt);
   ASSERT_NE (x_init, y_init);
@@ -8043,12 +8051,14 @@ test_initial_svalue_folding ()
 static void
 test_unaryop_svalue_folding ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
 
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
   const svalue *x_init = model.get_rvalue (x, &ctxt);
   const svalue *y_init = model.get_rvalue (y, &ctxt);
   const region *x_reg = model.get_lvalue (x, &ctxt);
@@ -8083,7 +8093,8 @@ test_binop_svalue_folding ()
 {
 #define NUM_CSTS 10
   tree cst_int[NUM_CSTS];
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   const svalue *cst_sval[NUM_CSTS];
   for (int i = 0; i < NUM_CSTS; i++)
     {
@@ -8131,7 +8142,7 @@ test_binop_svalue_folding ()
   tree x = build_global_decl ("x", integer_type_node);
 
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
   const svalue *x_init = model.get_rvalue (x, &ctxt);
 
   /* PLUS_EXPR folding.  */
@@ -8236,8 +8247,9 @@ test_sub_svalue_folding ()
   tree c_x = build3 (COMPONENT_REF, TREE_TYPE (ct.m_x_field),
 		     c, ct.m_x_field, NULL_TREE);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model model (node_mgr);
   test_region_model_context ctxt;
   const region *c_x_reg = model.get_lvalue (c_x, &ctxt);
 
@@ -8270,7 +8282,8 @@ get_bit (region_model_manager *mgr,
 static void
 test_bits_within_svalue_folding ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
 
   const svalue *zero = mgr.get_or_create_int_cst (boolean_type_node, 0);
   const svalue *one = mgr.get_or_create_int_cst (boolean_type_node, 1);
@@ -8307,7 +8320,8 @@ test_bits_within_svalue_folding ()
 static void
 test_descendent_of_p ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   const region *stack = mgr.get_stack_region ();
   const region *heap = mgr.get_heap_region ();
   const region *code = mgr.get_code_region ();
@@ -8334,7 +8348,8 @@ static void
 test_bit_range_regions ()
 {
   tree x = build_global_decl ("x", integer_type_node);
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   const region *x_reg = mgr.get_region_for_global (x);
   const region *byte0
     = mgr.get_bit_range (x_reg, char_type_node, bit_range (0, 8));
@@ -8355,8 +8370,8 @@ test_assignment ()
   tree y = build_global_decl ("y", integer_type_node);
 
   /* "x == 0", then use of y, then "y = 0;".  */
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
   ADD_SAT_CONSTRAINT (model, x, EQ_EXPR, int_0);
   ASSERT_CONDITION_UNKNOWN (model, y, EQ_EXPR, int_0);
   model.set_value (model.get_lvalue (y, nullptr),
@@ -8387,8 +8402,8 @@ test_compound_assignment ()
   tree int_17 = build_int_cst (integer_type_node, 17);
   tree int_m3 = build_int_cst (integer_type_node, -3);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
   model.set_value (c_x, int_17, nullptr);
   model.set_value (c_y, int_m3, nullptr);
 
@@ -8447,9 +8462,10 @@ test_stack_frames ()
   /* "q" global.  */
   tree q = build_global_decl ("q", ptr_type_node);
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
 
   /* Push stack frame for "parent_fn".  */
   const region *parent_frame_reg
@@ -8553,9 +8569,10 @@ test_get_representative_path_var ()
 		       integer_type_node);
   DECL_CONTEXT (n) = fndecl;
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
 
   /* Push 5 stack frames for "factorial", each with a param  */
   auto_vec<const region *> parm_regs;
@@ -8608,9 +8625,9 @@ test_equality_1 ()
   tree int_17 = build_int_cst (integer_type_node, 17);
 
 /* Verify that "empty" region_model instances are equal to each other.  */
-  region_model_manager mgr;
-  region_model model0 (&mgr);
-  region_model model1 (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model0 (node_mgr);
+  region_model model1 (node_mgr);
   ASSERT_EQ (model0, model1);
 
   /* Verify that setting state in model1 makes the models non-equal.  */
@@ -8647,8 +8664,8 @@ test_canonicalization_2 ()
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
 
-  region_model_manager mgr;
-  region_model model0 (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model0 (node_mgr);
   model0.set_value (model0.get_lvalue (x, nullptr),
 		    model0.get_rvalue (int_42, nullptr),
 		    nullptr);
@@ -8656,7 +8673,7 @@ test_canonicalization_2 ()
 		    model0.get_rvalue (int_113, nullptr),
 		    nullptr);
 
-  region_model model1 (&mgr);
+  region_model model1 (node_mgr);
   model1.set_value (model1.get_lvalue (y, nullptr),
 		    model1.get_rvalue (int_113, nullptr),
 		    nullptr);
@@ -8681,12 +8698,12 @@ test_canonicalization_3 ()
   tree x = build_global_decl ("x", integer_type_node);
   tree y = build_global_decl ("y", integer_type_node);
 
-  region_model_manager mgr;
-  region_model model0 (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model0 (node_mgr);
   model0.add_constraint (x, GT_EXPR, int_3, nullptr);
   model0.add_constraint (y, GT_EXPR, int_42, nullptr);
 
-  region_model model1 (&mgr);
+  region_model model1 (node_mgr);
   model1.add_constraint (y, GT_EXPR, int_42, nullptr);
   model1.add_constraint (x, GT_EXPR, int_3, nullptr);
 
@@ -8704,8 +8721,8 @@ test_canonicalization_4 ()
   auto_vec<tree> csts;
   append_interesting_constants (&csts);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
 
   for (tree cst : csts)
     model.get_rvalue (cst, nullptr);
@@ -8726,10 +8743,11 @@ assert_region_models_merge (tree expr, tree val_a, tree val_b,
 			     const svalue **out_merged_svalue)
 {
   region_model_manager *mgr = out_merged_model->get_manager ();
+  auto &node_mgr = mgr->get_node_manager ();
   program_point point (program_point::origin (*mgr));
   test_region_model_context ctxt;
-  region_model model0 (mgr);
-  region_model model1 (mgr);
+  region_model model0 (node_mgr);
+  region_model model1 (node_mgr);
   if (val_a)
     model0.set_value (model0.get_lvalue (expr, &ctxt),
 		      model0.get_rvalue (val_a, &ctxt),
@@ -8776,13 +8794,14 @@ test_state_merging ()
 		       ptr_type_node);
   DECL_CONTEXT (q) = test_fndecl;
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   program_point point (program_point::origin (mgr));
 
   {
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
-    region_model merged (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
+    region_model merged (node_mgr);
     /* Verify empty models can be merged.  */
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
@@ -8793,9 +8812,9 @@ test_state_merging ()
   /* TODO: verify that the merged model doesn't have a value for
      the global  */
   {
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
-    region_model merged (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
+    region_model merged (node_mgr);
     test_region_model_context ctxt;
     model0.add_constraint (x, EQ_EXPR, int_42, &ctxt);
     model1.add_constraint (x, EQ_EXPR, int_113, &ctxt);
@@ -8807,8 +8826,8 @@ test_state_merging ()
   /* Verify handling of a PARM_DECL.  */
   {
     test_region_model_context ctxt;
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
     ASSERT_EQ (model0.get_stack_depth (), 0);
     model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
 		       nullptr, nullptr, &ctxt);
@@ -8823,7 +8842,7 @@ test_state_merging ()
     ASSERT_EQ (model0, model1);
 
     /* They should be mergeable, and the result should be the same.  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
     /* In particular, "a" should have the placeholder value.  */
@@ -8833,8 +8852,8 @@ test_state_merging ()
   /* Verify handling of a global.  */
   {
     test_region_model_context ctxt;
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
 
     placeholder_svalue test_sval (mgr.alloc_node_id (),
 				  integer_type_node, "test sval");
@@ -8843,7 +8862,7 @@ test_state_merging ()
     ASSERT_EQ (model0, model1);
 
     /* They should be mergeable, and the result should be the same.  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
     /* In particular, "x" should have the placeholder value.  */
@@ -8854,7 +8873,7 @@ test_state_merging ()
 
   /* Two equal constant values.  */
   {
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     const svalue *merged_x_sval;
     assert_region_models_merge (x, int_42, int_42, &merged, &merged_x_sval);
 
@@ -8866,7 +8885,7 @@ test_state_merging ()
 
   /* Two non-equal constant values.  */
   {
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     const svalue *merged_x_sval;
     assert_region_models_merge (x, int_42, int_113, &merged, &merged_x_sval);
 
@@ -8876,7 +8895,7 @@ test_state_merging ()
 
   /* Initial and constant.  */
   {
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     const svalue *merged_x_sval;
     assert_region_models_merge (x, NULL_TREE, int_113, &merged, &merged_x_sval);
 
@@ -8886,7 +8905,7 @@ test_state_merging ()
 
   /* Constant and initial.  */
   {
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     const svalue *merged_x_sval;
     assert_region_models_merge (x, int_42, NULL_TREE, &merged, &merged_x_sval);
 
@@ -8905,7 +8924,7 @@ test_state_merging ()
 
   /* Pointers: non-NULL and non-NULL: ptr to a local.  */
   {
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
     model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
 		       nullptr, nullptr, nullptr);
     model0.set_value (model0.get_lvalue (p, nullptr),
@@ -8915,14 +8934,14 @@ test_state_merging ()
     ASSERT_EQ (model0, model1);
 
     /* They should be mergeable, and the result should be the same.  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
   }
 
   /* Pointers: non-NULL and non-NULL: ptr to a global.  */
   {
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     /* p == &y in both input models.  */
     const svalue *merged_p_sval;
     assert_region_models_merge (p, addr_of_y, addr_of_y, &merged,
@@ -8939,13 +8958,13 @@ test_state_merging ()
   /* Pointers: non-NULL ptrs to different globals should not merge;
      see e.g. gcc.dg/analyzer/torture/uninit-pr108725.c  */
   {
-    region_model merged_model (&mgr);
+    region_model merged_model (node_mgr);
     program_point point (program_point::origin (mgr));
     test_region_model_context ctxt;
     /* x == &y vs x == &z in the input models; these are actually casts
        of the ptrs to "int".  */
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
     model0.set_value (model0.get_lvalue (x, &ctxt),
 		      model0.get_rvalue (addr_of_y, &ctxt),
 		      &ctxt);
@@ -8959,7 +8978,7 @@ test_state_merging ()
   /* Pointers: non-NULL and non-NULL: ptr to a heap region.  */
   {
     test_region_model_context ctxt;
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
     tree size = build_int_cst (size_type_node, 1024);
     const svalue *size_sval = mgr.get_or_create_constant_svalue (size);
     const region *new_reg
@@ -8972,7 +8991,7 @@ test_state_merging ()
 
     ASSERT_EQ (model0, model1);
 
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
 
     /* The merged model ought to be identical.  */
@@ -8983,7 +9002,7 @@ test_state_merging ()
      it after self-merger.  */
   {
     test_region_model_context ctxt;
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
     placeholder_svalue placeholder_sval (mgr.alloc_node_id (),
 					 integer_type_node, "test");
     model0.set_value (model0.get_lvalue (x, &ctxt),
@@ -8992,7 +9011,7 @@ test_state_merging ()
     region_model model1 (model0);
 
     /* They should be mergeable, and the result should be the same.  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
 
@@ -9002,23 +9021,23 @@ test_state_merging ()
   }
 
   {
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
     test_region_model_context ctxt;
     model0.add_constraint (x, EQ_EXPR, int_42, &ctxt);
     model1.add_constraint (x, NE_EXPR, int_42, &ctxt);
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
   }
 
   {
-    region_model model0 (&mgr);
-    region_model model1 (&mgr);
+    region_model model0 (node_mgr);
+    region_model model1 (node_mgr);
     test_region_model_context ctxt;
     model0.add_constraint (x, EQ_EXPR, int_42, &ctxt);
     model1.add_constraint (x, NE_EXPR, int_42, &ctxt);
     model1.add_constraint (x, EQ_EXPR, int_113, &ctxt);
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
   }
 
@@ -9034,7 +9053,7 @@ test_state_merging ()
   /* Views.  */
   {
     test_region_model_context ctxt;
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
 
     const region *x_reg = model0.get_lvalue (x, &ctxt);
     const region *x_as_ptr = mgr.get_cast_region (x_reg, ptr_type_node);
@@ -9044,14 +9063,14 @@ test_state_merging ()
     ASSERT_EQ (model1, model0);
 
     /* They should be mergeable, and the result should be the same.  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
   }
 
   /* Verify that we can merge a model in which a local in an older stack
      frame points to a local in a more recent stack frame.  */
   {
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
     model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
 		       nullptr, nullptr, nullptr);
     const region *q_in_first_frame = model0.get_lvalue (q, nullptr);
@@ -9077,7 +9096,7 @@ test_state_merging ()
 
     /* They should be mergeable, and the result should be the same
        (after canonicalization, at least).  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     merged.canonicalize ();
     ASSERT_EQ (model0, merged);
@@ -9085,7 +9104,7 @@ test_state_merging ()
 
   /* Verify that we can merge a model in which a local points to a global.  */
   {
-    region_model model0 (&mgr);
+    region_model model0 (node_mgr);
     model0.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
 		       nullptr, nullptr, nullptr);
     model0.set_value (model0.get_lvalue (q, nullptr),
@@ -9096,7 +9115,7 @@ test_state_merging ()
 
     /* They should be mergeable, and the result should be the same
        (after canonicalization, at least).  */
-    region_model merged (&mgr);
+    region_model merged (node_mgr);
     ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
     ASSERT_EQ (model0, merged);
   }
@@ -9115,17 +9134,18 @@ test_constraint_merging ()
   tree z = build_global_decl ("z", integer_type_node);
   tree n = build_global_decl ("n", integer_type_node);
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   test_region_model_context ctxt;
 
   /* model0: 0 <= (x == y) < n.  */
-  region_model model0 (&mgr);
+  region_model model0 (node_mgr);
   model0.add_constraint (x, EQ_EXPR, y, &ctxt);
   model0.add_constraint (x, GE_EXPR, int_0, nullptr);
   model0.add_constraint (x, LT_EXPR, n, nullptr);
 
   /* model1: z != 5 && (0 <= x < n).  */
-  region_model model1 (&mgr);
+  region_model model1 (node_mgr);
   model1.add_constraint (z, NE_EXPR, int_5, nullptr);
   model1.add_constraint (x, GE_EXPR, int_0, nullptr);
   model1.add_constraint (x, LT_EXPR, n, nullptr);
@@ -9133,7 +9153,7 @@ test_constraint_merging ()
   /* They should be mergeable; the merged constraints should
      be: (0 <= x < n).  */
   program_point point (program_point::origin (mgr));
-  region_model merged (&mgr);
+  region_model merged (node_mgr);
   ASSERT_TRUE (model0.can_merge_with_p (model1, point, &merged));
 
   ASSERT_EQ (merged.eval_condition (x, GE_EXPR, int_0, &ctxt),
@@ -9153,7 +9173,8 @@ test_constraint_merging ()
 static void
 test_widening_constraints ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   const supernode *snode = nullptr;
   tree int_0 = integer_zero_node;
   tree int_m1 = build_int_cst (integer_type_node, -1);
@@ -9268,7 +9289,8 @@ test_widening_constraints ()
 static void
 test_iteration_1 ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   program_point point (program_point::origin (mgr));
 
   tree int_0 = integer_zero_node;
@@ -9279,15 +9301,15 @@ test_iteration_1 ()
   test_region_model_context ctxt;
 
   /* model0: i: 0.  */
-  region_model model0 (&mgr);
+  region_model model0 (node_mgr);
   model0.set_value (i, int_0, &ctxt);
 
   /* model1: i: 1.  */
-  region_model model1 (&mgr);
+  region_model model1 (node_mgr);
   model1.set_value (i, int_1, &ctxt);
 
   /* Should merge "i" to a widened value.  */
-  region_model model2 (&mgr);
+  region_model model2 (node_mgr);
   ASSERT_TRUE (model1.can_merge_with_p (model0, point, &model2));
   const svalue *merged_i = model2.get_rvalue (i, &ctxt);
   ASSERT_EQ (merged_i->get_kind (), SK_WIDENING);
@@ -9302,7 +9324,7 @@ test_iteration_1 ()
 	     tristate (tristate::TS_TRUE));
 
   /* Try merging with the initial state.  */
-  region_model model3 (&mgr);
+  region_model model3 (node_mgr);
   ASSERT_TRUE (model2.can_merge_with_p (model0, point, &model3));
   /* Merging the merged value with the initial value should be idempotent,
      so that the analysis converges.  */
@@ -9323,7 +9345,7 @@ test_iteration_1 ()
   ASSERT_EQ (plus_one->get_kind (), SK_BINOP);
 
   /* Try merging with the "i: 1" state.  */
-  region_model model5 (&mgr);
+  region_model model5 (node_mgr);
   ASSERT_TRUE (model4.can_merge_with_p (model1, point, &model5));
   ASSERT_EQ (model5.get_rvalue (i, &ctxt), plus_one);
   ASSERT_EQ (model5, model4);
@@ -9331,7 +9353,7 @@ test_iteration_1 ()
   /* "i_11 = PHI();" merge with state at phi above.
      For i, we should have a merger of WIDENING with WIDENING + 1,
      and this should be WIDENING again.  */
-  region_model model6 (&mgr);
+  region_model model6 (node_mgr);
   ASSERT_TRUE (model5.can_merge_with_p (model2, point, &model6));
   const svalue *merged_widening = model6.get_rvalue (i, &ctxt);
   ASSERT_EQ (merged_widening->get_kind (), SK_WIDENING);
@@ -9343,8 +9365,9 @@ test_iteration_1 ()
 static void
 test_malloc_constraints ()
 {
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model model (node_mgr);
   tree p = build_global_decl ("p", ptr_type_node);
   tree char_star = build_pointer_type (char_type_node);
   tree q = build_global_decl ("q", char_star);
@@ -9382,8 +9405,9 @@ test_var ()
   tree int_17 = build_int_cst (integer_type_node, 17);
   tree int_m3 = build_int_cst (integer_type_node, -3);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model model (node_mgr);
 
   const region *i_reg = model.get_lvalue (i, nullptr);
   ASSERT_EQ (i_reg->get_kind (), RK_DECL);
@@ -9439,8 +9463,9 @@ test_array_2 ()
   tree int_42 = build_int_cst (integer_type_node, 42);
   tree int_m3 = build_int_cst (integer_type_node, -3);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  region_model model (node_mgr);
   /* "arr[0] = 17;".  */
   model.set_value (arr_0, int_17, nullptr);
   /* "arr[1] = -3;".  */
@@ -9515,8 +9540,8 @@ test_mem_ref ()
   tree offset_0 = build_int_cst (ptype, 0);
   tree star_p = build2 (MEM_REF, integer_type_node, p, offset_0);
 
-  region_model_manager mgr;
-  region_model model (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model model (node_mgr);
 
   /* "x = 17;".  */
   model.set_value (x, int_17, nullptr);
@@ -9566,8 +9591,8 @@ test_POINTER_PLUS_EXPR_then_MEM_REF ()
   tree offset_0 = build_int_cst (ptype, 0);
   tree mem_ref = build2 (MEM_REF, integer_type_node,
 			 pointer_plus_expr, offset_0);
-  region_model_manager mgr;
-  region_model m (&mgr);
+  symbolic::node_manager node_mgr;
+  region_model m (node_mgr);
 
   tree int_42 = build_int_cst (integer_type_node, 42);
   m.set_value (mem_ref, int_42, nullptr);
@@ -9585,14 +9610,15 @@ test_malloc ()
   tree n_times_4 = build2 (MULT_EXPR, size_type_node,
 			   n, build_int_cst (size_type_node, 4));
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
 
   /* "p = malloc (n * 4);".  */
   const svalue *size_sval = model.get_rvalue (n_times_4, &ctxt);
   const region *reg
     = model.get_or_create_region_for_heap_alloc (size_sval, &ctxt);
+  auto &mgr = node_mgr.get_region_model_manager ();
   const svalue *ptr = mgr.get_ptr_svalue (int_star, reg);
   model.set_value (model.get_lvalue (p, &ctxt), ptr, &ctxt);
   ASSERT_EQ (model.get_capacity (reg), size_sval);
@@ -9616,9 +9642,10 @@ test_alloca ()
   tree n_times_4 = build2 (MULT_EXPR, size_type_node,
 			   n, build_int_cst (size_type_node, 4));
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
 
   /* Push stack frame.  */
   const region *frame_reg
@@ -9643,13 +9670,15 @@ test_alloca ()
 static void
 test_involves_p ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+
   tree int_star = build_pointer_type (integer_type_node);
   tree p = build_global_decl ("p", int_star);
   tree q = build_global_decl ("q", int_star);
 
   test_region_model_context ctxt;
-  region_model model (&mgr);
+  region_model model (node_mgr);
   const svalue *p_init = model.get_rvalue (p, &ctxt);
   const svalue *q_init = model.get_rvalue (q, &ctxt);
 

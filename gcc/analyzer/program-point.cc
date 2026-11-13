@@ -246,7 +246,8 @@ namespace selftest {
 static void
 test_program_point_equality ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
 
   const supernode *snode = nullptr;
 

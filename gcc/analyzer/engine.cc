@@ -3976,7 +3976,7 @@ feasibility_problem::to_json () const
 
 feasibility_state::feasibility_state (region_model_manager *manager,
 				      const supergraph &sg)
-: m_model (manager),
+: m_model (manager->get_node_manager ()),
   m_snodes_visited (sg.m_nodes.length ())
 {
   bitmap_clear (m_snodes_visited);
@@ -4975,7 +4975,8 @@ impl_run_checkers (logger *logger)
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     node->get_untransformed_body ();
 
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
 
   /* Create the supergraph.  */
   supergraph sg (mgr, logger);
@@ -4986,7 +4987,7 @@ impl_run_checkers (logger *logger)
 
   maybe_dump_supergraph (sg, "fixup-locations");
 
-  engine eng (mgr, &sg);
+  engine eng (node_mgr, &sg);
 
   state_purge_map *purge_map = nullptr;
   if (flag_analyzer_state_purge)

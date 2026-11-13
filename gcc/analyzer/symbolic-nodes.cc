@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/common.h"
 
 #include "analyzer/symbolic-nodes.h"
+#include "analyzer/analyzer-logging.h"
+#include "analyzer/region-model.h"
+#include "analyzer/region-model-manager.h"
 
 #if ENABLE_ANALYZER
 
@@ -32,6 +35,27 @@ int
 symbolic::node::cmp_ids (const symbolic::node *n1, const symbolic::node *n2)
 {
   return (long)n1->get_id () - (long)n2->get_id ();
+}
+
+// class node_manager
+
+symbolic::node_manager::node_manager ()
+: m_next_node_id (0),
+  m_rmm (std::make_unique<region_model_manager> (*this))
+{
+}
+
+symbolic::node_manager::~node_manager () = default;
+
+/* Dump the various managers to LOGGER.
+   If SHOW_OBJS is true, also dump the objects themselves.  */
+
+void
+symbolic::node_manager::log_stats (logger *logger, bool show_objs) const
+{
+  LOG_SCOPE (logger);
+
+  m_rmm->log_stats (logger, show_objs);
 }
 
 } // namespace ana

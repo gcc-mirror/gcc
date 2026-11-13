@@ -538,7 +538,7 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
     for (auto iter : m_snodes_needing_decl)
       worklist.safe_push (iter);
 
-    region_model model (mgr);
+    region_model model (mgr->get_node_manager ());
     model.push_frame (get_function (), nullptr, nullptr, nullptr);
 
     /* Process worklist by walking backwards until we reach a stmt

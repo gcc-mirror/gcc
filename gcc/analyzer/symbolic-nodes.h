@@ -26,6 +26,41 @@ along with GCC; see the file COPYING3.  If not see
 namespace ana {
 namespace symbolic {
 
+/* A central hub for managing symbolic::node instances
+   - Provides a central authority for handing out IDs for new nodes.
+   - Owns the various managers of symbolic::node subclasses and provides
+   a central place for them to find each other.
+
+   We use pointers to the managers to minimize compile-time dependencies.
+
+   This is effectively a singleton during analysis (but each unit test
+   gets its own instance).  */
+
+class node_manager
+{
+public:
+  node_manager ();
+  ~node_manager ();
+
+  node_manager (const node_manager &) = delete;
+
+  unsigned get_num_nodes () const { return m_next_node_id; }
+  unsigned alloc_node_id () { return m_next_node_id++; }
+
+  region_model_manager &
+  get_region_model_manager () const { return *m_rmm; }
+
+  region_model_manager &
+  get_svalue_manager () const { return *m_rmm; }
+
+  void log_stats (logger *logger, bool show_objs) const;
+
+private:
+  unsigned m_next_node_id;
+
+  std::unique_ptr<region_model_manager> m_rmm;
+};
+
 /* Abstract base class for the various tree-like purely-functional
    data structures we use during symbolic execution.
 

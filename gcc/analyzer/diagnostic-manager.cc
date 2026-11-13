@@ -1918,7 +1918,7 @@ diagnostic_manager::annotate_exploded_path (const path_builder &pb,
 		     idx,
 		     eedge->m_src->m_index,
 		     eedge->m_dest->m_index);
-      region_model src_model (pb.get_ext_state ().get_model_manager ());
+      region_model src_model (pb.get_ext_state ().get_node_manager ());
       if (idx > 0)
 	src_model = dst_models[idx - 1];
       src_models.push_back (src_model);

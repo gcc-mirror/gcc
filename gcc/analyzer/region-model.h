@@ -295,7 +295,7 @@ class region_model
  public:
   typedef region_to_value_map dynamic_extents_t;
 
-  region_model (region_model_manager *mgr);
+  region_model (symbolic::node_manager &node_mgr);
   region_model (const region_model &other);
   ~region_model ();
   region_model &operator= (const region_model &other);
@@ -491,10 +491,11 @@ class region_model
 			    region_model_context *ctxt);
   void unset_dynamic_extents (const region *reg);
 
+  symbolic::node_manager &get_node_manager () const { return m_node_mgr; }
   region_model_manager *get_manager () const { return m_mgr; }
   bounded_ranges_manager *get_range_manager () const
   {
-    return m_mgr->get_range_manager ();
+    return get_manager ()->get_range_manager ();
   }
 
   void unbind_region_and_descendents (const region *reg,
@@ -724,6 +725,9 @@ private:
 				    region_model_context *ctxt);
 
   /* Storing this here to avoid passing it around everywhere.  */
+  symbolic::node_manager &m_node_mgr;
+
+  // TODO: eliminate this copy (kept here to minimize churn)
   region_model_manager *const m_mgr;
 
   store m_store;
@@ -1326,19 +1330,31 @@ private:
 class engine
 {
 public:
-  engine (region_model_manager &mgr,
+  engine (symbolic::node_manager &node_mgr,
 	  const supergraph *sg = nullptr);
   const supergraph *get_supergraph () { return m_sg; }
-  region_model_manager *get_model_manager () { return &m_mgr; }
+
+  symbolic::node_manager &
+  get_node_manager ()
+  {
+    return m_node_mgr;
+  }
+
+  region_model_manager *
+  get_model_manager ()
+  {
+    return &m_node_mgr.get_region_model_manager ();
+  }
+
   known_function_manager *get_known_function_manager ()
   {
-    return m_mgr.get_known_function_manager ();
+    return get_model_manager ()->get_known_function_manager ();
   }
 
   void log_stats (logger *logger) const;
 
 private:
-  region_model_manager &m_mgr;
+  symbolic::node_manager &m_node_mgr;
   const supergraph *m_sg;
 };
 

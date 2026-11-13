@@ -57,6 +57,7 @@ class superedge;
 namespace symbolic
 {
   class node;
+  class node_manager;
 }
 
 class svalue;
@@ -120,6 +121,7 @@ class checker_event;
 class checker_path;
 class extrinsic_state;
 class sm_state_map;
+class call_string;
 class program_point;
 class program_state;
 class exploded_graph;

@@ -42,9 +42,10 @@ namespace ana {
 
 /* region_model_manager's ctor.  */
 
-region_model_manager::region_model_manager (logger *logger)
-: m_logger (logger),
-  m_next_node_id (0),
+region_model_manager::region_model_manager (symbolic::node_manager &node_mgr,
+					    logger *logger)
+: m_node_mgr (node_mgr),
+  m_logger (logger),
   m_empty_call_string (),
   m_root_region (alloc_node_id ()),
   m_stack_region (alloc_node_id (), &m_root_region),
@@ -2158,7 +2159,6 @@ region_model_manager::log_stats (logger *logger, bool show_objs) const
   LOG_SCOPE (logger);
   logger->log ("call string consolidation");
   m_empty_call_string.recursive_log (logger);
-  logger->log ("next node id: %i", m_next_node_id);
   logger->log ("svalue consolidation");
   log_uniq_map (logger, show_objs, "constant_svalue", m_constants_map);
   log_uniq_map (logger, show_objs, "unknown_svalue", m_unknowns_map);

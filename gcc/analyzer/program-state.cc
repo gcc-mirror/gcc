@@ -118,6 +118,13 @@ extrinsic_state::get_model_manager () const
     return nullptr; /* for selftests.  */
 }
 
+symbolic::node_manager &
+extrinsic_state::get_node_manager () const
+{
+  gcc_assert (m_engine);
+  return m_engine->get_node_manager ();
+}
+
 /* Try to find a state machine named NAME.
    If found, return true and write its index to *OUT.
    Otherwise return false.  */
@@ -932,8 +939,8 @@ program_state::program_state (const extrinsic_state &ext_state)
   m_valid (true)
 {
   engine *eng = ext_state.get_engine ();
-  region_model_manager *mgr = eng->get_model_manager ();
-  m_region_model = new region_model (mgr);
+  auto &node_mgr = eng->get_node_manager ();
+  m_region_model = new region_model (node_mgr);
   const int num_states = ext_state.get_num_checkers ();
   for (int i = 0; i < num_states; i++)
     {
@@ -1700,15 +1707,15 @@ test_sm_state_map ()
   std::vector<std::unique_ptr<state_machine>> checkers;
   const state_machine &borrowed_sm = *sm.get ();
   checkers.push_back (std::move (sm));
-  region_model_manager mgr;
-  engine eng (mgr);
+  symbolic::node_manager node_mgr;
+  engine eng (node_mgr);
   extrinsic_state ext_state (std::move (checkers), &eng);
 
   /* Test setting states on svalue_id instances directly.  */
   {
     const state_machine::state test_state_42 ("test state 42", 42);
     const state_machine::state_t TEST_STATE_42 = &test_state_42;
-    region_model model (&mgr);
+    region_model model (node_mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
     const svalue *z_sval = model.get_rvalue (z, nullptr);
@@ -1736,7 +1743,7 @@ test_sm_state_map ()
 
   /* Test setting states via equivalence classes.  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
     const svalue *z_sval = model.get_rvalue (z, nullptr);
@@ -1759,7 +1766,7 @@ test_sm_state_map ()
 
   /* Test equality and hashing.  */
   {
-    region_model model (&mgr);
+    region_model model (node_mgr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
     const svalue *z_sval = model.get_rvalue (z, nullptr);
 
@@ -1793,7 +1800,7 @@ test_sm_state_map ()
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
 
-    region_model model (&mgr);
+    region_model model (node_mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
     const svalue *z_sval = model.get_rvalue (z, nullptr);
@@ -1826,8 +1833,9 @@ test_program_state_1 ()
   const state_machine::state_t UNCHECKED_STATE
     = sm->get_state_by_name ("unchecked");
 
-  region_model_manager mgr;
-  engine eng (mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  engine eng (node_mgr);
   extrinsic_state ext_state (std::move (sm), &eng);
   program_state s (ext_state);
   region_model *model = s.m_region_model;
@@ -1856,8 +1864,8 @@ test_program_state_2 ()
   tree string_cst_ptr = build_string_literal (4, "foo");
 
   std::vector<std::unique_ptr<state_machine>> checkers;
-  region_model_manager mgr;
-  engine eng (mgr);
+  symbolic::node_manager node_mgr;
+  engine eng (node_mgr);
   extrinsic_state ext_state (std::move (checkers), &eng);
 
   program_state s (ext_state);
@@ -1877,8 +1885,9 @@ test_program_state_merging ()
      malloc sm-state, pointing to a region on the heap.  */
   tree p = build_global_decl ("p", ptr_type_node);
 
-  region_model_manager mgr;
-  engine eng (mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  engine eng (node_mgr);
   program_point point (program_point::origin (mgr));
   extrinsic_state ext_state (make_malloc_state_machine (nullptr),
 			     &eng);
@@ -1944,8 +1953,9 @@ test_program_state_merging ()
 static void
 test_program_state_merging_2 ()
 {
-  region_model_manager mgr;
-  engine eng (mgr);
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
+  engine eng (node_mgr);
   program_point point (program_point::origin (mgr));
   extrinsic_state ext_state (make_signal_state_machine (nullptr), &eng);
 

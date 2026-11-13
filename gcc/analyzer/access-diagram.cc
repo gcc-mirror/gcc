@@ -2704,7 +2704,8 @@ assert_eq_typeless_integer (const location &loc,
 static void
 test_bit_size_expr_to_bytes ()
 {
-  region_model_manager mgr;
+  symbolic::node_manager node_mgr;
+  auto &mgr = node_mgr.get_region_model_manager ();
 
   /* 40 bits: should be 5 bytes.  */
   {
