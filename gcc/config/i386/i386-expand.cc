@@ -29636,7 +29636,7 @@ ix86_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
   insn_code icode;
   rtx_code prev_code;
-  struct expand_operand ops[5];
+  struct expand_operand ops[6];
   int dfv;
 
   /* Exit early for non integer modes to avoid O(n^2) part of expand_operands. */
@@ -29665,26 +29665,31 @@ ix86_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   dfv = ix86_get_flags_cc ((rtx_code) cmp_code);
 
   prev_code = GET_CODE (prev);
-  /* Fixup FP compare code here.  */
-  if (GET_MODE (XEXP (prev, 0)) == CCFPmode)
-    prev_code = ix86_fp_compare_code_to_integer (prev_code);
+  /* Keep the CC mode of the previous compare, except fixup FP compare
+     code to the integer one here.  */
+  rtx flags = XEXP (prev, 0);
+  if (GET_MODE (flags) == CCFPmode)
+    {
+      prev_code = ix86_fp_compare_code_to_integer (prev_code);
+      flags = gen_rtx_REG (CCmode, FLAGS_REG);
+    }
 
   if (bit_code != AND)
     prev_code = reverse_condition (prev_code);
   else
     dfv = (int)(dfv ^ 1);
 
-  prev = gen_rtx_fmt_ee (prev_code, VOIDmode, XEXP (prev, 0),
-			 const0_rtx);
+  prev = gen_rtx_fmt_ee (prev_code, VOIDmode, flags, const0_rtx);
 
   create_fixed_operand (&ops[0], target);
   create_fixed_operand (&ops[1], prev);
   create_fixed_operand (&ops[2], op0);
   create_fixed_operand (&ops[3], op1);
   create_fixed_operand (&ops[4], GEN_INT (dfv));
+  create_fixed_operand (&ops[5], flags);
 
   push_to_sequence (*gen_seq);
-  if (!maybe_expand_insn (icode, 5, ops))
+  if (!maybe_expand_insn (icode, 6, ops))
     {
       end_sequence ();
       return NULL_RTX;
