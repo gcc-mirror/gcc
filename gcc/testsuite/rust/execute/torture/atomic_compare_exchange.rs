@@ -69,11 +69,19 @@ extern "rust-intrinsic" {
     pub fn atomic_cxchg_rel<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchg_acqrel<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchg_relaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchg_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchg_failacq<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchg_acq_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchg_acqrel_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchgweak<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchgweak_acq<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchgweak_rel<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchgweak_acqrel<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
     pub fn atomic_cxchgweak_relaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchgweak_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchgweak_failacq<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchgweak_acq_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
+    pub fn atomic_cxchgweak_acqrel_failrelaxed<T: Copy>(dst: *mut T, old: T, new: T) -> (T, bool);
 }
 
 fn main() -> u32 {
@@ -85,12 +93,12 @@ fn main() -> u32 {
             return 1;
         }
 
-        let result = atomic_cxchg(&mut src, 3, 11);
+        let result = atomic_cxchg_failacq(&mut src, 3, 11);
         if result.0 != 9 || result.1 || src != 9 {
             return 1;
         }
 
-        let result = atomic_cxchgweak(&mut src, 3, 11);
+        let result = atomic_cxchg_failrelaxed(&mut src, 3, 11);
         if result.0 != 9 || result.1 || src != 9 {
             return 1;
         }
@@ -117,7 +125,17 @@ fn main() -> u32 {
             return 1;
         }
 
-        let result = atomic_cxchg_acq(&mut src, 3, 11);
+        let result = atomic_cxchg_acq_failrelaxed(&mut src, 3, 11);
+        if result.0 != 9 || result.1 || src != 9 {
+            return 1;
+        }
+
+        let result = atomic_cxchgweak_failacq(&mut src, 3, 11);
+        if result.0 != 9 || result.1 || src != 9 {
+            return 1;
+        }
+
+        let result = atomic_cxchgweak_failrelaxed(&mut src, 3, 11);
         if result.0 != 9 || result.1 || src != 9 {
             return 1;
         }
@@ -128,7 +146,7 @@ fn main() -> u32 {
         }
 
         loop {
-            let result = atomic_cxchgweak_acq(&mut src, 9, -7);
+            let result = atomic_cxchgweak_acq_failrelaxed(&mut src, 9, -7);
             if result.0 != 9 {
                 return 1;
             }
@@ -179,7 +197,7 @@ fn main() -> u32 {
             return 1;
         }
 
-        let result = atomic_cxchg_acqrel(&mut src, 3, 11);
+        let result = atomic_cxchg_acqrel_failrelaxed(&mut src, 3, 11);
         if result.0 != 9 || result.1 || src != 9 {
             return 1;
         }
@@ -190,7 +208,7 @@ fn main() -> u32 {
         }
 
         loop {
-            let result = atomic_cxchgweak_acqrel(&mut src, 9, -7);
+            let result = atomic_cxchgweak_acqrel_failrelaxed(&mut src, 9, -7);
             if result.0 != 9 {
                 return 1;
             }
