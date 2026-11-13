@@ -51,6 +51,7 @@ run_analyzer_selftests ()
   analyzer_access_diagram_cc_tests ();
   analyzer_constraint_manager_cc_tests ();
   analyzer_function_set_cc_tests ();
+  analyzer_integer_cc_tests ();
   analyzer_program_point_cc_tests ();
   analyzer_program_state_cc_tests ();
   analyzer_ranges_cc_tests ();
