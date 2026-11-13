@@ -129,6 +129,14 @@ extern void transfer_array_write (st_parameter_dt *, gfc_array_char *, int,
 			    gfc_charlen_type);
 export_proto(transfer_array_write);
 
+extern void transfer_array_span (st_parameter_dt *, gfc_array_char *, int,
+				 gfc_charlen_type);
+export_proto(transfer_array_span);
+
+extern void transfer_array_span_write (st_parameter_dt *, gfc_array_char *,
+				       int, gfc_charlen_type);
+export_proto(transfer_array_span_write);
+
 /* User defined derived type input/output.  */
 extern void
 transfer_derived (st_parameter_dt *dtp, void *dtio_source, void *dtio_proc);
@@ -2826,7 +2834,7 @@ transfer_array_inner (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   index_type count[GFC_MAX_DIMENSIONS];
   index_type extent[GFC_MAX_DIMENSIONS];
   index_type stride[GFC_MAX_DIMENSIONS];
-  index_type stride0, rank, size, n;
+  index_type stride0, rank, size, span, n;
   size_t tsize;
   char *data;
   bt iotype;
@@ -2840,11 +2848,12 @@ transfer_array_inner (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
   size = iotype == BT_CHARACTER ? charlen : GFC_DESCRIPTOR_SIZE (desc);
 
   rank = GFC_DESCRIPTOR_RANK (desc);
+  span = desc->span > 0 ? desc->span : GFC_DESCRIPTOR_SIZE (desc);
 
   for (n = 0; n < rank; n++)
     {
       count[n] = 0;
-      stride[n] = GFC_DESCRIPTOR_STRIDE_BYTES(desc,n);
+      stride[n] = GFC_DESCRIPTOR_STRIDE (desc, n) * span;
       extent[n] = GFC_DESCRIPTOR_EXTENT(desc,n);
 
       /* If the extent of even one dimension is zero, then the entire
@@ -2964,6 +2973,24 @@ transfer_array (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 void
 transfer_array_write (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 		      gfc_charlen_type charlen)
+{
+  transfer_array (dtp, desc, kind, charlen);
+}
+
+/* Entry points for arrays whose span may differ from the element size.
+   They behave like transfer_array; the separate symbols keep programs
+   that depend on the span from running with an older library.  */
+
+void
+transfer_array_span (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
+		     gfc_charlen_type charlen)
+{
+  transfer_array (dtp, desc, kind, charlen);
+}
+
+void
+transfer_array_span_write (st_parameter_dt *dtp, gfc_array_char *desc,
+			   int kind, gfc_charlen_type charlen)
 {
   transfer_array (dtp, desc, kind, charlen);
 }
