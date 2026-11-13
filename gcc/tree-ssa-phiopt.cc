@@ -56,6 +56,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-predict.h"
 #include "alias.h"
 #include "tree-ssa-threadedge.h"
+#include "gimple-walk.h"
 
 /* Return the singleton PHI in the SEQ of PHIs for edges E0 and E1. */
 
@@ -707,6 +708,60 @@ phiopt_early_allow (gimple_seq &seq, gimple_match_op &op)
     }
 }
 
+/* Remove unused statements in SEQ. That are used in OP.
+   This is needed for the way resimplify/match and simplify
+   works as it will place some unneeded statements in the sequence
+   which can get in the way of handling phiopt_early_allow.  */
+
+static void
+remove_unused_stmts (gimple_seq *seq, const gimple_match_op &op)
+{
+  if (*seq == nullptr)
+    return;
+
+  walk_stmt_info wi = {};
+
+  /* Since the sequence of statements are not part of
+     a basic block yet, have to manually go through the operands
+     to mark the uses.  */
+  auto_bitmap uses;
+  wi.info = (bitmap)uses;
+  auto fn = [](tree *tp, int *, void *data) -> tree
+	    {
+	      walk_stmt_info *wi = (walk_stmt_info*)data;
+	      if (wi->is_lhs)
+		return NULL_TREE;
+	      bitmap uses = (bitmap)wi->info;
+	      tree use = *tp;
+	      if (TREE_CODE (use) == SSA_NAME)
+		bitmap_set_bit (uses, SSA_NAME_VERSION (use));
+	      return NULL_TREE;
+	    };
+  for (unsigned i = 0; i < op.num_ops; i++)
+    {
+      tree use = op.ops[i];
+      walk_tree (&use, fn, &wi, nullptr);
+    }
+  gimple_stmt_iterator gsi = gsi_last (*seq);
+  while (!gsi_end_p (gsi))
+    {
+      gimple *s = *gsi;
+      tree lhs = gimple_get_lhs (s);
+      if (bitmap_bit_p (uses, SSA_NAME_VERSION (lhs)))
+	{
+	  walk_gimple_op (s, fn, &wi);
+	  gsi_prev (&gsi);
+	  continue;
+	}
+      gsi_remove (&gsi, true);
+      release_defs (s);
+      ggc_free (s);
+      /* gsi_remove goes to the next stmt so start over.  */
+      if (gsi_end_p (gsi))
+	gsi = gsi_last (*seq);
+    }
+}
+
 /* gimple_simplify_phiopt is like gimple_simplify but designed for PHIOPT.
    Return NULL if nothing can be simplified or the resulting simplified value
    with parts pushed if EARLY_P was true. Also rejects non allowed tree code
@@ -748,6 +803,7 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 
   if (op.resimplify (&seq1, follow_all_ssa_edges))
     {
+      remove_unused_stmts (&seq1, op);
       bool allowed = !early_p || phiopt_early_allow (seq1, op);
       tree result = maybe_push_res_to_seq (&op, &seq1);
       if (dump_file && (dump_flags & TDF_FOLDING))
@@ -802,6 +858,7 @@ gimple_simplify_phiopt (bool early_p, tree type, gimple *comp_stmt,
 
   if (op1.resimplify (&seq1, follow_all_ssa_edges))
     {
+      remove_unused_stmts (&seq1, op1);
       bool allowed = !early_p || phiopt_early_allow (seq1, op1);
       tree result = maybe_push_res_to_seq (&op1, &seq1);
       if (dump_file && (dump_flags & TDF_FOLDING))
