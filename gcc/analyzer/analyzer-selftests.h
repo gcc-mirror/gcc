@@ -37,6 +37,7 @@ extern void analyzer_access_diagram_cc_tests ();
 extern void analyzer_constraint_manager_cc_tests ();
 extern void analyzer_function_set_cc_tests ();
 extern void analyzer_integer_cc_tests ();
+extern void analyzer_integer_with_unit_cc_tests ();
 extern void analyzer_program_point_cc_tests ();
 extern void analyzer_program_state_cc_tests ();
 extern void analyzer_ranges_cc_tests ();
