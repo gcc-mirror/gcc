@@ -29787,6 +29787,87 @@ ix86_libm_function_max_error (unsigned cfn, machine_mode mode,
 #undef TARGET_LIBM_FUNCTION_MAX_ERROR
 #define TARGET_LIBM_FUNCTION_MAX_ERROR ix86_libm_function_max_error
 
+/* Implement TARGET_UNSPEC_MAY_TRAP_P.  */
+
+static int
+ix86_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  bool may_trap_mode_p = false;
+
+  if (flag_trapping_math)
+    {
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, x, NONCONST)
+	{
+	  machine_mode mode = GET_MODE (*iter);
+	  if ((GET_MODE_CLASS (mode) == MODE_FLOAT
+	       || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	      && GET_MODE_INNER (mode) != BFmode)
+	    {
+	      may_trap_mode_p = true;
+	      break;
+	    }
+	}
+    }
+
+  if (may_trap_mode_p)
+    switch (XINT (x, 1))
+      {
+      /* Data movement and shuffles: SDM "SIMD Floating-Point Exceptions:
+	 None".  */
+      case UNSPEC_BLENDV:
+      case UNSPEC_INSERTPS:
+      case UNSPEC_VPERMIL:
+      case UNSPEC_VPERMIL2:
+      case UNSPEC_VPERMIL2F128:
+      case UNSPEC_VPERMT2:
+      case UNSPEC_VPERMVAR:
+      case UNSPEC_VTERNLOG:
+      case UNSPEC_CAST:
+      /* Masked, non-temporal, compress/expand and gather/scatter moves.  */
+      case UNSPEC_MASKLOAD:
+      case UNSPEC_MASKMOV:
+      case UNSPEC_MOVNT:
+      case UNSPEC_MOVCC_MASK:
+      case UNSPEC_COMPRESS:
+      case UNSPEC_COMPRESS_STORE:
+      case UNSPEC_EXPAND:
+      case UNSPEC_GATHER:
+      case UNSPEC_SCATTER:
+      /* Tests and classification.  */
+      case UNSPEC_MOVMSK:
+      case UNSPEC_PTEST:
+      case UNSPEC_VTESTP:
+      case UNSPEC_FPCLASS:
+      case UNSPEC_FXAM:
+      /* Approximations.  */
+      case UNSPEC_RCP:
+      case UNSPEC_RSQRT:
+      case UNSPEC_RCP14:
+      case UNSPEC_RSQRT14:
+      /* Dot products and tile converts that do not consult or update
+	 MXCSR.  */
+      case UNSPEC_VDPBF16PS:
+      case UNSPEC_VDPPHPS:
+      case UNSPEC_TCVTROWD2PS:
+      case UNSPEC_TCVTROWPS2FP16H:
+      case UNSPEC_TCVTROWPS2FP16L:
+	/* These never raise floating-point exceptions themselves.  Leave
+	   the switch so that default_unspec_may_trap_p still analyzes
+	   their operands.  */
+	break;
+      default:
+	/* Any other UNSPEC operating on non-BF16 floating-point data is
+	   assumed to update MXCSR.  */
+	return 1;
+      }
+
+  return default_unspec_may_trap_p (x, flags);
+}
+
+#undef TARGET_UNSPEC_MAY_TRAP_P
+#define TARGET_UNSPEC_MAY_TRAP_P ix86_unspec_may_trap_p
+
 #if TARGET_MACHO
 static bool
 ix86_cannot_copy_insn_p (rtx_insn *insn)
