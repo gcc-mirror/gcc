@@ -1,3 +1,122 @@
+2026-11-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127915
+	* gcc.dg/pr127915.c: New.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/contracts/cpp26/non-const1.C: Use __contract_assert.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128656
+	* gfortran.dg/allocate_alloc_opt_16.f90: New test.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/contracts/cpp26/non-const1.C: Require c++14.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128651
+	* gcc.dg/torture/pr128651.c: New testcase.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119497
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF-post.C
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF-pre.C
+	* g++.dg/contracts/cpp26/basic.contract.eval.p17-SMF2.C
+	* g++.dg/contracts/cpp26/basic.contract.eval.p7.3.C
+	* g++.dg/contracts/cpp26/callerside-checks/ctor.C: Add diagnostic.
+	* g++.dg/contracts/cpp26/non-const1.C: New test.
+
+2026-11-12  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/128226
+	* g++.dg/ipa/pr128226.C: New test.
+
+2026-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* gdc.dg/target/i386/targetinfo_CET.d: Check for
+	the exact value 3 and for GNU_CET.
+	* gdc.dg/target/i386/targetinfo_CET_check.d: New test.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/cpp2a/concepts-err5.C: New test.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/128532
+	PR c++/127516
+	* g++.dg/ext/desig12.C: New test.
+	* g++.dg/ext/desig13.C: New test.
+
+2026-11-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128640
+	* gcc.target/i386/pr128640-1.c: New test.
+	* gcc.target/i386/pr128640-2.c: New test.
+	* gcc.target/i386/pr128640-3.c: New test.
+
+2026-11-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/128665
+	* gcc.target/aarch64/sve/vect-revectorize-ptest-1.c: New test.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128347
+	* g++.dg/vect/pr128347.cc: New testcase.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128628
+	* gcc.dg/torture/pr128628.c: New testcase.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128632
+	* gcc.dg/torture/pr128632.c: New testcase.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128615
+	* gcc.dg/torture/pr128615.c: New testcase.
+
+2026-11-12  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* gcc.target/aarch64/neon/vluti2.c: New test.
+	* gcc.target/aarch64/neon/vluti4.c: New test.
+	* gcc.target/aarch64/neon/vtbl.c: New test.
+	* gcc.target/aarch64/neon/vtbx.c: New test.
+
+2026-11-12  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.dg/vect/vect-early-break_86.c: Ignore on s390x.
+	* gcc.dg/vect/vect-early-break_87.c: Ignore on s390x.
+
+2026-11-12  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/la64/bstrpick_alsl_paired.c: Pass the
+	index as an unsigned int parameter to force zero-extension
+	index the address computation.
+
+2026-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bstrins-6-32s.c: New test.
+
+2026-11-12  Kishan Parmar  <kishan@linux.ibm.com>
+
+	* gcc.target/powerpc/pr121076.c: New test.
+
+2026-11-12  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR target/125061
+	* gcc.dg/Wtrampolines-3.c: Skip powerpc64 big endian.
+
 2026-11-11  Roger Sayle  <roger@nextmovesoftware.com>
 	    Hongtao Liu  <hongtao.liu@intel.com>
 

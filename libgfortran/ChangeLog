@@ -1,3 +1,10 @@
+2026-11-12  Hans-Peter Nilsson  <hp@axis.com>
+
+	PR libfortran/128618
+	* acinclude.m4 (LIBGFOR_CHECK_ATOMIC_FETCH_ADD): Check that
+	__atomic_fetch_add works on a 64-bit type, not just int.
+	* configure: Regenerate.
+
 2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

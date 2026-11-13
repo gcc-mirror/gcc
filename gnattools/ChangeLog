@@ -1,3 +1,8 @@
+2026-11-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure: Rebuild.
+	* Makefile.in (ADAC): Use configured value.
+
 2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* configure: Regenerate.

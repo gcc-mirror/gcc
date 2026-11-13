@@ -1,3 +1,465 @@
+2026-11-12  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127915
+	* range-op.cc (minus_op1_op2_relation_effect): Handle more
+	unsigned range calculations using relations.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arm/aarch-bti-insert.cc (call_needs_bti_j): Take an
+	rtx_call_insn *.
+	* sched-deps.cc (call_may_noreturn_p): Likewise.
+	* ira-lives.cc (find_call_crossed_cheap_reg): Likewise.
+	* dse.cc (get_call_args): Likewise.
+	* cse.cc (invalidate_for_call): Likewise.
+	* var-tracking.cc (prepare_call_arguments): Likewise.
+	(reemit_marker_as_note): Return an rtx_note *.
+	* early-remat.cc (early_remat::restrict_remat_for_call): Take an
+	rtx_call_insn *.
+	(remat_block_info, early_remat::process_block): Record the last
+	call as an rtx_call_insn *.
+	* config/i386/i386-expand.cc (ix86_expand_strlensi_unroll_1,
+	ix86_expand_sse_compare_and_jump): Keep the emitted jump in an
+	rtx_insn *.
+	* config/i386/i386.md
+	(@x86_shift<mode>_adj_2, @x86_shift<mode>_adj_3): Likewise.
+	* config/pa/pa.cc (pa_combine_instructions): Keep the emitted
+	jump in an rtx_jump_insn *.
+	* valtrack.cc (dead_debug_insert_temp): Keep the debug insn in
+	an rtx_insn *.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* caller-save.cc (setup_save_areas, save_call_clobbered_regs,
+	insert_one_insn): Use dyn_cast instead of a class predicate.
+	* calls.cc (fixup_tail_calls): Likewise.
+	* cfgbuild.cc (make_edges, find_bb_boundaries): Likewise.
+	* cfgcleanup.cc (old_insns_match_p): Likewise.
+	* cfgrtl.cc (purge_dead_edges, need_fake_edge_p): Likewise.
+	* combine.cc (try_combine, record_dead_and_set_regs): Likewise.
+	* config/aarch64/aarch64.cc (aarch64_components_for_bb): Likewise.
+	* config/arm/aarch-bti-insert.cc (rest_of_insert_bti): Likewise.
+	* config/avr/avr.cc (_reg_unused_after): Likewise.
+	* config/c6x/c6x.cc (returning_call_p, split_delayed_branch): Likewise.
+	* config/i386/i386-features.cc
+	(rest_of_insert_endbr_and_patchable_area): Likewise.
+	* config/i386/i386.cc (ix86_avx_u128_mode_needed,
+	ix86_avx_u128_mode_after, ix86_min_insn_size, ix86_components_for_bb):
+	Likewise.
+	* config/loongarch/loongarch.cc (loongarch_components_for_bb): Likewise.
+	* config/pa/pa.cc (legitimize_pic_address): Likewise.
+	* config/riscv/riscv-sr.cc (riscv_remove_unneeded_save_restore_calls):
+	Likewise.
+	* config/riscv/riscv.cc (riscv_components_for_bb): Likewise.
+	* config/rs6000/rs6000-logue.cc (compute_save_world_info,
+	rs6000_ra_ever_killed): Likewise.
+	* config/sh/sh.cc (find_barrier, gen_block_redirect): Likewise.
+	* config/sparc/sparc.cc (sparc_asm_function_epilogue): Likewise.
+	* cse.cc (canonicalize_insn, cse_insn, count_reg_usage): Likewise.
+	* cselib.cc (cselib_process_insn): Likewise.
+	* dce.cc (deletable_insn_p, mark_insn): Use dyn_cast instead of CALL_P
+	and drop a redundant as_a.
+	* df-problems.cc (can_move_insns_across): Use dyn_cast instead of a
+	class predicate.
+	* dse.cc (scan_insn): Likewise.
+	* dwarf2cfi.cc (create_trace_edges): Likewise.
+	* dwarf2out.cc (dwarf2out_var_location): Likewise.
+	* early-remat.cc (early_remat::process_block): Likewise.
+	* emit-rtl.cc (unshare_all_rtl_again, reset_insn_used_flags,
+	verify_insn_sharing, unshare_all_rtl_in_chain, try_split): Likewise.
+	* except.cc (set_nothrow_function_flags): Likewise.
+	* ext-dce.cc (ext_dce_process_bb): Likewise.
+	* final.cc (output_asm_label, leaf_function_p,
+	collect_fn_hard_reg_usage): Likewise.
+	* function.cc (instantiate_virtual_regs,
+	thread_prologue_and_epilogue_insns): Likewise.
+	* gcse.cc (compute_hash_table_work): Likewise.
+	* ira-lives.cc (process_bb_node_lives): Likewise.
+	* ira.cc (validate_equiv_mem, memref_used_between_p,
+	update_equiv_regs_prescan): Likewise.
+	* loop-invariant.cc (find_exits, find_invariants_bb): Likewise.
+	* loop-iv.cc (simplify_using_initial_values): Likewise.
+	* lra-constraints.cc (inherit_in_ebb): Likewise.
+	* lra-lives.cc (process_bb_lives): Likewise.
+	* lra-remat.cc (set_bb_regs, calculate_gen_cands, do_remat): Likewise.
+	* lra-spills.cc (spill_pseudos): Likewise.
+	* lra.cc (lra_set_insn_recog_data, lra_update_insn_regno_info):
+	Likewise.
+	* postreload-gcse.cc (record_opr_changes): Likewise.
+	* postreload.cc (reload_combine, reload_cse_move2add_invalidate):
+	Likewise.
+	* print-rtl.cc (rtx_writer::print_rtx_operand_code_u): Likewise.
+	* reg-stack.cc (subst_stack_regs): Likewise.
+	* regcprop.cc (copyprop_hardreg_forward_1): Likewise.
+	* regrename.cc (build_def_use): Likewise.
+	* reload.cc (find_equiv_reg): Likewise.
+	* reload1.cc (reload, reload_as_needed, delete_output_reload): Likewise.
+	* reorg.cc (delete_prior_computation): Likewise.
+	* resource.cc (mark_target_live_regs): Likewise.
+	* rtlanal.cc (reg_set_p, find_all_hard_reg_sets, note_stores,
+	rtx_properties::try_to_add_insn, find_reg_fusage, find_regno_fusage,
+	replace_label): Likewise.
+	* sched-deps.cc (sched_analyze_insn, deps_analyze_insn): Likewise.
+	* sel-sched.cc (fur_orig_expr_found, fur_orig_expr_not_found): Likewise.
+	* store-motion.cc (store_killed_in_insn): Likewise.
+	* var-tracking.cc (vt_initialize): Likewise.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (NOTE_INSN_BASIC_BLOCK_P, DEBUG_BIND_INSN_P,
+	NOTE_DURING_CALL_P, set_note_during_call_p): Use functions on an
+	rtx_insn *.
+	* var-tracking.cc (emit_note_insn_var_location): Use
+	set_note_during_call_p to store the flag.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* expr.h (try_casesi, try_tablejump): Take rtx_code_label * for
+	the labels.  The fallback label of try_casesi is an rtx_insn *.
+	* expr.cc (try_casesi, do_tablejump, try_tablejump): Likewise.
+	* explow.h (emit_stack_clash_protection_probe_loop_end): Take an
+	rtx_code_label * for the end label.
+	* explow.cc (emit_stack_clash_protection_probe_loop_end): Likewise.
+	* function.cc (record_insns): Take an rtx_insn * for the end.
+	* varasm.cc (mark_constants_in_pattern): Take an rtx_insn *.
+	* emit-rtl.cc (reset_insn_used_flags, verify_insn_sharing,
+	verify_rtx_sharing): Take an rtx_insn * for the insn.
+	* config/s390/s390.cc (s390_emit_ccraw_jump): Take an
+	rtx_code_label *.
+	* config/arc/arc.cc (conditionalize_nonjump): Take an rtx_insn *.
+	* config/mips/mips.cc (vr4130_true_reg_dependence_p): Likewise.
+	(vr4130_true_reg_dependence_p_1): Read that argument as an
+	rtx_insn *.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (CROSSING_JUMP_P, set_crossing_jump): Use functions on an
+	rtx_insn *.
+	* bb-reorder.cc (update_crossing_jump_flags): Use
+	set_crossing_jump to store the flag.
+	* cfgrtl.cc (fixup_partition_crossing): Likewise.
+	* emit-rtl.cc (try_split, emit_copy_of_insn_after): Likewise.
+	* haifa-sched.cc (sched_create_recovery_edges): Likewise.
+	* jump.cc (redirect_jump_2): Likewise.
+	* recog.cc (peep2_attempt): Likewise.
+	* reorg.cc (fill_slots_from_thread, relax_delay_slots): Likewise.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (INSN_FROM_TARGET_P, set_insn_from_target): Use functions
+	on an rtx_insn *.
+	* reorg.cc (delete_from_delay_slot, optimize_skip,
+	steal_delay_list_from_target, try_merge_delay_insns,
+	redundant_insn, fill_slots_from_thread, relax_delay_slots,
+	dbr_schedule): Use set_insn_from_target to store the flag.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgexpand.cc (expand_gimple_tailcall): Use rtx_code_label * for
+	copied labels.
+	* config/arm/arm.cc (arm_output_function_epilogue,
+	thumb1_final_prescan_insn, thumb_call_via_reg, arm_file_end): Use
+	rtx_insn * or rtx_code_label * for call-via labels.
+	* config/arm/arm.h (machine_function, CC_STATUS_INIT): Use
+	rtx_code_label * for call_via, rtx_insn * for thumb1_cc_insn, and
+	nullptr to clear it.
+	* config/arm/thumb2.md (doloop_end): Use rtx_insn * for the
+	decrement.
+	* config/bfin/bfin.cc (hwloop_optimize, hwloop_fail): Use
+	rtx_code_label * for end_label and rtx_jump_insn * for the
+	failure jump.
+	* config/c6x/c6x.cc (hwloop_fail): Use rtx_jump_insn * for the
+	failure jump.
+	* config/i386/x86-tune-sched-bd.cc (sched_insn_info_s): Use
+	rtx_insn * for the window insn.
+	* config/m68k/m68k.cc (_sched_ib): Use rtx_insn * for the
+	reservation insn.
+	* config/mcore/mcore.cc (pool_node): Use rtx_insn * for the pool
+	label.
+	* config/pa/pa.cc (deferred_plabel): Use rtx_code_label * for the
+	internal label.
+	* config/riscv/riscv.cc (riscv_expand_prologue): Use rtx_insn *
+	for the prologue insn.
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_load_toc_table): Use
+	rtx_code_label * for the local label.
+	* hw-doloop.h (hwloop_info_d): Use rtx_code_label * for end_label.
+	* reorg.cc (redundant_insn): Use rtx_insn * for target_main.
+	* stmt.cc (emit_case_dispatch_table): Use rtx_code_label * for
+	default_label.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arc/arc.cc (arc_print_operand, arc600_corereg_hazard,
+	arc_adjust_insn_length, arc_predicate_delay_insns): Use
+	rtx_sequence accessors instead of XVECEXP.
+	* config/cris/cris.cc (cris_postdbr_cmpelim): Likewise.
+	* config/mips/mips.cc (mips_classify_branch_p6600, mips_avoid_hazard,
+	mips_breakable_sequence_p, mips_reorg_process_insns): Likewise.
+	* config/pa/pa.cc (pa_output_function_epilogue,
+	pa_adjust_insn_length, pa_print_operand): Likewise.
+	* config/pru/pru.cc (pru_insert_loop_label_last): Likewise.
+	* config/sparc/sparc.cc (emit_cbcond_nop,
+	sparc_asm_function_epilogue): Likewise.
+	* config/visium/visium.cc (empty_delay_slot, gr5_hazard_avoidance):
+	Likewise.
+	* emit-rtl.cc (reset_all_used_flags, verify_rtl_sharing, next_insn,
+	link_insn_into_chain, remove_insn): Likewise.
+	* final.cc (dbr_sequence_length, shorten_branches, leaf_function_p,
+	rest_of_clean_state): Likewise.
+	* reorg.cc (stop_search_p, optimize_skip,
+	redirect_with_delay_slots_safe_p, try_merge_delay_insns,
+	redundant_insn, fill_simple_delay_slots, fill_slots_from_thread,
+	relax_delay_slots, make_return_insns, dbr_schedule): Likewise.
+	* resource.cc (next_insn_no_annul, mark_referenced_resources,
+	mark_set_resources, return_insn_p, mark_target_live_regs):
+	Likewise.
+	* rtlanal.cc (reg_set_p, verify_jump_tables): Likewise.
+	* varasm.cc (mark_constants): Likewise.
+
+2026-11-12  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arc/arc.cc (arc_output_pic_addr_const): Use
+	label_ref_label instead of XEXP.
+	* config/arm/arm.cc (arm_final_prescan_insn): Likewise.
+	* config/avr/avr.cc (avr_output_addr_vec): Likewise.
+	* config/cris/cris.cc (cris_asm_output_case_end): Likewise.
+	* config/m68k/m68k.cc (print_operand_address): Likewise.
+	* config/mcore/mcore.cc (conditionalize_block): Likewise.
+	* config/pa/pa.cc (pa_output_addr_vec, pa_output_addr_diff_vec):
+	Likewise.
+	* config/pdp11/pdp11.cc (output_addr_const_pdp11): Likewise.
+	* config/rs6000/rs6000.cc (output_toc): Likewise.
+	* config/sparc/sparc.cc (sparc_output_addr_vec,
+	sparc_output_addr_diff_vec): Likewise.
+	* final.cc (final_scan_insn_1): Likewise.
+
+2026-11-12  Shiva S  <shivasubramanian@outlook.com>
+
+	* mem-stats.h (mem_alloc_description::register_overhead): Remove
+	the unused private overload.
+
+2026-11-12  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* pretty-print.cc (eat_esc_sequence): Make delim const.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128651
+	* tree-ssa-sccvn.cc (vn_tables_s::inserted_exprs): New member.
+	(vn_nary_build_or_lookup_1): Look up and record inserted
+	expressions in valid_info->inserted_exprs to re-use the SSA name
+	across iterations.  Insert the expression into valid_info->nary
+	with vn_nary_op_insert_stmt so it is unwound on iteration.
+	(allocate_vn_table): Initialize inserted_exprs to NULL.
+	(free_vn_table): Free inserted_exprs.
+	(do_rpo_vn_1): Allocate inserted_exprs when iterating.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128651
+	* tree-ssa-sccvn.cc (match_op_generic_constructor_p): New helper.
+	(vn_nary_length_from_match_op): Likewise.
+	(init_vn_nary_op_from_match_op): Likewise.
+	(vn_lookup_simplify_result): Use vn_nary_length_from_match_op and
+	init_vn_nary_op_from_match_op to initialize the lookup nary op.
+
+2026-11-12  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/128226
+	* cgraph.cc (cgraph_add_edge_to_call_site_hash): Only skip callback
+	edges with carrying edges.
+
+2026-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* config/i386/i386-d.cc (ix86_d_target_versions):
+	Define GNU_CET only when CF_BRANCH or CF_RETURN is set.
+	(ix86_d_handle_target_cf_protection): Return only
+	the CF_BRANCH and CF_RETURN bits.
+
+2026-11-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree.h (wi::ints_for<generic_wide_int<extended_tree<N>>,
+	INL_CONST_PRECISION>::zero): Return integer_zero_node.
+	(wi::ints_for<generic_wide_int<extended_tree<N>>,
+	CONST_PRECISION>::zero): Likewise.
+
+2026-11-12  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (<su>mulsi3_highpart): Use the _imm insn only
+	for constants that mean the same as SImode and as DImode, and force
+	other operands into a register.
+	(<su>mulsidi3): Likewise.
+	(<su>mulsi3_highpart_imm): Only accept such constants.
+	(<su>mulsidi3_imm): Likewise.
+	(muldi3): Load a negative low-part constant into the scratch
+	register before the umulsidi3.
+
+2026-11-12  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (zero_extendsidi2): New.
+	(extendsidi2): New.
+
+2026-11-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128640
+	* config/i386/i386.cc (classify_argument): In the wrapper,
+	assert that more than 2 classes means SSE followed by all SSEUP.
+	(function_arg_advance_64): Use classify_argument instead of an
+	explicit vector mode check to pass unnamed 256-bit and 512-bit
+	vector arguments on stack.
+	(function_arg_64): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+
+2026-11-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/128665
+	* config/aarch64/aarch64-simd.md (vec_cbranch_any,
+	vec_cbranch_all): Correct mask.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128347
+	* tree-vect-slp.cc (vect_schedule_slp_node): Move extern
+	vector def fixup.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128628
+	* tree-ssa-sccvn.cc (visit_nary_op): Do not CSE negated
+	division or multiplication for complex float.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128632
+	* tree-ssa-loop-ivopts.cc (may_be_nonaddressable_p): Recurse
+	for REALPART_EXPR and IMAGPART_EXPR base.
+
+2026-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128615
+	* tree-ssa-loop-manip.cc (determine_exit_conditions): Avoid
+	wrapping to zero when computing the header execution count
+	when determining an early out.
+
+2026-11-12  Abhishek Kaushik  <abhishek.kaushik@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc
+	(neon_function_groups): Handle DEF_NEON_FUNCTION_GS.
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_neon_tbl_s8):
+	New.
+	(TYPES_neon_tbl_other): Likewise.
+	(TYPES_neon_luti2_b): Likewise.
+	(TYPES_neon_luti2_h): Likewise.
+	(DEF_SVE_TYPES_ARRAY): Add arrays for the new type sets.
+	* config/aarch64/aarch64-neon-builtins-base.cc: Include
+	emit-rtl.h.
+	(gimple_table_lookup): New class.
+	(gimple_qtbl): Likewise.
+	(gimple_luti): Likewise.
+	(vtbl1): Add function entries.
+	(vtbl2): Likewise.
+	(vtbl3): Likewise.
+	(vtbl4): Likewise.
+	(vqtbl1): Likewise.
+	(vqtbl2): Likewise.
+	(vqtbl3): Likewise.
+	(vqtbl4): Likewise.
+	(vqtbl1q): Likewise.
+	(vqtbl2q): Likewise.
+	(vqtbl3q): Likewise.
+	(vqtbl4q): Likewise.
+	(vtbx1): Likewise.
+	(vtbx2): Likewise.
+	(vtbx3): Likewise.
+	(vtbx4): Likewise.
+	(vqtbx1): Likewise.
+	(vqtbx2): Likewise.
+	(vqtbx3): Likewise.
+	(vqtbx4): Likewise.
+	(vqtbx1q): Likewise.
+	(vqtbx2q): Likewise.
+	(vqtbx3q): Likewise.
+	(vqtbx4q): Likewise.
+	(vluti2_lane): Likewise.
+	(vluti2_laneq): Likewise.
+	(vluti2q_lane): Likewise.
+	(vluti2q_laneq): Likewise.
+	(vluti4q_lane): Likewise.
+	(vluti4q_laneq): Likewise.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add
+	table lookup and LUTI entries.
+	* config/aarch64/aarch64-neon-builtins.def
+	(DEF_NEON_FUNCTION_GS): Define.
+	* config/aarch64/aarch64-simd-pragma-builtins.def
+	(ENTRY_TERNARY_VLUT8): Remove.
+	(ENTRY_TERNARY_VLUT16): Likewise.
+	Remove LUTI and table lookup entries.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_qtbl<VB:mode><QTBL:mode>): New define_expand.
+	(aarch64_qtbx<VB:mode><QTBL:mode>): Likewise.
+	* config/aarch64/arm_neon.h: Remove hand-written table
+	lookup and LUTI intrinsics.
+	* config/aarch64/iterators.md (QTBL): New mode iterator.
+
+2026-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_cost_bstrins_for_any_or_plus): New static function.
+	(loongarch_rtx_costs): Call
+	loongarch_cost_bstrins_for_any_or_plus for IOR, XOR, and PLUS.
+
+2026-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(*bstrins_w_for_ior_ashift_and_extend): Rewrite as define_insn;
+	rewrite the pattern to adapt for the ior => plus optimization;
+	use "0" constraint for operand 1; remove redundant conditions.
+
+2026-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs): Add the
+	case for bstrins_d_for_ior_ashift_and.
+	* config/loongarch/loongarch.md
+	(*bstrins_d_for_ior_ashift_and): Rename to ...
+	(*bstrins_for_ior_ashift_and): ... here, use GPR instead of DI
+	and allow it on LA32S; use "0" constraint for operand 1;
+	remove redundant conditions.
+
+2026-11-12  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md
+	(bytepick_w_<bytepick_imm>_extend): Remove.
+	(bytepick_w_1_extend): Remove.
+	(*bytepick_w_<bytepick_imm>_extend):
+	New define_insn.
+
+2026-11-12  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fusion_type_name): New
+	function.
+	(riscv_get_fusion_pair_type): Likewise.
+	(riscv_macro_fusion_pair_p): Use riscv_get_fusion_pair_type and
+	emit the matched operation.
+	* config/riscv/riscv-protos.h (riscv_get_fusion_pair_type):
+	Declare.
+
+2026-11-12  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/121076
+	* config/rs6000/rs6000.md (bswaphi2_reg): Replace
+	rotate-mask/rotate-mask/or sequence with shift and
+	rotate-mask-insert sequence.
+
+2026-11-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* configure: Rebuild.
+	* Makefile.in (ADAC): Use configured value.
+
+2026-11-12  Michal Jires  <mjires@suse.cz>
+
+	* tree-vect-stmts.cc (get_load_store_type): guard dump_printf_loc
+
 2026-11-11  Roger Sayle  <roger@nextmovesoftware.com>
 	    Hongtao Liu  <hongtao.liu@intel.com>
 

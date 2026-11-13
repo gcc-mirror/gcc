@@ -1,3 +1,8 @@
+2026-11-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* functions.texi: Regenerate.
+	* strtoll.c: Replace strtoul with strtoull in the documentation comment.
+
 2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* configure: Regenerate.

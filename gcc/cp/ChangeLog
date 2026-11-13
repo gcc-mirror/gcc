@@ -1,3 +1,35 @@
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* contracts.cc (lookup_std_type): Set TREE_PUBLIC.
+	(lookup_std_contracts_type): Likewise.
+	* decl.cc (cxx_init_operator_new_delete_decls): Likewise.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/119497
+	* constexpr.cc (check_for_failed_contracts): Add context.
+	(cxx_eval_constant_expression): Refactor contract handling.
+	Diagnose now if diagnosing.
+	(cxx_eval_outermost_constant_expr): Re-evaluate to diagnose
+	contract violations if otherwise constant.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* g++spec.cc (lang_specific_driver): Also set need_experimental
+	for C++26 and C++29.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	* call.cc (splice_viable): Strict if -fdiagnostics-all-candidates.
+
+2026-11-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/128532
+	PR c++/127516
+	* decl.cc (reshape_init_r): Also treat a vector as aggregate.
+	(reshape_init): The old designated initializer extension
+	allows designators with brace elision.
+
 2026-11-11  Matt Turner  <mattst88@gmail.com>
 
 	PR c/125418

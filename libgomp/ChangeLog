@@ -1,3 +1,10 @@
+2026-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp.h.in: Add omp::allocator::user_mem template.
+	* libgomp.texi (Memory allocation): Add example.
+	(Impl. status): Mark as implemented.
+	* testsuite/libgomp.c++/user_mem.C: New test.
+
 2026-11-10  Waffl3x  <waffl3x@baylibre.com>
 
 	* libgomp.texi: Document allocate directive support in C++.

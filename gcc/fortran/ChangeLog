@@ -1,3 +1,11 @@
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128656
+	* trans-array.cc (gfc_array_allocate): Push logic handling error
+	status to gfc_allocate_allocatable for allocatable arrays.
+	* trans.cc (gfc_allocate_allocatable): Implement the logic here.
+	* trans.h (gfc_allocate_allocatable): Adjust prototype.
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* trans-openmp.cc (gfc_omp_finish_clause): Update to use new

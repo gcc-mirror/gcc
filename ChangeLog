@@ -1,3 +1,15 @@
+2026-11-12  Jiawei  <jiawei@iscas.ac.cn>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add myself.
+
+2026-11-12  Alexandre Oliva  <oliva@adacore.com>
+
+	* Makefile.tpl (HOST_EXPORTS, POSTSTAGE1_HOST_EXPORTS): Pass
+	ADAC to sub configures.
+	* Makefile.in: Rebuild.
+	* configure: Rebuild.
+
 2026-11-11  Matt Turner  <mattst88@gmail.com>
 
 	* MAINTAINERS: Regenerate.

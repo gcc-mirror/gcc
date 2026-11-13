@@ -1,3 +1,38 @@
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Concatenate): Introduce Rtyp local constant
+	to hold the first subtype of the root type of the result, and use
+	it throughout.  When the result may be null and this first subtype
+	is unconstrained, do not guard the expression built for the lower
+	bound with a redundant condition.  Fix the out-of-range condition
+	guarding the use of a slice for a bounded dynamic concatenation.
+
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (range_cannot_be_superflat): Declare.
+	* gcc-interface/decl.cc (range_cannot_be_superflat): Make public
+	and deal with more nodes denoting a discrete range.
+	(gnat_to_gnu_entity) <E_Array_Subtype>: Do not limit the detection
+	of the superflat case to N_Range nodes.
+	* gcc-interface/trans.cc (get_type_length): Add CANNOT_BE_SUPERFLAT
+	boolean parameter and return the simple formula when it is true.
+	(Attribute_to_gnu) <Attr_Range_Length>: Add third argument to the
+	call to get_type_length.
+	<Attr_Length>: Likewise, after fetching the array subtype of the
+	prefix and then the index of the appropriate dimension.
+
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_If_Expression): Set the Cannot_Be_Superflat
+	flag in the special case of an unidimensional unconstrained array
+	result type and two dependent expressions of constrained subtypes
+	with known bounds.
+
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.adb (Function_Call_Or_Allocator_Level): Deal with a
+	named access result type in Ada 95 as in other language versions.
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* gcc-interface/decl.cc (gnat_to_gnu_entity): Update uses of
