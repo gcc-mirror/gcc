@@ -922,7 +922,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AMD GCN Options} (@ref{AMD GCN Options})
 @gccoptlist{-march=@var{gpu}  -mtune=@var{gpu}
--mgang-private-size=@var{bytes}
+-mgang-private-size=@var{bytes}  -mmin-waves-per-cu=@var{n}
 -msram-ecc=@r{[}on@r{|}off@r{|}any@r{]}
 -mxnack=@r{[}on@r{|}off@r{|}any@r{]}
 -Wopenacc-dims}
@@ -22545,6 +22545,21 @@ gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, gfx1153, gfx1154.
 @item -mgang-private-size=@var{bytes}
 Set the amount of local data-share (LDS) memory to reserve for
 gang-private variables.  The default is 512.
+
+@opindex mmin-waves-per-cu
+@item -mmin-waves-per-cu=@var{n}
+Limit the register resources used by kernel entry functions so that at least
+@var{n} wavefronts can run at once on each compute unit.  AMD GPUs have a large
+register file that is divided between the running waves (threads), so
+specifying a larger @var{n} means reducing the register reservation for each.
+This option only sets a minimum; the compiler does not reserve registers if it
+did not need them.  Only register usage is limited; LDS usage may still
+restrict occupancy.  Functions called from a kernel already use a fixed small
+set of registers, so they are not affected.  @var{n} must be between 4 and 40;
+values above the maximum for the selected device are reduced to that maximum,
+with a warning.  The default is 4, which imposes no limit.  In order to run
+more than 16 waves concurrently, on a CU, it must be occupied by multiple teams
+or gangs.
 
 @opindex msram-ecc
 @item -msram-ecc=on

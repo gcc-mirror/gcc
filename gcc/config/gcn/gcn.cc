@@ -93,20 +93,22 @@ static int acc_lds_size = 0x600;
 static int gang_private_hwm = 32;
 static hash_map<tree, int> lds_allocs;
 
-/* The number of registers usable by normal non-kernel functions.
-   The SGPR count includes any special extra registers such as VCC.  */
+/* The number of registers usable by kernel entry functions, derived from
+   -mmin-waves-per-cu.  Zero means no limit.  */
 
-#define MAX_NORMAL_SGPR_COUNT	62  // i.e. 64 with VCC
-#define MAX_NORMAL_VGPR_COUNT	24
-#define MAX_NORMAL_AVGPR_COUNT	24
+static int kernel_max_sgprs = 0;
+static int kernel_max_vgprs = 0;
+static int kernel_max_avgprs = 0;
 
 /* Import all the data from gcn-devices.def.
    The PROCESSOR_GFXnnn should be indices for this table.  */
 const struct gcn_device_def gcn_devices[] = {
 #define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, \
-		   GEN_VER, ARCH_FAM, ...) \
+		   GEN_VER, ARCH_FAM, GEN_NAME, SIMDS, WAVES, VGPR_GRAN, \
+		   SGPRS, SGPR_GRAN, NORMAL_SGPRS, NORMAL_VGPRS, NORMAL_AVGPRS) \
     {PROCESSOR_ ## NAME, #name, #NAME, ISA, XNACK, SRAMECC, WAVE64, CU, VGPRS, \
-     GEN_VER, #ARCH_FAM},
+     GEN_VER, #ARCH_FAM, SIMDS, WAVES, VGPR_GRAN, SGPRS, SGPR_GRAN, \
+     NORMAL_SGPRS, NORMAL_VGPRS, NORMAL_AVGPRS},
 #include "gcn-devices.def"
 };
 
@@ -134,6 +136,77 @@ gcn_init_machine_status (void)
     f->use_flat_addressing = true;
 
   return f;
+}
+
+/* Return the number of special SGPRs that a kernel's SGPR allocation must
+   hold in addition to those it uses directly: VCC, which is always reserved,
+   plus, where SGPRs are shared, the XNACK mask, if enabled, and architected
+   flat scratch.  */
+
+static int
+gcn_kernel_extra_sgprs ()
+{
+  int extra = VCC_HI_REG - VCC_LO_REG + 1;
+  /* Devices with a fixed SGPR allocation count only VCC.  */
+  if (!TARGET_SHARED_SGPRS)
+    return extra;
+  /* Flat scratch is allocated above the XNACK mask, so with architected
+     flat scratch both are always allocated.  */
+  if (TARGET_ARCHITECTED_FLAT_SCRATCH)
+    extra += FLAT_SCRATCH_HI_REG - FLAT_SCRATCH_LO_REG + 1;
+  if (TARGET_XNACK || TARGET_ARCHITECTED_FLAT_SCRATCH)
+    extra += XNACK_MASK_HI_REG - XNACK_MASK_LO_REG + 1;
+  return extra;
+}
+
+/* Translate -mmin-waves-per-cu into the number of each kind of register that
+   kernel entry functions may use.  The default, 4, needs no limit on any
+   device.
+
+   The budgets cannot go below what normal functions are allowed, because
+   kernels must be able to call them.  LDS usage is not considered: it is
+   allocated per work-group, and the number of waves per work-group is not
+   known at compile time.  */
+
+static void
+gcn_set_kernel_register_limits ()
+{
+  const gcn_device_def &dev = gcn_devices[gcn_arch];
+
+  int waves_per_simd = CEIL (gcn_min_waves_per_cu, dev.simds_per_cu);
+  if (waves_per_simd > dev.max_waves_per_simd)
+    {
+      warning (0, "%<-mmin-waves-per-cu=%d%> exceeds the maximum of %d for "
+	       "%<-march=%s%>", gcn_min_waves_per_cu,
+	       dev.max_waves_per_simd * dev.simds_per_cu, dev.name);
+      waves_per_simd = dev.max_waves_per_simd;
+    }
+
+  /* Each wave is allocated one more block of SGPRs than it needs, and the
+     allocation also holds the special SGPRs.  */
+  if (TARGET_SHARED_SGPRS)
+    {
+      int sgprs = dev.sgprs_per_simd / waves_per_simd;
+      sgprs -= sgprs % dev.sgpr_granularity;
+      sgprs -= dev.sgpr_granularity;
+      sgprs -= gcn_kernel_extra_sgprs ();
+      if (sgprs <= LAST_SGPR_REG - FIRST_SGPR_REG)
+	kernel_max_sgprs = MAX (sgprs, dev.max_normal_sgprs);
+    }
+
+  int vgprs = dev.max_isa_vgprs / waves_per_simd;
+  vgprs -= vgprs % dev.vgpr_granularity;
+  if (TARGET_AVGPR_COMBINED)
+    {
+      /* The VGPRs and AVGPRs share one register file.  Give the AVGPRs only
+	 what callees may use, so that spills go to memory instead.  */
+      kernel_max_avgprs = dev.max_normal_avgprs;
+      vgprs -= dev.max_normal_avgprs;
+    }
+  else if (TARGET_AVGPRS)
+    /* The AVGPRs are a separate register file of the same size.  */
+    kernel_max_avgprs = MAX (vgprs, dev.max_normal_avgprs);
+  kernel_max_vgprs = MAX (vgprs, dev.max_normal_vgprs);
 }
 
 /* Implement TARGET_OPTION_OVERRIDE.
@@ -192,6 +265,9 @@ gcn_option_override (void)
 
   if (flag_sram_ecc == HSACO_ATTR_DEFAULT)
     flag_sram_ecc = gcn_devices[gcn_arch].sramecc_default;
+
+  if (gcn_min_waves_per_cu > 4)
+    gcn_set_kernel_register_limits ();
 
   /* TODO: This seems to produce tighter loops, but the testsuites expects it
      to be set to '2', so I'll leave it default for now.
@@ -2584,7 +2660,7 @@ gcn_conditional_register_usage (void)
 {
   /* Some architectures have a register allocation granularity that does not
      permit use of the full register count.  */
-  for (int i = 256 - (256 % TARGET_VGPR_GRANULARITY);
+  for (int i = 256 - (256 % gcn_devices[gcn_arch].vgpr_granularity);
        i < 256;
        i++)
     fixed_regs[VGPR_REGNO (i)] = call_used_regs[VGPR_REGNO (i)] = 1;
@@ -2597,19 +2673,32 @@ gcn_conditional_register_usage (void)
     {
       /* Restrict the set of SGPRs, VGPRs and AVGPRs used by non-kernel
 	 functions.  */
-      for (int i = SGPR_REGNO (MAX_NORMAL_SGPR_COUNT);
+      for (int i = SGPR_REGNO (gcn_devices[gcn_arch].max_normal_sgprs);
 	   i <= LAST_SGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
-      for (int i = VGPR_REGNO (MAX_NORMAL_VGPR_COUNT);
+      for (int i = VGPR_REGNO (gcn_devices[gcn_arch].max_normal_vgprs);
 	   i <= LAST_VGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
 
-      for (int i = AVGPR_REGNO (MAX_NORMAL_AVGPR_COUNT);
+      for (int i = AVGPR_REGNO (gcn_devices[gcn_arch].max_normal_avgprs);
 	   i <= LAST_AVGPR_REG; i++)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
       return;
     }
+
+  /* Restrict kernel entry functions to the budget for -mmin-waves-per-cu.  */
+  if (kernel_max_sgprs)
+    for (int i = SGPR_REGNO (kernel_max_sgprs); i <= LAST_SGPR_REG; i++)
+      fixed_regs[i] = 1, call_used_regs[i] = 1;
+
+  if (kernel_max_vgprs)
+    for (int i = VGPR_REGNO (kernel_max_vgprs); i <= LAST_VGPR_REG; i++)
+      fixed_regs[i] = 1, call_used_regs[i] = 1;
+
+  if (kernel_max_avgprs)
+    for (int i = AVGPR_REGNO (kernel_max_avgprs); i <= LAST_AVGPR_REG; i++)
+      fixed_regs[i] = 1, call_used_regs[i] = 1;
 
   if (!cfun->machine)
     return;
@@ -6983,16 +7072,17 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   if (!leaf_function_p ())
     {
       /* We can't know how many registers function calls might use.  */
-      if (vgpr < MAX_NORMAL_VGPR_COUNT)
-	vgpr = MAX_NORMAL_VGPR_COUNT;
-      if (sgpr < MAX_NORMAL_SGPR_COUNT)
-	sgpr = MAX_NORMAL_SGPR_COUNT;
-      if (avgpr < MAX_NORMAL_AVGPR_COUNT)
-	avgpr = MAX_NORMAL_AVGPR_COUNT;
+      const gcn_device_def &dev = gcn_devices[gcn_arch];
+      if (vgpr < dev.max_normal_vgprs)
+	vgpr = dev.max_normal_vgprs;
+      if (sgpr < dev.max_normal_sgprs)
+	sgpr = dev.max_normal_sgprs;
+      if (avgpr < dev.max_normal_avgprs)
+	avgpr = dev.max_normal_avgprs;
     }
 
   /* Round up to the allocation block size.  */
-  int vgpr_block_size = TARGET_VGPR_GRANULARITY;
+  int vgpr_block_size = gcn_devices[gcn_arch].vgpr_granularity;
   if (vgpr % vgpr_block_size)
     vgpr += vgpr_block_size - (vgpr % vgpr_block_size);
   if (avgpr % vgpr_block_size)
@@ -7109,7 +7199,8 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
 	   cfun->machine->kernarg_segment_byte_size,
 	   cfun->machine->kernarg_segment_alignment,
 	   LDS_SIZE,
-	   sgpr, next_free_vgpr,
+	   /* The metadata count includes the special SGPRs.  */
+	   sgpr + gcn_kernel_extra_sgprs (), next_free_vgpr,
 	   (TARGET_WAVE64_COMPAT
 	    ? " ; wavefrontsize64 counts double on SIMD32"
 	    : ""));

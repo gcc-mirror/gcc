@@ -75,6 +75,33 @@
 	The name of the generic ISA this device is compatible with or "NONE",
 	where the generic name is the NAME (field 2) of the associated
 	generic device.
+      12 "SIMDs per CU"  (integer, internal)
+	The number of SIMDs in each compute unit, for the purposes of
+	calculating maximum occupancy.
+      13 "Max waves per SIMD"  (integer, internal)
+	The maximum number of wave64 wavefronts that can be resident on each
+	SIMD.
+      14 "VGPR granularity"  (integer, internal)
+	The number of VGPRs (and AVGPRs) allocated at once, as used in the
+	kernel descriptor.
+      15 "SGPRs per SIMD"  (integer, internal)
+	The number of SGPRs shared by the wavefronts on each SIMD, or 0 if
+	each wavefront has a fixed allocation.
+      16 "SGPR granularity"  (integer, internal)
+	The number of SGPRs allocated at once, or 0 if each wavefront has a
+	fixed allocation.  Each wavefront is allocated one more block of this
+	size than its SGPR count needs, as measured on gfx90a.
+      17 "Max normal SGPRs"  (integer, internal)
+	The number of SGPRs, not counting VCC, that normal (non-kernel)
+	functions may use.  Kernels that make calls reserve at least this
+	many, so all code for a device must agree.  Where possible, the
+	normal limits are the most that still let such a kernel reach the
+	maximum occupancy, including the special SGPRs allocated with them.
+	SGPRs above 95 are never available.
+      18 "Max normal VGPRs"  (integer, internal)
+	As above, for VGPRs.
+      19 "Max normal AVGPRs"  (integer, internal)
+	As above, for AVGPRs, or 0 for devices without them.
 
     Fields marked "external", above, have values defined elsewhere (HSA, ROCM,
     LLVM, ELF, etc.) and must have matching definitions here.  Fields marked
@@ -91,7 +118,15 @@ GCN_DEVICE(gfx900, GFX900, 0x2c, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx902, GFX902, 0x2d, ISA_GCN5,
@@ -102,7 +137,15 @@ GCN_DEVICE(gfx902, GFX902, 0x2d, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx904, GFX904, 0x2e, ISA_GCN5,
@@ -113,7 +156,15 @@ GCN_DEVICE(gfx904, GFX904, 0x2e, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx906, GFX906, 0x2f, ISA_GCN5,
@@ -124,7 +175,15 @@ GCN_DEVICE(gfx906, GFX906, 0x2f, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx908, GFX908, 0x30, ISA_CDNA1,
@@ -135,7 +194,15 @@ GCN_DEVICE(gfx908, GFX908, 0x30, ISA_CDNA1,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 24
 	   )
 
 GCN_DEVICE(gfx909, GFX909, 0x31, ISA_GCN5,
@@ -146,7 +213,15 @@ GCN_DEVICE(gfx909, GFX909, 0x31, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx90a, GFX90A, 0x3f, ISA_CDNA2,
@@ -157,7 +232,15 @@ GCN_DEVICE(gfx90a, GFX90A, 0x3f, ISA_CDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 8,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 76,
+	   /* Max normal VGPRs */ 40,
+	   /* Max normal AVGPRs */ 24
 	   )
 
 GCN_DEVICE(gfx90c, GFX90C, 0x32, ISA_GCN5,
@@ -168,7 +251,15 @@ GCN_DEVICE(gfx90c, GFX90C, 0x32, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_GENERIC
+	   /* Generic Name */ GFX9_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx942, GFX942, 0x4c, ISA_CDNA3,
@@ -179,7 +270,15 @@ GCN_DEVICE(gfx942, GFX942, 0x4c, ISA_CDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_4_GENERIC
+	   /* Generic Name */ GFX9_4_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 8,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 74,
+	   /* Max normal VGPRs */ 40,
+	   /* Max normal AVGPRs */ 24
 	   )
 
 GCN_DEVICE(gfx950, GFX950, 0x4f, ISA_CDNA3,
@@ -190,7 +289,15 @@ GCN_DEVICE(gfx950, GFX950, 0x4f, ISA_CDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ GFX9_4_GENERIC
+	   /* Generic Name */ GFX9_4_GENERIC,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 8,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 74,
+	   /* Max normal VGPRs */ 40,
+	   /* Max normal AVGPRs */ 24
 	   )
 
 GCN_DEVICE(gfx9-generic, GFX9_GENERIC, 0x051, ISA_GCN5,
@@ -201,7 +308,15 @@ GCN_DEVICE(gfx9-generic, GFX9_GENERIC, 0x051, ISA_GCN5,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 10,
+	   /* VGPR granularity */ 4,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 62,
+	   /* Max normal VGPRs */ 24,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx9-4-generic, GFX9_4_GENERIC, 0x05f, ISA_CDNA3,
@@ -212,7 +327,15 @@ GCN_DEVICE(gfx9-4-generic, GFX9_4_GENERIC, 0x05f, ISA_CDNA3,
 	   /* Max ISA VGPRs */ 256,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 4,
+	   /* Max waves per SIMD */ 8,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 800,
+	   /* SGPR granularity */ 16,
+	   /* Max normal SGPRs */ 74,
+	   /* Max normal VGPRs */ 40,
+	   /* Max normal AVGPRs */ 24
 	   )
 
 /* GCN GFX10.3 (RDNA 2) */
@@ -225,7 +348,15 @@ GCN_DEVICE(gfx1030, GFX1030, 0x36, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1031, GFX1031, 0x37, ISA_RDNA2,
@@ -236,7 +367,15 @@ GCN_DEVICE(gfx1031, GFX1031, 0x37, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1032, GFX1032, 0x38, ISA_RDNA2,
@@ -247,7 +386,15 @@ GCN_DEVICE(gfx1032, GFX1032, 0x38, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1033, GFX1033, 0x39, ISA_RDNA2,
@@ -258,7 +405,15 @@ GCN_DEVICE(gfx1033, GFX1033, 0x39, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1034, GFX1034, 0x3e, ISA_RDNA2,
@@ -269,7 +424,15 @@ GCN_DEVICE(gfx1034, GFX1034, 0x3e, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1035, GFX1035, 0x3d, ISA_RDNA2,
@@ -280,7 +443,15 @@ GCN_DEVICE(gfx1035, GFX1035, 0x3d, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1036, GFX1036, 0x45, ISA_RDNA2,
@@ -291,7 +462,15 @@ GCN_DEVICE(gfx1036, GFX1036, 0x45, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ GFX10_3_GENERIC
+	   /* Generic Name */ GFX10_3_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx10-3-generic, GFX10_3_GENERIC, 0x053, ISA_RDNA2,
@@ -302,7 +481,15 @@ GCN_DEVICE(gfx10-3-generic, GFX10_3_GENERIC, 0x053, ISA_RDNA2,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX10,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 /* GCN GFX11 (RDNA 3)  */
@@ -315,7 +502,15 @@ GCN_DEVICE(gfx1100, GFX1100, 0x41, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 12,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 48,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1101, GFX1101, 0x46, ISA_RDNA3,
@@ -326,7 +521,15 @@ GCN_DEVICE(gfx1101, GFX1101, 0x46, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 12,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 48,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1102, GFX1102, 0x47, ISA_RDNA3,
@@ -337,7 +540,15 @@ GCN_DEVICE(gfx1102, GFX1102, 0x47, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1103, GFX1103, 0x44, ISA_RDNA3,
@@ -348,7 +559,15 @@ GCN_DEVICE(gfx1103, GFX1103, 0x44, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1150, GFX1150, 0x43, ISA_RDNA3,
@@ -359,7 +578,15 @@ GCN_DEVICE(gfx1150, GFX1150, 0x43, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1151, GFX1151, 0x4a, ISA_RDNA3,
@@ -370,7 +597,15 @@ GCN_DEVICE(gfx1151, GFX1151, 0x4a, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 12,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 48,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1152, GFX1152, 0x55, ISA_RDNA3,
@@ -381,7 +616,15 @@ GCN_DEVICE(gfx1152, GFX1152, 0x55, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1153, GFX1153, 0x58, ISA_RDNA3,
@@ -392,7 +635,15 @@ GCN_DEVICE(gfx1153, GFX1153, 0x58, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx1154, GFX1154, 0x57, ISA_RDNA3,
@@ -403,7 +654,15 @@ GCN_DEVICE(gfx1154, GFX1154, 0x57, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ GFX11_GENERIC
+	   /* Generic Name */ GFX11_GENERIC,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 8,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 GCN_DEVICE(gfx11-generic, GFX11_GENERIC, 0x054, ISA_RDNA3,
@@ -414,7 +673,15 @@ GCN_DEVICE(gfx11-generic, GFX11_GENERIC, 0x054, ISA_RDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX11,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ NONE,
+	   /* SIMDs per CU */ 2,
+	   /* Max waves per SIMD */ 16,
+	   /* VGPR granularity */ 12,
+	   /* SGPRs per SIMD */ 0,
+	   /* SGPR granularity */ 0,
+	   /* Max normal SGPRs */ 96,
+	   /* Max normal VGPRs */ 32,
+	   /* Max normal AVGPRs */ 0
 	   )
 
 #undef GCN_DEVICE

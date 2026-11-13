@@ -1852,6 +1852,67 @@ max_isa_vgprs (int isa)
     }
 }
 
+/* Occupancy parameters of a device, from gcn-devices.def.  */
+
+struct isa_occupancy
+{
+  int simds_per_cu;
+  int max_waves_per_simd;
+  int vgpr_granularity;
+  int sgprs_per_simd;		/* Zero if not shared.  */
+  int sgpr_granularity;
+};
+
+static struct isa_occupancy
+isa_occupancy (int isa)
+{
+  switch (isa)
+    {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAM, WAVE64, CU, VGPRS, \
+		   GEN_VER, ARCH_FAM, GEN_NAME, SIMDS, WAVES, VGPR_GRAN, \
+		   SGPRS, SGPR_GRAN, ...) \
+    case ELF: \
+      return (struct isa_occupancy) {SIMDS, WAVES, VGPR_GRAN, SGPRS, \
+				     SGPR_GRAN};
+#include "../../gcc/config/gcn/gcn-devices.def"
+    default:
+      GOMP_PLUGIN_fatal ("unhandled ISA in isa_occupancy");
+    }
+}
+
+/* Return how many wavefronts of KERNEL fit on each CU of AGENT, given its
+   register usage.  The register counts from the kernel metadata already
+   include any AVGPRs and special SGPRs.  */
+
+static int
+kernel_waves_per_cu (struct agent_info *agent, struct kernel_info *kernel)
+{
+  int isa = agent->device_isa;
+  struct isa_occupancy occ = isa_occupancy (isa);
+  int waves = occ.max_waves_per_simd;
+
+  int vgprs = kernel->description->vpgr_count;
+  if (vgprs > 0)
+    {
+      vgprs = ((vgprs + occ.vgpr_granularity - 1) / occ.vgpr_granularity
+	       * occ.vgpr_granularity);
+      if (max_isa_vgprs (isa) / vgprs < waves)
+	waves = max_isa_vgprs (isa) / vgprs;
+    }
+
+  int sgprs = kernel->description->sgpr_count;
+  if (sgprs > 0 && occ.sgprs_per_simd > 0)
+    {
+      /* Each wave is allocated one more block than it needs.  */
+      sgprs = ((sgprs + occ.sgpr_granularity - 1) / occ.sgpr_granularity
+	       * occ.sgpr_granularity + occ.sgpr_granularity);
+      if (occ.sgprs_per_simd / sgprs < waves)
+	waves = occ.sgprs_per_simd / sgprs;
+    }
+
+  return waves * occ.simds_per_cu;
+}
+
 /* }}}  */
 /* {{{ Run  */
 struct gomp_offload_session
@@ -2427,16 +2488,15 @@ run_kernel (struct gomp_offload_session *session,
 	     kernel->description->vpgr_count);
 
   /* Reduce the number of threads/workers if there are insufficient
-     VGPRs available to run the kernels together.  */
-  if (kla->ndim == 3 && kernel->description->vpgr_count > 0)
+     registers available to run the kernels together.  */
+  if (kla->ndim == 3)
     {
-      int max_vgprs = max_isa_vgprs (agent->device_isa);
-      int granulated_vgprs = (kernel->description->vpgr_count + 3) & ~3;
-      int max_threads = (max_vgprs / granulated_vgprs) * 4;
+      int max_threads = kernel_waves_per_cu (agent, kernel);
       if (kla->gdims[2] > max_threads)
 	{
-	  GCN_WARNING ("Too many VGPRs required to support %d threads/workers"
-		       " per team/gang - reducing to %d threads/workers.\n",
+	  GCN_WARNING ("Too many registers required to support %d"
+		       " threads/workers per team/gang - reducing to %d"
+		       " threads/workers.\n",
 		       kla->gdims[2], max_threads);
 	  kla->gdims[2] = max_threads;
 	}
