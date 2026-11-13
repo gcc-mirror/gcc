@@ -1598,14 +1598,14 @@ typedef struct GTY(()) machine_function
   int pacspval_needed;
 }
 machine_function;
-#endif
-
-#define ARM_Q_BIT_READ (arm_q_bit_access ())
-#define ARM_GE_BITS_READ (arm_ge_bits_access ())
 
 /* As in the machine_function, a global set of call-via labels, for code
    that is in text_section.  */
 extern GTY(()) rtx_code_label *thumb_call_via_label[14];
+#endif
+
+#define ARM_Q_BIT_READ (arm_q_bit_access ())
+#define ARM_GE_BITS_READ (arm_ge_bits_access ())
 
 /* The number of potential ways of assigning to a co-processor.  */
 #define ARM_NUM_COPROC_SLOTS 1
