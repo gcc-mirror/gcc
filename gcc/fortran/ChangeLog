@@ -1,3 +1,37 @@
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128042
+	* target-memory.cc (encode_derived): Handle the case where an array
+	component of a derived type is initialized by a scalar.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* simplify.cc (gfc_simplify_transfer): Fix a GMP memleak.
+	Reorganize the generation of the result expression so that its
+	known rank is directly used.
+	* target-memory.cc (gfc_target_interpret_expr): Use mpfr_clear /
+	mpz_clear before reinitializing scalar numerical value components.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* expr.cc (gfc_copy_expr): Ensure that the result representation
+	length is the same as that of the source.
+	* gfortran.h (gfc_char_to_widechar): Adjust prototype.
+	* scanner.cc (gfc_char_to_widechar): Add optional argument for
+	the result representation length, instead of deriving it from the
+	string argument.
+
 2026-11-09  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

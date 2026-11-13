@@ -1,3 +1,8 @@
+2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* doc/gm2.texi (-fdump-builtins): New switch.
+
 2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:

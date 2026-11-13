@@ -1,3 +1,42 @@
+2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* configure: Regenerate.
+	* libm2min/Makefile.am (AM_MAKEFLAGS): Add the missing PYTHON and
+	HAVE_PYTHON_INTERPRETER declarations.
+	* libm2min/Makefile.in: Rebuilt.
+
+2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126847
+	PR modula2/125129
+	PR modula2/126863
+	PR modula2/125129
+	PR modula2/127359
+	* Makefile.am (AM_MAKEFLAGS): Add HAVE_PYTHON_INTERPRETER.
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure.ac: Call AC_PYTHON_INTERPRETER.
+	Remove call to AC_PYTHON_DEVEL.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* libm2cor/Makefile.am (libm2cor_la_M2FLAGS): Add
+	gm2-libs-cor-common and pathname.
+	Replace bash with $(SHELL).
+	(SYSTEM.def): Rewrite rule.
+	(SYSTEM.mod): Copy common file.
+	* libm2iso/Makefile.am (AM_MAKEFLAGS): Add HAVE_PYTHON_INTERPRETER.
+	(libm2iso_la_CFLAGS): Add m2pim pathname and ../libm2pim to
+	include path.
+	* libm2log/Makefile.am: Rewrite to handle HAVE_PYTHON_INTERPRETER.
+	Falling back to the common versions of target sources if
+	HAVE_PYTHON_INTERPRETER is false.
+	* libm2min/Makefile.am: Ditto.
+	* libm2pim/Makefile.am:	Ditto.
+	* ax_python_interpreter.m4: New file.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.
