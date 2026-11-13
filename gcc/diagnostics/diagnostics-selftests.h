@@ -39,6 +39,7 @@ extern void digraphs_cc_tests ();
 extern void file_cache_cc_tests ();
 extern void html_sink_cc_tests ();
 extern void lazy_paths_cc_tests ();
+extern void markup_cc_tests ();
 extern void output_spec_cc_tests ();
 extern void paths_output_cc_tests ();
 extern void sarif_sink_cc_tests ();

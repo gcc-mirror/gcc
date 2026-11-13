@@ -1908,6 +1908,7 @@ OBJS-libcommon = \
 	diagnostics/lazy-paths.o \
 	diagnostics/logging.o \
 	diagnostics/macro-unwinding.o \
+	diagnostics/markup.o \
 	diagnostics/option-classifier.o \
 	diagnostics/paths.o \
 	diagnostics/paths-output.o \
