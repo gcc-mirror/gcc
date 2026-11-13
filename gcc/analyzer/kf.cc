@@ -2795,7 +2795,7 @@ public:
   }; // class strtok_call_info
 
   kf_strtok (region_model_manager &mgr)
-  : m_private_reg (mgr.alloc_symbol_id (),
+  : m_private_reg (mgr.alloc_node_id (),
 		   mgr.get_root_region (),
 		   get_region_type (),
 		   "strtok buffer")

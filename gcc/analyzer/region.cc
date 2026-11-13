@@ -1275,8 +1275,8 @@ region::is_named_decl_p (const char *decl_name) const
 
 /* region's ctor.  */
 
-region::region (complexity c, symbol::id_t id, const region *parent, tree type)
-: symbol (c, id),
+region::region (complexity c, symbolic::node::id_t id, const region *parent, tree type)
+: symbolic::node (c, id),
   m_parent (parent), m_type (type),
   m_cached_offset (nullptr), m_cached_init_sval_at_main (nullptr)
 {
@@ -1534,7 +1534,7 @@ frame_region::get_region_for_local (region_model_manager *mgr,
   if (decl_region **slot = mutable_locals.get (expr))
     return *slot;
   decl_region *reg
-    = new decl_region (mgr->alloc_symbol_id (), this, expr);
+    = new decl_region (mgr->alloc_node_id (), this, expr);
   mutable_locals.put (expr, reg);
   return reg;
 }
@@ -1673,7 +1673,7 @@ heap_region::print_dump_widget_label (pretty_printer *pp) const
 
 /* root_region's ctor.  */
 
-root_region::root_region (symbol::id_t id)
+root_region::root_region (symbolic::node::id_t id)
 : region (complexity (1, 1), id, nullptr, NULL_TREE)
 {
 }
@@ -1716,7 +1716,7 @@ thread_local_region::print_dump_widget_label (pretty_printer *pp) const
 
 /* symbolic_region's ctor.  */
 
-symbolic_region::symbolic_region (symbol::id_t id, region *parent,
+symbolic_region::symbolic_region (symbolic::node::id_t id, region *parent,
 				  const svalue *sval_ptr)
 : region (complexity::from_pair (parent, sval_ptr), id, parent,
 	  (sval_ptr->get_type ()

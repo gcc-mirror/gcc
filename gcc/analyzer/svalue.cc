@@ -47,7 +47,7 @@ static int cmp_csts_and_types (const_tree cst1, const_tree cst2);
 
 /* class svalue.  */
 
-/* Dump a tree-like representation of this svalue and its constituent symbols
+/* Dump a tree-like representation of this svalue and its constituent symbolic::nodes
    to stderr, using global_dc's colorization and theming options.
 
    For example:
@@ -1487,7 +1487,7 @@ unaryop_svalue::key_t::operator< (const key_t &other) const
     return c < 0;
   if (int c = cmp_types (m_type, other.m_type))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_arg, other.m_arg))
+  if (int c = symbolic::node::cmp_ids (m_arg, other.m_arg))
     return c < 0;
   return false;
 }
@@ -1631,9 +1631,9 @@ binop_svalue::key_t::operator< (const key_t &other) const
     return c < 0;
   if (int c = cmp_types (m_type, other.m_type))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_arg0, other.m_arg0))
+  if (int c = symbolic::node::cmp_ids (m_arg0, other.m_arg0))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_arg1, other.m_arg1))
+  if (int c = symbolic::node::cmp_ids (m_arg1, other.m_arg1))
     return c < 0;
   return false;
 }
@@ -1743,16 +1743,16 @@ sub_svalue::key_t::operator< (const key_t &other) const
 {
   if (int c = cmp_types (m_type, other.m_type))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_parent_svalue, other.m_parent_svalue))
+  if (int c = symbolic::node::cmp_ids (m_parent_svalue, other.m_parent_svalue))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_subregion, other.m_subregion))
+  if (int c = symbolic::node::cmp_ids (m_subregion, other.m_subregion))
     return c < 0;
   return false;
 }
 
 /* sub_svalue'c ctor.  */
 
-sub_svalue::sub_svalue (symbol::id_t id,
+sub_svalue::sub_svalue (symbolic::node::id_t id,
 			tree type, const svalue *parent_svalue,
 			const region *subregion)
 : svalue (complexity::from_pair (parent_svalue->get_complexity (),
@@ -1868,16 +1868,16 @@ repeated_svalue::key_t::operator< (const key_t &other) const
 {
   if (int c = cmp_types (m_type, other.m_type))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_outer_size, other.m_outer_size))
+  if (int c = symbolic::node::cmp_ids (m_outer_size, other.m_outer_size))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_inner_svalue, other.m_inner_svalue))
+  if (int c = symbolic::node::cmp_ids (m_inner_svalue, other.m_inner_svalue))
     return c < 0;
   return false;
 }
 
 /* repeated_svalue'c ctor.  */
 
-repeated_svalue::repeated_svalue (symbol::id_t id,
+repeated_svalue::repeated_svalue (symbolic::node::id_t id,
 				  tree type,
 				  const svalue *outer_size,
 				  const svalue *inner_svalue)
@@ -2031,14 +2031,14 @@ bits_within_svalue::key_t::operator< (const key_t &other) const
     return c < 0;
   if (int c = bit_range::cmp (m_bits, other.m_bits))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_inner_svalue, other.m_inner_svalue))
+  if (int c = symbolic::node::cmp_ids (m_inner_svalue, other.m_inner_svalue))
     return c < 0;
   return false;
 }
 
 /* bits_within_svalue'c ctor.  */
 
-bits_within_svalue::bits_within_svalue (symbol::id_t id,
+bits_within_svalue::bits_within_svalue (symbolic::node::id_t id,
 					tree type,
 					const bit_range &bits,
 					const svalue *inner_svalue)
@@ -2148,9 +2148,9 @@ widening_svalue::key_t::operator< (const key_t &other) const
     return c < 0;
   if (int c = m_snode->m_id - other.m_snode->m_id)
     return c < 0;
-  if (int c = symbol::cmp_ids (m_base_sval, other.m_base_sval))
+  if (int c = symbolic::node::cmp_ids (m_base_sval, other.m_base_sval))
     return c < 0;
-  if (int c = symbol::cmp_ids (m_iter_sval, other.m_iter_sval))
+  if (int c = symbolic::node::cmp_ids (m_iter_sval, other.m_iter_sval))
     return c < 0;
   return false;
 }
@@ -2444,7 +2444,7 @@ compound_svalue::key_t::operator< (const key_t &other) const
   return false;
 }
 
-compound_svalue::compound_svalue (symbol::id_t id,
+compound_svalue::compound_svalue (symbolic::node::id_t id,
 				  tree type,
 				  concrete_binding_map &&map)
 : svalue (map.calc_complexity (), id, type), m_map (std::move (map))
@@ -2459,7 +2459,7 @@ compound_svalue::compound_svalue (symbol::id_t id,
 #endif
 }
 
-compound_svalue::compound_svalue (symbol::id_t id,
+compound_svalue::compound_svalue (symbolic::node::id_t id,
 				  tree type,
 				  const concrete_binding_map &map)
 : svalue (map.calc_complexity (), id, type), m_map (map)
@@ -2604,7 +2604,7 @@ conjured_svalue::key_t::operator< (const key_t &other) const
     return c < 0;
   if (int c = m_stmt->uid - other.m_stmt->uid)
     return c < 0;
-  if (int c = symbol::cmp_ids (m_id_reg, other.m_id_reg))
+  if (int c = symbolic::node::cmp_ids (m_id_reg, other.m_id_reg))
     return c < 0;
   if (int c = m_idx == other.m_idx)
     return c < 0;
@@ -2697,7 +2697,7 @@ asm_output_svalue::key_t::operator< (const key_t &other) const
   if (int c = (int)m_num_inputs - (int)other.m_num_inputs)
     return c < 0;
   for (unsigned i = 0; i < m_num_inputs; i++)
-    if (int c = symbol::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
+    if (int c = symbolic::node::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
       return c < 0;
   return false;
 }
@@ -2806,7 +2806,7 @@ const_fn_result_svalue::key_t::operator< (const key_t &other) const
   if (int c = (int)m_num_inputs - (int)other.m_num_inputs)
     return c < 0;
   for (unsigned i = 0; i < m_num_inputs; i++)
-    if (int c = symbol::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
+    if (int c = symbolic::node::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
       return c < 0;
   return false;
 }

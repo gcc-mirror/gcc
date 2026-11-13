@@ -1407,7 +1407,7 @@ ANALYZER_OBJS = \
 	analyzer/supergraph-simplify.o \
 	analyzer/supergraph-sorting.o \
 	analyzer/svalue.o \
-	analyzer/symbol.o \
+	analyzer/symbolic-nodes.o \
 	analyzer/trimmed-graph.o \
 	analyzer/varargs.o \
 	analyzer/write-to-const-diagnostics.o \

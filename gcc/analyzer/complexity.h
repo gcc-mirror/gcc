@@ -1,4 +1,4 @@
-/* Measuring the complexity of svalues/regions.
+/* Measuring the complexity of symbolic nodes.
    Copyright (C) 2020-2026 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 
@@ -23,7 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-/* A measurement of the complexity of an svalue or region, so that
+/* A measurement of the complexity of a symbolic node, so that
    we can impose bounds on the growth of these tree-like structures
    and thus avoid infinite chains of analysis.  */
 
@@ -38,7 +38,7 @@ struct complexity
   static complexity from_pair (const complexity &c1, const complexity &c);
   static complexity from_vec_svalue (const vec<const svalue *> &vec);
 
-  /* The total number of svalues and regions in the tree of this
+  /* The total number of nodes in the tree of this
      entity, including the entity itself.  */
   unsigned m_num_nodes;
 

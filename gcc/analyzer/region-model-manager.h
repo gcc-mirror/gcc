@@ -34,8 +34,8 @@ public:
   region_model_manager (logger *logger = nullptr);
   ~region_model_manager ();
 
-  unsigned get_num_symbols () const { return m_next_symbol_id; }
-  unsigned alloc_symbol_id () { return m_next_symbol_id++; }
+  unsigned get_num_nodes () const { return m_next_node_id; }
+  unsigned alloc_node_id () { return m_next_node_id++; }
 
   /* call_string consolidation.  */
   const call_string &get_empty_call_string () const
@@ -205,7 +205,7 @@ private:
 
   logger *m_logger;
 
-  unsigned m_next_symbol_id;
+  unsigned m_next_node_id;
 
   const call_string m_empty_call_string;
 

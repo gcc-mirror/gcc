@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_SVALUE_H
 #define GCC_ANALYZER_SVALUE_H
 
-#include "analyzer/symbol.h"
+#include "analyzer/symbolic-nodes.h"
 #include "analyzer/store.h"
 #include "analyzer/program-point.h"
 #include "text-art/widget.h"
@@ -88,7 +88,7 @@ enum svalue_kind
 
 /* An abstract base class representing a value held by a region of memory.  */
 
-class svalue : public symbol
+class svalue : public symbolic::node
 {
 public:
   virtual ~svalue () {}
@@ -204,8 +204,8 @@ public:
   }
 
  protected:
-  svalue (complexity c, symbol::id_t id, tree type)
-  : symbol (c, id), m_type (type)
+  svalue (complexity c, symbolic::node::id_t id, tree type)
+  : symbolic::node (c, id), m_type (type)
   {}
 
   void print_svalue_node_label (pretty_printer *pp) const;
@@ -245,7 +245,7 @@ public:
     const region *m_reg;
   };
 
-  region_svalue (symbol::id_t id, tree type, const region *reg)
+  region_svalue (symbolic::node::id_t id, tree type, const region *reg)
   : svalue (complexity (reg), id, type),
     m_reg (reg)
   {
@@ -316,7 +316,7 @@ public:
     tree m_cst;
   };
 
-  constant_svalue (symbol::id_t id, tree type, tree cst_expr)
+  constant_svalue (symbolic::node::id_t id, tree type, tree cst_expr)
   : svalue (complexity (1, 1), id, type),
     m_cst_expr (cst_expr)
   {
@@ -379,7 +379,7 @@ namespace ana {
 class unknown_svalue : public svalue
 {
 public:
-  unknown_svalue (symbol::id_t id, tree type)
+  unknown_svalue (symbolic::node::id_t id, tree type)
   : svalue (complexity (1, 1), id, type)
   {}
 
@@ -456,7 +456,7 @@ public:
     tree m_type;
   };
 
-  poisoned_svalue (enum poison_kind kind, symbol::id_t id, tree type)
+  poisoned_svalue (enum poison_kind kind, symbolic::node::id_t id, tree type)
   : svalue (complexity (1, 1), id, type), m_kind (kind) {}
 
   enum svalue_kind get_kind () const final override { return SK_POISONED; }
@@ -551,7 +551,7 @@ public:
   };
 
   setjmp_svalue (const setjmp_record &setjmp_record,
-		 symbol::id_t id,
+		 symbolic::node::id_t id,
 		 tree type)
   : svalue (complexity (1, 1), id, type), m_setjmp_record (setjmp_record)
   {}
@@ -601,7 +601,7 @@ namespace ana {
 class initial_svalue : public svalue
 {
 public:
-  initial_svalue (symbol::id_t id, tree type, const region *reg)
+  initial_svalue (symbolic::node::id_t id, tree type, const region *reg)
   : svalue (complexity (reg), id, type), m_reg (reg)
   {
     gcc_assert (m_reg != nullptr);
@@ -669,7 +669,7 @@ public:
     const svalue *m_arg;
   };
 
-  unaryop_svalue (symbol::id_t id, tree type, enum tree_code op,
+  unaryop_svalue (symbolic::node::id_t id, tree type, enum tree_code op,
 		  const svalue *arg)
   : svalue (complexity (arg), id, type), m_op (op), m_arg (arg)
   {
@@ -748,7 +748,7 @@ public:
     const svalue *m_arg1;
   };
 
-  binop_svalue (symbol::id_t id, tree type, enum tree_code op,
+  binop_svalue (symbolic::node::id_t id, tree type, enum tree_code op,
 		const svalue *arg0, const svalue *arg1)
   : svalue (complexity::from_pair (arg0->get_complexity (),
 				    arg1->get_complexity ()),
@@ -828,7 +828,7 @@ public:
     const svalue *m_parent_svalue;
     const region *m_subregion;
   };
-  sub_svalue (symbol::id_t id, tree type, const svalue *parent_svalue,
+  sub_svalue (symbolic::node::id_t id, tree type, const svalue *parent_svalue,
 	      const region *subregion);
 
   enum svalue_kind get_kind () const final override { return SK_SUB; }
@@ -897,7 +897,7 @@ public:
     const svalue *m_outer_size;
     const svalue *m_inner_svalue;
   };
-  repeated_svalue (symbol::id_t id,
+  repeated_svalue (symbolic::node::id_t id,
 		   tree type,
 		   const svalue *outer_size,
 		   const svalue *inner_svalue);
@@ -974,7 +974,7 @@ public:
     bit_range m_bits;
     const svalue *m_inner_svalue;
   };
-  bits_within_svalue (symbol::id_t id,
+  bits_within_svalue (symbolic::node::id_t id,
 		      tree type,
 		      const bit_range &bits,
 		      const svalue *inner_svalue);
@@ -1037,7 +1037,7 @@ namespace ana {
 class unmergeable_svalue : public svalue
 {
 public:
-  unmergeable_svalue (symbol::id_t id, const svalue *arg)
+  unmergeable_svalue (symbolic::node::id_t id, const svalue *arg)
   : svalue (complexity (arg), id, arg->get_type ()), m_arg (arg)
   {
   }
@@ -1084,7 +1084,7 @@ namespace ana {
 class placeholder_svalue : public svalue
 {
 public:
-  placeholder_svalue (symbol::id_t id, tree type, const char *name)
+  placeholder_svalue (symbolic::node::id_t id, tree type, const char *name)
   : svalue (complexity (1, 1), id, type), m_name (name)
   {
   }
@@ -1163,7 +1163,7 @@ public:
      DIR_UNKNOWN
     };
 
-  widening_svalue (symbol::id_t id, tree type, const supernode *snode,
+  widening_svalue (symbolic::node::id_t id, tree type, const supernode *snode,
 		   const svalue *base_sval, const svalue *iter_sval)
   : svalue (complexity::from_pair (base_sval->get_complexity (),
 				   iter_sval->get_complexity ()),
@@ -1257,8 +1257,8 @@ public:
     const concrete_binding_map *m_map_ptr;
   };
 
-  compound_svalue (symbol::id_t id, tree type, concrete_binding_map &&map);
-  compound_svalue (symbol::id_t id, tree type, const concrete_binding_map &map);
+  compound_svalue (symbolic::node::id_t id, tree type, concrete_binding_map &&map);
+  compound_svalue (symbolic::node::id_t id, tree type, const concrete_binding_map &map);
 
   enum svalue_kind get_kind () const final override { return SK_COMPOUND; }
   const compound_svalue *dyn_cast_compound_svalue () const final override
@@ -1373,7 +1373,7 @@ public:
     unsigned m_idx;
   };
 
-  conjured_svalue (symbol::id_t id, tree type, const gimple *stmt,
+  conjured_svalue (symbolic::node::id_t id, tree type, const gimple *stmt,
 		   const region *id_reg, unsigned idx)
   : svalue (complexity (id_reg), id, type),
     m_stmt (stmt), m_id_reg (id_reg), m_idx (idx)
@@ -1469,7 +1469,7 @@ public:
     const svalue *m_input_arr[MAX_INPUTS];
   };
 
-  asm_output_svalue (symbol::id_t id,
+  asm_output_svalue (symbolic::node::id_t id,
 		     tree type,
 		     const char *asm_string,
 		     unsigned output_idx,
@@ -1586,7 +1586,7 @@ public:
     const svalue *m_input_arr[MAX_INPUTS];
   };
 
-  const_fn_result_svalue (symbol::id_t id,
+  const_fn_result_svalue (symbolic::node::id_t id,
 			  tree type,
 			  tree fndecl,
 			  const vec<const svalue *> &inputs)

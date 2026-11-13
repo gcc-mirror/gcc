@@ -54,6 +54,11 @@ class supergraph;
 class supernode;
 class superedge;
 
+namespace symbolic
+{
+  class node;
+}
+
 class svalue;
   class region_svalue;
   class constant_svalue;

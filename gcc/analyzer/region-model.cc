@@ -7895,7 +7895,7 @@ test_get_representative_tree ()
     tree tlen = size_int (10);
     tree arr_type = build_array_type (char_type_node, build_index_type (tlen));
     tree a = build_global_decl ("a", arr_type);
-    placeholder_svalue test_sval (mgr.alloc_symbol_id (),
+    placeholder_svalue test_sval (mgr.alloc_node_id (),
 				  char_type_node, "test value");
 
     /* Value of a[3].  */
@@ -7941,7 +7941,7 @@ test_get_representative_tree ()
     {
       region_model m (&mgr);
       const region *c_x_reg = m.get_lvalue (c_x, &ctxt);
-      placeholder_svalue test_sval_x (mgr.alloc_symbol_id (),
+      placeholder_svalue test_sval_x (mgr.alloc_node_id (),
 				      integer_type_node, "test x val");
       m.set_value (c_x_reg, &test_sval_x, &ctxt);
       tree rep = m.get_representative_tree (&test_sval_x);
@@ -7952,7 +7952,7 @@ test_get_representative_tree ()
     {
       region_model m (&mgr);
       const region *c_y_reg = m.get_lvalue (c_y, &ctxt);
-      placeholder_svalue test_sval_y (mgr.alloc_symbol_id (),
+      placeholder_svalue test_sval_y (mgr.alloc_node_id (),
 				      integer_type_node, "test y val");
       m.set_value (c_y_reg, &test_sval_y, &ctxt);
       tree rep = m.get_representative_tree (&test_sval_y);
@@ -8197,7 +8197,7 @@ test_binop_svalue_folding ()
     const svalue *sval_false = mgr.get_or_create_int_cst (boolean_type_node, 0);
     const svalue *sval_unknown
       = mgr.get_or_create_unknown_svalue (boolean_type_node);
-    const placeholder_svalue sval_placeholder (mgr.alloc_symbol_id (),
+    const placeholder_svalue sval_placeholder (mgr.alloc_node_id (),
 					       boolean_type_node, "v");
     for (auto op : {BIT_IOR_EXPR, TRUTH_OR_EXPR})
       {
@@ -8816,7 +8816,7 @@ test_state_merging ()
     model1.push_frame (*DECL_STRUCT_FUNCTION (test_fndecl),
 		       nullptr, nullptr, &ctxt);
 
-    placeholder_svalue test_sval (mgr.alloc_symbol_id (),
+    placeholder_svalue test_sval (mgr.alloc_node_id (),
 				  integer_type_node, "test sval");
     model0.set_value (model0.get_lvalue (a, &ctxt), &test_sval, &ctxt);
     model1.set_value (model1.get_lvalue (a, &ctxt), &test_sval, &ctxt);
@@ -8836,7 +8836,7 @@ test_state_merging ()
     region_model model0 (&mgr);
     region_model model1 (&mgr);
 
-    placeholder_svalue test_sval (mgr.alloc_symbol_id (),
+    placeholder_svalue test_sval (mgr.alloc_node_id (),
 				  integer_type_node, "test sval");
     model0.set_value (model0.get_lvalue (x, &ctxt), &test_sval, &ctxt);
     model1.set_value (model1.get_lvalue (x, &ctxt), &test_sval, &ctxt);
@@ -8984,7 +8984,7 @@ test_state_merging ()
   {
     test_region_model_context ctxt;
     region_model model0 (&mgr);
-    placeholder_svalue placeholder_sval (mgr.alloc_symbol_id (),
+    placeholder_svalue placeholder_sval (mgr.alloc_node_id (),
 					 integer_type_node, "test");
     model0.set_value (model0.get_lvalue (x, &ctxt),
 		      &placeholder_sval, &ctxt);

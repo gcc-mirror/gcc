@@ -1,4 +1,4 @@
-/* Measuring the complexity of svalues/regions.
+/* Measuring the complexity of symbolic nodes.
    Copyright (C) 2020-2026 Free Software Foundation, Inc.
    Contributed by David Malcolm <dmalcolm@redhat.com>.
 

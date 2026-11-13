@@ -18,36 +18,22 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
-#ifndef GCC_ANALYZER_SYMBOL_H
-#define GCC_ANALYZER_SYMBOL_H
+#include "analyzer/common.h"
 
-#include "analyzer/complexity.h"
+#include "analyzer/symbolic-nodes.h"
+
+#if ENABLE_ANALYZER
 
 namespace ana {
 
-/* Base class for svalues and regions: has a complexity and a numeric ID.  */
+/* Compare N1 and N2 by id.  */
 
-class symbol
+int
+symbolic::node::cmp_ids (const symbolic::node *n1, const symbolic::node *n2)
 {
- public:
-  typedef unsigned id_t;
-
-  const complexity &get_complexity () const { return m_complexity; }
-
-  id_t get_id () const { return m_id; }
-  static int cmp_ids (const symbol *s1, const symbol *s2);
-
- protected:
-  symbol (complexity c, unsigned id)
-  : m_complexity (c),
-    m_id (id)
-  {}
-
- private:
-  complexity m_complexity;
-  id_t m_id; // for deterministic sorting at this stage, for dumps
-};
+  return (long)n1->get_id () - (long)n2->get_id ();
+}
 
 } // namespace ana
 
-#endif /* GCC_ANALYZER_SYMBOL_H */
+#endif /* #if ENABLE_ANALYZER */
