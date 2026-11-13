@@ -1,3 +1,28 @@
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-linux-loongarch.ads (Address): Add size clause.
+
+2026-11-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/system-linux-loongarch.ads(Support_Atomic_Primitives):
+	New boolean constant.
+
+2026-11-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/s-objrea.ads (Object_Arch): Add LOONGARCH.
+	* libgnat/s-objrea.adb (EM_LOONGARCH): New named number.
+	(ELF_Ops.Initialize): Deal with EM_LOONGARCH.
+	(Read_Address): Deal with LOONGARCH.
+
+2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118459
+	* libgnat/s-objrea.ads (Object_Arch): Add S390 and RISCV.
+	* libgnat/s-objrea.adb (EM_S390): New named number.
+	(EM_RISCV): Likewise.
+	(ELF_Ops.Initialize): Deal with EM_S390 and EM_RISCV.
+	(Read_Address): Deal with S390 and RISCV.
+
 2026-11-08  Andrea Boido  <andrea.boido@vector.com>
 
 	PR ada/128457

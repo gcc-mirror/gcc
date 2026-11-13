@@ -1,3 +1,16 @@
+2026-11-12  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/127899
+	* tree-object-size.cc (plus_stmt_object_size): Reset WHOLESIZE
+	if BYTES is unknown.
+	(dynamic_object_size): Return bool.
+	(cond_expr_object_size): Adjust calls and return REEXAMINE.
+	(collect_object_sizes_for): Add assert that size is unknown for
+	reexamined objects.
+
 2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:
