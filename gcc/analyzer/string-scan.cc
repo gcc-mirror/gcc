@@ -284,12 +284,16 @@ scan_for_first_zero_byte (concrete_byte_offset start_byte_offset) const
 		      nested_scan.m_state);
 }
 
+#if CHECKING_P
+
 string_scan
 named_test_bit_vector::
 scan_for_first_zero_byte (concrete_byte_offset start_byte_offset) const
 {
   return string_scan::cannot_scan (start_byte_offset);
 }
+
+#endif /* #if CHECKING_P */
 
 string_scan
 empty_bit_vector::

@@ -1245,6 +1245,8 @@ make_markup_node (markup_context &markup_ctxt) const
   return m_sval.make_markup_node (markup_ctxt);
 }
 
+#if CHECKING_P
+
 // template<typename ConcreteValueType> class named_test_scalar : public scalar<ConcreteValueType>
 
 template<typename ConcreteValueType>
@@ -1349,6 +1351,8 @@ named_test_scalar<ConcreteValueType>::make_markup_node (markup_context &) const
 {
   return diagnostics::markup::make_text_node (m_name);
 }
+
+#endif /* #if CHECKING_P */
 
 // class bits_from_bytes_scalar : public symbolic_bit_size
 

@@ -869,6 +869,8 @@ for_each_value (iter_result (*) (const symbolic::value_node &val,
   return iter_result::keep_going;
 }
 
+#if CHECKING_P
+
 // class named_test_bit_contents : public unfoldable_bit_contents
 
 named_test_bit_contents::named_test_bit_contents (node_manager &node_mgr,
@@ -938,6 +940,8 @@ for_each_value (iter_result (*) (const symbolic::value_node &val,
   // No-op
   return iter_result::keep_going;
 }
+
+#endif /* #if CHECKING_P */
 
 // class concrete_bit_overlay : public bit_overlay
 
