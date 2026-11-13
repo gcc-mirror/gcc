@@ -936,6 +936,8 @@ vn_reference_eq (const_vn_reference_t const vr1, const_vn_reference_t const vr2,
 		      || ! TYPE_SIZE (vro2->type)
 		      || ! operand_equal_p (TYPE_SIZE (vro1->type),
 					    TYPE_SIZE (vro2->type))))
+	      || vro1->clique != vro2->clique
+	      || vro1->base != vro2->base
 	      || (get_deref_alias_set (vro1->opcode == MEM_REF
 				       ? TREE_TYPE (vro1->op0)
 				       : TREE_TYPE (vro1->op2))

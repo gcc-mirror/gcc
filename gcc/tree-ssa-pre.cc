@@ -910,6 +910,23 @@ prefer (pre_expr a, pre_expr b)
 		      p = psize;
 		    }
 		}
+	      /* When restrict info differs we have to pick the non-restricted
+		 variant if available.  */
+	      if (vroa->clique != vrob->clique
+		  || vroa->base != vrob->base)
+		{
+		  pre_expr prestrict = NULL;
+		  if (vroa->clique == 0)
+		    prestrict = a;
+		  else if (vrob->clique == 0)
+		    prestrict = b;
+		  else
+		    /* There's no conservative variant to pick.  */
+		    return NULL;
+		  if (p && p != prestrict)
+		    return NULL;
+		  p = prestrict;
+		}
 	    }
 	}
       /* Note we cannot leave it undecided because when having
