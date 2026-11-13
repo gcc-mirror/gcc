@@ -5693,7 +5693,7 @@ public:
   {}
 
   /* opt_pass methods: */
-  bool gate (function *) final override { return flag_tm; }
+  bool gate (function *) final override { return (flag_tm && !seen_error ()); }
   unsigned int execute (function *) final override { return ipa_tm_execute (); }
 
 }; // class pass_ipa_tm
