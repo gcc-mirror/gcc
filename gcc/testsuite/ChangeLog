@@ -1,3 +1,19 @@
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128042
+	* gfortran.dg/transfer_simplify_17.f90: New test.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* gfortran.dg/transfer_simplify_16.f90: New test.
+
 2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:
