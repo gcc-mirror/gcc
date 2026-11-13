@@ -33,6 +33,14 @@ extern const struct gcn_device_def {
   int max_isa_vgprs;
   unsigned generic_version;
   const char *arch_family;
+  int simds_per_cu;
+  int max_waves_per_simd;
+  int vgpr_granularity;
+  int sgprs_per_simd;
+  int sgpr_granularity;
+  int max_normal_sgprs;
+  int max_normal_vgprs;
+  int max_normal_avgprs;
 } gcn_devices[];
 
 #define TARGET_CPU_CPP_BUILTINS()                                              \

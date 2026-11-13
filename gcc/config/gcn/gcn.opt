@@ -61,6 +61,10 @@ mstack-size=
 Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1) Undocumented
 Obsolete; use GCN_STACK_SIZE at runtime.
 
+mmin-waves-per-cu=
+Target RejectNegative Joined UInteger IntegerRange(4, 40) Var(gcn_min_waves_per_cu) Init(4)
+-mmin-waves-per-cu=<n>	Limit the registers used by kernels so that at least <n> wavefronts fit on each compute unit.
+
 Variable
 int gang_private_size_opt = -1
 
