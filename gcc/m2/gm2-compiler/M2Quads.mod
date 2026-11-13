@@ -12671,8 +12671,14 @@ BEGIN
    PushValue (constValue) ;
    IF type = NulSym
    THEN
-      MetaErrorT0 (tokcbrpos,
-                   '{%E}constructor requires a type before the opening %{')
+      IF tok = UnknownTokenNo
+      THEN
+         MetaErrorT0 (tokcbrpos,
+                      '{%E}constructor requires a type before the opening %{')
+      ELSE
+         MetaErrorT0 (tok,
+                      '{%E}the constructor type before the opening %{ is unknown')
+      END
    ELSE
       ChangeToConstructor (tok, type) ;
       PutConstructorFrom (constValue, type) ;
