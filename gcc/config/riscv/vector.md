@@ -857,7 +857,7 @@
 				vfcvtitof,vfncvtitof,vfncvtftoi,vfncvtftof,vmalu,vmiota,vmidx,\
 				vimovxv,vfmovfv,vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
 				vgather,vcompress,vmov,vnclip,vnshift,vandn,vcpop,vclz,vctz,vrol,vror,\
-				xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
+				vbrev,vbrev8,vrev8,xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
 	       (const_int 0)
 
 	       (eq_attr "type" "vimovvx,vfmovvf")

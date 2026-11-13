@@ -4191,12 +4191,20 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   step = diff + 1;
   size = step * GET_MODE_UNIT_BITSIZE (d->vmode);
 
+  bool need_zvbb = false;
+
   switch (size)
     {
     case 16:
       break;
     case 32:
     case 64:
+      if ((TARGET_ZVBB || TARGET_ZVKB) && GET_MODE_UNIT_SIZE (d->vmode) == 1)
+	{
+	  need_zvbb = true;
+	  break;
+	}
+
       /* We will have VEC_PERM_EXPR after rtl expand when invoking
 	 __builtin_bswap.  It will generate about 9 instructions in
 	 loop as below, no matter it is bswap16, bswap32 or bswap64.
@@ -4242,29 +4250,58 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
   if (!known_gt (GET_MODE_NUNITS (d->vmode), 2))
     return false;
 
+  /* Build the element mode we need to use for swapping.  */
+  scalar_mode elmode;
+  if (step == 2)
+    elmode = HImode;
+  else if (step == 4)
+    elmode = SImode;
+  else if (step == 8)
+    elmode = DImode;
+  else
+    gcc_unreachable ();
+
+  machine_mode swap_mode;
+  poly_uint64 swap_mode_nunits;
+  if (!can_div_trunc_p (GET_MODE_NUNITS (d->vmode), step, &swap_mode_nunits))
+    return false;
+
+  if (!get_vector_mode (elmode, swap_mode_nunits).exists (&swap_mode))
+    return false;
+
+  insn_code icode = code_for_pred_v (UNSPEC_VREV8, swap_mode);
+  bool zvbb_supported = icode != CODE_FOR_nothing;
+  if (need_zvbb && !zvbb_supported)
+    return false;
+
   if (d->testing_p)
     return true;
 
-  machine_mode vhi_mode;
-  poly_uint64 vhi_nunits = exact_div (GET_MODE_NUNITS (d->vmode), 2);
-
-  if (!get_vector_mode (HImode, vhi_nunits).exists (&vhi_mode))
-    return false;
+  /* With Zvbb, this is just one instruction.  */
+  if ((TARGET_ZVBB || TARGET_ZVKB)
+      && zvbb_supported)
+    {
+      rtx src = lowpart_subreg (swap_mode, d->op0, d->vmode);
+      rtx dest = lowpart_subreg (swap_mode, d->target, d->vmode);
+      rtx ops[] = {dest, src};
+      emit_vlmax_insn (icode, UNARY_OP, ops);
+      return true;
+    }
 
   /* Step-1: Move op0 to src with VHI mode.  */
-  rtx src = gen_reg_rtx (vhi_mode);
-  emit_move_insn (src, gen_lowpart (vhi_mode, d->op0));
+  rtx src = gen_reg_rtx (swap_mode);
+  emit_move_insn (src, gen_lowpart (swap_mode, d->op0));
 
   /* Step-2: Shift right 8 bits to dest.  */
-  rtx dest = expand_binop (vhi_mode, lshr_optab, src, gen_int_mode (8, Pmode),
+  rtx dest = expand_binop (swap_mode, lshr_optab, src, gen_int_mode (8, Pmode),
 			   NULL_RTX, 0, OPTAB_DIRECT);
 
   /* Step-3: Shift left 8 bits to src.  */
-  src = expand_binop (vhi_mode, ashl_optab, src, gen_int_mode (8, Pmode),
+  src = expand_binop (swap_mode, ashl_optab, src, gen_int_mode (8, Pmode),
 		      NULL_RTX, 0, OPTAB_DIRECT);
 
   /* Step-4: Logic Or dest and src to dest.  */
-  dest = expand_binop (vhi_mode, ior_optab, dest, src,
+  dest = expand_binop (swap_mode, ior_optab, dest, src,
 		       NULL_RTX, 0, OPTAB_DIRECT);
 
   /* Step-5: Move src to target with VQI mode.  */
