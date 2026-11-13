@@ -44,7 +44,7 @@ PROCEDURE Mod2Gcc (sym: CARDINAL) : tree ;
    Gcc2Mod - given a gcc tree return the modula-2 symbol.
 *)
 
-PROCEDURE Gcc2Mod (tree: tree) : CARDINAL ;
+PROCEDURE Gcc2Mod (gcctree: tree) : CARDINAL ;
 
 
 (*

@@ -123,14 +123,14 @@ END Mod2Gcc ;
    Gcc2Mod - given a gcc tree return the modula-2 symbol.
 *)
 
-PROCEDURE Gcc2Mod (tree: tree) : CARDINAL ;
+PROCEDURE Gcc2Mod (gcctree: tree) : CARDINAL ;
 VAR
    high, i: CARDINAL ;
 BEGIN
    i := 1 ;
    high := HighIndice (mod2gcc) ;
    WHILE i <= high DO
-      IF GetIndice (mod2gcc, i) = tree
+      IF GetIndice (mod2gcc, i) = gcctree
       THEN
          RETURN i
       END ;
