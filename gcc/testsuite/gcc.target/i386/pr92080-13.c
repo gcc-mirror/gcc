@@ -1,5 +1,5 @@
 /* { dg-do run { target { avx512f_runtime } } } */
-/* { dg-options "-mavx512f -mtune=icelake-server -O2 -save-temps -fno-pie" } */
+/* { dg-options "-mavx512f -mtune=icelake-server -O2 -save-temps -fno-pie -no-pie" } */
 /* { dg-final { scan-assembler-times "vpbroadcastd" 2 } } */
 
 #include <assert.h>
