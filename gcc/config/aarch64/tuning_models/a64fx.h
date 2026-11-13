@@ -65,6 +65,7 @@ static const advsimd_vec_cost a64fx_advsimd_vector_cost =
   13, /* reduc_f16_cost  */
   13, /* reduc_f32_cost  */
   13, /* reduc_f64_cost  */
+  0, /* reduc_dotprod_cost  */
   13, /* store_elt_extra_cost  */
   13, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
@@ -90,6 +91,7 @@ static const sve_vec_cost a64fx_sve_vector_cost =
     13, /* reduc_f16_cost  */
     13, /* reduc_f32_cost  */
     13, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     13, /* store_elt_extra_cost  */
     13, /* vec_to_scalar_cost  */
     4, /* scalar_to_vec_cost  */

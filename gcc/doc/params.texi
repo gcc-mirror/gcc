@@ -2089,7 +2089,9 @@ rates into account when deciding whether a loop should be vectorized
 using SVE, vectorized using Advanced SIMD, or not vectorized at all.
 If this parameter is set to @var{n}, GCC does not use this heuristic
 for loops that are known to execute in fewer than @var{n} Advanced
-SIMD iterations.
+SIMD iterations.  For such loops, GCC also ignores the latency of
+dot-product reductions when deciding how much to unroll the vectorized
+loop.
 
 @paindex aarch64-vect-unroll-limit
 @item aarch64-vect-unroll-limit

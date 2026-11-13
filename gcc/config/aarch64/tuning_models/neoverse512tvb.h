@@ -49,6 +49,7 @@ static const sve_vec_cost neoverse512tvb_sve_vector_cost =
     8, /* reduc_f32_cost  */
     /* Likewise for 1 scalar FADD (2 cycles) vs. 4: 2 + 2.  */
     4, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     2, /* store_elt_extra_cost  */
     /* This value is just inherited from the Cortex-A57 table.  */
     8, /* vec_to_scalar_cost  */

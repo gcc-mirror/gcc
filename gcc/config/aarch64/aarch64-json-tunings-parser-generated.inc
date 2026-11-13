@@ -162,6 +162,7 @@ parse_vec_costs_advsimd (gcc_json_context &ctxt, const json::object &jo, T &advs
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f16_cost", advsimd.reduc_f16_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f32_cost", advsimd.reduc_f32_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f64_cost", advsimd.reduc_f64_cost);
+  PARSE_INTEGER_FIELD (ctxt, jo, "reduc_dotprod_cost", advsimd.reduc_dotprod_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "store_elt_extra_cost", advsimd.store_elt_extra_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "vec_to_scalar_cost", advsimd.vec_to_scalar_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "scalar_to_vec_cost", advsimd.scalar_to_vec_cost);
@@ -188,6 +189,7 @@ parse_vec_costs_sve (gcc_json_context &ctxt, const json::object &jo, T &sve)
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f16_cost", sve.reduc_f16_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f32_cost", sve.reduc_f32_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "reduc_f64_cost", sve.reduc_f64_cost);
+  PARSE_INTEGER_FIELD (ctxt, jo, "reduc_dotprod_cost", sve.reduc_dotprod_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "store_elt_extra_cost", sve.store_elt_extra_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "vec_to_scalar_cost", sve.vec_to_scalar_cost);
   PARSE_INTEGER_FIELD (ctxt, jo, "scalar_to_vec_cost", sve.scalar_to_vec_cost);

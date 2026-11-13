@@ -192,6 +192,7 @@ serialize_vec_costs_advsimd (const T &advsimd)
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "reduc_f16_cost", advsimd.reduc_f16_cost);
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "reduc_f32_cost", advsimd.reduc_f32_cost);
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "reduc_f64_cost", advsimd.reduc_f64_cost);
+  SERIALIZE_INTEGER_FIELD (advsimd_obj, "reduc_dotprod_cost", advsimd.reduc_dotprod_cost);
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "store_elt_extra_cost", advsimd.store_elt_extra_cost);
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "vec_to_scalar_cost", advsimd.vec_to_scalar_cost);
   SERIALIZE_INTEGER_FIELD (advsimd_obj, "scalar_to_vec_cost", advsimd.scalar_to_vec_cost);
@@ -222,6 +223,7 @@ serialize_vec_costs_sve (const T &sve)
   SERIALIZE_INTEGER_FIELD (sve_obj, "reduc_f16_cost", sve.reduc_f16_cost);
   SERIALIZE_INTEGER_FIELD (sve_obj, "reduc_f32_cost", sve.reduc_f32_cost);
   SERIALIZE_INTEGER_FIELD (sve_obj, "reduc_f64_cost", sve.reduc_f64_cost);
+  SERIALIZE_INTEGER_FIELD (sve_obj, "reduc_dotprod_cost", sve.reduc_dotprod_cost);
   SERIALIZE_INTEGER_FIELD (sve_obj, "store_elt_extra_cost", sve.store_elt_extra_cost);
   SERIALIZE_INTEGER_FIELD (sve_obj, "vec_to_scalar_cost", sve.vec_to_scalar_cost);
   SERIALIZE_INTEGER_FIELD (sve_obj, "scalar_to_vec_cost", sve.scalar_to_vec_cost);

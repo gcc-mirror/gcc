@@ -65,6 +65,7 @@ static const advsimd_vec_cost hip12_advsimd_vector_cost =
   9, /* reduc_f16_cost  */
   6, /* reduc_f32_cost  */
   3, /* reduc_f64_cost  */
+  0, /* reduc_dotprod_cost  */
   2, /* store_elt_extra_cost  */
   2, /* vec_to_scalar_cost  */
   4, /* scalar_to_vec_cost  */
@@ -101,6 +102,7 @@ static const sve_vec_cost hip12_sve_vector_cost =
     22, /* reduc_f32_cost  */
     /* Likewise for 3 scalar FADDs (~2 cycles) vs. 9: 6 + 7.  */
     13, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     2, /* store_elt_extra_cost  */
     2, /* vec_to_scalar_cost  */
     4, /* scalar_to_vec_cost  */

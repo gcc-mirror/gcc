@@ -17853,6 +17853,11 @@ public:
      reductions.  */
   unsigned int reduction_latency = 0;
 
+  /* The same, but for dot-product reductions.  It only feeds the suggested
+     unroll factor: reduction_latency also compares loops, and the higher
+     latency there would make short loops lose their dot products.  */
+  unsigned int dot_prod_latency = 0;
+
   /* The number of individual predicate operations.  See the comments
      in aarch64_sve_vec_issue_info for details.  */
   unsigned int pred_ops = 0;
@@ -17991,6 +17996,9 @@ aarch64_vec_op_count::dump () const
 		     "  predicate operations = %d\n", pred_ops);
   dump_printf_loc (MSG_NOTE, vect_location,
 		   "  reduction latency = %d\n", reduction_latency);
+  if (dot_prod_latency)
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "  dot product latency = %d\n", dot_prod_latency);
   if (auto rcpi = rename_cycles_per_iter ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "  estimated cycles per iteration to rename = %f\n",
@@ -18035,6 +18043,7 @@ private:
   unsigned int adjust_body_cost (loop_vec_info, const aarch64_vector_costs *,
 				 unsigned int);
   bool prefer_unrolled_loop () const;
+  bool low_iteration_count_p () const;
   unsigned int determine_suggested_unroll_factor (loop_vec_info loop_vinfo);
 
   /* True if we have performed one-time initialization based on the
@@ -18790,11 +18799,23 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
   return stmt_cost;
 }
 
-/* Return the cost of implementing STMT_INFO using VECTYPE, given the
+/* The costs that aarch64_vect_stmt_cost can calculate.  */
+enum aarch64_vect_cost_kind
+{
+  /* The cost of issuing the statement.  */
+  AARCH64_VECT_COST_ISSUE,
+
+  /* The latency of the statement's accumulation into a reduction, for
+     statements that accumulate in place, such as dot products.  */
+  AARCH64_VECT_COST_REDUC_LATENCY
+};
+
+/* Return the KIND cost of implementing STMT_INFO using VECTYPE, given the
    default cost STMT_COST.  */
 static fractional_cost
 aarch64_vect_stmt_cost (stmt_vec_info stmt_info, tree vectype,
-		       fractional_cost stmt_cost)
+		       fractional_cost stmt_cost,
+		       aarch64_vect_cost_kind kind = AARCH64_VECT_COST_ISSUE)
 {
   stmt_info = vect_stmt_to_vectorize (stmt_info);
   gcall *call = dyn_cast<gcall *> (STMT_VINFO_STMT (stmt_info));
@@ -18807,16 +18828,53 @@ aarch64_vect_stmt_cost (stmt_vec_info stmt_info, tree vectype,
 
   auto vec_flags = aarch64_classify_vector_mode (TYPE_MODE (vectype));
   bool advsimd_p = vec_flags & VEC_ADVSIMD;
+  bool sve_p = vec_flags & VEC_ANY_SVE;
   bool is_128bit_p = known_eq (GET_MODE_BITSIZE (TYPE_MODE (vectype)), 128);
+  bool latency_p = kind == AARCH64_VECT_COST_REDUC_LATENCY;
   if (assign)
     {
+      /* The latency of the cases below that expand to an integer dot
+	 product.  The checks mirror the dot_prod, sad and reduc_widen_sum
+	 expanders.  */
+      tree lhs_type = TREE_TYPE (gimple_assign_lhs (assign));
+      fractional_cost dot_prod_latency = stmt_cost;
+      if (latency_p && INTEGRAL_TYPE_P (lhs_type))
+	dot_prod_latency
+	  = aarch64_simd_vec_costs_for_flags (vec_flags)->reduc_dotprod_cost;
+
       switch (gimple_assign_rhs_code (assign))
       {
+	case DOT_PROD_EXPR:
+	  return latency_p ? dot_prod_latency : stmt_cost;
+
 	case SAD_EXPR:
+	  /* Without +dotprod, Advanced SIMD accumulates with UADALP or SADALP
+	     instead.  */
+	  if (latency_p)
+	    return sve_p || TARGET_DOTPROD ? dot_prod_latency : stmt_cost;
 	  return stmt_cost * (advsimd_p && is_128bit_p ? 3 : 1);
 
 	case WIDEN_SUM_EXPR:
 	  {
+	    if (latency_p)
+	      {
+		/* The expanders use a dot product against ones only when it
+		   covers the whole widening step.  Test modes as they do:
+		   _Bool is QImode but has precision 1.  */
+		machine_mode from
+		  = TYPE_MODE (TREE_TYPE (gimple_assign_rhs1 (assign)));
+		machine_mode to = TYPE_MODE (lhs_type);
+		bool dot_prod_p;
+		if (sve_p)
+		  dot_prod_p = ((from == QImode && to == SImode)
+				|| (from == HImode && to == DImode)
+				|| (TARGET_SVE2p1_OR_SME2
+				    && from == HImode && to == SImode));
+		else
+		  dot_prod_p = TARGET_DOTPROD && from == QImode && to == SImode;
+		return dot_prod_p ? dot_prod_latency : stmt_cost;
+	      }
+
 	    tree rhs = gimple_assign_rhs1 (assign);
 	    if (!advsimd_p
 		|| TARGET_DOTPROD
@@ -18988,14 +19046,22 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       unsigned int base
 	= aarch64_in_loop_reduction_latency (m_vinfo, node,
 					     stmt_info, m_vec_flags);
+      unsigned int dot_prod_base = 0;
+      if (!m_costing_for_scalar)
+	dot_prod_base
+	  = aarch64_vect_stmt_cost (stmt_info, SLP_TREE_VECTYPE (node), 0,
+				    AARCH64_VECT_COST_REDUC_LATENCY).ceil ();
       if (m_costing_for_scalar
 	  || aarch64_force_single_cycle (m_vinfo, node))
-	/* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
-	   and then accumulate that, but at the moment the loop-carried
-	   dependency includes all copies.  */
-	ops->reduction_latency = MAX (ops->reduction_latency, base * count);
-      else
-	ops->reduction_latency = MAX (ops->reduction_latency, base);
+	{
+	  /* ??? Ideally we'd use a tree to reduce the copies down to 1 vector,
+	     and then accumulate that, but at the moment the loop-carried
+	     dependency includes all copies.  */
+	  base *= count;
+	  dot_prod_base *= count;
+	}
+      ops->reduction_latency = MAX (ops->reduction_latency, base);
+      ops->dot_prod_latency = MAX (ops->dot_prod_latency, dot_prod_base);
     }
 
   if (stmt_info && (kind == scalar_stmt || kind == vector_stmt))
@@ -19761,6 +19827,18 @@ adjust_body_cost_sve (const aarch64_vec_op_count *ops,
   return sve_cycles_per_iter;
 }
 
+/* Return true if the vector loop is known to iterate so few times that
+   latency matters more than issue rate.  */
+bool
+aarch64_vector_costs::low_iteration_count_p () const
+{
+  unsigned int threshold = aarch64_loop_vect_issue_rate_niters;
+  if (m_vec_flags & VEC_ANY_SVE)
+    threshold = CEIL (threshold, aarch64_estimated_sve_vq ());
+  return (m_num_vector_iterations >= 1
+	  && m_num_vector_iterations < threshold);
+}
+
 unsigned int
 aarch64_vector_costs::
 determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
@@ -19776,6 +19854,11 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
   if (!sve && !TARGET_SVE2 && m_has_avg)
     return 1;
 
+  /* Unrolling into more dot-product accumulators does not pay off in loops
+     that run only a few vector iterations, the loops that adjust_body_cost
+     costs by latency alone.  */
+  bool use_dot_prod_latency_p = !low_iteration_count_p ();
+
   unsigned int max_unroll_factor = 1;
   for (auto vec_ops : m_ops)
     {
@@ -19786,8 +19869,10 @@ determine_suggested_unroll_factor (loop_vec_info loop_vinfo)
       /* Limit unroll factor to a value adjustable by the user, the default
 	 value is 4. */
       unsigned int unroll_factor = aarch64_vect_unroll_limit;
-      unsigned int factor
-       = vec_ops.reduction_latency > 1 ? vec_ops.reduction_latency : 1;
+      unsigned int latency = vec_ops.reduction_latency;
+      if (use_dot_prod_latency_p)
+	latency = MAX (latency, vec_ops.dot_prod_latency);
+      unsigned int factor = latency > 1 ? latency : 1;
       unsigned int temp;
 
       /* Sanity check, this should never happen.  */
@@ -19905,12 +19990,6 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 	}
     }
 
-  /* Decide whether to stick to latency-based costs or whether to try to
-     take issue rates into account.  */
-  unsigned int threshold = aarch64_loop_vect_issue_rate_niters;
-  if (m_vec_flags & VEC_ANY_SVE)
-    threshold = CEIL (threshold, aarch64_estimated_sve_vq ());
-
   /* Increase the cost of the vector code if it looks like the vector code has
      limited throughput due to outer-loop vectorization.  As a rough estimate we
      require at least half the operations be a duplicate expression.  This is an
@@ -19930,8 +20009,9 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 			 " low throughput of per iteration due to splats\n",
 			 body_cost);
     }
-  else if (m_num_vector_iterations >= 1
-	   && m_num_vector_iterations < threshold)
+  /* Decide whether to stick to latency-based costs or whether to try to
+     take issue rates into account.  */
+  else if (low_iteration_count_p ())
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,

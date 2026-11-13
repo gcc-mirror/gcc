@@ -37,6 +37,7 @@ static const advsimd_vec_cost ampere1_advsimd_vector_cost =
   9, /* reduc_f16_cost  */
   6, /* reduc_f32_cost  */
   5, /* reduc_f64_cost  */
+  3, /* reduc_dotprod_cost  */
   8, /* store_elt_extra_cost  */
   6, /* vec_to_scalar_cost  */
   7, /* scalar_to_vec_cost  */

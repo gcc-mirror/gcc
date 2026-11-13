@@ -227,6 +227,11 @@ struct simd_vec_cost
   int reduc_f32_cost;
   int reduc_f64_cost;
 
+  /* The accumulator latency of integer dot products, also used for SAD and
+     widening sums expanded as dot products.  Only the suggested unroll
+     factor uses it, with issue_info, and only above the reduction latency.  */
+  int reduc_dotprod_cost;
+
   /* Additional cost of storing a single vector element, on top of the
      normal cost of a scalar store.  */
   int store_elt_extra_cost;

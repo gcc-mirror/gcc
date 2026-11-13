@@ -47,6 +47,7 @@ static const advsimd_vec_cost neoversen3_advsimd_vector_cost =
   9, /* reduc_f16_cost  */
   6, /* reduc_f32_cost  */
   3, /* reduc_f64_cost  */
+  0, /* reduc_dotprod_cost  */
   2, /* store_elt_extra_cost  */
   /* This value is just inherited from the Cortex-A57 table.  */
   8, /* vec_to_scalar_cost  */
@@ -90,6 +91,7 @@ static const sve_vec_cost neoversen3_sve_vector_cost =
     6, /* reduc_f32_cost  */
     /* Likewise for 1 scalar FADD (~2 cycles) vs. 2: 2 + 0.  */
     2, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     2, /* store_elt_extra_cost  */
     /* This value is just inherited from the Cortex-A57 table.  */
     8, /* vec_to_scalar_cost  */

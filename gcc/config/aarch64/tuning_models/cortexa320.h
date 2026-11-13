@@ -65,6 +65,7 @@ static const advsimd_vec_cost cortexa320_advsimd_vector_cost =
   12, /* reduc_f16_cost  */
   8, /* reduc_f32_cost  */
   4, /* reduc_f64_cost  */
+  0, /* reduc_dotprod_cost  */
   0, /* store_elt_extra_cost  */
   /* This value is just inherited from the Cortex-A57 table.  */
   8, /* vec_to_scalar_cost  */
@@ -108,6 +109,7 @@ static const sve_vec_cost cortexa320_sve_vector_cost =
     8, /* reduc_f32_cost  */
     /* Likewise for 1 scalar FADD (~4 cycles) vs. 4: 4 + 0.  */
     4, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     0, /* store_elt_extra_cost  */
     /* This value is just inherited from the Cortex-A57 table.  */
     8, /* vec_to_scalar_cost  */

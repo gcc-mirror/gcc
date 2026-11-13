@@ -66,6 +66,7 @@ static const advsimd_vec_cost generic_armv8_a_advsimd_vector_cost =
   2, /* reduc_f16_cost  */
   2, /* reduc_f32_cost  */
   2, /* reduc_f64_cost  */
+  0, /* reduc_dotprod_cost  */
   2, /* store_elt_extra_cost  */
   2, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
@@ -92,6 +93,7 @@ static const sve_vec_cost generic_armv8_a_sve_vector_cost =
     2, /* reduc_f16_cost  */
     2, /* reduc_f32_cost  */
     2, /* reduc_f64_cost  */
+    0, /* reduc_dotprod_cost  */
     2, /* store_elt_extra_cost  */
     2, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
