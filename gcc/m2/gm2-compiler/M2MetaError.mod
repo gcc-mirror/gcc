@@ -1964,7 +1964,7 @@ BEGIN
       IF eb.filterDef AND IsDefImp (sym[bol])
       THEN
          JoinSentances (eb, GetDefModuleSpellHint (sym[bol]))
-      ELSIF IsUnknown (sym[bol])
+      ELSIF IsUnknown (sym[bol]) OR IsError (sym[bol])
       THEN
          JoinSentances (eb, GetSpellHint (sym[bol]))
       END
