@@ -34,8 +34,8 @@ class write_to_const_diagnostic
 : public pending_diagnostic_subclass<write_to_const_diagnostic>
 {
 public:
-  write_to_const_diagnostic (const region *reg, tree decl)
-  : m_reg (reg), m_decl (decl)
+  write_to_const_diagnostic (const region *base_reg, tree decl)
+  : m_base_reg (base_reg), m_decl (decl)
   {}
 
   const char *get_kind () const final override
@@ -45,7 +45,7 @@ public:
 
   bool operator== (const write_to_const_diagnostic &other) const
   {
-    return (m_reg == other.m_reg
+    return (m_base_reg == other.m_base_reg
 	    && m_decl == other.m_decl);
   }
 
@@ -58,7 +58,7 @@ public:
   {
     auto_diagnostic_group d;
     bool warned;
-    switch (m_reg->get_kind ())
+    switch (m_base_reg->get_kind ())
       {
       default:
 	warned = ctxt.warn ("write to %<const%> object %qE", m_decl);
@@ -79,7 +79,7 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    switch (m_reg->get_kind ())
+    switch (m_base_reg->get_kind ())
       {
       default:
 	{
@@ -103,14 +103,14 @@ public:
   }
 
 private:
-  const region *m_reg;
+  const region *m_base_reg;
   tree m_decl;
 };
 
 std::unique_ptr<pending_diagnostic>
-make_write_to_const_diagnostic (const region *dest_reg, tree decl)
+make_write_to_const_diagnostic (const region *base_reg, tree decl)
 {
-  return std::make_unique<write_to_const_diagnostic> (dest_reg, decl);
+  return std::make_unique<write_to_const_diagnostic> (base_reg, decl);
 }
 
 /* A subclass of pending_diagnostic for complaining about writes to
@@ -120,8 +120,8 @@ class write_to_string_literal_diagnostic
 : public pending_diagnostic_subclass<write_to_string_literal_diagnostic>
 {
 public:
-  write_to_string_literal_diagnostic (const region *reg)
-  : m_reg (reg)
+  write_to_string_literal_diagnostic (const region *base_reg)
+  : m_base_reg (base_reg)
   {}
 
   const char *get_kind () const final override
@@ -131,7 +131,7 @@ public:
 
   bool operator== (const write_to_string_literal_diagnostic &other) const
   {
-    return m_reg == other.m_reg;
+    return m_base_reg == other.m_base_reg;
   }
 
   int get_controlling_option () const final override
@@ -155,13 +155,13 @@ public:
   }
 
 private:
-  const region *m_reg;
+  const region *m_base_reg;
 };
 
 std::unique_ptr<pending_diagnostic>
-make_write_to_string_literal_diagnostic (const region *reg)
+make_write_to_string_literal_diagnostic (const region *base_reg)
 {
-  return std::make_unique<write_to_string_literal_diagnostic> (reg);
+  return std::make_unique<write_to_string_literal_diagnostic> (base_reg);
 }
 
 } // namespace ana

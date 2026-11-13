@@ -39,14 +39,9 @@ test_pointer_le (unsigned *p, int i, int j)
     {
       __analyzer_eval (&local_buf[i] <= hide_from_optimizer (&local_buf[j])); // { dg-warning "UNKNOWN" }
       if (i == j)
-	{
-	  __analyzer_eval (&local_buf[i] <= hide_from_optimizer (&local_buf[j])); // { dg-warning "TRUE" "ideal behavior" { xfail *-*-* } }
-	  // { dg-message "UNKNOWN" "current behavior" { target *-*-* } .-1 }
-	}
+	__analyzer_eval (&local_buf[i] <= hide_from_optimizer (&local_buf[j])); // { dg-warning "TRUE" }
       else
-	{
-	  __analyzer_eval (&local_buf[i] <= hide_from_optimizer (&local_buf[j])); // { dg-warning "UNKNOWN" }
-	}
+	__analyzer_eval (&local_buf[i] <= hide_from_optimizer (&local_buf[j])); // { dg-warning "UNKNOWN" }
     }
   }
 

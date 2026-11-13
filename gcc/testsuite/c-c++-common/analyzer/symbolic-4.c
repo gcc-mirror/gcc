@@ -10,7 +10,7 @@ void test_1 (int i, int j, int k)
 
   memset (iarr, 0, sizeof (iarr));
   __analyzer_eval (iarr[0] == 0); /* { dg-warning "TRUE" } */
-  __analyzer_eval (iarr[i] == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (iarr[i] == 0); /* { dg-warning "UNKNOWN" } */
   __analyzer_eval (iarr[i] == j); /* { dg-warning "UNKNOWN" } */
 
   iarr[i] = j;

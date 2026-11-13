@@ -7,6 +7,6 @@ void test (int *p, int n)
   for (i = 0; i < n; i++)
     {
       p[i] = i; /* { dg-bogus "uninitialized" } */
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
     }
 }

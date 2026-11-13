@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
+#include "analyzer/symbolic-nodes.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/call-string.h"
 #include "analyzer/supergraph.h"
@@ -85,6 +86,34 @@ const gcall &
 call_string::element_t::get_call_stmt () const
 {
   return m_call_op->get_gcall ();
+}
+
+std::unique_ptr<text_art::tree_widget>
+call_string::element_t::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+
+  pretty_printer pp;
+  pp_printf (&pp, "SN: %i -> SN: %i in %qs",
+	     get_call_snode_in_caller ()->m_id,
+	     get_return_snode_in_caller ()->m_id,
+	     function_name (get_caller_function ()));
+  return tree_widget::make (nds, &pp);
+}
+
+std::unique_ptr<text_art::tree_widget>
+call_string::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+
+  auto w = tree_widget::make (nds, "call_string");
+
+  call_string::element_t *e;
+  int i;
+  FOR_EACH_VEC_ELT (m_elements, i, e)
+    w->add_child (e->make_dump_widget (nds));
+
+  return w;
 }
 
 /* Print this to PP.  */

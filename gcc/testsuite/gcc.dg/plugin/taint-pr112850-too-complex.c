@@ -1,11 +1,11 @@
 /* Reduced from false positive in Linux kernel in sound/core/rawmidi.c.
 
-   With --param=analyzer-max-svalue-depth=12, the value being compared
+   With --param=analyzer-max-svalue-depth=10, the value being compared
    at the sanitization is too complex and becomes UNKNOWN; make sure
    this doesn't lead to a false positive.  */
 
 /* { dg-do compile } */
-/* { dg-options "-fanalyzer -O2 -Wanalyzer-symbol-too-complex --param=analyzer-max-svalue-depth=12" } */
+/* { dg-options "-fanalyzer -O2 -Wanalyzer-symbol-too-complex --param=analyzer-max-svalue-depth=10" } */
 /* { dg-require-effective-target analyzer } */
 
 typedef __UINTPTR_TYPE__ uintptr_t;

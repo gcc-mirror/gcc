@@ -56,6 +56,7 @@ void test(int n)
       /* TODO: should we ought to figure out i > 0 after 1st iteration?  */
 
       __analyzer_eval (it->val >= 0); /* { dg-warning "TRUE" } */
+      /* { dg-warning "UNKNOWN" "2nd iteration" { target *-*-* } .-1 } */
 
       __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 

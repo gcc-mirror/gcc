@@ -68,7 +68,7 @@ static void parse_tbl(char *buffer) {
   line_no++;
   if (*buffer != ';' && *buffer != '\0') {
     if (*buffer == '#') {
-      store_data(buffer, ""); /* { dg-bogus "leak" "PR analyzer/107158" { xfail *-*-* } } */
+      store_data(buffer, ""); /* { dg-bogus "leak" "PR analyzer/107158" } */
     } else {
 
       while (*s && !((*__ctype_b_loc())[(int)(((int)*s))] &
@@ -77,7 +77,7 @@ static void parse_tbl(char *buffer) {
       while (
           ((*__ctype_b_loc())[(int)(((int)*s))] & (unsigned short int)_ISspace))
         *s++ = '\0';
-      store_data(buffer, s); /* { dg-bogus "leak" "PR analyzer/107158" { xfail *-*-* } } */
+      store_data(buffer, s); /* { dg-bogus "leak" "PR analyzer/107158" } */
     }
   }
 }

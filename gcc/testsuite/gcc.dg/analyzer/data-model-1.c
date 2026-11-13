@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include "analyzer-decls.h"
 
 struct foo
@@ -905,7 +906,7 @@ void foo (struct link *in)
 
 union u
 {
-  int i;
+  intptr_t i;
   int *ptr;
 };
 

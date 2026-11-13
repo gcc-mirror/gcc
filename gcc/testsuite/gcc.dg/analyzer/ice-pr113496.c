@@ -18,4 +18,4 @@ unsigned util_format_get_component_bits() {
   case PIPE_SWIZZLE_X:
   case PIPE_SWIZZLE_W:
     return util_format_get_component_bits_desc_0_3_0;
-}
+} /* { dg-warning "use of uninitialized value '<return-value>'" "" { xfail *-*-* } } */

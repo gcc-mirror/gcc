@@ -46,7 +46,7 @@ void test_3 (void)
   struct coord arr[16];
   arr[3].y = 6;
 
-  glob_arr3[7] = arr[3]; // or should the uninit warning be here?
+  glob_arr3[7] = arr[3];
 
   __analyzer_eval (glob_arr3[7].y == 6); /* { dg-warning "TRUE" } */
   __analyzer_eval (glob_arr3[7].x); /* { dg-warning "uninitialized" "uninit" } */

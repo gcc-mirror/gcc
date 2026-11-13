@@ -40,141 +40,97 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-/* Dump SVALS to PP, sorting them to ensure determinism.  */
-
-static void
-dump_svalue_set (const hash_set <const svalue *> &svals,
-		 pretty_printer *pp, bool simple)
-{
-  auto_vec <const svalue *> v;
-  for (hash_set<const svalue *>::iterator iter = svals.begin ();
-       iter != svals.end (); ++iter)
-    {
-      v.safe_push (*iter);
-    }
-  v.qsort (svalue::cmp_ptr_ptr);
-
-  pp_character (pp, '{');
-  const svalue *sval;
-  unsigned i;
-  FOR_EACH_VEC_ELT (v, i, sval)
-    {
-      if (i > 0)
-	pp_string (pp, ", ");
-      sval->dump_to_pp (pp, simple);
-    }
-  pp_character (pp, '}');
-}
-
 /* class uncertainty_t.  */
 
-/* Dump this object to PP.  */
+void
+uncertainty_t::on_maybe_bound_value (const symbolic::value_node &val)
+{
+  m_maybe_bound_vals.add (&val);
+}
 
 void
-uncertainty_t::dump_to_pp (pretty_printer *pp, bool simple) const
+uncertainty_t::
+on_mutable_value_at_unknown_call (const symbolic::value_node &val)
 {
-  pp_string (pp, "{m_maybe_bound_svals: ");
-  dump_svalue_set (m_maybe_bound_svals, pp, simple);
-
-  pp_string (pp, ", m_mutable_at_unknown_call_svals: ");
-  dump_svalue_set (m_mutable_at_unknown_call_svals, pp, simple);
-  pp_string (pp, "}");
+  m_mutable_at_unknown_call_vals.add (&val);
 }
 
-/* Dump this object to stderr.  */
+bool
+uncertainty_t::unknown_sm_state_p (const svalue *sval)
+{
+  if (m_maybe_bound_vals.contains (sval))
+    return true;
+  if (m_mutable_at_unknown_call_vals.contains (sval))
+    return true;
+
+  if (auto *from_bv = sval->dyn_cast_svalue_from_bit_vector ())
+    {
+      auto *bv = &from_bv->get_bit_vector ();
+      if (m_maybe_bound_vals.contains (bv)
+	  || m_mutable_at_unknown_call_vals.contains (bv))
+	return true;
+    }
+
+  return false;
+}
+
+/* Mark all in BC as being maybe bound.  */
+
+void
+uncertainty_t::add_bit_contents (const symbolic::bit_contents &bc)
+{
+  bc.for_each_value ([] (const symbolic::value_node &val,
+			 void *user_data) -> iter_result {
+    uncertainty_t *self = static_cast<uncertainty_t *> (user_data);
+    self->on_maybe_bound_value (val);
+    return val.for_each_svalue ([] (const svalue &sval,
+				    void *user_data) -> iter_result
+    {
+      uncertainty_t *uncertainty = static_cast<uncertainty_t *> (user_data);
+      uncertainty->on_maybe_bound_value (sval);
+      return iter_result::keep_going;
+    }, user_data);
+    return iter_result::keep_going;
+  }, this);
+}
+
+/* Dump a tree-like representation of this object to stderr.  */
 
 DEBUG_FUNCTION void
-uncertainty_t::dump (bool simple) const
+uncertainty_t::dump () const
 {
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple);
-  pp_newline (&pp);
+  symbolic::dump_node_tree_to_stderr<uncertainty_t> (*this);
 }
 
-/* class binding_key.  */
-
-const binding_key *
-binding_key::make (store_manager *mgr, const region *r)
+void
+uncertainty_t::dump_to_logger (logger &log) const
 {
-  region_offset offset = r->get_offset (mgr->get_svalue_manager ());
-  if (offset.symbolic_p ())
-    return mgr->get_symbolic_binding (r);
-  else
-    {
-      bit_size_t bit_size;
-      if (r->get_bit_size (&bit_size))
-	{
-	  /* Must be non-empty.  */
-	  gcc_assert (bit_size > 0);
-	  return mgr->get_concrete_binding (offset.get_bit_offset (),
-					    bit_size);
-	}
-      else
-	return mgr->get_symbolic_binding (r);
-    }
+  symbolic::dump_node_tree_to_logger<uncertainty_t> (*this, log);
 }
 
-/* Dump this binding_key to stderr.  */
-
-DEBUG_FUNCTION void
-binding_key::dump (bool simple) const
+std::unique_ptr<text_art::tree_widget>
+uncertainty_t::make_dump_widget (symbolic::node_dump_state &nds) const
 {
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple);
-  pp_newline (&pp);
-}
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> w
+    (tree_widget::from_fmt (nds, nullptr, "uncertainty_t"));
 
-/* Get a description of this binding_key.  */
+  {
+    std::unique_ptr<tree_widget> child
+      (tree_widget::from_fmt (nds, nullptr, "m_maybe_bound_vals"));
+    for (auto iter : m_maybe_bound_vals)
+      child->add_child (iter->make_dump_widget (nds));
+    w->add_child (std::move (child));
+  }
+  {
+    std::unique_ptr<tree_widget> child
+      (tree_widget::from_fmt (nds, nullptr, "m_mutable_at_unknown_call_vals"));
+    for (auto iter : m_mutable_at_unknown_call_vals)
+      child->add_child (iter->make_dump_widget (nds));
+    w->add_child (std::move (child));
+  }
 
-label_text
-binding_key::get_desc (bool simple) const
-{
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  dump_to_pp (&pp, simple);
-  return label_text::take (xstrdup (pp_formatted_text (&pp)));
-}
-
-/* qsort callback.  */
-
-int
-binding_key::cmp_ptrs (const void *p1, const void *p2)
-{
-  const binding_key * const *pk1 = (const binding_key * const *)p1;
-  const binding_key * const *pk2 = (const binding_key * const *)p2;
-  return cmp (*pk1, *pk2);
-}
-
-/* Comparator for binding_keys.  */
-
-int
-binding_key::cmp (const binding_key *k1, const binding_key *k2)
-{
-  int concrete1 = k1->concrete_p ();
-  int concrete2 = k2->concrete_p ();
-  if (int concrete_cmp = concrete1 - concrete2)
-    return concrete_cmp;
-  if (concrete1)
-    {
-      const concrete_binding *b1 = (const concrete_binding *)k1;
-      const concrete_binding *b2 = (const concrete_binding *)k2;
-      if (int start_cmp = wi::cmp (b1->get_start_bit_offset (),
-				   b2->get_start_bit_offset (),
-				   SIGNED))
-	return start_cmp;
-      return wi::cmp (b1->get_next_bit_offset (), b2->get_next_bit_offset (),
-		      SIGNED);
-    }
-  else
-    {
-      const symbolic_binding *s1 = (const symbolic_binding *)k1;
-      const symbolic_binding *s2 = (const symbolic_binding *)k2;
-      if (s1 > s2)
-	return 1;
-      if (s1 < s2)
-	return -1;
-      return 0;
-    }
+  return w;
 }
 
 /* struct bit_range.  */
@@ -372,64 +328,6 @@ bit_range::operator- (bit_offset_t offset) const
   return bit_range (m_start_bit_offset - offset, m_size_in_bits);
 }
 
-/* If MASK is a contiguous range of set bits, write them
-   to *OUT and return true.
-   Otherwise return false.  */
-
-bool
-bit_range::from_mask (unsigned HOST_WIDE_INT mask, bit_range *out)
-{
-  unsigned iter_bit_idx = 0;
-  unsigned HOST_WIDE_INT iter_bit_mask = 1;
-
-  /* Find the first contiguous run of set bits in MASK.  */
-
-  /* Find first set bit in MASK.  */
-  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
-    {
-      if (mask & iter_bit_mask)
-	break;
-      iter_bit_idx++;
-      iter_bit_mask <<= 1;
-    }
-  if (iter_bit_idx == HOST_BITS_PER_WIDE_INT)
-    /* MASK is zero.  */
-    return false;
-
-  unsigned first_set_iter_bit_idx = iter_bit_idx;
-  unsigned num_set_bits = 1;
-  iter_bit_idx++;
-  iter_bit_mask <<= 1;
-
-  /* Find next unset bit in MASK.  */
-  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
-    {
-      if (!(mask & iter_bit_mask))
-	break;
-      num_set_bits++;
-      iter_bit_idx++;
-      iter_bit_mask <<= 1;
-    }
-  if (iter_bit_idx == HOST_BITS_PER_WIDE_INT)
-    {
-      *out = bit_range (first_set_iter_bit_idx, num_set_bits);
-      return true;
-    }
-
-  /* We now have the first contiguous run of set bits in MASK.
-     Fail if any other bits are set.  */
-  while (iter_bit_idx < HOST_BITS_PER_WIDE_INT)
-    {
-      if (mask & iter_bit_mask)
-	return false;
-      iter_bit_idx++;
-      iter_bit_mask <<= 1;
-    }
-
-  *out = bit_range (first_set_iter_bit_idx, num_set_bits);
-  return true;
-}
-
 /* Attempt to convert this bit_range to a byte_range.
    Return true if it is possible, writing the result to *OUT.
    Otherwise return false.  */
@@ -527,89 +425,6 @@ byte_range::cmp (const byte_range &br1, const byte_range &br2)
   return wi::cmpu (br1.m_size_in_bytes, br2.m_size_in_bytes);
 }
 
-/* class concrete_binding : public binding_key.  */
-
-/* Implementation of binding_key::dump_to_pp vfunc for concrete_binding.  */
-
-void
-concrete_binding::dump_to_pp (pretty_printer *pp, bool) const
-{
-  m_bit_range.dump_to_pp (pp);
-}
-
-/* Return true if this binding overlaps with OTHER.  */
-
-bool
-concrete_binding::overlaps_p (const concrete_binding &other) const
-{
-  if (get_start_bit_offset () < other.get_next_bit_offset ()
-      && get_next_bit_offset () > other.get_start_bit_offset ())
-    return true;
-  return false;
-}
-
-/* If this is expressible as a concrete byte range, return true
-   and write it to *OUT.  Otherwise return false.  */
-
-bool
-concrete_binding::get_byte_range (byte_range *out) const
-{
-  return m_bit_range.as_byte_range (out);
-}
-
-/* Comparator for use by vec<const concrete_binding *>::qsort.  */
-
-int
-concrete_binding::cmp_ptr_ptr (const void *p1, const void *p2)
-{
-  const concrete_binding *b1 = *(const concrete_binding * const *)p1;
-  const concrete_binding *b2 = *(const concrete_binding * const *)p2;
-
-  return bit_range::cmp (b1->m_bit_range, b2->m_bit_range);
-}
-
-/* class symbolic_binding : public binding_key.  */
-
-void
-symbolic_binding::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  //binding_key::dump_to_pp (pp, simple);
-  pp_string (pp, "region: ");
-  m_region->dump_to_pp (pp, simple);
-}
-
-/* Comparator for use by vec<const symbolic_binding *>::qsort.  */
-
-int
-symbolic_binding::cmp_ptr_ptr (const void *p1, const void *p2)
-{
-  const symbolic_binding *b1 = *(const symbolic_binding * const *)p1;
-  const symbolic_binding *b2 = *(const symbolic_binding * const *)p2;
-
-  return region::cmp_ids (b1->get_region (), b2->get_region ());
-}
-
-/* The store is oblivious to the types of the svalues bound within
-   it: any type can get bound at any location.
-   Simplify any casts before binding.
-
-   For example, if we have:
-     struct big { int ia[1024]; };
-     struct big src, dst;
-     memcpy (&dst, &src, sizeof (struct big));
-   this reaches us in gimple form as:
-     MEM <unsigned char[4096]> [(char * {ref-all})&dst]
-       = MEM <unsigned char[4096]> [(char * {ref-all})&src];
-   Using cast_region when handling the MEM_REF would give us:
-     INIT_VAL(CAST_REG(unsigned char[4096], src))
-   as rhs_sval, but we can fold that into a cast svalue:
-     CAST(unsigned char[4096], INIT_VAL(src))
-   We can discard that cast from the svalue when binding it in
-   the store for "dst", and simply store:
-     cluster for: dst
-       key:   {kind: direct, start: 0, size: 32768, next: 32768}
-       value: ‘struct big’ {INIT_VAL(src)}.  */
-
 static const svalue *
 simplify_for_binding (const svalue *sval)
 {
@@ -618,1061 +433,35 @@ simplify_for_binding (const svalue *sval)
   return sval;
 }
 
-/* class concrete_binding_map.  */
-
-/* Dump a representation of this concrete_binding_map to PP.
-   SIMPLE controls how values and regions are to be printed.
-   If MULTILINE, then split the dump over multiple lines and
-   use whitespace for readability, otherwise put all on one line.  */
-
-void
-concrete_binding_map::dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const
-{
-  bool first = true;
-  for (auto iter : *this)
-    {
-      const bit_range &bits = iter.first;
-      const svalue *value = iter.second;
-      if (multiline)
-	{
-	  pp_string (pp, "    bits:   {");
-	  bits.dump_to_pp (pp);
-	  pp_string (pp, "}");
-	  pp_newline (pp);
-	  pp_string (pp, "    value: ");
-	  if (tree t = value->get_type ())
-	    dump_quoted_tree (pp, t);
-	  pp_string (pp, " {");
-	  value->dump_to_pp (pp, simple);
-	  pp_string (pp, "}");
-	  pp_newline (pp);
-	}
-      else
-	{
-	  if (first)
-	    first = false;
-	  else
-	    pp_string (pp, ", ");
-	  pp_string (pp, "bits: {");
-	  bits.dump_to_pp (pp);
-	  pp_string (pp, "}, value: {");
-	  value->dump_to_pp (pp, simple);
-	  pp_string (pp, "}");
-	}
-    }
-}
-
-void
-concrete_binding_map::dump (bool simple) const
-{
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple, true);
-  pp_newline (&pp);
-}
-
-void
-concrete_binding_map::add_to_tree_widget (text_art::tree_widget &parent_widget,
-					  const text_art::dump_widget_info &dwi) const
-{
-  for (auto iter : *this)
-    {
-      const bit_range &bits = iter.first;
-      const svalue *sval = iter.second;
-
-      pretty_printer the_pp;
-      pretty_printer * const pp = &the_pp;
-      pp_format_decoder (pp) = default_tree_printer;
-      pp_show_color (pp) = true;
-      const bool simple = true;
-
-      bits.dump_to_pp (pp);
-      pp_string (pp, ": ");
-      if (tree t = sval->get_type ())
-	dump_quoted_tree (pp, t);
-      pp_string (pp, " {");
-      sval->dump_to_pp (pp, simple);
-      pp_string (pp, "}");
-
-      parent_widget.add_child (text_art::tree_widget::make (dwi, pp));
-    }
-}
-
-void
-concrete_binding_map::validate () const
-{
-  for (auto iter = m_map.begin (); iter != m_map.end (); ++iter)
-    {
-      /* Ensure we don't nest compound svalues
-	 within concrete_binding_map instances.  */
-      const svalue *sval = iter->second;
-      gcc_assert (sval->get_kind () != SK_COMPOUND);
-
-      /* Check for overlapping concrete bindings.  */
-      auto next (iter);
-      ++next;
-      if (next != m_map.end ())
-	{
-	  /* Verify they are in order, and do not overlap.  */
-	  const bit_range &iter_bits = iter->first;
-	  const bit_range &next_bits = next->first;
-	  gcc_assert (iter_bits.get_start_bit_offset ()
-		      < next_bits.get_start_bit_offset ());
-	  gcc_assert (iter_bits.get_last_bit_offset ()
-		      < next_bits.get_start_bit_offset ());
-	  gcc_assert (iter_bits.get_next_bit_offset ()
-		      <= next_bits.get_start_bit_offset ());
-	}
-    }
-}
-
-/* Comparator for imposing an order on concrete_binding_map instances.  */
-
-int
-concrete_binding_map::cmp (const concrete_binding_map &map1,
-			   const concrete_binding_map &map2)
-{
-  if (int size_cmp = map1.size () - map2.size ())
-    return size_cmp;
-
-  auto iter1 = map1.begin ();
-  auto iter2 = map2.begin ();
-  while (iter1 != map1.end ())
-    {
-      gcc_assert (iter2 != map2.end ());
-      if (int bit_cmp = bit_range::cmp (iter1->first, iter2->first))
-	return bit_cmp;
-      if (int sval_cmp = svalue::cmp_ptr (iter1->second, iter2->second))
-	return sval_cmp;
-      ++iter1;
-      ++iter2;
-    }
-  return 0;
-}
-
-/* Get the svalue bound precisely to BITS, if any, otherwise
-   return nullptr.  */
-
-const svalue *
-concrete_binding_map::get_any_exact_binding (const bit_range &bits) const
-{
-  auto iter = m_map.find (bits);
-  if (iter == m_map.end ())
-    return nullptr;
-  return iter->second;
-}
-
-/* Calculate what the complexity of a compound_svalue instance for this
-   map will be, based on the bound svalues.  */
-
-complexity
-concrete_binding_map::calc_complexity () const
-{
-  unsigned num_child_nodes = 0;
-  unsigned max_child_depth = 0;
-  for (auto iter : m_map)
-    {
-      const complexity &sval_c = iter.second->get_complexity ();
-      num_child_nodes += sval_c.m_num_nodes;
-      max_child_depth = MAX (max_child_depth, sval_c.m_max_depth);
-    }
-  return complexity (num_child_nodes + 1, max_child_depth + 1);
-}
-
-void
-concrete_binding_map::
-remove_overlapping_binding (store_manager *mgr,
-			    const bit_range &bits_to_drop,
-			    const bit_range &affected_bound_bits,
-			    const svalue &old_sval)
-{
-  gcc_assert (bits_to_drop.intersects_p (affected_bound_bits));
-
-  /* Remove existing binding.  */
-  erase (affected_bound_bits);
-
-  if (affected_bound_bits.get_start_bit_offset ()
-      < bits_to_drop.get_start_bit_offset ())
-    {
-      /* We have a truncated prefix.  */
-      bit_range prefix_bits (affected_bound_bits.get_start_bit_offset (),
-			     (bits_to_drop.get_start_bit_offset ()
-			      - affected_bound_bits.get_start_bit_offset ()));
-      bit_range rel_prefix (0, prefix_bits.m_size_in_bits);
-      const svalue *prefix_sval
-	= old_sval.extract_bit_range (NULL_TREE,
-				      rel_prefix,
-				      mgr->get_svalue_manager ());
-      insert (prefix_bits, prefix_sval);
-    }
-
-  if (affected_bound_bits.get_next_bit_offset ()
-      > bits_to_drop.get_next_bit_offset ())
-    {
-      /* We have a truncated suffix.  */
-      bit_range suffix_bits (bits_to_drop.get_next_bit_offset (),
-			     (affected_bound_bits.get_next_bit_offset ()
-			      - bits_to_drop.get_next_bit_offset ()));
-      bit_range rel_suffix (bits_to_drop.get_next_bit_offset ()
-			    - affected_bound_bits.get_start_bit_offset (),
-			    suffix_bits.m_size_in_bits);
-      const svalue *suffix_sval
-	= old_sval.extract_bit_range (NULL_TREE,
-				      rel_suffix,
-				      mgr->get_svalue_manager ());
-      insert (suffix_bits, suffix_sval);
-    }
-}
-
-void
-concrete_binding_map::
-remove_overlapping_bindings (store_manager *mgr,
-			     const bit_range &bits_to_drop)
-{
-  auto bindings = get_overlapping_bindings (bits_to_drop);
-  for (auto iter : bindings)
-    remove_overlapping_binding (mgr, bits_to_drop, iter.first, iter.second);
-}
-
-std::vector<std::pair<bit_range, const svalue &>>
-concrete_binding_map::get_overlapping_bindings (const bit_range &bits)
-{
-  std::vector<std::pair<bit_range, const svalue &>> result;
-  for (auto iter : m_map)
-    if (iter.first.intersects_p (bits))
-      {
-	gcc_assert (iter.second);
-	result.push_back ({iter.first, *iter.second});
-      }
-  return result;
-}
-
-/* class binding_map::const_iterator.  */
-
-bool
-binding_map::const_iterator::operator== (const binding_map::const_iterator &other) const
-{
-  if (m_concrete != other.m_concrete)
-    return false;
-  if (m_symbolic != other.m_symbolic)
-    return false;
-  return true;
-}
-
-binding_map::const_iterator &
-binding_map::const_iterator::operator++ ()
-{
-  if (m_concrete != m_map.m_concrete.end ())
-    ++m_concrete;
-  else
-    ++m_symbolic;
-  return *this;
-}
-
-binding_map::binding_pair
-binding_map::const_iterator::operator* ()
-{
-  if (m_concrete != m_map.m_concrete.end ())
-    {
-      const bit_range &bits = m_concrete->first;
-      const svalue *sval = m_concrete->second;
-      return binding_pair (m_map.m_store_mgr.get_concrete_binding (bits), sval);
-    }
-  else
-    {
-      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
-      const region *reg = m_symbolic->m_region;
-      const svalue *sval = m_symbolic->m_sval;
-      return binding_pair (m_map.m_store_mgr.get_symbolic_binding (reg), sval);
-    }
-}
-
-const svalue *
-binding_map::const_iterator::get_svalue () const
-{
-  if (m_concrete != m_map.m_concrete.end ())
-    return m_concrete->second;
-  else
-    {
-      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
-      return m_symbolic->m_sval;
-    }
-}
-
-/* class binding_map::iterator.  */
-
-bool
-binding_map::iterator::operator== (const binding_map::iterator &other) const
-{
-  if (m_concrete != other.m_concrete)
-    return false;
-  if (m_symbolic != other.m_symbolic)
-    return false;
-  return true;
-}
-
-binding_map::iterator &
-binding_map::iterator::operator++ ()
-{
-  if (m_concrete != m_map.m_concrete.end ())
-    ++m_concrete;
-  else
-    ++m_symbolic;
-  return *this;
-}
-
-binding_map::binding_pair
-binding_map::iterator::operator* ()
-{
-  if (m_concrete != m_map.m_concrete.end ())
-    {
-      const bit_range &bits = m_concrete->first;
-      const svalue *&sval = m_concrete->second;
-      return binding_pair (m_map.m_store_mgr.get_concrete_binding (bits), sval);
-    }
-  else
-    {
-      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
-      const region *reg = m_symbolic->m_region;
-      const svalue *&sval = m_symbolic->m_sval;
-      return binding_pair (m_map.m_store_mgr.get_symbolic_binding (reg), sval);
-    }
-}
-
-/* class binding_map.  */
-
-// Construct an empty binding_map.
-
-binding_map::binding_map (store_manager &store_mgr)
-: m_store_mgr (store_mgr),
-  m_concrete (),
-  m_symbolic ()
-{
-}
-
-/* binding_map's copy ctor.  */
-
-binding_map::binding_map (const binding_map &other)
-: m_store_mgr (other.m_store_mgr),
-  m_concrete (other.m_concrete),
-  m_symbolic (other.m_symbolic)
-{
-}
-
-/* binding_map's assignment operator.  */
-
-binding_map&
-binding_map::operator= (const binding_map &other)
-{
-  gcc_assert (&m_store_mgr == &other.m_store_mgr);
-
-  /* For now, assume we only ever copy to an empty cluster.  */
-  gcc_assert (m_concrete.size () == 0);
-  gcc_assert (m_symbolic.size () == 0);
-
-  m_concrete = other.m_concrete;
-  m_symbolic = other.m_symbolic;
-
-  return *this;
-}
-
-/* binding_map's equality operator.  */
-
-bool
-binding_map::operator== (const binding_map &other) const
-{
-  if (m_concrete != other.m_concrete)
-    return false;
-  if (m_symbolic != other.m_symbolic)
-    return false;
-
-  return true;
-}
-
-/* Generate a hash value for this binding_map.  */
-
-hashval_t
-binding_map::hash () const
-{
-  hashval_t result = 0;
-  for (auto iter : m_concrete)
-    {
-      result ^= iter.first.hash ();
-      inchash::hash hstate;
-      hstate.add_ptr (iter.second);
-      result ^= hstate.end ();
-    }
-  for (auto iter : m_symbolic)
-    {
-      /* Use a new hasher for each key to avoid depending on the ordering
-	 of keys when accumulating the result.  */
-      inchash::hash hstate;
-      hstate.add_ptr (iter.m_region);
-      hstate.add_ptr (iter.m_sval);
-      result ^= hstate.end ();
-    }
-  return result;
-}
-
-const svalue *
-binding_map::get (const binding_key *key) const
-{
-  if (key->symbolic_p ())
-    {
-      const ana::symbolic_binding &sym_key
-	= *static_cast <const ana::symbolic_binding *> (key);
-      const region *reg = sym_key.get_region ();
-
-      for (auto iter : m_symbolic)
-	{
-	  if (iter.m_region == reg)
-	    return iter.m_sval;
-	}
-      return nullptr;
-    }
-  else
-    {
-      const concrete_binding &conc_key
-	= *static_cast <const concrete_binding *> (key);
-      const bit_range &bits = conc_key.get_bit_range ();
-
-      concrete_bindings_t::const_iterator iter (m_concrete.find (bits));
-      if (iter != m_concrete.end ())
-	return iter->second;
-      else
-	return nullptr;
-    }
-}
-
-void
-binding_map::put (const binding_key *key, const svalue *sval)
-{
-  if (key->symbolic_p ())
-    {
-      const ana::symbolic_binding &sym_key
-	= *static_cast <const ana::symbolic_binding *> (key);
-      const region *reg = sym_key.get_region ();
-
-      m_symbolic.clear ();
-
-      m_symbolic.push_back ({reg, sval});
-    }
-  else
-    {
-      const concrete_binding &conc_key
-	= *static_cast <const concrete_binding *> (key);
-      const bit_range &bits = conc_key.get_bit_range ();
-
-      concrete_bindings_t::iterator iter (m_concrete.find (bits));
-      if (iter != m_concrete.end ())
-	(*iter).second = sval;
-      else
-	m_concrete.insert (bits, sval);
-    }
-}
-
-void
-binding_map::overwrite (iterator_t &pos, const svalue *v)
-{
-  gcc_assert (&pos.m_map == this);
-  if (pos.m_symbolic != m_symbolic.end ())
-    (*(pos.m_symbolic)).m_sval = v;
-  else
-    {
-      gcc_assert (pos.m_concrete != m_concrete.end ());
-      (*(pos.m_concrete)).second = v;
-    }
-}
-
-void
-binding_map::remove (const binding_key *key)
-{
-  if (key->symbolic_p ())
-    m_symbolic.clear ();
-  else
-    {
-      const concrete_binding &conc_key
-	= *static_cast <const concrete_binding *> (key);
-      const bit_range &bits = conc_key.get_bit_range ();
-      m_concrete.erase (bits);
-    }
-}
-
-binding_map::const_iterator_t
-binding_map::begin () const
-{
-  return binding_map::const_iterator_t (*this,
-					m_concrete.begin (),
-					m_symbolic.begin ());
-}
-
-binding_map::const_iterator_t
-binding_map::end () const
-{
-  return binding_map::const_iterator_t (*this,
-					m_concrete.end (),
-					m_symbolic.end ());
-}
-
-binding_map::iterator_t
-binding_map::begin ()
-{
-  return binding_map::iterator_t (*this,
-				  m_concrete.begin (),
-				  m_symbolic.begin ());
-}
-
-binding_map::iterator_t
-binding_map::end ()
-{
-  return binding_map::iterator_t (*this,
-				  m_concrete.end (),
-				  m_symbolic.end ());
-}
-
-size_t
-binding_map::elements () const
-{
-  return m_concrete.size () + m_symbolic.size ();
-}
-
-/* Dump a representation of this binding_map to PP.
-   SIMPLE controls how values and regions are to be printed.
-   If MULTILINE, then split the dump over multiple lines and
-   use whitespace for readability, otherwise put all on one line.  */
-
-void
-binding_map::dump_to_pp (pretty_printer *pp, bool simple,
-			 bool multiline) const
-{
-  bool first = true;
-  for (auto iter : *this)
-    {
-      const binding_key *key = iter.m_key;
-      const svalue *value = iter.m_sval;
-      if (multiline)
-	{
-	  pp_string (pp, "    key:   {");
-	  key->dump_to_pp (pp, simple);
-	  pp_string (pp, "}");
-	  pp_newline (pp);
-	  pp_string (pp, "    value: ");
-	  if (tree t = value->get_type ())
-	    dump_quoted_tree (pp, t);
-	  pp_string (pp, " {");
-	  value->dump_to_pp (pp, simple);
-	  pp_string (pp, "}");
-	  pp_newline (pp);
-	}
-      else
-	{
-	  if (first)
-	    first = false;
-	  else
-	    pp_string (pp, ", ");
-	  pp_string (pp, "binding key: {");
-	  key->dump_to_pp (pp, simple);
-	  pp_string (pp, "}, value: {");
-	  value->dump_to_pp (pp, simple);
-	  pp_string (pp, "}");
-	}
-    }
-}
-
-/* Dump a multiline representation of this binding_map to stderr.  */
-
-DEBUG_FUNCTION void
-binding_map::dump (bool simple) const
-{
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple, true);
-  pp_newline (&pp);
-}
-
-/* Assert that this object is valid.  */
-
-void
-binding_map::validate () const
-{
-  const size_t num_concrete = m_concrete.size ();
-  const size_t num_symbolic = m_symbolic.size ();
-
-  /* We shouldn't have more than one symbolic key per cluster
-     (or one would have clobbered the other).  */
-  gcc_assert (num_symbolic < 2);
-  /* We can't have both concrete and symbolic keys.  */
-  gcc_assert (num_concrete == 0 || num_symbolic == 0);
-
-  m_concrete.validate ();
-}
-
-/* Return a new json::object of the form
-   {KEY_DESC : SVALUE_DESC,
-    ...for the various key/value pairs in this binding_map}.  */
-
-std::unique_ptr<json::object>
-binding_map::to_json () const
-{
-  auto map_obj = std::make_unique<json::object> ();
-
-  for (auto iter : *this)
-    {
-      const svalue *value = iter.m_sval;
-      label_text key_desc = iter.m_key->get_desc ();
-      map_obj->set (key_desc.get (), value->to_json ());
-    }
-
-  return map_obj;
-}
-
-/* Add a child to PARENT_WIDGET expressing a binding between
-   KEY and SVAL.  */
-
-static void
-add_binding_to_tree_widget (text_art::tree_widget &parent_widget,
-			    const text_art::dump_widget_info &dwi,
-			    const binding_key *key,
-			    const svalue *sval)
-{
-  pretty_printer the_pp;
-  pretty_printer * const pp = &the_pp;
-  pp_format_decoder (pp) = default_tree_printer;
-  pp_show_color (pp) = true;
-  const bool simple = true;
-
-  key->dump_to_pp (pp, simple);
-  pp_string (pp, ": ");
-  if (tree t = sval->get_type ())
-    dump_quoted_tree (pp, t);
-  pp_string (pp, " {");
-  sval->dump_to_pp (pp, simple);
-  pp_string (pp, "}");
-
-  parent_widget.add_child (text_art::tree_widget::make (dwi, pp));
-}
-
-void
-binding_map::add_to_tree_widget (text_art::tree_widget &parent_widget,
-				 const text_art::dump_widget_info &dwi) const
-{
-  for (auto iter : *this)
-    {
-      const binding_key *key = iter.m_key;
-      const svalue *sval = iter.m_sval;
-      add_binding_to_tree_widget (parent_widget, dwi,
-				  key, sval);
-    }
-}
-
-/* Get the child region of PARENT_REG based upon INDEX within a
-   CONSTRUCTOR.   */
-
-static const region *
-get_subregion_within_ctor (const region *parent_reg, tree index,
-			   region_model_manager *mgr)
-{
-  switch (TREE_CODE (index))
-    {
-    default:
-      gcc_unreachable ();
-    case INTEGER_CST:
-      {
-	const svalue *index_sval
-	  = mgr->get_or_create_constant_svalue (index);
-	return mgr->get_element_region (parent_reg,
-					TREE_TYPE (parent_reg->get_type ()),
-					index_sval);
-      }
-      break;
-    case FIELD_DECL:
-      return mgr->get_field_region (parent_reg, index);
-    }
-}
-
-/* Get the child region of PARENT_REG based upon (INDEX, VALUE) within a
-   CONSTRUCTOR.   */
-
-static const region *
-get_subregion_within_ctor_for_ctor_pair (const region *parent_reg,
-					 tree index,
-					 tree value,
-					 region_model_manager *mgr)
-{
-  if (TREE_CODE (index) == INTEGER_CST
-      && TREE_CODE (value) == RAW_DATA_CST)
-    {
-      /* Special-case; see tree.def's description of CONSTRUCTOR.
-	 We have RAW_DATA_LENGTH of bytes, starting at INDEX's start.  */
-      const region *start_reg
-	= get_subregion_within_ctor (parent_reg, index, mgr);
-      /* Build a bit range, relative to PARENT_REG.  */
-      region_offset start_offset = start_reg->get_offset (mgr);
-
-      if (!start_offset.concrete_p ())
-	return nullptr;
-      bit_offset_t start_bit_offset = start_offset.get_bit_offset ();
-      int length = RAW_DATA_LENGTH (value);
-      bit_range bits (start_bit_offset, length * BITS_PER_UNIT);
-
-      return mgr->get_bit_range (parent_reg, NULL_TREE, bits);
-    }
-
-  return get_subregion_within_ctor (parent_reg, index, mgr);
-}
-
-/* Get the svalue for VAL, a non-CONSTRUCTOR value within a CONSTRUCTOR.  */
-
-static const svalue *
-get_svalue_for_ctor_val (tree val, region_model_manager *mgr)
-{
-  /* Reuse the get_rvalue logic from region_model.  */
-  region_model m (mgr->get_node_manager ());
-  return m.get_rvalue (path_var (val, 0), nullptr);
-}
-
-/* Bind values from CONSTRUCTOR to this map, relative to
-   PARENT_REG's relationship to its base region.
-   Return true if successful, false if there was a problem (e.g. due
-   to hitting a complexity limit).  */
-
-bool
-concrete_binding_map::apply_ctor_to_region (const region *parent_reg, tree ctor,
-					    region_model_manager *mgr)
-{
-  gcc_assert (parent_reg);
-  gcc_assert (TREE_CODE (ctor) == CONSTRUCTOR);
-
-  unsigned ix;
-  tree index;
-  tree val;
-  tree parent_type = parent_reg->get_type ();
-  tree field;
-  if (TREE_CODE (parent_type) == RECORD_TYPE)
-    field = TYPE_FIELDS (parent_type);
-  else
-    field = NULL_TREE;
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (ctor), ix, index, val)
-    {
-      if (!index)
-	{
-	  /* If index is NULL, then iterate through the fields for
-	     a RECORD_TYPE, or use an INTEGER_CST otherwise.
-	     Compare with similar logic in output_constructor.  */
-	  if (field)
-	    {
-	      index = field;
-	      field = DECL_CHAIN (field);
-	    }
-	  else
-	    index = build_int_cst (integer_type_node, ix);
-	}
-      else if (TREE_CODE (index) == RANGE_EXPR)
-	{
-	  tree min_index = TREE_OPERAND (index, 0);
-	  tree max_index = TREE_OPERAND (index, 1);
-	  if (min_index == max_index)
-	    {
-	      if (!apply_ctor_pair_to_child_region (parent_reg, mgr,
-						    min_index, val))
-		return false;
-	    }
-	  else
-	    {
-	      if (!apply_ctor_val_to_range (parent_reg, mgr,
-					    min_index, max_index, val))
-		return false;
-	    }
-	  continue;
-	}
-      if (!apply_ctor_pair_to_child_region (parent_reg, mgr, index, val))
-	return false;
-    }
-  return true;
-}
-
-/* Bind the value VAL into the range of elements within PARENT_REF
-   from MIN_INDEX to MAX_INDEX (including endpoints).
-   For use in handling RANGE_EXPR within a CONSTRUCTOR.
-   Return true if successful, false if there was a problem (e.g. due
-   to hitting a complexity limit).  */
-
-bool
-concrete_binding_map::apply_ctor_val_to_range (const region *parent_reg,
-					       region_model_manager *mgr,
-					       tree min_index, tree max_index,
-					       tree val)
-{
-  gcc_assert (TREE_CODE (min_index) == INTEGER_CST);
-  gcc_assert (TREE_CODE (max_index) == INTEGER_CST);
-
-  /* Generate a binding key for the range.  */
-  const region *min_element
-    = get_subregion_within_ctor (parent_reg, min_index, mgr);
-  const region *max_element
-    = get_subregion_within_ctor (parent_reg, max_index, mgr);
-  region_offset min_offset = min_element->get_offset (mgr);
-  if (min_offset.symbolic_p ())
-    return false;
-  bit_offset_t start_bit_offset = min_offset.get_bit_offset ();
-  store_manager *smgr = mgr->get_store_manager ();
-  if (max_element->empty_p ())
-    return false;
-  const binding_key *max_element_key = binding_key::make (smgr, max_element);
-  if (max_element_key->symbolic_p ())
-    return false;
-  const concrete_binding *max_element_ckey
-    = max_element_key->dyn_cast_concrete_binding ();
-  bit_size_t range_size_in_bits
-    = max_element_ckey->get_next_bit_offset () - start_bit_offset;
-
-  /* Get the value.  */
-  if (TREE_CODE (val) == CONSTRUCTOR)
-    return false;
-  const svalue *sval = get_svalue_for_ctor_val (val, mgr);
-
-  /* Bind the value to the range.  */
-  const bit_range affected_bits (start_bit_offset, range_size_in_bits);
-  insert (affected_bits, sval);
-  return true;
-}
-
-/* Bind the value VAL into INDEX within PARENT_REF.
-   For use in handling a pair of entries within a CONSTRUCTOR.
-   Return true if successful, false if there was a problem (e.g. due
-   to hitting a complexity limit).  */
-
-bool
-concrete_binding_map::apply_ctor_pair_to_child_region (const region *parent_reg,
-						       region_model_manager *mgr,
-						       tree index, tree val)
-{
-  const region *child_reg
-    = get_subregion_within_ctor_for_ctor_pair (parent_reg, index, val, mgr);
-  if (!child_reg)
-    return false;
-  if (TREE_CODE (val) == CONSTRUCTOR)
-    return apply_ctor_to_region (child_reg, val, mgr);
-  else
-    {
-      const svalue *sval = get_svalue_for_ctor_val (val, mgr);
-      if (child_reg->empty_p ())
-	return false;
-      const binding_key *k
-	= binding_key::make (mgr->get_store_manager (), child_reg);
-      /* Handle the case where we have an unknown size for child_reg
-	 (e.g. due to it being a trailing field with incomplete array
-	 type.  */
-      if (!k->concrete_p ())
-	{
-	  /* Assume that sval has a well-defined size for this case.  */
-	  tree sval_type = sval->get_type ();
-	  gcc_assert (sval_type);
-	  HOST_WIDE_INT sval_byte_size = int_size_in_bytes (sval_type);
-	  gcc_assert (sval_byte_size != -1);
-	  bit_size_t sval_bit_size = sval_byte_size * BITS_PER_UNIT;
-	  /* Get offset of child relative to base region.  */
-	  region_offset child_base_offset = child_reg->get_offset (mgr);
-	  if (child_base_offset.symbolic_p ())
-	    return false;
-	  /* Convert to an offset relative to the parent region.  */
-	  region_offset parent_base_offset = parent_reg->get_offset (mgr);
-	  gcc_assert (!parent_base_offset.symbolic_p ());
-	  bit_offset_t child_parent_offset
-	    = (child_base_offset.get_bit_offset ()
-	       - parent_base_offset.get_bit_offset ());
-	  /* Create a concrete key for the child within the parent.  */
-	  k = mgr->get_store_manager ()->get_concrete_binding
-	    (child_parent_offset, sval_bit_size);
-	}
-      gcc_assert (k->concrete_p ());
-      auto conc_key = as_a <const concrete_binding *> (k);
-      insert (conc_key->get_bit_range (), sval);
-      return true;
-    }
-}
-
-/* Populate OUT with all bindings within this map that overlap KEY.  */
-
-void
-binding_map::get_overlapping_bindings (const binding_key *key,
-				       auto_vec<const binding_key *> *out)
-{
-  for (auto iter : *this)
-    {
-      const binding_key *iter_key = iter.m_key;
-      if (const concrete_binding *ckey
-	    = key->dyn_cast_concrete_binding ())
-	{
-	  if (const concrete_binding *iter_ckey
-	      = iter_key->dyn_cast_concrete_binding ())
-	    {
-	      if (ckey->overlaps_p (*iter_ckey))
-		out->safe_push (iter_key);
-	    }
-	  else
-	    {
-	      /* Assume overlap.  */
-	      out->safe_push (iter_key);
-	    }
-	}
-      else
-	{
-	  /* Assume overlap.  */
-	  out->safe_push (iter_key);
-	}
-    }
-}
-
-/* Remove, truncate, and/or split any bindings within this map that
-   overlap DROP_KEY.
-
-   For example, if we have:
-
-     +------------------------------------+
-     |             old binding            |
-     +------------------------------------+
-
-   which is to be overwritten with:
-
-     .......+----------------------+.......
-     .......|      new binding     |.......
-     .......+----------------------+.......
-
-   this function "cuts a hole" out of the old binding:
-
-     +------+......................+------+
-     |prefix| hole for new binding |suffix|
-     +------+......................+------+
-
-   into which the new binding can be added without
-   overlapping the prefix or suffix.
-
-   The prefix and suffix (if added) will be bound to the pertinent
-   parts of the value of the old binding.
-
-   For example, given:
-     struct s5
-     {
-       char arr[8];
-     };
-     void test_5 (struct s5 *p)
-     {
-       struct s5 f = *p;
-       f.arr[3] = 42;
-     }
-   then after the "f = *p;" we have:
-     cluster for: f: INIT_VAL((*INIT_VAL(p_33(D))))
-   and at the "f.arr[3] = 42;" we remove the bindings overlapping
-   "f.arr[3]", replacing it with a prefix (bytes 0-2) and suffix (bytes 4-7)
-   giving:
-     cluster for: f
-       key:   {bytes 0-2}
-       value:  {BITS_WITHIN(bytes 0-2, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
-       key:   {bytes 4-7}
-       value:  {BITS_WITHIN(bytes 4-7, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
-   punching a hole into which the new value can be written at byte 3:
-     cluster for: f
-       key:   {bytes 0-2}
-       value:  {BITS_WITHIN(bytes 0-2, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
-       key:   {byte 3}
-       value: 'char' {(char)42}
-       key:   {bytes 4-7}
-       value:  {BITS_WITHIN(bytes 4-7, inner_val: INIT_VAL((*INIT_VAL(p_33(D))).arr))}
-
-   If UNCERTAINTY is non-NULL, use it to record any svalues that
-   were removed, as being maybe-bound.
-
-   If MAYBE_LIVE_VALUES is non-NULL, then use it to record any svalues that
-   were removed as being maybe-live.
-
-   If ALWAYS_OVERLAP, then assume that DROP_KEY can overlap anything
-   in the map, due to one or both of the underlying clusters being
-   symbolic (but not the same symbolic region).  Hence even if DROP_KEY is a
-   concrete binding it could actually be referring to the same memory as
-   distinct concrete bindings in the map.  Remove all bindings, but
-   register any svalues with *UNCERTAINTY.  */
-
-void
-binding_map::remove_overlapping_bindings (store_manager *mgr,
-					  const binding_key *drop_key,
-					  uncertainty_t *uncertainty,
-					  svalue_set *maybe_live_values,
-					  bool always_overlap)
-{
-  /* Get the bindings of interest within this map.  */
-  auto_vec<const binding_key *> bindings;
-  if (always_overlap)
-    for (auto iter : *this)
-      bindings.safe_push (iter.m_key); /* Add all bindings.  */
-  else
-    /* Just add overlapping bindings.  */
-    get_overlapping_bindings (drop_key, &bindings);
-
-  unsigned i;
-  const binding_key *iter_binding;
-  FOR_EACH_VEC_ELT (bindings, i, iter_binding)
-    {
-      /* Record any svalues that were removed to *UNCERTAINTY as being
-	 maybe-bound, provided at least some part of the binding is symbolic.
-
-	 Specifically, if at least one of the bindings is symbolic, or we
-	 have ALWAYS_OVERLAP for the case where we have possibly aliasing
-	 regions, then we don't know that the svalue has been overwritten,
-	 and should record that to *UNCERTAINTY.
-
-	 However, if we have concrete keys accessing within the same symbolic
-	 region, then we *know* that the symbolic region has been overwritten,
-	 so we don't record it to *UNCERTAINTY, as this could be a genuine
-	 leak.  */
-      const svalue *old_sval = get (iter_binding);
-      if (uncertainty
-	  && (drop_key->symbolic_p ()
-	      || iter_binding->symbolic_p ()
-	      || always_overlap))
-	uncertainty->on_maybe_bound_sval (old_sval);
-
-      /* Record any svalues that were removed to *MAYBE_LIVE_VALUES as being
-	 maybe-live. */
-      if (maybe_live_values)
-	maybe_live_values->add (old_sval);
-
-      /* Begin by removing the old binding. */
-      remove (iter_binding);
-
-      /* Don't attempt to handle prefixes/suffixes for the
-	 "always_overlap" case; everything's being removed.  */
-      if (always_overlap)
-	continue;
-
-      /* Now potentially add the prefix and suffix.  */
-      if (const concrete_binding *drop_ckey
-	  = drop_key->dyn_cast_concrete_binding ())
-	if (const concrete_binding *iter_ckey
-	      = iter_binding->dyn_cast_concrete_binding ())
-	  {
-	    gcc_assert (drop_ckey->overlaps_p (*iter_ckey));
-
-	    const bit_range &drop_bits = drop_ckey->get_bit_range ();
-	    const bit_range &iter_bits = iter_ckey->get_bit_range ();
-	    gcc_assert (old_sval);
-	    m_concrete.remove_overlapping_binding (mgr, drop_bits, iter_bits,
-						   *old_sval);
-	  }
-    }
-}
-
 /* class binding_cluster.  */
 
-binding_cluster::binding_cluster (store_manager &store_mgr,
-				  const region *base_region)
-: m_base_region (base_region), m_map (store_mgr),
+binding_cluster::binding_cluster (symbolic::node_manager &node_mgr,
+				  const region *base_region,
+				  const symbolic::bit_contents &contents)
+: m_node_mgr (node_mgr),
+  m_base_region (base_region),
+  m_contents (&contents),
   m_escaped (false), m_touched (false)
 {
+  if (CHECKING_P)
+    {
+      gcc_assert (base_region);
+      gcc_assert (base_region->base_region_p ());
+
+      /* We shouldn't create clusters for dereferencing an UNKNOWN ptr.  */
+      gcc_assert (!base_region->symbolic_for_unknown_ptr_p ());
+
+      /* We shouldn't create clusters for base regions that aren't trackable.  */
+      gcc_assert (base_region->tracked_p ());
+    }
 }
 
 /* binding_cluster's copy ctor.  */
 
 binding_cluster::binding_cluster (const binding_cluster &other)
-: m_base_region (other.m_base_region), m_map (other.m_map),
+: m_node_mgr (other.m_node_mgr),
+  m_base_region (other.m_base_region),
+  m_contents (other.m_contents),
   m_escaped (other.m_escaped), m_touched (other.m_touched)
 {
 }
@@ -1683,7 +472,7 @@ binding_cluster&
 binding_cluster::operator= (const binding_cluster &other)
 {
   gcc_assert (m_base_region == other.m_base_region);
-  m_map = other.m_map;
+  m_contents = other.m_contents;
   m_escaped = other.m_escaped;
   m_touched = other.m_touched;
   return *this;
@@ -1694,7 +483,7 @@ binding_cluster::operator= (const binding_cluster &other)
 bool
 binding_cluster::operator== (const binding_cluster &other) const
 {
-  if (m_map != other.m_map)
+  if (m_contents != other.m_contents)
     return false;
 
   if (m_base_region != other.m_base_region)
@@ -1706,8 +495,6 @@ binding_cluster::operator== (const binding_cluster &other) const
   if (m_touched != other.m_touched)
     return false;
 
-  gcc_checking_assert (hash () == other.hash ());
-
   return true;
 }
 
@@ -1716,7 +503,14 @@ binding_cluster::operator== (const binding_cluster &other) const
 hashval_t
 binding_cluster::hash () const
 {
-  return m_map.hash ();
+  inchash::hash h;
+  h.add_int (m_contents->get_id ());
+
+  h.add_flag (m_escaped);
+  h.add_flag (m_touched);
+  h.commit_flag ();
+
+  return h.end ();
 }
 
 /* Return true if this binding_cluster is symbolic
@@ -1728,51 +522,10 @@ binding_cluster::symbolic_p () const
   return m_base_region->get_kind () == RK_SYMBOLIC;
 }
 
-/* Dump a representation of this binding_cluster to PP.
-   SIMPLE controls how values and regions are to be printed.
-   If MULTILINE, then split the dump over multiple lines and
-   use whitespace for readability, otherwise put all on one line.  */
-
-void
-binding_cluster::dump_to_pp (pretty_printer *pp, bool simple,
-			     bool multiline) const
-{
-  if (m_escaped)
-    {
-      if (multiline)
-	{
-	  pp_string (pp, "    ESCAPED");
-	  pp_newline (pp);
-	}
-      else
-	pp_string (pp, "(ESCAPED)");
-    }
-  if (m_touched)
-    {
-      if (multiline)
-	{
-	  pp_string (pp, "    TOUCHED");
-	  pp_newline (pp);
-	}
-      else
-	pp_string (pp, "(TOUCHED)");
-    }
-
-  m_map.dump_to_pp (pp, simple, multiline);
-}
-
-/* Dump a multiline representation of this binding_cluster to stderr.  */
-
 DEBUG_FUNCTION void
-binding_cluster::dump (bool simple) const
+binding_cluster::dump () const
 {
-  tree_dump_pretty_printer pp (stderr);
-  pp_string (&pp, "  cluster for: ");
-  m_base_region->dump_to_pp (&pp, simple);
-  pp_string (&pp, ": ");
-  pp_newline (&pp);
-  dump_to_pp (&pp, simple, true);
-  pp_newline (&pp);
+  symbolic::dump_node_tree_to_stderr<binding_cluster> (*this);
 }
 
 /* Assert that this object is valid.  */
@@ -1780,7 +533,7 @@ binding_cluster::dump (bool simple) const
 void
 binding_cluster::validate () const
 {
-  m_map.validate ();
+  // no-op
 }
 
 /* Return a new json::object of the form
@@ -1795,14 +548,13 @@ binding_cluster::to_json () const
 
   cluster_obj->set_bool ("escaped", m_escaped);
   cluster_obj->set_bool ("touched", m_touched);
-  cluster_obj->set ("map", m_map.to_json ());
+  cluster_obj->set ("contents", m_contents->to_json ());
 
   return cluster_obj;
 }
 
 std::unique_ptr<text_art::tree_widget>
-binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
-				   store_manager *mgr) const
+binding_cluster::make_dump_widget (symbolic::node_dump_state &nds) const
 {
   pretty_printer the_pp;
   pretty_printer * const pp = &the_pp;
@@ -1813,535 +565,98 @@ binding_cluster::make_dump_widget (const text_art::dump_widget_info &dwi,
   m_base_region->dump_to_pp (pp, simple);
   pp_string (pp, ": ");
 
-  if (const svalue *sval = maybe_get_simple_value (mgr))
-    {
-      /* Special-case to simplify dumps for the common case where
-	 we just have one value directly bound to the whole of a
-	 region.  */
-      sval->dump_to_pp (pp, simple);
-      if (escaped_p ())
-	pp_string (pp, " (ESCAPED)");
-      if (touched_p ())
-	pp_string (pp, " (TOUCHED)");
+  if (escaped_p ())
+    pp_string (pp, " (ESCAPED)");
+  if (touched_p ())
+    pp_string (pp, " (TOUCHED)");
 
-      return text_art::tree_widget::make (dwi, pp);
-    }
-  else
-    {
-      if (escaped_p ())
-	pp_string (pp, " (ESCAPED)");
-      if (touched_p ())
-	pp_string (pp, " (TOUCHED)");
+  std::unique_ptr<text_art::tree_widget> cluster_widget
+    (text_art::tree_widget::make (nds, pp));
 
-      std::unique_ptr<text_art::tree_widget> cluster_widget
-	(text_art::tree_widget::make (dwi, pp));
+  gcc_assert (m_contents);
+  cluster_widget->add_child (m_contents->make_dump_widget (nds));
 
-      m_map.add_to_tree_widget (*cluster_widget, dwi);
-
-      return cluster_widget;
-    }
+  return cluster_widget;
 }
 
-/* Add a binding of SVAL of kind KIND to REG, unpacking SVAL if it is a
-   compound_sval.  */
+const symbolic::bit_vector &
+binding_cluster::get_bits (symbolic_bit_range bit_range) const
+{
+  return m_contents->get_bits (bit_range);
+}
 
 void
-binding_cluster::bind (store_manager *mgr,
-		       const region *reg, const svalue *sval)
+binding_cluster::set_bits (symbolic_bit_range bit_range,
+			   const symbolic::bit_vector &bv,
+			   uncertainty_t *uncertainty)
 {
-  if (const compound_svalue *compound_sval
-	= sval->dyn_cast_compound_svalue ())
-    {
-      bind_compound_sval (mgr, reg, compound_sval);
-      return;
-    }
-
-  if (reg->empty_p ())
-    return;
-  const binding_key *binding = binding_key::make (mgr, reg);
-  bind_key (binding, sval);
+  m_contents = &m_contents->set_bits (bit_range, bv, uncertainty);
 }
 
-/* Bind SVAL to KEY.
-   Unpacking of compound_svalues should already have been done by the
-   time this is called.  */
+/* Mark this cluster as being unknown.
 
-void
-binding_cluster::bind_key (const binding_key *key, const svalue *sval)
-{
-  gcc_assert (sval->get_kind () != SK_COMPOUND);
-
-  m_map.put (key, sval);
-  if (key->symbolic_p ())
-    m_touched = true;
-}
-
-/* Subroutine of binding_cluster::bind.
-   Unpack compound_svals when binding them, so that we bind them
-   element-wise.  */
-
-void
-binding_cluster::bind_compound_sval (store_manager *mgr,
-				     const region *reg,
-				     const compound_svalue *compound_sval)
-{
-  region_offset reg_offset
-    = reg->get_offset (mgr->get_svalue_manager ());
-  if (reg_offset.symbolic_p ())
-    {
-      m_touched = true;
-      clobber_region (mgr, reg);
-      return;
-    }
-
-  for (auto iter : *compound_sval)
-    {
-      const bit_range &iter_bits = iter.first;
-      const svalue *iter_sval = iter.second;
-
-      bit_offset_t effective_start
-	= (iter_bits.get_start_bit_offset ()
-	   + reg_offset.get_bit_offset ());
-      const bit_range affected_bits (effective_start,
-				     iter_bits.m_size_in_bits);
-      bind_key (mgr->get_concrete_binding (affected_bits), iter_sval);
-    }
-}
-
-/* Remove all bindings overlapping REG within this cluster.  */
-
-void
-binding_cluster::clobber_region (store_manager *mgr, const region *reg)
-{
-  remove_overlapping_bindings (mgr, reg, nullptr, nullptr);
-}
-
-/* Remove any bindings for REG within this cluster.  */
-
-void
-binding_cluster::purge_region (store_manager *mgr, const region *reg)
-{
-  gcc_assert (reg->get_kind () == RK_DECL);
-  if (reg->empty_p ())
-    return;
-  const binding_key *binding
-    = binding_key::make (mgr, const_cast<region *> (reg));
-  m_map.remove (binding);
-}
-
-/* Clobber REG and fill it with repeated copies of SVAL.  */
-
-void
-binding_cluster::fill_region (store_manager *mgr,
-			      const region *reg,
-			      const svalue *sval)
-{
-  clobber_region (mgr, reg);
-
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  const svalue *byte_size_sval = reg->get_byte_size_sval (sval_mgr);
-  const svalue *fill_sval
-    = sval_mgr->get_or_create_repeated_svalue (reg->get_type (),
-					       byte_size_sval, sval);
-  bind (mgr, reg, fill_sval);
-}
-
-/* Clobber REG within this cluster and fill it with zeroes.  */
-
-void
-binding_cluster::zero_fill_region (store_manager *mgr, const region *reg)
-{
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  const svalue *zero_sval = sval_mgr->get_or_create_int_cst (char_type_node, 0);
-  fill_region (mgr, reg, zero_sval);
-}
-
-/* Mark REG_TO_BIND within this cluster as being unknown.
-
-   Remove any bindings overlapping REG_FOR_OVERLAP.
    If UNCERTAINTY is non-NULL, use it to record any svalues that
    had bindings to them removed, as being maybe-bound.
    If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
-   had bindings to them removed, as being maybe-live.
-
-   REG_TO_BIND and REG_FOR_OVERLAP are the same for
-   store::mark_region_as_unknown, but are different in
-   store::set_value's alias handling, for handling the case where
-   we have a write to a symbolic REG_FOR_OVERLAP. */
+   had bindings to them removed, as being maybe-live.  */
 
 void
-binding_cluster::mark_region_as_unknown (store_manager *mgr,
-					 const region *reg_to_bind,
-					 const region *reg_for_overlap,
-					 uncertainty_t *uncertainty,
-					 svalue_set *maybe_live_values)
+binding_cluster::mark_as_untracked (symbolic::node_manager &node_mgr,
+				    uncertainty_t *uncertainty,
+				    value_set *maybe_live_values)
 {
-  if (reg_to_bind->empty_p ())
-    return;
+  if (uncertainty)
+    {
+      m_contents->for_each_value ([] (const symbolic::value_node &val,
+				      void *user_data) -> iter_result
+      {
+	uncertainty_t *uncertainty = static_cast<uncertainty_t *> (user_data);
+	uncertainty->on_maybe_bound_value (val);
+	return val.for_each_svalue ([] (const svalue &sval,
+					void *user_data) -> iter_result
+	{
+	  uncertainty_t *uncertainty = static_cast<uncertainty_t *> (user_data);
+	  uncertainty->on_maybe_bound_value (sval);
+	  return iter_result::keep_going;
+	}, user_data);
+      }, uncertainty);
+    }
+  if (maybe_live_values)
+    {
+      m_contents->for_each_value ([] (const symbolic::value_node &val,
+				      void *user_data) -> iter_result
+      {
+	value_set *maybe_live_values = static_cast<value_set *> (user_data);
+	maybe_live_values->add (&val);
+	return val.for_each_svalue ([] (const svalue &sval,
+					void *user_data) -> iter_result
+	{
+	  value_set *maybe_live_values = static_cast<value_set *> (user_data);
+	  maybe_live_values->add (&sval);
+	  return iter_result::keep_going;
+	}, user_data);
+      }, maybe_live_values);
+    }
 
-  remove_overlapping_bindings (mgr, reg_for_overlap, uncertainty,
-			       maybe_live_values);
+  value_set maybe_live;
+  m_contents->for_each_value ([] (const symbolic::value_node &val,
+				  void *user_data) -> iter_result
+  {
+    value_set *maybe_live = static_cast<value_set *> (user_data);
+    maybe_live->add (&val);
+    return iter_result::keep_going;
+  }, &maybe_live);
 
-  /* Add a default binding to "unknown".  */
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  const svalue *sval
-    = sval_mgr->get_or_create_unknown_svalue (reg_to_bind->get_type ());
-  bind (mgr, reg_to_bind, sval);
+  auto &bc_mgr = node_mgr.get_bit_contents_manager ();
+  m_contents = &bc_mgr.get_untracked (std::move (maybe_live));
 }
 
-/* Purge state involving SVAL.  */
+/* Purge state involving NODE.  */
 
 void
-binding_cluster::purge_state_involving (const svalue *sval,
-					region_model_manager *sval_mgr)
+binding_cluster::purge_state_involving (const symbolic::node &node)
 {
-  auto_vec<const binding_key *> to_remove;
-  auto_vec<std::pair<const binding_key *, tree> > to_make_unknown;
-  for (auto iter : m_map)
-    {
-      const binding_key *iter_key = iter.m_key;
-      if (const symbolic_binding *symbolic_key
-	    = iter_key->dyn_cast_symbolic_binding ())
-	{
-	  const region *reg = symbolic_key->get_region ();
-	  if (reg->involves_p (sval))
-	    to_remove.safe_push (iter_key);
-	}
-      const svalue *iter_sval = iter.m_sval;
-      if (iter_sval->involves_p (sval))
-	to_make_unknown.safe_push (std::make_pair(iter_key,
-						  iter_sval->get_type ()));
-    }
-  for (auto iter : to_remove)
-    {
-      m_map.remove (iter);
-      m_touched = true;
-    }
-  for (auto iter : to_make_unknown)
-    {
-      const svalue *new_sval
-	= sval_mgr->get_or_create_unknown_svalue (iter.second);
-      m_map.put (iter.first, new_sval);
-    }
-}
-
-/* Get any SVAL bound to REG within this cluster via kind KIND,
-   without checking parent regions of REG.  */
-
-const svalue *
-binding_cluster::get_binding (store_manager *mgr,
-			      const region *reg) const
-{
-  if (reg->empty_p ())
-    return nullptr;
-  const binding_key *reg_binding = binding_key::make (mgr, reg);
-  const svalue *sval = m_map.get (reg_binding);
-  if (sval)
-    {
-      /* If we have a struct with a single field, then the binding of
-	 the field will equal that of the struct, and looking up e.g.
-	 PARENT_REG.field within:
-	    cluster for PARENT_REG: INIT_VAL(OTHER_REG)
-	 will erroneously return INIT_VAL(OTHER_REG), rather than
-	   SUB_VALUE(INIT_VAL(OTHER_REG), FIELD) == INIT_VAL(OTHER_REG.FIELD).
-	 Fix this issue by iterating upwards whilst the bindings are equal,
-	 expressing the lookups as subvalues.
-	 We have to gather a list of subregion accesses, then walk it
-	 in reverse to get the subvalues.  */
-      auto_vec<const region *> regions;
-      while (const region *parent_reg = reg->get_parent_region ())
-	{
-	  const binding_key *parent_reg_binding
-	    = binding_key::make (mgr, parent_reg);
-	  if (parent_reg_binding == reg_binding
-	      && sval->get_type ()
-	      && reg->get_type ()
-	      && sval->get_type () != reg->get_type ())
-	    {
-	      regions.safe_push (reg);
-	      reg = parent_reg;
-	    }
-	  else
-	    break;
-	}
-      if (sval->get_type ()
-	  && reg->get_type ()
-	  && sval->get_type () == reg->get_type ())
-	{
-	  unsigned i;
-	  const region *iter_reg;
-	  FOR_EACH_VEC_ELT_REVERSE (regions, i, iter_reg)
-	    {
-	      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-	      sval = rmm_mgr->get_or_create_sub_svalue (iter_reg->get_type (),
-							sval, iter_reg);
-	    }
-	}
-    }
-  return sval;
-}
-
-/* Get any SVAL bound to REG within this cluster,
-   either directly for REG, or recursively checking for bindings within
-   parent regions and extracting subvalues if need be.  */
-
-const svalue *
-binding_cluster::get_binding_recursive (store_manager *mgr,
-					const region *reg) const
-{
-  if (const svalue *sval = get_binding (mgr, reg))
-    return sval;
-  if (reg != m_base_region)
-    if (const region *parent_reg = reg->get_parent_region ())
-      if (const svalue *parent_sval
-	  = get_binding_recursive (mgr, parent_reg))
-	{
-	  /* Extract child svalue from parent svalue.  */
-	  region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-	  return rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
-						    parent_sval, reg);
-	}
-  return nullptr;
-}
-
-/* Get any value bound for REG within this cluster.  */
-
-const svalue *
-binding_cluster::get_any_binding (store_manager *mgr,
-				  const region *reg) const
-{
-  /* Look for a direct binding.  */
-  if (const svalue *direct_sval
-      = get_binding_recursive (mgr, reg))
-    return direct_sval;
-
-  /* If we had a write to a cluster of unknown size, we might
-     have a self-binding of the whole base region with an svalue,
-     where the base region is symbolic.
-     Handle such cases by returning sub_svalue instances.  */
-  if (const svalue *cluster_sval = maybe_get_simple_value (mgr))
-    {
-      /* Extract child svalue from parent svalue.  */
-      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-      return rmm_mgr->get_or_create_sub_svalue (reg->get_type (),
-						cluster_sval, reg);
-    }
-
-  /* If this cluster has been touched by a symbolic write, then the content
-     of any subregion not currently specifically bound is "UNKNOWN".  */
-  if (m_touched)
-    {
-      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-      return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
-    }
-
-  /* Alternatively, if this is a symbolic read and the cluster has any bindings,
-     then we don't know if we're reading those values or not, so the result
-     is also "UNKNOWN".  */
-  if (reg->get_offset (mgr->get_svalue_manager ()).symbolic_p ()
-      && m_map.elements () > 0)
-    {
-      region_model_manager *rmm_mgr = mgr->get_svalue_manager ();
-      return rmm_mgr->get_or_create_unknown_svalue (reg->get_type ());
-    }
-
-  if (const svalue *compound_sval = maybe_get_compound_binding (mgr, reg))
-    return compound_sval;
-
-  /* Otherwise, the initial value, or uninitialized.  */
-  return nullptr;
-}
-
-/* Attempt to get a compound_svalue for the bindings within the cluster
-   affecting REG (which could be the base region itself).
-
-   Create a compound_svalue with the subset of bindings the affect REG,
-   offsetting them so that the offsets are relative to the start of REG
-   within the cluster.
-
-   For example, REG could be one element within an array of structs.
-
-   Return the resulting compound_svalue, or nullptr if there's a problem.  */
-
-const svalue *
-binding_cluster::maybe_get_compound_binding (store_manager *mgr,
-					     const region *reg) const
-{
-  region_offset cluster_offset
-    = m_base_region->get_offset (mgr->get_svalue_manager ());
-  if (cluster_offset.symbolic_p ())
-    return nullptr;
-  region_offset reg_offset = reg->get_offset (mgr->get_svalue_manager ());
-  if (reg_offset.symbolic_p ())
-    return nullptr;
-
-  if (reg->empty_p ())
-    return nullptr;
-
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-
-  /* We will a build the result map in two parts:
-     (a) result_map, holding the concrete keys from this cluster,
-
-     (b) default_map, holding the initial values for the region
-     (e.g. uninitialized, initializer values, or zero), unless this
-     cluster has been touched.
-
-     We will populate (a), and as we do, clobber (b), trimming and
-     splitting its bindings as necessary.
-     Finally, we will merge (b) into (a), giving a concrete map
-     that merges both the initial values and the bound values from
-     the binding_cluster.
-     Doing it this way reduces N for the O(N^2) intersection-finding,
-     perhaps we should have a spatial-organized data structure for
-     concrete keys, though.  */
-
-  concrete_binding_map result_map;
-  concrete_binding_map default_map;
-
-  /* Set up default values in default_map.  */
-  const svalue *default_sval;
-  if (m_touched)
-    default_sval = sval_mgr->get_or_create_unknown_svalue (reg->get_type ());
-  else
-    default_sval = sval_mgr->get_or_create_initial_value (reg);
-  const binding_key *default_key = binding_key::make (mgr, reg);
-
-  /* Express the bit-range of the default key for REG relative to REG,
-     rather than to the base region.  */
-  const concrete_binding *concrete_default_key
-    = default_key->dyn_cast_concrete_binding ();
-  if (!concrete_default_key)
-    return nullptr;
-  const bit_range default_key_relative_to_reg
-     (0, concrete_default_key->get_size_in_bits ());
-
-  default_map.insert (default_key_relative_to_reg, default_sval);
-
-  for (auto iter : m_map)
-    {
-      const binding_key *key = iter.m_key;
-      const svalue *sval = iter.m_sval;
-
-      if (const concrete_binding *concrete_key
-	  = key->dyn_cast_concrete_binding ())
-	{
-	  const bit_range &bound_range = concrete_key->get_bit_range ();
-
-	  bit_size_t reg_bit_size;
-	  if (!reg->get_bit_size (&reg_bit_size))
-	    return nullptr;
-
-	  bit_range reg_range (reg_offset.get_bit_offset (),
-			       reg_bit_size);
-
-	  /* Skip bindings that are outside the bit range of REG.  */
-	  if (!bound_range.intersects_p (reg_range))
-	    continue;
-
-	  /* We shouldn't have an exact match; that should have been
-	     handled already.  */
-	  gcc_assert (!(reg_range == bound_range));
-
-	  bit_range subrange (0, 0);
-	  if (reg_range.contains_p (bound_range, &subrange))
-	    {
-	      /* We have a bound range fully within REG.
-		 Add it to result_map, offsetting accordingly.  */
-	      result_map.insert (subrange, sval);
-
-	      /* Clobber default_map, removing/trimming/splitting where
-		 it overlaps with offset_concrete_key.  */
-	      default_map.remove_overlapping_bindings (mgr, subrange);
-	    }
-	  else if (bound_range.contains_p (reg_range, &subrange))
-	    {
-	      /* REG is fully within the bound range, but
-		 is not equal to it; we're extracting a subvalue.  */
-	      return sval->extract_bit_range (reg->get_type (),
-					      subrange,
-					      mgr->get_svalue_manager ());
-	    }
-	  else
-	    {
-	      /* REG and the bound range partially overlap.  */
-	      bit_range reg_subrange (0, 0);
-	      bit_range bound_subrange (0, 0);
-	      reg_range.intersects_p (bound_range,
-				      &reg_subrange, &bound_subrange);
-
-	      /* Get the bits from the bound value for the bits at the
-		 intersection (relative to the bound value).  */
-	      const svalue *overlap_sval
-		= sval->extract_bit_range (NULL_TREE,
-					   bound_subrange,
-					   mgr->get_svalue_manager ());
-
-	      result_map.insert (reg_subrange, overlap_sval);
-
-	      /* Clobber default_map, removing/trimming/splitting where
-		 it overlaps with overlap_concrete_key.  */
-	      default_map.remove_overlapping_bindings (mgr, reg_subrange);
-	    }
-	}
-      else
-	/* Can't handle symbolic bindings.  */
-	return nullptr;
-    }
-
-  if (result_map.size () == 0)
-    return nullptr;
-
-  /* Merge any bindings from default_map into result_map.  */
-  for (auto iter : default_map)
-    {
-      const bit_range &key = iter.first;
-      const svalue *sval = iter.second;
-      result_map.insert (key, sval);
-    }
-
-  return sval_mgr->get_or_create_compound_svalue (reg->get_type (),
-						  std::move (result_map));
-}
-
-/* Remove, truncate, and/or split any bindings within this map that
-   could overlap REG.
-
-   If REG's base region or this cluster is symbolic and they're different
-   base regions, then remove everything in this cluster's map, on the
-   grounds that REG could be referring to the same memory as anything
-   in the map.
-
-   If UNCERTAINTY is non-NULL, use it to record any svalues that
-   were removed, as being maybe-bound.
-
-   If MAYBE_LIVE_VALUES is non-NULL, use it to record any svalues that
-   were removed, as being maybe-live.  */
-
-void
-binding_cluster::remove_overlapping_bindings (store_manager *mgr,
-					      const region *reg,
-					      uncertainty_t *uncertainty,
-					      svalue_set *maybe_live_values)
-{
-  if (reg->empty_p ())
-    return;
-  const binding_key *reg_binding = binding_key::make (mgr, reg);
-
-  const region *cluster_base_reg = get_base_region ();
-  const region *other_base_reg = reg->get_base_region ();
-  /* If at least one of the base regions involved is symbolic, and they're
-     not the same base region, then consider everything in the map as
-     potentially overlapping with reg_binding (even if it's a concrete
-     binding and things in the map are concrete - they could be referring
-     to the same memory when the symbolic base regions are taken into
-     account).  */
-  bool always_overlap = (cluster_base_reg != other_base_reg
-			 && (cluster_base_reg->get_kind () == RK_SYMBOLIC
-			     || other_base_reg->get_kind () == RK_SYMBOLIC));
-  m_map.remove_overlapping_bindings (mgr, reg_binding, uncertainty,
-				     maybe_live_values,
-				     always_overlap);
+  m_contents = &m_contents->purge_state_involving (node);
 }
 
 /* Attempt to merge CLUSTER_A and CLUSTER_B into OUT_CLUSTER, using
@@ -2353,7 +668,6 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 			      const binding_cluster *cluster_b,
 			      binding_cluster *out_cluster,
 			      store *out_store,
-			      store_manager *mgr,
 			      model_merger *merger)
 {
   gcc_assert (out_cluster);
@@ -2367,20 +681,27 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
       || (cluster_b && cluster_b->m_touched))
     out_cluster->m_touched = true;
 
+  auto get_baseline_state = [merger] () -> baseline_state
+  {
+    return merger->m_model_a->get_baseline_state ();
+  };
+
   /* At least one of CLUSTER_A and CLUSTER_B are non-NULL, but either
      could be NULL.  Handle these cases.  */
   if (cluster_a == nullptr)
     {
       gcc_assert (cluster_b != nullptr);
       gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
-      out_cluster->make_unknown_relative_to (cluster_b, out_store, mgr);
+      out_cluster->make_unknown_relative_to (cluster_b, out_store,
+					     get_baseline_state ());
       return true;
     }
   if (cluster_b == nullptr)
     {
       gcc_assert (cluster_a != nullptr);
       gcc_assert (cluster_a->m_base_region == out_cluster->m_base_region);
-      out_cluster->make_unknown_relative_to (cluster_a, out_store, mgr);
+      out_cluster->make_unknown_relative_to (cluster_a, out_store,
+					     get_baseline_state ());
       return true;
     }
 
@@ -2389,105 +710,76 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
   gcc_assert (cluster_a->m_base_region == out_cluster->m_base_region);
   gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
 
-  hash_set<const binding_key *> keys;
-  for (auto iter_a  : cluster_a->m_map)
+  tree type = nullptr;
+  if (cluster_a->get_base_region ()->get_type ()
+      && cluster_b->get_base_region ()->get_type ()
+      && (cluster_a->get_base_region ()->get_type ()
+	  == cluster_b->get_base_region ()->get_type ()))
+    type = cluster_a->get_base_region ()->get_type ();
+
+  if (auto *merged_contents
+	= symbolic::bit_contents::can_merge_p (*cluster_a->m_contents,
+					       *cluster_b->m_contents,
+					       type,
+					       merger))
     {
-      const binding_key *key_a = iter_a.m_key;
-      keys.add (key_a);
-    }
-  for (auto iter_b : cluster_b->m_map)
-    {
-      const binding_key *key_b = iter_b.m_key;
-      keys.add (key_b);
-    }
-  int num_symbolic_keys = 0;
-  int num_concrete_keys = 0;
-  for (hash_set<const binding_key *>::iterator iter = keys.begin ();
-       iter != keys.end (); ++iter)
-    {
-      region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-      const binding_key *key = *iter;
-      const svalue *sval_a = cluster_a->get_any_value (key);
-      const svalue *sval_b = cluster_b->get_any_value (key);
-
-      if (key->symbolic_p ())
-	num_symbolic_keys++;
-      else
-	num_concrete_keys++;
-
-      if (sval_a == sval_b)
-	{
-	  gcc_assert (sval_a);
-	  out_cluster->m_map.put (key, sval_a);
-	  continue;
-	}
-      else if (sval_a && sval_b)
-	{
-	  if (const svalue *merged_sval
-	      = sval_a->can_merge_p (sval_b, sval_mgr, merger))
-	    {
-	      out_cluster->m_map.put (key, merged_sval);
-	      continue;
-	    }
-	  /* Merger of the svalues failed.  Reject merger of the cluster.   */
-	  return false;
-	}
-
-      /* If we get here, then one cluster binds this key and the other
-	 doesn't; merge them as "UNKNOWN".  */
-      gcc_assert (sval_a || sval_b);
-
-      const svalue *bound_sval = sval_a ? sval_a : sval_b;
-      tree type = bound_sval->get_type ();
-      const svalue *unknown_sval
-	= mgr->get_svalue_manager ()->get_or_create_unknown_svalue (type);
-
-      /* ...but reject the merger if this sval shouldn't be mergeable
-	 (e.g. reject merging svalues that have non-purgeable sm-state,
-	 to avoid falsely reporting memory leaks by merging them
-	 with something else).  */
-      if (!bound_sval->can_merge_p (unknown_sval, sval_mgr, merger))
-	return false;
-
-      out_cluster->m_map.put (key, unknown_sval);
+      out_cluster->m_contents = merged_contents;
+      return true;
     }
 
-  /* We might now have overlapping concrete clusters in OUT_CLUSTER.
-     Reject such cases.  */
-  if (num_concrete_keys > 0)
-    {
-      /* Check for overlapping concrete bindings.  */
-      const auto &concrete_bindings
-	= out_cluster->get_map ().get_concrete_bindings ();
-      for (auto iter = concrete_bindings.begin ();
-	   iter != concrete_bindings.end (); ++iter)
-	{
-	  auto next (iter);
-	  ++next;
-	  if (next != concrete_bindings.end ())
-	    {
-	      const bit_range &iter_bits = iter->first;
-	      const bit_range &next_bits = next->first;
-	      if (iter_bits.intersects_p (next_bits))
-		return false;
-	    }
-	}
-    }
-
-  /* We can only have at most one symbolic key per cluster,
-     and if we do, we can't have any concrete keys.
-     If this happens, mark the cluster as touched, with no keys.  */
-  if (num_symbolic_keys >= 2
-      || (num_concrete_keys > 0 && num_symbolic_keys > 0))
-    {
-      out_cluster->m_touched = true;
-      out_cluster->m_map.clear ();
-    }
-
-  /* We don't handle other kinds of overlaps yet.  */
-
-  return true;
+  return false;
 }
+
+/* Concrete visitor subclass, where any svalues that are visited are
+   to be treated as possibly alive: regions pointed to are marked
+   as escaping, and the svalues are added to any uncertainty_y.  */
+
+class possibly_overwritten_values_visitor : public symbolic::node_visitor
+{
+public:
+  possibly_overwritten_values_visitor (store &store_,
+				       uncertainty_t *uncertainty,
+				       baseline_state bs)
+  : m_store (store_),
+    m_uncertainty (uncertainty),
+    m_baseline_state (bs)
+  {
+  }
+
+  bool
+  visit_svalue (const svalue &n) final override
+  {
+    if (!visit_node (n))
+      return false;
+    m_maybe_live.add (&n);
+    if (auto *sym_ptr = n.maybe_get_symbolic_pointer ())
+      m_store.mark_as_escaped (&sym_ptr->get_base_region (),
+			       m_baseline_state);
+    if (m_uncertainty)
+      m_uncertainty->on_maybe_bound_value (n);
+    return true;
+  }
+
+  bool
+  visit_bit_vector (const symbolic::bit_vector &bv) final override
+  {
+    if (!visit_node (bv))
+      return false;
+    m_maybe_live.add (&bv);
+    if (m_uncertainty)
+      m_uncertainty->on_maybe_bound_value (bv);
+    return true;
+  }
+
+  const value_set &
+  get_maybe_live () const { return m_maybe_live; }
+
+private:
+  store &m_store;
+  uncertainty_t *m_uncertainty;
+  baseline_state m_baseline_state;
+  value_set m_maybe_live;
+};
 
 /* Update this cluster to reflect an attempt to merge OTHER where there
    is no other cluster to merge with, and so we're notionally merging the
@@ -2498,37 +790,28 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
 void
 binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 					   store *out_store,
-					   store_manager *mgr)
+					   baseline_state bs)
 {
-  for (auto iter : *other)
-    {
-      const binding_key *iter_key = iter.m_key;
-      const svalue *iter_sval = iter.m_sval;
-      const svalue *unknown_sval
-	= mgr->get_svalue_manager ()->get_or_create_unknown_svalue
-	  (iter_sval->get_type ());
-      m_map.put (iter_key, unknown_sval);
+  gcc_assert (other);
+  gcc_assert (m_base_region == other->m_base_region);
 
-      /* For any pointers in OTHER, the merger means that the
-	 concrete pointer becomes an unknown value, which could
-	 show up as a false report of a leak when considering what
-	 pointers are live before vs after.
-	 Avoid this by marking the base regions they point to as having
-	 escaped.  */
-      if (const region_svalue *region_sval
-	  = iter_sval->dyn_cast_region_svalue ())
-	{
-	  const region *base_reg
-	    = region_sval->get_pointee ()->get_base_region ();
-	  if (base_reg->tracked_p ()
-	      && !base_reg->symbolic_for_unknown_ptr_p ())
-	    {
-	      binding_cluster *c
-		= out_store->get_or_create_cluster (*mgr, base_reg);
-	      c->mark_as_escaped ();
-	    }
-	}
-    }
+  auto &bcm = m_node_mgr.get_bit_contents_manager ();
+
+  possibly_overwritten_values_visitor v (*out_store,
+					 nullptr,
+					 bs);
+  other->m_contents->accept_node_visitor (v);
+
+  m_contents = &bcm.get_untracked (v.get_maybe_live ());
+}
+
+iter_result
+binding_cluster::
+for_each_value (iter_result (*cb) (const symbolic::value_node &val,
+				   void *user_data),
+		void *user_data) const
+{
+  return m_contents->for_each_value (cb, user_data);
 }
 
 /* Mark this cluster as having escaped.  */
@@ -2547,24 +830,21 @@ binding_cluster::mark_as_escaped ()
 
 void
 binding_cluster::on_unknown_fncall (const gcall &call,
-				    store_manager *mgr,
 				    const conjured_purge &p)
 {
   if (m_escaped)
-    {
-      m_map.clear ();
+    mark_region_as_conjured (call, p);
+}
 
-      if (!m_base_region->empty_p ())
-	{
-	  /* Bind it to a new "conjured" value using CALL.  */
-	  const svalue *sval
-	    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-	    (m_base_region->get_type (), &call, m_base_region, p);
-	  bind (mgr, m_base_region, sval);
-	}
-
-      m_touched = true;
-    }
+void
+binding_cluster::mark_region_as_conjured (const gimple &stmt,
+					  const conjured_purge &p)
+{
+  auto &bc_mgr = m_node_mgr.get_bit_contents_manager ();
+  m_contents = &bc_mgr.get_conjured_bit_contents (*m_base_region,
+						  &stmt,
+						  p);
+  m_touched = true;
 }
 
 /* Mark this cluster as having been clobbered by STMT.
@@ -2572,18 +852,9 @@ binding_cluster::on_unknown_fncall (const gcall &call,
 
 void
 binding_cluster::on_asm (const gasm *stmt,
-			 store_manager *mgr,
 			 const conjured_purge &p)
 {
-  m_map.clear ();
-
-  /* Bind it to a new "conjured" value using CALL.  */
-  const svalue *sval
-    = mgr->get_svalue_manager ()->get_or_create_conjured_svalue
-    (m_base_region->get_type (), stmt, m_base_region, p);
-  bind (mgr, m_base_region, sval);
-
-  m_touched = true;
+  mark_region_as_conjured (*stmt, p);
 }
 
 /* Return true if this cluster has escaped.  */
@@ -2594,31 +865,45 @@ binding_cluster::escaped_p () const
   /* Consider the "errno" region to always have escaped.  */
   if (m_base_region->get_kind () == RK_ERRNO)
     return true;
+
+  /* Symbolic regions arising from dereferencing a conjured pointer
+     are escaped, as the conjured pointer originates from "outside".  */
+  if (auto *sym_reg = m_base_region->dyn_cast_symbolic_region ())
+    {
+      const svalue *ptr = sym_reg->get_pointer ();
+      if (ptr->conjured_p ())
+	return true;
+    }
+
   return m_escaped;
 }
 
 /* Return true if this binding_cluster has no information
-   i.e. if there are no bindings, and it hasn't been marked as having
+   i.e. if it has its implicit contents, and it hasn't been marked as having
    escaped, or touched symbolically.  */
 
 bool
-binding_cluster::redundant_p () const
+binding_cluster::redundant_p (const store &store_,
+			      baseline_state bs) const
 {
-  return (m_map.elements () == 0
-	  && !m_escaped
-	  && !m_touched);
+  if (m_escaped || m_touched)
+    return false;
+
+  auto &implicit_bc = store_.get_implicit_contents (*m_base_region, bs);
+
+  return m_contents == &implicit_bc;
 }
 
 /* Add PV to OUT_PVS, casting it to TYPE if it is not already of that type.  */
 
-static void
+void
 append_pathvar_with_type (path_var pv,
 			  tree type,
 			  auto_vec<path_var> *out_pvs)
 {
   gcc_assert (pv.m_tree);
 
-  if (TREE_TYPE (pv.m_tree) != type)
+  if (type && TREE_TYPE (pv.m_tree) != type)
     pv.m_tree = build1 (NOP_EXPR, type, pv.m_tree);
 
   out_pvs->safe_push (pv);
@@ -2629,133 +914,54 @@ append_pathvar_with_type (path_var pv,
 
 void
 binding_cluster::get_representative_path_vars (const region_model *model,
-					       svalue_set *visited,
+					       value_set *visited,
 					       const region *base_reg,
 					       const svalue *sval,
 					       logger *logger,
 					       auto_vec<path_var> *out_pvs)
   const
 {
+  tree desired_type = sval->get_type ();
   sval = simplify_for_binding (sval);
 
-  for (auto iter : m_map)
-    {
-      const binding_key *key = iter.m_key;
-      const svalue *bound_sval = iter.m_sval;
-      if (bound_sval == sval)
-	{
-	  if (const concrete_binding *ckey
-		= key->dyn_cast_concrete_binding ())
-	    {
-	      auto_vec <const region *> subregions;
-	      base_reg->get_subregions_for_binding
-		(model->get_manager (),
-		 ckey->get_start_bit_offset (),
-		 ckey->get_size_in_bits (),
-		 sval->get_type (),
-		 &subregions);
-	      unsigned i;
-	      const region *subregion;
-	      FOR_EACH_VEC_ELT (subregions, i, subregion)
-		{
-		  if (path_var pv
-		      = model->get_representative_path_var (subregion,
-							    visited,
-							    logger))
-		    append_pathvar_with_type (pv, sval->get_type (), out_pvs);
-		}
-	    }
-	  else
-	    {
-	      const symbolic_binding *skey = (const symbolic_binding *)key;
-	      if (path_var pv
-		  = model->get_representative_path_var (skey->get_region (),
-							visited,
-							logger))
-		append_pathvar_with_type (pv, sval->get_type (), out_pvs);
-	    }
-	}
-    }
+  m_contents->get_representative_path_vars (model,
+					    visited,
+					    base_reg,
+					    sval,
+					    desired_type,
+					    logger,
+					    out_pvs);
 }
 
-/* Get any svalue bound to KEY, or nullptr.  */
-
-const svalue *
-binding_cluster::get_any_value (const binding_key *key) const
+void
+binding_cluster::poison_any_pointers_to_descendents (const region *reg,
+						     enum poison_kind pkind)
 {
-  return m_map.get (key);
+  m_contents = &m_contents->poison_any_pointers_to_descendents (reg, pkind);
 }
 
-/* If this cluster has a single direct binding for the whole of the region,
-   return it.
-   For use in simplifying dumps.  */
-
-const svalue *
-binding_cluster::maybe_get_simple_value (store_manager *mgr) const
+bool
+binding_cluster::
+bits_live_p (const symbolic::bit_vector_from_ubc &bv_from_ubc) const
 {
-  /* Fail gracefully if MGR is nullptr to make it easier to dump store
-     instances in the debugger.  */
-  if (mgr == nullptr)
-    return nullptr;
-
-  if (m_map.elements () != 1)
-    return nullptr;
-
-  if (m_base_region->empty_p ())
-    return nullptr;
-
-  const binding_key *key = binding_key::make (mgr, m_base_region);
-  return get_any_value (key);
-}
-
-/* class store_manager.  */
-
-logger *
-store_manager::get_logger () const
-{
-  return m_mgr->get_logger ();
-}
-
-/* binding consolidation.  */
-
-const concrete_binding *
-store_manager::get_concrete_binding (bit_offset_t start_bit_offset,
-				     bit_offset_t size_in_bits)
-{
-  concrete_binding b (start_bit_offset, size_in_bits);
-  if (concrete_binding *existing = m_concrete_binding_key_mgr.get (b))
-    return existing;
-
-  concrete_binding *to_save = new concrete_binding (b);
-  m_concrete_binding_key_mgr.put (b, to_save);
-  return to_save;
-}
-
-const symbolic_binding *
-store_manager::get_symbolic_binding (const region *reg)
-{
-  symbolic_binding b (reg);
-  if (symbolic_binding *existing = m_symbolic_binding_key_mgr.get (b))
-    return existing;
-
-  symbolic_binding *to_save = new symbolic_binding (b);
-  m_symbolic_binding_key_mgr.put (b, to_save);
-  return to_save;
+  return m_contents->bits_live_p (bv_from_ubc);
 }
 
 /* class store.  */
 
 /* store's default ctor.  */
 
-store::store ()
-: m_called_unknown_fn (false)
+store::store (symbolic::node_manager &node_mgr)
+: m_node_mgr (node_mgr),
+  m_called_unknown_fn (false)
 {
 }
 
 /* store's copy ctor.  */
 
 store::store (const store &other)
-: m_cluster_map (other.m_cluster_map.elements ()),
+: m_node_mgr (other.m_node_mgr),
+  m_cluster_map (other.m_cluster_map.elements ()),
   m_called_unknown_fn (other.m_called_unknown_fn)
 {
   for (cluster_map_t::iterator iter = other.m_cluster_map.begin ();
@@ -2877,119 +1083,12 @@ get_sorted_parent_regions (auto_vec<const region *> *out,
   out->qsort (region::cmp_ptr_ptr);
 }
 
-/* Dump a representation of this store to PP, using SIMPLE to control how
-   svalues and regions are printed.
-   MGR is used for simplifying dumps if non-NULL, but can also be nullptr
-   (to make it easier to use from the debugger).  */
-
-void
-store::dump_to_pp (pretty_printer *pp, bool simple, bool multiline,
-		   store_manager *mgr) const
-{
-  /* Sort into some deterministic order.  */
-  auto_vec<const region *> base_regions;
-  for (cluster_map_t::iterator iter = m_cluster_map.begin ();
-       iter != m_cluster_map.end (); ++iter)
-    {
-      const region *base_reg = (*iter).first;
-      base_regions.safe_push (base_reg);
-    }
-  base_regions.qsort (region::cmp_ptr_ptr);
-
-  /* Gather clusters, organize by parent region, so that we can group
-     together locals, globals, etc.  */
-  auto_vec<const region *> parent_regions;
-  get_sorted_parent_regions (&parent_regions, base_regions);
-
-  const region *parent_reg;
-  unsigned i;
-  FOR_EACH_VEC_ELT (parent_regions, i, parent_reg)
-    {
-      gcc_assert (parent_reg);
-      pp_string (pp, "clusters within ");
-      parent_reg->dump_to_pp (pp, simple);
-      if (multiline)
-	pp_newline (pp);
-      else
-	pp_string (pp, " {");
-
-      const region *base_reg;
-      unsigned j;
-      FOR_EACH_VEC_ELT (base_regions, j, base_reg)
-	{
-	  /* This is O(N * M), but N ought to be small.  */
-	  if (base_reg->get_parent_region () != parent_reg)
-	    continue;
-	  binding_cluster *cluster
-	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
-	  if (!multiline)
-	    {
-	      if (j > 0)
-		pp_string (pp, ", ");
-	    }
-	  if (const svalue *sval = cluster->maybe_get_simple_value (mgr))
-	    {
-	      /* Special-case to simplify dumps for the common case where
-		 we just have one value directly bound to the whole of a
-		 region.  */
-	      if (multiline)
-		{
-		  pp_string (pp, "  cluster for: ");
-		  base_reg->dump_to_pp (pp, simple);
-		  pp_string (pp, ": ");
-		  sval->dump_to_pp (pp, simple);
-		  if (cluster->escaped_p ())
-		    pp_string (pp, " (ESCAPED)");
-		  if (cluster->touched_p ())
-		    pp_string (pp, " (TOUCHED)");
-		  pp_newline (pp);
-		}
-	      else
-		{
-		  pp_string (pp, "region: {");
-		  base_reg->dump_to_pp (pp, simple);
-		  pp_string (pp, ", value: ");
-		  sval->dump_to_pp (pp, simple);
-		  if (cluster->escaped_p ())
-		    pp_string (pp, " (ESCAPED)");
-		  if (cluster->touched_p ())
-		    pp_string (pp, " (TOUCHED)");
-		  pp_string (pp, "}");
-		}
-	    }
-	  else if (multiline)
-	    {
-	      pp_string (pp, "  cluster for: ");
-	      base_reg->dump_to_pp (pp, simple);
-	      pp_newline (pp);
-	      cluster->dump_to_pp (pp, simple, multiline);
-	    }
-	  else
-	    {
-	      pp_string (pp, "base region: {");
-	      base_reg->dump_to_pp (pp, simple);
-	      pp_string (pp, "} has cluster: {");
-	      cluster->dump_to_pp (pp, simple, multiline);
-	      pp_string (pp, "}");
-	    }
-	}
-      if (!multiline)
-	pp_string (pp, "}");
-    }
-  pp_printf (pp, "m_called_unknown_fn: %s",
-	     m_called_unknown_fn ? "TRUE" : "FALSE");
-  if (multiline)
-    pp_newline (pp);
-}
-
-/* Dump a multiline representation of this store to stderr.  */
+/* Dump a tree-like representation of this store to stderr.  */
 
 DEBUG_FUNCTION void
-store::dump (bool simple) const
+store::dump () const
 {
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple, true, nullptr);
-  pp_newline (&pp);
+  symbolic::dump_node_tree_to_stderr<store> (*this);
 }
 
 /* Assert that this object is valid.  */
@@ -3058,19 +1157,34 @@ store::to_json () const
   return store_obj;
 }
 
+static const char *
+get_string_for_baseline_state (baseline_state bs)
+{
+  switch (bs)
+    {
+    default:
+      gcc_unreachable ();
+
+    case baseline_state::main:
+      return "main";
+
+    case baseline_state::after_main:
+      return "after_main";
+    }
+}
+
 std::unique_ptr<text_art::tree_widget>
-store::make_dump_widget (const text_art::dump_widget_info &dwi,
-			 store_manager *mgr) const
+store::make_dump_widget (symbolic::node_dump_state &nds) const
 {
   std::unique_ptr<text_art::tree_widget> store_widget
-    (text_art::tree_widget::make (dwi, "Store"));
+    (text_art::tree_widget::make (nds, "Store"));
 
   store_widget->add_child
-    (text_art::tree_widget::from_fmt (dwi, nullptr,
+    (text_art::tree_widget::from_fmt (nds, nullptr,
 				      "m_called_unknown_fn: %s",
 				      m_called_unknown_fn ? "true" : "false"));
 
-    /* Sort into some deterministic order.  */
+  /* Sort into some deterministic order.  */
   auto_vec<const region *> base_regions;
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
@@ -3100,7 +1214,7 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
       parent_reg->dump_to_pp (pp, simple);
 
       std::unique_ptr<text_art::tree_widget> parent_reg_widget
-	(text_art::tree_widget::make (dwi, pp));
+	(text_art::tree_widget::make (nds, pp));
 
       const region *base_reg;
       unsigned j;
@@ -3112,7 +1226,7 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
 	  binding_cluster *cluster
 	    = *const_cast<cluster_map_t &> (m_cluster_map).get (base_reg);
 	  parent_reg_widget->add_child
-	    (cluster->make_dump_widget (dwi, mgr));
+	    (cluster->make_dump_widget (nds));
 	}
       store_widget->add_child (std::move (parent_reg_widget));
     }
@@ -3120,38 +1234,57 @@ store::make_dump_widget (const text_art::dump_widget_info &dwi,
   return store_widget;
 }
 
-/* Get any svalue bound to REG, or nullptr.  */
-
-const svalue *
-store::get_any_binding (store_manager *mgr, const region *reg) const
+const symbolic::bit_vector &
+store::get_bits (const symbolic::memory_range &mem_range,
+		 baseline_state bs) const
 {
-  const region *base_reg = reg->get_base_region ();
+  const region &base_reg = mem_range.get_base_region ();
   binding_cluster **cluster_slot
-    = const_cast <cluster_map_t &> (m_cluster_map).get (base_reg);
+    = const_cast <cluster_map_t &> (m_cluster_map).get (&base_reg);
   if (!cluster_slot)
-    return nullptr;
-  return (*cluster_slot)->get_any_binding (mgr, reg);
+    {
+      auto &baseline = get_implicit_contents (base_reg, bs);
+      return baseline.get_bits (mem_range.get_bit_range ());
+    }
+
+  return (*cluster_slot)->get_bits (mem_range.get_bit_range ());
 }
 
-/* Set the value of LHS_REG to RHS_SVAL.
-   Use MODEL when determining if regions alias each other.  */
+const symbolic::bit_contents &
+store::get_bit_contents (const region &base_reg,
+			 baseline_state bs) const
+{
+  binding_cluster **cluster_slot
+    = const_cast <cluster_map_t &> (m_cluster_map).get (&base_reg);
+  if (!cluster_slot)
+    {
+      auto &bc = get_implicit_contents (base_reg, bs);
+      return bc;
+    }
+
+  return (*cluster_slot)->get_bit_contents ();
+}
 
 void
-store::set_value (store_manager *mgr, const region *lhs_reg,
-		  const svalue *rhs_sval,
-		  uncertainty_t *uncertainty,
-		  const region_model &model)
+store::set_bits (const region *lhs_reg,
+		 const symbolic::bit_vector &bits,
+		 uncertainty_t *uncertainty,
+		 const region_model &model)
 {
-  logger *logger = mgr->get_logger ();
+  auto mem_range = lhs_reg->get_memory_range (*model.get_manager ());
+  set_bits (mem_range, bits, uncertainty, model);
+}
+
+void
+store::set_bits (const symbolic::memory_range &mem_range,
+		 const symbolic::bit_vector &bv,
+		 uncertainty_t *uncertainty,
+		 const region_model &model)
+{
+  logger *logger = model.get_manager ()->get_logger ();
   LOG_SCOPE (logger);
 
-  remove_overlapping_bindings (mgr, lhs_reg, uncertainty);
-
-  if (lhs_reg->get_type ())
-    rhs_sval = simplify_for_binding (rhs_sval);
-  /* ...but if we have no type for the region, retain any cast.  */
-
-  const region *lhs_base_reg = lhs_reg->get_base_region ();
+  const region *lhs_base_reg = &mem_range.get_base_region ();
   binding_cluster *lhs_cluster;
   if (lhs_base_reg->symbolic_for_unknown_ptr_p ())
     {
@@ -3159,21 +1292,18 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	 for an unknown ptr; merely invalidate values below.  */
       lhs_cluster = nullptr;
 
-      /* The LHS of the write is *UNKNOWN.  If the RHS is a pointer,
-	 then treat the region being pointed to as having escaped.  */
-      if (const region_svalue *ptr_sval = rhs_sval->dyn_cast_region_svalue ())
-	{
-	  const region *ptr_dst = ptr_sval->get_pointee ();
-	  const region *ptr_base_reg = ptr_dst->get_base_region ();
-	  mark_as_escaped (*mgr, ptr_base_reg);
-	}
-      if (uncertainty)
-	uncertainty->on_maybe_bound_sval (rhs_sval);
+      /* The LHS of the write is *UNKNOWN.  If BITS contains any pointers,
+	 then treat any region being pointed to as having escaped.  */
+      possibly_overwritten_values_visitor v (*this, uncertainty,
+					     model.get_baseline_state ());
+      bv.accept_node_visitor (v);
     }
   else if (lhs_base_reg->tracked_p ())
     {
-      lhs_cluster = get_or_create_cluster (*mgr, lhs_base_reg);
-      lhs_cluster->bind (mgr, lhs_reg, rhs_sval);
+      lhs_cluster = get_or_create_cluster (lhs_base_reg,
+					   model.get_baseline_state ());
+      lhs_cluster->set_bits (mem_range.get_bit_range (), bv,
+			     uncertainty);
     }
   else
     {
@@ -3192,7 +1322,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
      affected by the write.
      Gather the set of all svalues that might still be live even if
      the store doesn't refer to them.  */
-  svalue_set maybe_live_values;
+  value_set maybe_live_values;
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
     {
@@ -3218,18 +1348,17 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 		  logger->log_partial ("possible aliasing of ");
 		  iter_base_reg->dump_to_pp (pp, true);
 		  logger->log_partial (" when writing SVAL: ");
+#if 0
 		  rhs_sval->dump_to_pp (pp, true);
 		  logger->log_partial (" to LHS_REG: ");
 		  lhs_reg->dump_to_pp (pp, true);
+#endif
 		  logger->end_log_line ();
 		}
-	      /* Mark all of iter_cluster's iter_base_reg as unknown,
-		 using LHS_REG when considering overlaps, to handle
-		 symbolic vs concrete issues.  */
-	      iter_cluster->mark_region_as_unknown
-		(mgr,
-		 iter_base_reg, /* reg_to_bind */
-		 lhs_reg, /* reg_for_overlap */
+	      /* Mark all of iter_cluster's as untracked,
+		 to handle symbolic vs concrete issues.  */
+	      iter_cluster->mark_as_untracked
+		(model.get_manager ()->get_node_manager (),
 		 uncertainty,
 		 &maybe_live_values);
 	      break;
@@ -3245,11 +1374,29 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	    }
 	}
     }
+
   /* Given the set of svalues that might still be live, process them
      (e.g. marking regions as escaped).
      We do this after the iteration to avoid potentially changing
      m_cluster_map whilst iterating over it.  */
-  on_maybe_live_values (*mgr, maybe_live_values);
+  on_maybe_live_values (maybe_live_values,
+			model.get_baseline_state ());
+}
+
+void
+store::set_bit_contents_raw (const region &base_reg,
+			     const symbolic::bit_contents &bc,
+			     const region_model &model)
+{
+  logger *logger = model.get_manager ()->get_logger ();
+  LOG_SCOPE (logger);
+
+  if (base_reg.tracked_p ())
+    {
+      auto *cluster = get_or_create_cluster (&base_reg,
+					     model.get_baseline_state ());
+      cluster->set_bit_contents (bc);
+    }
 }
 
 /* Determine if BASE_REG_A could be an alias of BASE_REG_B.
@@ -3483,14 +1630,14 @@ store::eval_alias_1 (const region *base_reg_a,
 	{
 	  if (!may_be_aliased (decl_b))
 	    return tristate::TS_FALSE;
-	  if (sval_a->get_kind () == SK_INITIAL)
+	  if (sval_a->derived_from_initial_value_p ())
 	    if (!is_global_var (decl_b))
 	      {
 		/* The initial value of a pointer can't point to a local.  */
 		return tristate::TS_FALSE;
 	      }
 	}
-      if (sval_a->get_kind () == SK_INITIAL
+      if (sval_a->derived_from_initial_value_p ()
 	  && base_reg_b->get_kind () == RK_HEAP_ALLOCATED)
 	{
 	  /* The initial value of a pointer can't point to a
@@ -3502,9 +1649,11 @@ store::eval_alias_1 (const region *base_reg_a,
 	  = sval_a->dyn_cast_widening_svalue ())
 	{
 	  const svalue *base = widening_sval_a->get_base_svalue ();
-	  if (const region_svalue *region_sval
-		= base->dyn_cast_region_svalue ())
+	  if (const pointer_svalue *region_sval
+		= base->dyn_cast_pointer_svalue ())
 	    {
+	      gcc_unreachable (); // FIXME
+#if 0
 	      const region *pointee = region_sval->get_pointee ();
 	      /* If we have sval_a is WIDENING(&REGION, OP), and
 		 B can't alias REGION, then B can't alias A either.
@@ -3518,6 +1667,7 @@ store::eval_alias_1 (const region *base_reg_a,
 					model);
 	      if (ts.is_false ())
 		return tristate::TS_FALSE;
+#endif
 	    }
 	}
     }
@@ -3525,117 +1675,174 @@ store::eval_alias_1 (const region *base_reg_a,
   return tristate::TS_UNKNOWN;
 }
 
+
+const symbolic::bit_contents &
+store::get_baseline_contents (const region &base_reg,
+			      baseline_state bs) const
+{
+  auto &mgr = m_node_mgr.get_bit_contents_manager ();
+  return mgr.get_baseline_contents (base_reg, bs);
+}
+
+/* Get the bit_contents for BASE_REG at BS, for use when BASE_REG
+   does not have a binding_cluster (and is thus currently having
+   its contents modelled implicitly).  */
+
+const symbolic::bit_contents &
+store::get_implicit_contents (const region &base_reg,
+			      baseline_state bs) const
+{
+  if (m_called_unknown_fn
+      && base_reg.get_parent_region ()->get_kind () == RK_GLOBALS)
+    if (tree decl = base_reg.maybe_get_decl ())
+      if (TREE_PUBLIC (decl) && !TREE_READONLY (decl))
+	{
+	  auto &bc_mgr = m_node_mgr.get_bit_contents_manager ();
+	  return bc_mgr.get_untracked ({});
+	}
+  if (base_reg.symbolic_for_unknown_ptr_p ())
+    {
+      auto &bc_mgr = m_node_mgr.get_bit_contents_manager ();
+      return bc_mgr.get_untracked ({});
+    }
+
+  return get_baseline_contents (base_reg, bs);
+}
+
 /* Record all of the values in MAYBE_LIVE_VALUES as being possibly live.  */
 
 void
-store::on_maybe_live_values (store_manager &mgr,
-			     const svalue_set &maybe_live_values)
+store::on_maybe_live_values (const value_set &maybe_live_values,
+			     baseline_state bs)
 {
-  for (auto sval : maybe_live_values)
-    {
-      if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+  for (auto val : maybe_live_values)
+    if (auto *sval = val->dyn_cast_svalue ())
+      if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
 	{
-	  const region *base_reg = ptr_sval->get_pointee ()->get_base_region ();
-	  mark_as_escaped (mgr, base_reg);
+	  const region *base_reg = &sym_ptr->get_base_region ();
+	  mark_as_escaped (base_reg, bs);
 	}
+}
+
+/* Return true iff the bits of BIT_RANGE from UBC are live within
+   this store.  */
+
+bool
+store::bits_live_p (const symbolic::bit_vector_from_ubc &bv_from_ubc,
+		    const region_model &model) const
+{
+  if (auto *baseline_bc
+	= bv_from_ubc.get_bit_contents ().dyn_cast_baseline_bit_contents ())
+    {
+      /* Are the bits implicitly live due to the region
+	 being untouched?  */
+      const region *base_reg = baseline_bc->get_baseline_key ().m_base_reg;
+      symbolic::memory_range mem_range (*base_reg,
+					bv_from_ubc.get_bit_range ());
+      if (&get_bits (mem_range, model.get_baseline_state ()) == &bv_from_ubc)
+	return true;
     }
+
+  for (auto iter : m_cluster_map)
+    {
+      const region *base_reg = iter.first;
+      binding_cluster *cluster = iter.second;
+      if (cluster->bits_live_p (bv_from_ubc))
+	return true;
+    }
+  return false;
 }
 
 /* Remove all bindings overlapping REG within this store.  */
 
 void
-store::clobber_region (store_manager *mgr, const region *reg)
+store::clobber_region (const region *reg,
+		       baseline_state bs,
+		       region_model_manager &rmm)
 {
   const region *base_reg = reg->get_base_region ();
   binding_cluster **slot = m_cluster_map.get (base_reg);
   if (!slot)
     return;
   binding_cluster *cluster = *slot;
-  cluster->clobber_region (mgr, reg);
-  if (cluster->redundant_p ())
+
+  if (reg == base_reg)
     {
       delete cluster;
       m_cluster_map.remove (base_reg);
+    }
+  else
+    {
+      auto mem_range = reg->get_memory_range (rmm);
+      auto &bv_mgr = rmm.get_node_manager ().get_bit_vector_manager ();
+      auto &uninit_bv
+	= bv_mgr.get_uninitialized_bits (mem_range.get_size ());
+      cluster->set_bits (mem_range.get_bit_range (),
+			 uninit_bv,
+			 nullptr);
+      if (cluster->redundant_p (*this, bs))
+	{
+	  delete cluster;
+	  m_cluster_map.remove (base_reg);
+	}
     }
 }
 
 /* Remove any bindings for REG within this store.  */
 
 void
-store::purge_region (store_manager *mgr, const region *reg)
+store::purge_region (const region *reg)
 {
   const region *base_reg = reg->get_base_region ();
+  gcc_assert (reg == base_reg);
   binding_cluster **slot = m_cluster_map.get (base_reg);
   if (!slot)
     return;
   binding_cluster *cluster = *slot;
-  cluster->purge_region (mgr, reg);
-  if (cluster->redundant_p ())
-    {
-      delete cluster;
-      m_cluster_map.remove (base_reg);
-    }
-}
-
-/* Fill REG with SVAL.  */
-
-void
-store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
-{
-  /* Filling an empty region is a no-op.  */
-  if (reg->empty_p ())
-    return;
-
-  const region *base_reg = reg->get_base_region ();
-  if (base_reg->symbolic_for_unknown_ptr_p ()
-      || !base_reg->tracked_p ())
-    return;
-  binding_cluster *cluster = get_or_create_cluster (*mgr, base_reg);
-  cluster->fill_region (mgr, reg, sval);
-}
-
-/* Zero-fill REG.  */
-
-void
-store::zero_fill_region (store_manager *mgr, const region *reg)
-{
-  region_model_manager *sval_mgr = mgr->get_svalue_manager ();
-  const svalue *zero_sval = sval_mgr->get_or_create_int_cst (char_type_node, 0);
-  fill_region (mgr, reg, zero_sval);
+  delete cluster;
+  m_cluster_map.remove (base_reg);
 }
 
 /* Mark REG as having unknown content.  */
 
 void
-store::mark_region_as_unknown (store_manager *mgr, const region *reg,
+store::mark_region_as_unknown (const region *reg,
+			       baseline_state bs,
 			       uncertainty_t *uncertainty,
-			       svalue_set *maybe_live_values)
+			       const region_model &model)
 {
   const region *base_reg = reg->get_base_region ();
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
     return;
-  binding_cluster *cluster = get_or_create_cluster (*mgr, base_reg);
-  cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty,
-				   maybe_live_values);
+
+  auto &rmm = m_node_mgr.get_region_model_manager ();
+  auto mem_range = reg->get_memory_range (rmm);
+  if (mem_range.get_size ().is_zero_p ())
+    return;
+
+  auto &bv_mgr = m_node_mgr.get_bit_vector_manager ();
+  auto &unknown_bv = bv_mgr.get_unknown_bits (mem_range.get_size ());
+  set_bits (mem_range, unknown_bv,
+	    uncertainty,
+	    model);
 }
 
-/* Purge state involving SVAL.  */
+/* Purge state involving NODE.  */
 
 void
-store::purge_state_involving (const svalue *sval,
-			      region_model_manager *sval_mgr)
+store::purge_state_involving (const symbolic::node &node)
 {
   auto_vec <const region *> base_regs_to_purge;
   for (auto iter : m_cluster_map)
     {
       const region *base_reg = iter.first;
-      if (base_reg->involves_p (sval))
+      if (base_reg->involves_p (node))
 	base_regs_to_purge.safe_push (base_reg);
       else
 	{
 	  binding_cluster *cluster = iter.second;
-	  cluster->purge_state_involving (sval, sval_mgr);
+	  cluster->purge_state_involving (node);
 	}
     }
 
@@ -3673,8 +1880,8 @@ store::get_cluster (const region *base_reg)
 /* Get the cluster for BASE_REG, creating it if doesn't already exist.  */
 
 binding_cluster *
-store::get_or_create_cluster (store_manager &store_mgr,
-			      const region *base_reg)
+store::get_or_create_cluster (const region *base_reg,
+			      baseline_state bs)
 {
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
@@ -3688,7 +1895,9 @@ store::get_or_create_cluster (store_manager &store_mgr,
   if (binding_cluster **slot = m_cluster_map.get (base_reg))
     return *slot;
 
-  binding_cluster *cluster = new binding_cluster (store_mgr, base_reg);
+  auto &baseline = get_implicit_contents (*base_reg, bs);
+  binding_cluster *cluster
+    = new binding_cluster (m_node_mgr, base_reg, baseline);
   m_cluster_map.put (base_reg, cluster);
 
   return cluster;
@@ -3715,7 +1924,7 @@ store::purge_cluster (const region *base_reg)
 
 bool
 store::can_merge_p (const store *store_a, const store *store_b,
-		    store *out_store, store_manager *mgr,
+		    store *out_store,
 		    model_merger *merger)
 {
   if (store_a->m_called_unknown_fn || store_b->m_called_unknown_fn)
@@ -3753,9 +1962,11 @@ store::can_merge_p (const store *store_a, const store *store_b,
       const binding_cluster *cluster_b = store_b->get_cluster (base_reg);
       /* At least one of cluster_a and cluster_b must be non-NULL.  */
       binding_cluster *out_cluster
-	= out_store->get_or_create_cluster (*mgr, base_reg);
+	= out_store->get_or_create_cluster
+	    (base_reg,
+	     merger->m_model_a->get_baseline_state ());
       if (!binding_cluster::can_merge_p (cluster_a, cluster_b,
-					 out_cluster, out_store, mgr, merger))
+					 out_cluster, out_store, merger))
 	return false;
     }
   return true;
@@ -3768,7 +1979,8 @@ store::can_merge_p (const store *store_a, const store *store_b,
    isn't reachable from args of those calls.  */
 
 void
-store::mark_as_escaped (store_manager &mgr, const region *base_reg)
+store::mark_as_escaped (const region *base_reg,
+			baseline_state bs)
 {
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
@@ -3777,7 +1989,7 @@ store::mark_as_escaped (store_manager &mgr, const region *base_reg)
       || !base_reg->tracked_p ())
     return;
 
-  binding_cluster *cluster = get_or_create_cluster (mgr, base_reg);
+  binding_cluster *cluster = get_or_create_cluster (base_reg, bs);
   cluster->mark_as_escaped ();
 }
 
@@ -3785,14 +1997,33 @@ store::mark_as_escaped (store_manager &mgr, const region *base_reg)
    (either in this fncall, or in a prior one).  */
 
 void
-store::on_unknown_fncall (const gcall &call, store_manager *mgr,
+store::on_unknown_fncall (const gcall &call,
 			  const conjured_purge &p)
 {
   m_called_unknown_fn = true;
 
   for (cluster_map_t::iterator iter = m_cluster_map.begin ();
        iter != m_cluster_map.end (); ++iter)
-    (*iter).second->on_unknown_fncall (call, mgr, p);
+    (*iter).second->on_unknown_fncall (call, p);
+}
+
+/* Mark all of BASE_REG as having conjured contents.  */
+
+void
+store::mark_region_as_conjured (const region &base_reg,
+				baseline_state bs,
+				const gimple &stmt,
+				const conjured_purge &p)
+{
+  gcc_assert (base_reg.get_base_region () == &base_reg);
+
+  // TODO: what if symbolic?
+
+  if (!base_reg.tracked_p ())
+    return;
+
+  binding_cluster *cluster = get_or_create_cluster (&base_reg, bs);
+  cluster->mark_region_as_conjured (stmt, p);
 }
 
 /* Return true if a non-const pointer to BASE_REG (or something within it)
@@ -3819,7 +2050,7 @@ store::escaped_p (const region *base_reg) const
 
 void
 store::get_representative_path_vars (const region_model *model,
-				     svalue_set *visited,
+				     value_set *visited,
 				     const svalue *sval,
 				     logger *logger,
 				     auto_vec<path_var> *out_pvs) const
@@ -3847,127 +2078,34 @@ store::get_representative_path_vars (const region_model *model,
     }
 }
 
-/* Remove all bindings overlapping REG within this store, removing
-   any clusters that become redundant.
-
-   If UNCERTAINTY is non-NULL, use it to record any svalues that
-   were removed, as being maybe-bound.  */
-
-void
-store::remove_overlapping_bindings (store_manager *mgr, const region *reg,
-				    uncertainty_t *uncertainty)
-{
-  const region *base_reg = reg->get_base_region ();
-  if (binding_cluster **cluster_slot = m_cluster_map.get (base_reg))
-    {
-      binding_cluster *cluster = *cluster_slot;
-      if (reg == base_reg && !escaped_p (base_reg))
-	{
-	  /* Remove whole cluster.  */
-	  m_cluster_map.remove (base_reg);
-	  delete cluster;
-	  return;
-	}
-      /* Pass nullptr for the maybe_live_values here, as we don't want to
-	 record the old svalues as being maybe-bound.  */
-      cluster->remove_overlapping_bindings (mgr, reg, uncertainty, nullptr);
-    }
-}
-
-/* Subclass of visitor that accumulates a hash_set of the regions that
-   were visited.  */
-
-struct region_finder : public visitor
-{
-  void visit_region (const region *reg) final override
-  {
-    m_regs.add (reg);
-  }
-
-  hash_set<const region *> m_regs;
-};
-
 /* Canonicalize this store, to maximize the chance of equality between
    instances.  */
 
 void
-store::canonicalize (store_manager *mgr)
+store::canonicalize ()
 {
-  /* If we have e.g.:
-         cluster for: HEAP_ALLOCATED_REGION(543)
-           ESCAPED
-           TOUCHED
-     where the heap region is empty and unreferenced, then purge that
-     cluster, to avoid unbounded state chains involving these.  */
-
-  /* Find regions that are referenced by bound values in the store.  */
-  region_finder s;
-  for (cluster_map_t::iterator iter = m_cluster_map.begin ();
-       iter != m_cluster_map.end (); ++iter)
-    {
-      binding_cluster *cluster = (*iter).second;
-      for (binding_cluster::iterator_t bind_iter = cluster->m_map.begin ();
-	   bind_iter != cluster->m_map.end (); ++bind_iter)
-	(*bind_iter).m_sval->accept (&s);
-    }
-
-  /* Locate heap-allocated regions that have empty bindings that weren't
-     found above.  */
-  hash_set<const region *> purgeable_regions;
-  for (cluster_map_t::iterator iter = m_cluster_map.begin ();
-       iter != m_cluster_map.end (); ++iter)
-    {
-      const region *base_reg = (*iter).first;
-      binding_cluster *cluster = (*iter).second;
-      if (base_reg->get_kind () == RK_HEAP_ALLOCATED)
-	{
-	  /* Don't purge a heap-allocated region that's been marked as
-	     escaping, since this could be recording that a ptr to it
-	     was written to an unknown symbolic region along this
-	     path, and so we don't know whether it's referenced or
-	     not, and hence should report it as leaking
-	     (PR analyzer/106473).  */
-	  if (cluster->escaped_p ())
-	    continue;
-
-	  if (cluster->empty_p ())
-	    if (!s.m_regs.contains (base_reg))
-	      purgeable_regions.add (base_reg);
-
-	  /* Also cover the UNKNOWN case.  */
-	  if (const svalue *sval = cluster->maybe_get_simple_value (mgr))
-	    if (sval->get_kind () == SK_UNKNOWN)
-	      if (!s.m_regs.contains (base_reg))
-		purgeable_regions.add (base_reg);
-	}
-    }
-
-  /* Purge them.  */
-  for (hash_set<const region *>::iterator iter = purgeable_regions.begin ();
-       iter != purgeable_regions.end (); ++iter)
-    {
-      const region *base_reg = *iter;
-      purge_cluster (base_reg);
-    }
+  // No-op
 }
 
 static bool
-needs_loop_replay_fixup_p (const svalue &sval)
+needs_loop_replay_fixup_p (const symbolic::node &node)
 {
-  struct my_visitor : public visitor
+  struct my_visitor : public symbolic::node_visitor
   {
     my_visitor () : m_found_widening (false) {}
 
-    void
-    visit_widening_svalue (const widening_svalue *) final override
+    bool
+    visit_svalue (const svalue &sval) final override
     {
-      m_found_widening = true;
+      if (sval.dyn_cast_widening_svalue ())
+	m_found_widening = true;
+      return true;
     }
 
     bool m_found_widening;
   } v;
 
-  sval.accept (&v);
+  node.accept_node_visitor (v);
   return v.m_found_widening;
 }
 
@@ -3998,6 +2136,7 @@ needs_loop_replay_fixup_p (const svalue &sval)
 
 void
 store::loop_replay_fixup (const store *other_store,
+			  baseline_state bs,
 			  region_model_manager *mgr)
 {
   gcc_assert (other_store);
@@ -4006,27 +2145,20 @@ store::loop_replay_fixup (const store *other_store,
     {
       const region *base_reg = (*iter).first;
       binding_cluster *cluster = (*iter).second;
-      for (binding_cluster::iterator_t bind_iter = cluster->m_map.begin ();
-	   bind_iter != cluster->m_map.end (); ++bind_iter)
+
+      if (needs_loop_replay_fixup_p (*cluster->m_contents))
 	{
-	  const binding_key *key = (*bind_iter).m_key;
-	  const svalue *sval = (*bind_iter).m_sval;
-	  if (needs_loop_replay_fixup_p (*sval))
-	    {
-	      binding_cluster *this_cluster
-		= get_or_create_cluster (*mgr->get_store_manager (),
-					 base_reg);
-	      const svalue *unknown
-		= mgr->get_or_create_unknown_svalue (sval->get_type ());
-	      this_cluster->bind_key (key, unknown);
-	    }
+	  binding_cluster *this_cluster = get_or_create_cluster (base_reg, bs);
+	  auto &node_mgr = mgr->get_node_manager ();
+	  this_cluster->mark_as_untracked (node_mgr, nullptr, nullptr);
 	}
     }
 }
 
-/* Use R to replay the bindings from SUMMARY into this object.  */
+/* Attempt to use R to replay the bindings from SUMMARY into this object.
+   Return true if successful.  */
 
-void
+bool
 store::replay_call_summary (call_summary_replay &r,
 			    const store &summary)
 {
@@ -4036,7 +2168,6 @@ store::replay_call_summary (call_summary_replay &r,
 	 Hence we need to invalidate our knowledge of globals,
 	 escaped regions, etc.  */
       on_unknown_fncall (r.get_call_stmt (),
-			 r.get_store_manager (),
 			 conjured_purge (r.get_caller_model (),
 					 r.get_ctxt ()));
     }
@@ -4046,22 +2177,27 @@ store::replay_call_summary (call_summary_replay &r,
     keys.quick_push (kv.first);
   keys.qsort (region::cmp_ptr_ptr);
   for (auto base_reg : keys)
-    replay_call_summary_cluster (r, summary, base_reg);
+    if (!replay_call_summary_cluster (r, summary, base_reg))
+      return false;
+  return true;
 }
 
-/* Use R and SUMMARY to replay the bindings in SUMMARY_CLUSTER
-   into this object.  */
+/* Attempt to use R and SUMMARY to replay the bindings in SUMMARY_CLUSTER
+   into this object.
+   Return true if successful.  */
 
-void
+bool
 store::replay_call_summary_cluster (call_summary_replay &r,
 				    const store &summary,
 				    const region *summary_base_reg)
 {
   const call_details &cd = r.get_call_details ();
   region_model_manager *reg_mgr = r.get_manager ();
-  store_manager *mgr = reg_mgr->get_store_manager ();
   const binding_cluster *summary_cluster
     = summary.get_cluster (summary_base_reg);
+
+  auto &bit_contents_mgr
+    = reg_mgr->get_node_manager ().get_bit_contents_manager ();
 
   /* Handle "ESCAPED" and "TOUCHED" flags.  */
   if (summary_cluster->escaped_p () || summary_cluster->touched_p ())
@@ -4073,7 +2209,9 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
 	  {
 	    binding_cluster *caller_cluster
-	      = get_or_create_cluster (*mgr, caller_base_reg);
+	      = get_or_create_cluster
+		  (caller_base_reg,
+		   r.get_caller_model ()->get_baseline_state ());
 	    if (summary_cluster->escaped_p ())
 	      caller_cluster->mark_as_escaped ();
 	    if (summary_cluster->touched_p ())
@@ -4119,23 +2257,27 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	const svalue *caller_ptr_sval
 	  = r.convert_svalue_from_summary (summary_ptr_sval);
 	if (!caller_ptr_sval)
-	  return;
+	  return false;
 	const region *caller_dest_reg
 	  = cd.get_model ()->deref_rvalue (caller_ptr_sval,
 					   NULL_TREE,
 					   cd.get_ctxt ());
-	const svalue *summary_sval
-	  = summary.get_any_binding (mgr, summary_base_reg);
-	if (!summary_sval)
-	  return;
-	const svalue *caller_sval
-	  = r.convert_svalue_from_summary (summary_sval);
-	if (!caller_sval)
-	  caller_sval =
-	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
-	set_value (mgr, caller_dest_reg,
-		   caller_sval, nullptr /* uncertainty_t * */,
-		   *cd.get_model ());
+	auto &summary_bits
+	  = summary.get_bit_contents (*summary_symbolic_reg,
+				      r.get_caller_model ()->get_baseline_state ());
+	if (auto *baseline_bc = summary_bits.dyn_cast_baseline_bit_contents ())
+	  if (baseline_bc->get_baseline_key ().m_base_reg == summary_base_reg)
+	    {
+	      /* The summary's bit contents is just the baseline for
+		 summary_base_reg; we don't need to write anything.  */
+	      return true;
+	    }
+	auto *caller_bits = r.convert_bit_contents_from_summary (summary_bits);
+	if (!caller_bits)
+	  caller_bits = &bit_contents_mgr.get_untracked ({});
+	return replay_call_summary_bit_contents
+	  (r, summary, *summary_base_reg,
+	   *caller_dest_reg, *caller_bits);
       }
       break;
 
@@ -4147,21 +2289,23 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	const region *caller_dest_reg
 	  = r.convert_region_from_summary (summary_base_reg);
 	if (!caller_dest_reg)
-	  return;
-	const svalue *summary_sval
-	  = summary.get_any_binding (mgr, summary_base_reg);
-	if (!summary_sval)
-	  summary_sval = reg_mgr->get_or_create_compound_svalue
-	    (summary_base_reg->get_type (),
-	     summary_cluster->get_map ().get_concrete_bindings ());
-	const svalue *caller_sval
-	  = r.convert_svalue_from_summary (summary_sval);
-	if (!caller_sval)
-	  caller_sval =
-	    reg_mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
-	set_value (mgr, caller_dest_reg,
-		   caller_sval, nullptr /* uncertainty_t * */,
-		   *cd.get_model ());
+	  return false;
+	auto &summary_bits
+	  = summary.get_bit_contents (*summary_base_reg,
+				      r.get_caller_model ()->get_baseline_state ());
+	if (auto *baseline_bc = summary_bits.dyn_cast_baseline_bit_contents ())
+	  if (baseline_bc->get_baseline_key ().m_base_reg == summary_base_reg)
+	    {
+	      /* The summary's bit contents is just the baseline for
+		 summary_base_reg; we don't need to write anything.  */
+	      return true;
+	    }
+	auto *caller_bits = r.convert_bit_contents_from_summary (summary_bits);
+	if (!caller_bits)
+	  caller_bits = &bit_contents_mgr.get_untracked ({});
+	return replay_call_summary_bit_contents
+	  (r, summary, *summary_base_reg,
+	   *caller_dest_reg, *caller_bits);
       }
       break;
 
@@ -4169,6 +2313,114 @@ store::replay_call_summary_cluster (call_summary_replay &r,
       /* Ignore bindings of alloca regions in the summary.  */
       break;
     }
+
+  return true;
+}
+
+bool
+store::replay_call_summary_bit_contents (call_summary_replay &r,
+					 const store &summary,
+					 const region &summary_base_reg,
+					 const region &caller_dest_reg,
+					 const symbolic::bit_contents &caller_bc)
+{
+  if (caller_dest_reg.symbolic_for_unknown_ptr_p ())
+    return false;
+
+  switch (caller_bc.get_kind ())
+    {
+    default:
+      return false; // TODO
+
+    case symbolic::bit_contents::kind::uninit:
+      /* No-op: nothing was written in summary, so the replay
+	 writes nothing.  */
+      break;
+
+    case symbolic::bit_contents::kind::untracked:
+      {
+	const region *base_reg = caller_dest_reg.get_base_region ();
+	if (base_reg->tracked_p ())
+	  {
+	    binding_cluster *caller_cluster
+	      = get_or_create_cluster (caller_dest_reg.get_base_region (),
+				       r.get_caller_model ()->get_baseline_state ());
+	    caller_cluster->set_bit_contents (caller_bc);
+	  }
+      }
+      break;
+
+    case symbolic::bit_contents::kind::zero:
+      {
+	return false; // TODO
+      }
+      break;
+
+    case symbolic::bit_contents::kind::baseline:
+    case symbolic::bit_contents::kind::offset:
+      {
+	auto &rmm = *r.get_manager ();
+	auto caller_dest_mem_offset = caller_dest_reg.get_memory_offset (rmm);
+	auto &bc_mgr = caller_bc.get_bit_contents_manager ();
+	auto &caller_offset_bc = bc_mgr.get_offset_bit_contents
+	  (caller_bc,
+	   caller_dest_mem_offset.get_bit_offset ());
+	// FIXME: is the sign of the offset correct?
+	binding_cluster *caller_cluster
+	  = get_or_create_cluster (&caller_dest_mem_offset.get_base_region (),
+				   r.get_caller_model ()->get_baseline_state ()); // FIXME
+	caller_cluster->set_bit_contents (caller_offset_bc);
+	// FIXME: this bypasses access checks; should it?
+      }
+      break;
+    case symbolic::bit_contents::kind::conjured:
+      return false; // TODO
+
+    case symbolic::bit_contents::kind::named_test:
+      return false; // TODO
+
+    case symbolic::bit_contents::kind::concrete_overlay:
+      {
+	auto &caller_overlay
+	  = (const symbolic::concrete_bit_overlay &)caller_bc;
+
+	/* First, apply the baseline.  */
+	auto &caller_baseline = caller_overlay.get_baseline ();
+	replay_call_summary_bit_contents (r, summary, summary_base_reg,
+					  caller_dest_reg, caller_baseline);
+
+	/* Now apply the bindings.  */
+	for (auto iter : caller_overlay.m_concrete_range_map)
+	  {
+	    auto &conc_range = iter.first;
+	    auto &bv = iter.second;
+	    auto &rmm = *r.get_manager ();
+	    auto *affected_region
+	      = rmm.get_bit_range (&caller_dest_reg, NULL_TREE, conc_range);
+	    set_bits (affected_region, bv, nullptr, *r.get_caller_model ());
+	  }
+      }
+      break;
+    case symbolic::bit_contents::kind::symbolic_overlay:
+      {
+	auto &caller_overlay
+	  = (const symbolic::symbolic_bit_overlay &)caller_bc;
+
+	/* First, apply the baseline.  */
+	auto &caller_baseline = caller_overlay.get_baseline ();
+	replay_call_summary_bit_contents (r, summary, summary_base_reg,
+					  caller_dest_reg, caller_baseline);
+
+	/* Now apply the bindings.  */
+	for (auto iter : caller_overlay.m_symbolic_range_map)
+	  {
+	    return false; // TODO
+	  }
+      }
+      break;
+    }
+
+  return true;
 }
 
 #if CHECKING_P
@@ -4237,195 +2489,12 @@ test_bit_range_intersects_p ()
   ASSERT_EQ (r2.m_size_in_bits, 6);
 }
 
-/* Implementation detail of ASSERT_BIT_RANGE_FROM_MASK_EQ.  */
-
-static void
-assert_bit_range_from_mask_eq (const location &loc,
-			       unsigned HOST_WIDE_INT mask,
-			       const bit_range &expected)
-{
-  bit_range actual (0, 0);
-  bool ok = bit_range::from_mask (mask, &actual);
-  ASSERT_TRUE_AT (loc, ok);
-  ASSERT_EQ_AT (loc, actual, expected);
-}
-
-/* Assert that bit_range::from_mask (MASK) returns true, and writes
-   out EXPECTED_BIT_RANGE.  */
-
-#define ASSERT_BIT_RANGE_FROM_MASK_EQ(MASK, EXPECTED_BIT_RANGE) \
-  SELFTEST_BEGIN_STMT							\
-  assert_bit_range_from_mask_eq (SELFTEST_LOCATION, MASK,		\
-				 EXPECTED_BIT_RANGE);			\
-  SELFTEST_END_STMT
-
-/* Implementation detail of ASSERT_NO_BIT_RANGE_FROM_MASK.  */
-
-static void
-assert_no_bit_range_from_mask_eq (const location &loc,
-				  unsigned HOST_WIDE_INT mask)
-{
-  bit_range actual (0, 0);
-  bool ok = bit_range::from_mask (mask, &actual);
-  ASSERT_FALSE_AT (loc, ok);
-}
-
-/* Assert that bit_range::from_mask (MASK) returns false.  */
-
-#define ASSERT_NO_BIT_RANGE_FROM_MASK(MASK) \
-  SELFTEST_BEGIN_STMT							\
-  assert_no_bit_range_from_mask_eq (SELFTEST_LOCATION, MASK);		\
-  SELFTEST_END_STMT
-
-/* Verify that bit_range::from_mask works as expected.  */
-
-static void
-test_bit_range_from_mask ()
-{
-  /* Should fail on zero.  */
-  ASSERT_NO_BIT_RANGE_FROM_MASK (0);
-
-  /* Verify 1-bit masks.  */
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (1, bit_range (0, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (2, bit_range (1, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (4, bit_range (2, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (8, bit_range (3, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (16, bit_range (4, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (32, bit_range (5, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (64, bit_range (6, 1));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (128, bit_range (7, 1));
-
-  /* Verify N-bit masks starting at bit 0.  */
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (3, bit_range (0, 2));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (7, bit_range (0, 3));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (15, bit_range (0, 4));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (31, bit_range (0, 5));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (63, bit_range (0, 6));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (127, bit_range (0, 7));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (255, bit_range (0, 8));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (0xffff, bit_range (0, 16));
-
-  /* Various other tests. */
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x30, bit_range (4, 2));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x700, bit_range (8, 3));
-  ASSERT_BIT_RANGE_FROM_MASK_EQ (0x600, bit_range (9, 2));
-
-  /* Multiple ranges of set bits should fail.  */
-  ASSERT_NO_BIT_RANGE_FROM_MASK (0x101);
-  ASSERT_NO_BIT_RANGE_FROM_MASK (0xf0f0f0f0);
-}
-
-/* Implementation detail of ASSERT_OVERLAP.  */
-
-static void
-assert_overlap (const location &loc,
-		const concrete_binding *b1,
-		const concrete_binding *b2)
-{
-  ASSERT_TRUE_AT (loc, b1->overlaps_p (*b2));
-  ASSERT_TRUE_AT (loc, b2->overlaps_p (*b1));
-}
-
-/* Implementation detail of ASSERT_DISJOINT.  */
-
-static void
-assert_disjoint (const location &loc,
-		 const concrete_binding *b1,
-		 const concrete_binding *b2)
-{
-  ASSERT_FALSE_AT (loc, b1->overlaps_p (*b2));
-  ASSERT_FALSE_AT (loc, b2->overlaps_p (*b1));
-}
-
-/* Assert that B1 and B2 overlap, checking both ways.  */
-
-#define ASSERT_OVERLAP(B1, B2) \
-  SELFTEST_BEGIN_STMT				\
-  assert_overlap (SELFTEST_LOCATION, B1, B2);	\
-  SELFTEST_END_STMT
-
-/* Assert that B1 and B2 do not overlap, checking both ways.  */
-
-#define ASSERT_DISJOINT(B1, B2) \
-  SELFTEST_BEGIN_STMT				\
-  assert_disjoint (SELFTEST_LOCATION, B1, B2);  \
-  SELFTEST_END_STMT
-
-/* Verify that concrete_binding::overlaps_p works as expected.  */
-
-static void
-test_binding_key_overlap ()
-{
-  store_manager mgr (nullptr);
-
-  /* Various 8-bit bindings.  */
-  const concrete_binding *cb_0_7 = mgr.get_concrete_binding (0, 8);
-  const concrete_binding *cb_8_15 = mgr.get_concrete_binding (8, 8);
-  const concrete_binding *cb_16_23 = mgr.get_concrete_binding (16, 8);
-  const concrete_binding *cb_24_31 = mgr.get_concrete_binding (24, 8);
-
-  /* 16-bit bindings.  */
-  const concrete_binding *cb_0_15 = mgr.get_concrete_binding (0, 16);
-  const concrete_binding *cb_8_23 = mgr.get_concrete_binding (8, 16);
-  const concrete_binding *cb_16_31 = mgr.get_concrete_binding (16, 16);
-
-  /* 32-bit binding.  */
-  const concrete_binding *cb_0_31 = mgr.get_concrete_binding (0, 32);
-
-  /* Everything should self-overlap.  */
-  ASSERT_OVERLAP (cb_0_7, cb_0_7);
-  ASSERT_OVERLAP (cb_8_15, cb_8_15);
-  ASSERT_OVERLAP (cb_16_23, cb_16_23);
-  ASSERT_OVERLAP (cb_24_31, cb_24_31);
-  ASSERT_OVERLAP (cb_0_15, cb_0_15);
-  ASSERT_OVERLAP (cb_8_23, cb_8_23);
-  ASSERT_OVERLAP (cb_16_31, cb_16_31);
-  ASSERT_OVERLAP (cb_0_31, cb_0_31);
-
-  /* Verify the 8-bit bindings that don't overlap each other.  */
-  ASSERT_DISJOINT (cb_0_7, cb_8_15);
-  ASSERT_DISJOINT (cb_8_15, cb_16_23);
-
-  /* Check for overlap of differently-sized bindings.  */
-  ASSERT_OVERLAP (cb_0_7, cb_0_31);
-  /* ...and with differing start points.  */
-  ASSERT_OVERLAP (cb_8_15, cb_0_31);
-  ASSERT_DISJOINT (cb_8_15, cb_16_31);
-  ASSERT_OVERLAP (cb_16_23, cb_0_31);
-  ASSERT_OVERLAP (cb_16_31, cb_0_31);
-
-  ASSERT_DISJOINT (cb_0_7, cb_8_23);
-  ASSERT_OVERLAP (cb_8_23, cb_16_23);
-  ASSERT_OVERLAP (cb_8_23, cb_16_31);
-  ASSERT_DISJOINT (cb_8_23, cb_24_31);
-}
-
-static void
-test_binding_map_ops ()
-{
-  symbolic::node_manager node_mgr;
-  auto &region_mgr = node_mgr.get_region_model_manager ();
-  store_manager store_mgr (&region_mgr);
-
-  /* Assignment of empty.  */
-  {
-    binding_map src (store_mgr);
-    binding_map dst (store_mgr);
-    dst = src;
-
-    ASSERT_EQ (src, dst);
- }
-}
-
 /* Run all of the selftests within this file.  */
 
 void
 analyzer_store_cc_tests ()
 {
   test_bit_range_intersects_p ();
-  test_bit_range_from_mask ();
-  test_binding_key_overlap ();
-  test_binding_map_ops ();
 }
 
 } // namespace selftest

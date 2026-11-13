@@ -167,6 +167,9 @@ public:
   describe_state_change (pretty_printer &pp,
 			 const evdesc::state_change &change) override
   {
+    if (!change.m_expr)
+      return false;
+
     if (change.m_new_state == m_sm.m_tainted)
       {
 	if (change.m_origin)
@@ -1607,12 +1610,94 @@ index_can_be_out_of_bounds_p (const element_region *element_reg)
   return true;
 }
 
+/* Complain to CTXT if accessing MEM_RANGE leads could lead to arbitrary
+   memory access under an attacker's control (due to taint).  */
+
+void
+region_model::check_memory_range_for_taint (const symbolic::memory_range &mem_range,
+					    enum access_direction dir,
+					    region_model_context *ctxt) const
+{
+  gcc_assert (ctxt);
+
+  LOG_SCOPE (ctxt->get_logger ());
+
+  if (auto *reg = maybe_get_region_for_mem_range (mem_range, NULL_TREE))
+    check_region_for_taint (reg, dir, ctxt);
+  else
+    {
+      /* If we can't get a region for mem_range, fallback to analyzing
+	 the start offset and size.  */
+
+      sm_state_map *smap;
+      const state_machine *sm;
+      unsigned sm_idx;
+      if (!ctxt->get_taint_map (&smap, &sm, &sm_idx))
+	return;
+
+      gcc_assert (smap);
+      gcc_assert (sm);
+
+      const taint_state_machine &taint_sm = (const taint_state_machine &)*sm;
+
+      const extrinsic_state *ext_state = ctxt->get_ext_state ();
+      if (!ext_state)
+	return;
+
+      // Check for taint in start offset
+      {
+	auto &start_offset = mem_range.get_start_offset ();
+	auto *start_offset_sval
+	  = m_mgr->get_svalue_from_scalar (size_type_node, start_offset);
+	const state_machine::state_t state
+	  = smap->get_state (start_offset_sval, *ext_state);
+	gcc_assert (state);
+	/* Handle implicit cast to sizetype.  */
+	tree effective_type = start_offset_sval->get_type ();
+	if (const svalue *cast = start_offset_sval->maybe_undo_cast ())
+	  if (cast->get_type ())
+	    effective_type = cast->get_type ();
+	enum bounds b;
+	if (taint_sm.get_taint (state, effective_type, &b))
+	  {
+	    // FIXME: does this ever fire?
+	    gcc_unreachable ();
+	    tree arg = get_representative_tree (start_offset_sval);
+	    ctxt->warn (std::make_unique<tainted_offset> (taint_sm, arg, b,
+							  start_offset_sval));
+	  }
+      }
+
+      // Check for taint in size
+      {
+	auto &size = mem_range.get_size ();
+	auto *size_sval = m_mgr->get_svalue_from_scalar (size_type_node, size);
+	const state_machine::state_t state
+	  = smap->get_state (size_sval, *ext_state);
+	gcc_assert (state);
+	/* Handle implicit cast to sizetype.  */
+	tree effective_type = size_sval->get_type ();
+	if (const svalue *cast = size_sval->maybe_undo_cast ())
+	  if (cast->get_type ())
+	    effective_type = cast->get_type ();
+	enum bounds b;
+	if (taint_sm.get_taint (state, effective_type, &b))
+	  {
+	    // FIXME: does this ever fire?
+	    gcc_unreachable ();
+	    tree arg = get_representative_tree (size_sval);
+	    ctxt->warn (std::make_unique<tainted_size> (taint_sm, arg, b));
+	  }
+      }
+    }
+}
+
 /* Complain to CTXT if accessing REG leads could lead to arbitrary
    memory access under an attacker's control (due to taint).  */
 
 void
 region_model::check_region_for_taint (const region *reg,
-				      enum access_direction,
+				      enum access_direction dir,
 				      region_model_context *ctxt) const
 {
   gcc_assert (reg);
@@ -1683,7 +1768,10 @@ region_model::check_region_for_taint (const region *reg,
 	    enum bounds b;
 	    if (taint_sm.get_taint (state, effective_type, &b))
 	      {
-		tree arg = get_representative_tree (offset);
+		const svalue *effective_offset = offset;
+		if (const svalue *cast = offset->maybe_undo_cast ())
+		  effective_offset = cast;
+		tree arg = get_representative_tree (effective_offset);
 		ctxt->warn (std::make_unique<tainted_offset> (taint_sm, arg, b,
 							      offset));
 	      }

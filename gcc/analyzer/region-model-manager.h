@@ -21,6 +21,10 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_REGION_MODEL_MANAGER_H
 #define GCC_ANALYZER_REGION_MODEL_MANAGER_H
 
+#include "svalue.h"
+#include "region.h"
+#include "known-function-manager.h"
+
 namespace ana {
 
 /* A class responsible for owning and consolidating region and svalue
@@ -57,30 +61,23 @@ public:
   const svalue *get_or_create_initial_value (const region *reg,
 					     bool check_poisoned = true);
   const svalue *get_ptr_svalue (tree ptr_type, const region *pointee);
+  const svalue *get_ptr_svalue (tree ptr_type, symbolic::pointer ptr);
   const svalue *get_or_create_unaryop (tree type, enum tree_code op,
 				       const svalue *arg);
   const svalue *get_or_create_cast (tree type, const svalue *arg);
   const svalue *get_or_create_binop (tree type,
 				     enum tree_code op,
 				     const svalue *arg0, const svalue *arg1);
-  const svalue *get_or_create_sub_svalue (tree type,
-					  const svalue *parent_svalue,
-					  const region *subregion);
-  const svalue *get_or_create_repeated_svalue (tree type,
-					       const svalue *outer_size,
-					       const svalue *inner_svalue);
-  const svalue *get_or_create_bits_within (tree type,
-					   const bit_range &bits,
-					   const svalue *inner_svalue);
+  const svalue *get_svalue_from_bit_vector (tree type,
+					    const symbolic::bit_vector &bv);
+  template <typename ConcreteValueType>
+  const svalue *get_svalue_from_scalar (tree type,
+					const symbolic::scalar<ConcreteValueType> &scalar);
   const svalue *get_or_create_unmergeable (const svalue *arg);
   const svalue *get_or_create_widening_svalue (tree type,
 					       const supernode *snode,
 					       const svalue *base_svalue,
 					       const svalue *iter_svalue);
-  const svalue *get_or_create_compound_svalue (tree type,
-					       concrete_binding_map &&map);
-  const svalue *get_or_create_compound_svalue (tree type,
-					       const concrete_binding_map &map);
   const svalue *get_or_create_conjured_svalue (tree type, const gimple *stmt,
 					       const region *id_reg,
 					       const conjured_purge &p,
@@ -100,13 +97,6 @@ public:
   get_or_create_const_fn_result_svalue (tree type,
 					tree fndecl,
 					const vec<const svalue *> &inputs);
-
-  const svalue *maybe_get_char_from_cst (tree data_cst,
-					 tree byte_offset_cst);
-  const svalue *maybe_get_char_from_string_cst (tree string_cst,
-						tree byte_offset_cst);
-  const svalue *maybe_get_char_from_raw_data_cst (tree raw_data_cst,
-						  tree byte_offset_cst);
 
   /* Dynamically-allocated svalue instances.
      The number of these within the analysis can grow arbitrarily.
@@ -143,7 +133,7 @@ public:
   const region *get_symbolic_region (const svalue *sval);
   const string_region *get_region_for_string (tree string_cst);
   const region *get_bit_range (const region *parent, tree type,
-			       const bit_range &bits);
+			       const concrete_bit_range &bits);
   const var_arg_region *get_var_arg_region (const frame_region *parent,
 					    unsigned idx);
 
@@ -160,7 +150,6 @@ public:
     return m_node_mgr;
   }
 
-  store_manager *get_store_manager () { return &m_store_mgr; }
   bounded_ranges_manager *get_range_manager () const { return m_range_mgr; }
 
   known_function_manager *get_known_function_manager ()
@@ -186,6 +175,7 @@ public:
 
   const svalue *maybe_fold_binop (tree type, enum tree_code op,
 				  const svalue *arg0, const svalue *arg1);
+
 private:
   bool too_complex_p (const complexity &c) const;
   bool reject_if_too_complex (svalue *sval);
@@ -195,20 +185,17 @@ private:
 				      const binop_svalue *binop);
   const svalue *maybe_fold_unaryop (tree type, enum tree_code op,
 				    const svalue *arg);
-  const svalue *maybe_fold_sub_svalue (tree type,
-				       const svalue *parent_svalue,
-				       const region *subregion);
-  const svalue *maybe_fold_repeated_svalue (tree type,
-					    const svalue *outer_size,
-					    const svalue *inner_svalue);
-  const svalue *maybe_fold_bits_within_svalue (tree type,
-					       const bit_range &bits,
-					       const svalue *inner_svalue);
-  const svalue *maybe_undo_optimize_bit_field_compare (tree type,
-						       const compound_svalue *compound_sval,
-						       tree cst, const svalue *arg1);
+  const svalue *maybe_fold_svalue_from_bit_vector (tree type,
+						   const symbolic::bit_vector &bv);
   const svalue *maybe_fold_asm_output_svalue (tree type,
 					      const vec<const svalue *> &inputs);
+
+  const region *
+  maybe_fold_sized_region_to_initial_field (const region *parent,
+					    tree type,
+					    const svalue *byte_size_sval);
+  const region *
+  maybe_fold_symbolic_region (const svalue *sval);
 
   symbolic::node_manager &m_node_mgr;
   logger *m_logger;
@@ -238,7 +225,7 @@ private:
   typedef std::map<const region *, initial_svalue *> initial_values_map_t;
   initial_values_map_t m_initial_values_map;
 
-  typedef std::map<region_svalue::key_t, region_svalue *> pointer_values_map_t;
+  typedef std::map<pointer_svalue::key_t, pointer_svalue *> pointer_values_map_t;
   pointer_values_map_t m_pointer_values_map;
 
   typedef std::map<unaryop_svalue::key_t,
@@ -248,16 +235,9 @@ private:
   typedef std::map<binop_svalue::key_t, binop_svalue *> binop_values_map_t;
   binop_values_map_t m_binop_values_map;
 
-  typedef std::map<sub_svalue::key_t, sub_svalue *> sub_values_map_t;
-  sub_values_map_t m_sub_values_map;
-
-  typedef std::map<repeated_svalue::key_t,
-		   repeated_svalue *> repeated_values_map_t;
-  repeated_values_map_t m_repeated_values_map;
-
-  typedef std::map<bits_within_svalue::key_t,
-		   bits_within_svalue *> bits_within_values_map_t;
-  bits_within_values_map_t m_bits_within_values_map;
+  typedef std::map<svalue_from_bit_vector::key_t,
+		   svalue_from_bit_vector *> bit_vector_to_svalue_map_t;
+  bit_vector_to_svalue_map_t m_bit_vector_to_svalue_map;
 
   typedef std::map<const svalue *,
 		   unmergeable_svalue *> unmergeable_values_map_t;
@@ -266,14 +246,6 @@ private:
   typedef std::map<widening_svalue::key_t,
 		   widening_svalue *> widening_values_map_t;
   widening_values_map_t m_widening_values_map;
-
-  typedef std::map<compound_svalue::key_t,
-		   compound_svalue *> compound_values_map_t;
-  compound_values_map_t m_compound_values_map;
-
-  typedef std::map<conjured_svalue::key_t,
-		   conjured_svalue *> conjured_values_map_t;
-  conjured_values_map_t m_conjured_values_map;
 
   typedef std::map<asm_output_svalue::key_t,
 		   asm_output_svalue *> asm_output_values_map_t;
@@ -325,8 +297,6 @@ private:
 
   consolidation_map<bit_range_region> m_bit_range_regions;
   consolidation_map<var_arg_region> m_var_arg_regions;
-
-  store_manager m_store_mgr;
 
   bounded_ranges_manager *m_range_mgr;
 

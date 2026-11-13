@@ -132,28 +132,23 @@ public:
   */
   void impl_call_pre (const call_details &cd) const final override
   {
-    const svalue *num_bytes_sval = cd.get_arg_svalue (0);
-    const svalue *ptr_sval = cd.get_arg_svalue (1);
+    auto &num_bytes = cd.get_arg_as_num_bytes (0);
+    symbolic::pointer ptr_sym_ptr = cd.get_arg_as_sym_ptr (1);
     tree ptr_tree = cd.get_arg_tree (1);
-    const svalue *val_sval = cd.get_arg_svalue (2);
+    symbolic::pointer val_sym_ptr = cd.get_arg_as_sym_ptr (2);
     tree val_tree = cd.get_arg_tree (2);
-    const svalue *ret_sval = cd.get_arg_svalue (3);
-    tree ret_tree = cd.get_arg_tree (3);
+    symbolic::pointer ret_sym_ptr = cd.get_arg_as_sym_ptr (3);
     /* Ignore the memorder param.  */
 
     region_model *model = cd.get_model ();
     region_model_context *ctxt = cd.get_ctxt ();
 
-    const region *ptr_reg = model->deref_rvalue (ptr_sval, ptr_tree, ctxt);
-    const region *val_reg = model->deref_rvalue (val_sval, val_tree, ctxt);
-    const region *ret_reg = model->deref_rvalue (ret_sval, ret_tree, ctxt);
-
-    const svalue *tmp_a_sval
-      = model->read_bytes (ptr_reg, ptr_tree, num_bytes_sval, ctxt);
-    const svalue *tmp_b_sval
-      = model->read_bytes (val_reg, val_tree, num_bytes_sval, ctxt);
-    model->write_bytes (ptr_reg, num_bytes_sval, tmp_b_sval, ctxt);
-    model->write_bytes (ret_reg, num_bytes_sval, tmp_a_sval, ctxt);
+    auto &tmp_a_bytes
+      = model->read_bytes (ptr_sym_ptr, ptr_tree, num_bytes, ctxt);
+    auto &tmp_b_bytes
+      = model->read_bytes (val_sym_ptr, val_tree, num_bytes, ctxt);
+    model->write_bytes (ptr_sym_ptr, tmp_b_bytes, ctxt);
+    model->write_bytes (ret_sym_ptr, tmp_a_bytes, ctxt);
   }
 };
 
@@ -292,22 +287,18 @@ public:
   */
   void impl_call_pre (const call_details &cd) const final override
   {
-    const svalue *num_bytes_sval = cd.get_arg_svalue (0);
-    const svalue *src_sval = cd.get_arg_svalue (1);
+    auto &num_bytes = cd.get_arg_as_num_bytes (0);
+    symbolic::pointer src_sym_ptr = cd.get_arg_as_sym_ptr (1);
     tree src_tree = cd.get_arg_tree (1);
-    const svalue *dst_sval = cd.get_arg_svalue (2);
-    tree dst_tree = cd.get_arg_tree (2);
+    symbolic::pointer dst_sym_ptr = cd.get_arg_as_sym_ptr (2);
     /* Ignore the memorder param.  */
 
     region_model *model = cd.get_model ();
     region_model_context *ctxt = cd.get_ctxt ();
 
-    const region *dst_reg = model->deref_rvalue (dst_sval, dst_tree, ctxt);
-    const region *src_reg = model->deref_rvalue (src_sval, src_tree, ctxt);
-
-    const svalue *data_sval
-      = model->read_bytes (src_reg, src_tree, num_bytes_sval, ctxt);
-    model->write_bytes (dst_reg, num_bytes_sval, data_sval, ctxt);
+    auto &bytes
+      = model->read_bytes (src_sym_ptr, src_tree, num_bytes, ctxt);
+    model->write_bytes (dst_sym_ptr, bytes, ctxt);
   }
 };
 
@@ -333,22 +324,18 @@ public:
   */
   void impl_call_pre (const call_details &cd) const final override
   {
-    const svalue *num_bytes_sval = cd.get_arg_svalue (0);
-    const svalue *dst_sval = cd.get_arg_svalue (1);
-    tree dst_tree = cd.get_arg_tree (1);
-    const svalue *src_sval = cd.get_arg_svalue (2);
+    auto &num_bytes = cd.get_arg_as_num_bytes (0);
+    symbolic::pointer dst_sym_ptr = cd.get_arg_as_sym_ptr (1);
+    symbolic::pointer src_sym_ptr = cd.get_arg_as_sym_ptr (2);
     tree src_tree = cd.get_arg_tree (2);
     /* Ignore the memorder param.  */
 
     region_model *model = cd.get_model ();
     region_model_context *ctxt = cd.get_ctxt ();
 
-    const region *dst_reg = model->deref_rvalue (dst_sval, dst_tree, ctxt);
-    const region *src_reg = model->deref_rvalue (src_sval, src_tree, ctxt);
-
-    const svalue *data_sval
-      = model->read_bytes (src_reg, src_tree, num_bytes_sval, ctxt);
-    model->write_bytes (dst_reg, num_bytes_sval, data_sval, ctxt);
+    auto &bytes
+      = model->read_bytes (src_sym_ptr, src_tree, num_bytes, ctxt);
+    model->write_bytes (dst_sym_ptr, bytes, ctxt);
   }
 };
 
@@ -581,14 +568,16 @@ void
 kf_free::impl_call_post (const call_details &cd) const
 {
   const svalue *ptr_sval = cd.get_arg_svalue (0);
-  if (const region *freed_reg = ptr_sval->maybe_get_region ())
-    {
-      /* If the ptr points to an underlying heap region, delete it,
-	 poisoning pointers.  */
-      region_model *model = cd.get_model ();
-      model->unbind_region_and_descendents (freed_reg, poison_kind::freed);
-      model->unset_dynamic_extents (freed_reg);
-    }
+  if (auto ptr = ptr_sval->maybe_get_symbolic_pointer ())
+    if (ptr->zero_offset_p ())
+      {
+	/* If the ptr points to an underlying heap region, delete it,
+	   poisoning pointers.  */
+	const region *freed_reg = &ptr->get_base_region ();
+	region_model *model = cd.get_model ();
+	model->unbind_region_and_descendents (freed_reg, poison_kind::freed);
+	model->unset_dynamic_extents (freed_reg);
+      }
 }
 
 /* Handle the on_call_pre part of "malloc".  */
@@ -670,16 +659,13 @@ private:
 void
 kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
 {
-  const svalue *dest_ptr_sval = cd.get_arg_svalue (0);
-  const svalue *src_ptr_sval = cd.get_arg_svalue (1);
+  auto *dest_ptr_sval = cd.get_arg_svalue (0);
+  symbolic::pointer dest_sym_ptr = cd.get_arg_as_sym_ptr (0);
+  symbolic::pointer src_sym_ptr = cd.get_arg_as_sym_ptr (1);
+  auto &num_bytes = cd.get_arg_as_num_bytes (2);
   const svalue *num_bytes_sval = cd.get_arg_svalue (2);
 
   region_model *model = cd.get_model ();
-
-  const region *dest_reg
-    = model->deref_rvalue (dest_ptr_sval, cd.get_arg_tree (0), cd.get_ctxt ());
-  const region *src_reg
-    = model->deref_rvalue (src_ptr_sval, cd.get_arg_tree (1), cd.get_ctxt ());
 
   cd.maybe_set_lhs (dest_ptr_sval);
   /* Check for overlap.  */
@@ -698,9 +684,9 @@ kf_memcpy_memmove::impl_call_pre (const call_details &cd) const
     default:
 	gcc_unreachable ();
     }
-  model->copy_bytes (dest_reg,
-		     src_reg, cd.get_arg_tree (1),
-		     num_bytes_sval,
+  model->copy_bytes (dest_sym_ptr,
+		     src_sym_ptr, cd.get_arg_tree (1),
+		     num_bytes,
 		     cd.get_ctxt ());
 }
 
@@ -739,10 +725,22 @@ kf_memset::impl_call_pre (const call_details &cd) const
   const svalue *fill_value_u8
     = mgr->get_or_create_cast (unsigned_char_type_node, fill_value_sval);
 
-  const region *sized_dest_reg = mgr->get_sized_region (dest_reg,
-							NULL_TREE,
-							num_bytes_sval);
-  model->fill_region (sized_dest_reg, fill_value_u8, cd.get_ctxt ());
+  auto &bv_mgr = mgr->get_node_manager ().get_bit_vector_manager ();
+  auto &fill_byte = bv_mgr.get_bit_vector_from_svalue (*fill_value_u8);
+
+  auto &unitless_mgr = mgr->get_node_manager ().get_scalars ().get_unitless ();
+  const symbolic::scalar<integer> &repeat_count
+    = unitless_mgr.get_scalar_from_svalue (*num_bytes_sval);
+
+  if (!repeat_count.is_zero_p ())
+    {
+      auto &fill_bv = bv_mgr.get_repeated_bits (fill_byte, repeat_count);
+
+      auto mem_offset = dest_reg->get_memory_offset (*mgr);
+      model->write_to_memory_offset (mem_offset,
+				     fill_bv,
+				     cd.get_ctxt ());
+    }
 
   cd.maybe_set_lhs (dest_sval);
 }
@@ -1245,14 +1243,14 @@ kf_mktemp_family::check_placeholder (const call_details &cd,
   const region *reg = model->deref_rvalue (ptr_sval, arg_tree, cd.get_ctxt ());
 
   /* Find the byte offset of the pointed-to region. */
-  region_offset reg_offset = reg->get_offset (cd.get_manager ());
-  if (reg_offset.symbolic_p ())
-    return tristate::TS_UNKNOWN;
-  byte_offset_t ptr_byte_offset;
-  if (!reg_offset.get_concrete_byte_offset (&ptr_byte_offset))
+  auto sym_ptr = reg->get_pointer (*model->get_manager ());
+
+  auto &byte_offset = sym_ptr.get_byte_offset ();
+  concrete_byte_offset ptr_byte_offset;
+  if (!concrete_from_symbolic (byte_offset, &ptr_byte_offset))
     return tristate::TS_UNKNOWN;
 
-  const region *base_reg = reg->get_base_region ();
+  const region *base_reg = &sym_ptr.get_base_region ();
   const svalue *base_sval = model->get_store_value (base_reg, cd.get_ctxt ());
 
   const constant_svalue *cst_sval = base_sval->dyn_cast_constant_svalue ();
@@ -1264,7 +1262,7 @@ kf_mktemp_family::check_placeholder (const call_details &cd,
     return tristate::TS_UNKNOWN;
 
   HOST_WIDE_INT str_len = len.to_shwi ();
-  HOST_WIDE_INT start = ptr_byte_offset.to_shwi ();
+  HOST_WIDE_INT start = ptr_byte_offset.get_integer (). as_long ();
 
   /* Ensure we can read up to and including the NUL terminator at position
      [start + str_len - trailing_len] within the STRING_CST.  */
@@ -1613,8 +1611,8 @@ public:
     const svalue *ptr_sval = cd.get_arg_svalue (0);
     const region *reg
       = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
-    store_manager *store_mgr = model->get_manager ()->get_store_manager ();
-    model->get_store ()->mark_as_escaped (*store_mgr, reg->get_base_region ());
+    model->get_store ()->mark_as_escaped (reg->get_base_region (),
+					  model->get_baseline_state ());
     enum memory_space mem_space = reg->get_memory_space ();
     switch (mem_space)
       {
@@ -1792,7 +1790,7 @@ kf_realloc::impl_call_post (const call_details &cd) const
       const region *new_reg
 	= model->get_or_create_region_for_heap_alloc (new_size_sval, ctxt);
       const svalue *new_ptr_sval
-	= mgr->get_ptr_svalue (cd.get_lhs_type (), new_reg);
+	= mgr->get_ptr_svalue (ptr_type_node, new_reg);
       if (!model->add_constraint (new_ptr_sval, NE_EXPR, old_ptr_sval,
 				  cd.get_ctxt ()))
 	return false;
@@ -2098,9 +2096,9 @@ public:
 	return;
       }
 
-    const svalue *bytes_to_copy;
+    const symbolic::bit_vector *bv_to_copy;
     const svalue *num_src_bytes_read_sval
-      = cd.check_for_null_terminated_string_arg (1, true, &bytes_to_copy);
+      = cd.check_for_null_terminated_string_arg (1, true, &bv_to_copy);
     if (!num_src_bytes_read_sval)
       {
 	if (cd.get_ctxt ())
@@ -2113,9 +2111,8 @@ public:
 
     const region *offset_reg
       = mgr->get_offset_region (dest_reg, NULL_TREE, dst_strlen_sval);
-    model->write_bytes (offset_reg,
-			num_src_bytes_read_sval,
-			bytes_to_copy,
+    model->write_bytes (offset_reg->get_pointer (*mgr),
+			*bv_to_copy,
 			cd.get_ctxt ());
   }
 
@@ -2161,13 +2158,15 @@ kf_strcpy::impl_call_pre (const call_details &cd) const
   /* strcpy returns the initial param.  */
   cd.maybe_set_lhs (dest_sval);
 
-  const svalue *bytes_to_copy = nullptr;
+  const symbolic::bit_vector *bv_to_copy;
   if (const svalue *num_bytes_read_sval
-      = cd.check_for_null_terminated_string_arg (1, true, &bytes_to_copy))
+      = cd.check_for_null_terminated_string_arg (1, true, &bv_to_copy))
     {
-      gcc_assert (bytes_to_copy);
+      gcc_assert (bv_to_copy);
       cd.complain_about_overlap (0, 1, num_bytes_read_sval);
-      model->write_bytes (dest_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+      model->write_bytes (dest_reg->get_pointer (*model->get_manager ()),
+			  *bv_to_copy,
+			  ctxt);
     }
   else
     {
@@ -2194,14 +2193,17 @@ public:
     region_model *model = cd.get_model ();
     region_model_context *ctxt = cd.get_ctxt ();
     region_model_manager *mgr = cd.get_manager ();
-    const svalue *bytes_to_copy;
+    const symbolic::bit_vector *bv_to_copy;
     if (const svalue *num_bytes_read_sval
-	= cd.check_for_null_terminated_string_arg (0, true, &bytes_to_copy))
+	= cd.check_for_null_terminated_string_arg (0, true, &bv_to_copy))
       {
+	gcc_assert (bv_to_copy);
 	const region *new_reg
 	  = model->get_or_create_region_for_heap_alloc (num_bytes_read_sval,
 							ctxt);
-	model->write_bytes (new_reg, num_bytes_read_sval, bytes_to_copy, ctxt);
+	model->write_bytes (new_reg->get_pointer (*mgr),
+			    *bv_to_copy,
+			    ctxt);
 	if (cd.get_lhs_type ())
 	  {
 	    const svalue *ptr_sval
@@ -2320,10 +2322,9 @@ kf_strncpy::impl_call_post (const call_details &cd) const
       const svalue *dest_sval = cd.get_arg_svalue (0);
       const region *dest_reg
 	= model->deref_rvalue (dest_sval, cd.get_arg_tree (0), ctxt);
+      auto dest_sym_ptr = cd.get_arg_as_sym_ptr (0);
 
-      const svalue *src_sval = cd.get_arg_svalue (1);
-      const region *src_reg
-	= model->deref_rvalue (src_sval, cd.get_arg_tree (1), ctxt);
+      auto src_sym_ptr = cd.get_arg_as_sym_ptr (1);
 
       const svalue *count_sval = cd.get_arg_svalue (2);
 
@@ -2385,14 +2386,17 @@ kf_strncpy::impl_call_post (const call_details &cd) const
 
       gcc_assert (num_bytes_read_sval);
 
-      const svalue *bytes_to_copy
-	= model->read_bytes (src_reg,
+      auto &node_mgr = model->get_manager ()->get_node_manager ();
+      auto &bytes_mgr = node_mgr.get_scalars ().get_bytes ();
+      auto &num_bytes = bytes_mgr.get_scalar_from_svalue (*num_bytes_read_sval);
+
+      const symbolic::bit_vector &bytes_to_copy
+	= model->read_bytes (src_sym_ptr,
 			     cd.get_arg_tree (1),
-			     num_bytes_read_sval,
+			     num_bytes,
 			     ctxt);
       cd.complain_about_overlap (0, 1, num_bytes_read_sval);
-      model->write_bytes (dest_reg,
-			  num_bytes_read_sval,
+      model->write_bytes (dest_sym_ptr,
 			  bytes_to_copy,
 			  ctxt);
 
@@ -2775,7 +2779,7 @@ public:
 
 	  /* Update saved ptr to be at [nul_offset + 1].  */
 	  const svalue *ptr_to_next
-	    = mgr->get_or_create_binop (cd.get_lhs_type (), POINTER_PLUS_EXPR,
+	    = mgr->get_or_create_binop (char_ptr_type, POINTER_PLUS_EXPR,
 					str_sval, next_offset);
 	  model->set_value (&m_private_reg, ptr_to_next, ctxt);
 	}

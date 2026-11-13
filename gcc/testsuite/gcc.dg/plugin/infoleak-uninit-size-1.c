@@ -16,5 +16,5 @@ test_uninit_size (void *to, void *from)
 {
   unsigned long n;
   char buf[16];
-  return copy_to_user(to, from, n);
+  return copy_to_user(to, from, n); /* { dg-warning "potential exposure of sensitive information by copying uninitialized data across trust boundary" } */
 }

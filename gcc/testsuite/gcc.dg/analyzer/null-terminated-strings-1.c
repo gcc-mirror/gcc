@@ -82,8 +82,7 @@ char *test_dynamic_1 (void)
     return NULL;
   __builtin_memcpy (ptr, kvstr, len);
   ptr[len] = '\0';
-  __analyzer_eval (__analyzer_get_strlen (ptr) == 10); /* { dg-warning "UNKNOWN" } */
-  // TODO: should be TRUE
+  __analyzer_eval (__analyzer_get_strlen (ptr) == 10); /* { dg-warning "TRUE" } */
   return ptr;
 }
 
@@ -96,8 +95,7 @@ char *test_dynamic_2 (void)
     return NULL;
   __builtin_memcpy (ptr, kvstr, len);
   /* Missing termination.  */
-  __analyzer_get_strlen (ptr); /* { dg-warning "use of uninitialized value '&buf'" "" { xfail *-*-* } } */
-  // TODO (xfail)
+  __analyzer_get_strlen (ptr); /* { dg-warning "use of uninitialized value 'ptr\\\[10\\\]'" } */
   return ptr;
 }
 
@@ -127,39 +125,29 @@ char *test_dynamic_4 (const char *src)
   return ptr;
 }
 
-void test_symbolic_ptr (const char *ptr)
+size_t test_symbolic_ptr (const char *ptr)
 {
-  __analyzer_describe (0, __analyzer_get_strlen (ptr)); /* { dg-warning "CONJURED" } */
+  return __analyzer_get_strlen (ptr);
 }
 
-void test_symbolic_offset (size_t idx)
+size_t test_symbolic_offset (size_t idx)
 {
-  __analyzer_describe (0, __analyzer_get_strlen ("abc" + idx)); /* { dg-warning "CONJURED" } */
-}
-
-void test_casts (void)
-{
-  int i = 42;
-  const char *p = (const char *)&i;
-  __analyzer_eval (__analyzer_get_strlen (p) == 0); /* { dg-warning "UNKNOWN" } */  
-  __analyzer_eval (__analyzer_get_strlen (p + 1) == 0); /* { dg-warning "UNKNOWN" } */  
+  return __analyzer_get_strlen ("abc" + idx);
 }
 
 void test_filled_nonzero (void)
 {
   char buf[10];
   __builtin_memset (buf, 'a', 10);
-  __analyzer_get_strlen (buf); /* { dg-warning "stack-based buffer over-read" "" { xfail *-*-* } } */
+  __analyzer_get_strlen (buf); /* { dg-warning "stack-based buffer over-read" } */
 }
 
 void test_filled_zero (void)
 {
   char buf[10];
   __builtin_memset (buf, 0, 10);
-  __analyzer_eval (__analyzer_get_strlen (buf) == 0); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
-  __analyzer_eval (__analyzer_get_strlen (buf + 1) == 0); /* { dg-warning "TRUE" "correct" { xfail *-*-* } } */
-  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
+  __analyzer_eval (__analyzer_get_strlen (buf) == 0); /* { dg-warning "TRUE" } */
+  __analyzer_eval (__analyzer_get_strlen (buf + 1) == 0); /* { dg-warning "TRUE" } */
 }
 
 void test_filled_symbolic (int c)

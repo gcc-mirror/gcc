@@ -62,8 +62,7 @@ class impl_region_model_context : public region_model_context
   void add_note (std::unique_ptr<pending_note> pn) final override;
   void add_event (std::unique_ptr<checker_event> event) final override;
   void on_svalue_leak (const svalue *) override;
-  void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model) final override;
+  void on_liveness_change (symbolic::liveness_context &) final override;
   logger *get_logger () final override
   {
     return m_logger.get_logger ();
@@ -82,7 +81,8 @@ class impl_region_model_context : public region_model_context
 
   void on_pop_frame (const frame_region *frame_reg) final override;
 
-  void on_unknown_change (const svalue *sval, bool is_mutable) final override;
+  void on_unknown_change (const symbolic::value_node &val,
+			  bool is_mutable) final override;
 
   void on_phi (const gphi *phi, tree rhs) final override;
 
@@ -93,7 +93,7 @@ class impl_region_model_context : public region_model_context
 
   uncertainty_t *get_uncertainty () final override;
 
-  void purge_state_involving (const svalue *sval) final override;
+  void purge_state_involving (const symbolic::node &node) final override;
 
   void bifurcate (std::unique_ptr<custom_edge_info> info) final override;
   void terminate_path () final override;
@@ -255,9 +255,12 @@ class exploded_node : public dnode<eg_traits>
     const final override;
   void dump_dot_id (pretty_printer *pp) const;
 
-  void dump_to_pp (pretty_printer *pp, const extrinsic_state &ext_state) const;
-  void dump (FILE *fp, const extrinsic_state &ext_state) const;
-  void dump (const extrinsic_state &ext_state) const;
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
+
+  void dump () const;
+  void dump_to_pp (pretty_printer *) const;
+  void dump_to_logger (logger &log) const;
 
   void dump_processed_stmts (pretty_printer *pp) const;
   void dump_saved_diagnostics (pretty_printer *pp) const;
@@ -967,7 +970,12 @@ public:
     m_rc (std::move (rc))
   {}
 
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
+
+  void dump () const;
   void dump_to_pp (pretty_printer *pp) const;
+  void dump_to_logger (logger &log) const;
 
   std::unique_ptr<json::object>
   to_json () const;
@@ -1001,7 +1009,10 @@ public:
   auto_sbitmap &get_snodes_visited () { return m_snodes_visited; }
   const auto_sbitmap &get_snodes_visited () const { return m_snodes_visited; }
 
-  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
+
+  void dump_to_pp (pretty_printer *pp) const;
 
 private:
   region_model m_model;

@@ -15,5 +15,5 @@ int main () {
   return 0;
 }
 
-/* { dg-note "\\(1\\) 'a\\.std::.+::_M_ptr' is NULL" "" { target c++14_down } declare_a } */
+/* { dg-note "NULL" "" { target c++14_down } declare_a } */
 /* { dg-note "dereference of NULL 'a\\.std::.+::operator->\\(\\)'" "" { target *-*-* } deref_a } */

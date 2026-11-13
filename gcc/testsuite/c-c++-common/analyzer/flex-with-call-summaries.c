@@ -1211,8 +1211,7 @@ yy_create_buffer (FILE * file, int  size )
 
 	b->yy_is_our_buffer = 1;
 
-	yy_init_buffer( b, file );  /* { dg-bogus "leak" "" { xfail *-*-* } } */
-	/* TODO: leak false positive: PR analyzer/103546.  */
+	yy_init_buffer( b, file );  /* { dg-bogus "leak" "PR analyzer/103546" } */
 
 	return b;
 }

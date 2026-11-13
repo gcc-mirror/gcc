@@ -15,7 +15,7 @@ void test(void)
 
   for (s.i=0; s.i<256; s.i++) {
     __analyzer_eval (s.i < 256); /* { dg-warning "TRUE" } */
-      /* (should report TRUE twice). */
+    /* { dg-warning "UNKNOWN" "2nd iteration" { target *-*-* } .-1 } */
 
     __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
@@ -27,7 +27,8 @@ void test(void)
       //__analyzer_eval (s.i >= 0); /* { d-todo-g-warning "TRUE" } */
   }
 
-  __analyzer_eval (s.i >= 256); /* { dg-warning "TRUE" } */
+  __analyzer_eval (s.i >= 256); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
+  /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */
 
   __analyzer_eval (s.i == 256); /* { dg-warning "TRUE" "desired" { xfail *-*-* } } */
   /* { dg-warning "UNKNOWN" "status quo" { target *-*-* } .-1 } */

@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/constraint-manager.h"
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
+#include "analyzer/liveness-context.h"
 
 #if ENABLE_ANALYZER
 
@@ -2269,7 +2270,7 @@ public:
     return m_found;
   }
 
-  void visit_region_svalue (const region_svalue *sval)
+  void visit_pointer_svalue (const pointer_svalue *sval)
   {
     m_found |= m_query == sval;
   }
@@ -2309,21 +2310,6 @@ public:
     m_found |= m_query == sval;
   }
 
-  void visit_sub_svalue (const sub_svalue  *sval)
-  {
-    m_found |= m_query == sval;
-  }
-
-  void visit_repeated_svalue (const repeated_svalue  *sval)
-  {
-    m_found |= m_query == sval;
-  }
-
-  void visit_bits_within_svalue (const bits_within_svalue  *sval)
-  {
-    m_found |= m_query == sval;
-  }
-
   void visit_unmergeable_svalue (const unmergeable_svalue  *sval)
   {
     m_found |= m_query == sval;
@@ -2335,16 +2321,6 @@ public:
   }
 
   void visit_widening_svalue (const widening_svalue  *sval)
-  {
-    m_found |= m_query == sval;
-  }
-
-  void visit_compound_svalue (const compound_svalue  *sval)
-  {
-    m_found |= m_query == sval;
-  }
-
-  void visit_conjured_svalue (const conjured_svalue  *sval)
   {
     m_found |= m_query == sval;
   }
@@ -2954,59 +2930,56 @@ constraint_manager::purge (const PurgeCriteria &p, purge_stats *stats)
 }
 
 /* Implementation of PurgeCriteria: purge svalues that are not live
-   with respect to LIVE_SVALUES and MODEL.  */
+   with respect to LIVENESS_CTXT.  */
 
 class dead_svalue_purger
 {
 public:
-  dead_svalue_purger (const svalue_set &live_svalues,
-		      const region_model *model)
-  : m_live_svalues (live_svalues), m_model (model)
+  dead_svalue_purger (symbolic::liveness_context &liveness_ctxt)
+  : m_liveness_ctxt (liveness_ctxt)
   {
   }
 
   bool should_purge_p (const svalue *sval) const
   {
-    return !sval->live_p (&m_live_svalues, m_model);
+    return !m_liveness_ctxt.node_live_p (*sval);
   }
 
 private:
-  const svalue_set &m_live_svalues;
-  const region_model *m_model;
+  symbolic::liveness_context &m_liveness_ctxt;
 };
 
-/* Purge dead svalues from equivalence classes and update constraints
+/* Purge dead values from equivalence classes and update constraints
    accordingly.  */
 
 void
 constraint_manager::
-on_liveness_change (const svalue_set &live_svalues,
-		    const region_model *model)
+on_liveness_change (symbolic::liveness_context &liveness_ctxt)
 {
-  dead_svalue_purger p (live_svalues, model);
+  dead_svalue_purger p (liveness_ctxt);
   purge (p, nullptr);
 }
 
-class svalue_purger
+class node_purger
 {
 public:
-  svalue_purger (const svalue *sval) : m_sval (sval) {}
+  node_purger (const symbolic::node &node) : m_node (node) {}
 
   bool should_purge_p (const svalue *sval) const
   {
-    return sval->involves_p (m_sval);
+    return sval->involves_p (m_node);
   }
 
 private:
-  const svalue *m_sval;
+  const symbolic::node &m_node;
 };
 
 /* Purge any state involving SVAL.  */
 
 void
-constraint_manager::purge_state_involving (const svalue *sval)
+constraint_manager::purge_state_involving (const symbolic::node &node)
 {
-  svalue_purger p (sval);
+  node_purger p (node);
   purge (p, nullptr);
 }
 
@@ -4299,7 +4272,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should have an empty constraint_manager.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
@@ -4318,7 +4291,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the constraint/ECs involving b != 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4338,7 +4311,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the EC involving b == 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);
@@ -4357,7 +4330,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should have an empty constraint_manager.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 0);
@@ -4376,7 +4349,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the constraint/ECs involving b != 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 2);
@@ -4396,7 +4369,7 @@ test_purging (void)
 
     /* Purge state for "a".  */
     const svalue *sval_a = model.get_rvalue (a, nullptr);
-    model.purge_state_involving (sval_a, nullptr);
+    model.purge_state_involving (*sval_a, nullptr);
     model.canonicalize ();
     /* We should just have the EC involving b == 0.  */
     ASSERT_EQ (model.get_constraints ()->m_equiv_classes.length (), 1);

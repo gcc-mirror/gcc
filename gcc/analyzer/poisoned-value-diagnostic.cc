@@ -28,6 +28,34 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+// struct poison_finder : public symbolic::node_visitor
+
+bool
+poison_finder::visit_svalue (const svalue &sval)
+{
+  if (!symbolic::node_visitor::visit_svalue (sval))
+    return false;
+  if (auto *poisoned = sval.dyn_cast_poisoned_svalue ())
+    {
+      m_found_poison = true;
+      m_pkind = poisoned->get_poison_kind ();
+    }
+  return true;
+}
+
+bool
+poison_finder::visit_bit_vector (const symbolic::bit_vector &bv)
+{
+  if (!symbolic::node_visitor::visit_bit_vector (bv))
+    return false;
+  if (auto *poisoned = bv.dyn_cast_poisoned_bit_vector ())
+    {
+      m_found_poison = true;
+      m_pkind = poisoned->get_poison_kind ();
+    }
+  return true;
+}
+
 /* A subclass of pending_diagnostic for complaining about uses of
    poisoned values.  */
 
@@ -180,10 +208,11 @@ public:
     const svalue *fsval = fnode.get_model ().get_rvalue (m_check_expr, nullptr);
     /* Check to see if the expr is also poisoned in FNODE (and in the
        same way).  */
-    const poisoned_svalue * fspval = fsval->dyn_cast_poisoned_svalue ();
-    if (!fspval)
+    poison_finder v;
+    fsval->accept_node_visitor (v);
+    if (!v.m_found_poison)
       return false;
-    if (fspval->get_poison_kind () != m_pkind)
+    if (v.m_pkind != m_pkind)
       return false;
     return true;
   }

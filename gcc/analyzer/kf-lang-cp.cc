@@ -322,12 +322,14 @@ public:
        itself, only its start offset, recovered from where the src subobject
        sits within MDTYPE.  */
     const region *src_reg = cd.deref_ptr_arg (0);
-    region_offset off = src_reg->get_offset (mgr);
-    if (!off.concrete_p ())
-      return; /* Bail, leave lhs conjured.  */
-    byte_offset_t src_obj_start;
-    if (!off.get_concrete_byte_offset (&src_obj_start))
+    auto mem_offset = src_reg->get_memory_offset (*mgr);
+    concrete_bit_offset conc_bit_offset;
+    if (!concrete_from_symbolic (mem_offset.get_bit_offset (), &conc_bit_offset))
       return;
+    concrete_byte_offset conc_byte_offset;
+    if (!maybe_bytes_from_bits (conc_bit_offset, &conc_byte_offset))
+      return;
+    byte_offset_t src_obj_start = convert_to_byte_offset_t (conc_byte_offset);
 
     HOST_WIDE_INT src_off_in_md = tree_to_shwi (BINFO_OFFSET (src_binfo));
     HOST_WIDE_INT dst_off_in_md = tree_to_shwi (BINFO_OFFSET (dst_match.binfo));
@@ -342,7 +344,7 @@ public:
        array element or a member subobject).  The store binds values by byte
        ranges within a base region, so a concrete offset_region aliases the
        FE's field-path accesses to the same bytes.  */
-    const region *base_reg = off.get_base_region ();
+    const region *base_reg = &mem_offset.get_base_region ();
     const svalue *dst_off_sval
       = mgr->get_or_create_int_cst (size_type_node, dst_off_in_base);
     const region *dst_reg
@@ -473,13 +475,16 @@ public:
   {
     region_model *model = cd.get_model ();
     const svalue *ptr_sval = cd.get_arg_svalue (0);
-    if (const region *freed_reg = ptr_sval->maybe_get_region ())
-      {
-	/* If the ptr points to an underlying heap region, delete it,
-	   poisoning pointers.  */
-	model->unbind_region_and_descendents (freed_reg,
-					      poison_kind::deleted);
-      }
+    if (auto *sym_ptr = ptr_sval->maybe_get_symbolic_pointer ())
+      if (sym_ptr->get_byte_offset ().is_zero_p ())
+	{
+	  const region &freed_reg = sym_ptr->get_base_region ();
+
+	  /* If the ptr points to an underlying heap region, delete it,
+	     poisoning pointers.  */
+	  model->unbind_region_and_descendents (&freed_reg,
+						poison_kind::deleted);
+	}
   }
 
 };

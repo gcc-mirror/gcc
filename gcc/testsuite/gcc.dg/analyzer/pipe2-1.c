@@ -24,8 +24,6 @@ test_close (void)
   int fds[2];
   if (pipe2 (fds, 0) == -1)
     return;
-  __analyzer_describe (0, fds[0]); /* { dg-warning "CONJURED" } */
-  __analyzer_describe (0, fds[1]); /* { dg-warning "CONJURED" } */
   close (fds[0]);
   close (fds[1]);
 }

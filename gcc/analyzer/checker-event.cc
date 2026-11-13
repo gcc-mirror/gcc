@@ -246,7 +246,8 @@ checker_event::maybe_make_diagnostic_state_graph (bool debug) const
     {
       pretty_printer pp;
       text_art::theme *theme = global_dc->get_diagram_theme ();
-      text_art::dump_to_pp (*state, theme, &pp);
+      symbolic::dump_node_tree_to_pp<program_state>
+	(*state, theme, &pp, true, true);
       const json::string_property program_state_property
 	(custom_sarif_properties::state_graphs::graph::prefix,
 	 "analyzer/program_state/");

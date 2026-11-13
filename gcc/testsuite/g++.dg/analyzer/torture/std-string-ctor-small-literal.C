@@ -17,6 +17,5 @@ test_ctor_small ()
   std::string s {"abc"};
   __analyzer_eval (s.length () == 3); // { dg-warning "TRUE" }
   __analyzer_eval (s.size () == 3); // { dg-warning "TRUE" }
-  __analyzer_eval (__builtin_strlen (s.c_str ()) == 3); // { dg-warning "TRUE" "ideal" { xfail *-*-* } }
-  // { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 }
+  __analyzer_eval (__builtin_strlen (s.c_str ()) == 3); // { dg-warning "TRUE" }
 }

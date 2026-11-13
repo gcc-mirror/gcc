@@ -21,5 +21,5 @@ int
 pl (void)
 {
   ql ();
-  return arr[idx]; /* { dg-warning "use of attacker-controlled value 'idx' in array lookup without bounds checking" "" { xfail *-*-* } } */
+  return arr[idx]; /* { dg-warning "use of attacker-controlled value 'idx' in array lookup without bounds checking" } */
 }

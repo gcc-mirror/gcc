@@ -79,7 +79,7 @@ feasible_node::dump_dot (graphviz_out *gv,
 
   /* Show the model at this point along expansion of the feasible path,
      rather than the model within the enode.  */
-  m_state.get_model ().dump_to_pp (pp, true, true);
+  m_state.get_model ().dump_to_pp (pp);
   pp_newline (pp);
 
   m_inner_node->dump_saved_diagnostics (pp);
@@ -242,7 +242,7 @@ feasible_graph::dump_feasible_path (const feasible_node &dst_fnode,
       pp_newline (pp);
       const program_point &point = dest_fnode->get_inner_node ()->get_point ();
       point.print (pp, format (true));
-      dest_fnode->get_state ().dump_to_pp (pp, true, true);
+      dest_fnode->get_state ().dump_to_pp (pp);
       pp_newline (pp);
     }
 }

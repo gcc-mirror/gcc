@@ -2,7 +2,8 @@
 
 #include "analyzer-decls.h"
 
-/* The example from store.h  */
+/* The example from "Tracking the state within a binding cluster"
+   in the comment in store.h.  */
 
 void test_1 (char a, char b, char c, char d, char e, char f,
 	     int i, int j)

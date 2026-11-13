@@ -26,7 +26,7 @@ void test_2 (void *p, void *q)
   foo(p);
 
   /* { dg-warning "pattern match on 'p != 0'" "p != 0" { target *-*-* } cond_2 } */
-  /* { dg-warning "pattern match on 'p == 0 | q == 0 != 0'" "tmp1 | tmp2 != 0" { target *-*-* } cond_2 } */
+  /* { dg-warning "pattern match on 'tmp != 0'" "tmp1 | tmp2 != 0" { target *-*-* } cond_2 } */
   /* { dg-warning "pattern match on 'q != 0'" "q != 0" { target *-*-* } cond_2 } */
 }
 

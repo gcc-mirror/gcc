@@ -820,7 +820,7 @@ saved_diagnostic::dump_as_dot_node (pretty_printer *pp) const
   if (m_sval)
     {
       pp_string (pp, "sval: ");
-      m_sval->dump_to_pp (pp, true);
+      m_sval->symbolic::node::dump_to_pp (pp);
       pp_newline (pp);
     }
   if (m_best_epath)
@@ -1695,10 +1695,10 @@ dump_to_logger (const T &obj,
 
   text_art::style::id_t tree_style_id (sm.get_or_create_id (tree_style));
 
-  text_art::dump_widget_info dwi (sm, *theme, tree_style_id);
-  if (auto w = obj.make_dump_widget (dwi))
+  symbolic::node_dump_state nds (sm, *theme, tree_style_id, true, true);
+  if (auto w = obj.make_dump_widget (nds))
     {
-      text_art::canvas c (w->to_canvas (dwi.m_sm));
+      text_art::canvas c (w->to_canvas (nds.m_sm));
       logger->log_canvas (c);
     }
 
@@ -1798,6 +1798,11 @@ make_raw_dst_region_model (logger *logger,
 			   const supergraph &sg)
 {
   LOG_SCOPE (logger);
+
+  /* Update cfun and input_location in case of an ICE: make it easier to
+     track down which source construct we're failing to handle.  */
+  auto_cfun sentinel (eedge->m_src->get_function ());
+  input_location = eedge->m_src->get_location ();
 
   region_model_context *const ctxt = nullptr;
 
@@ -2568,9 +2573,13 @@ can_be_expr_of_interest_p (tree expr)
 void
 diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 					     const state_machine *sm,
-					     const svalue *sval,
+					     const svalue *uncanonicalized_sval,
 					     state_machine::state_t state) const
 {
+  auto &ext_state = path->get_ext_state ();
+  const svalue *canonicalized_sval
+    = sm_state_map::canonicalize_svalue (uncanonicalized_sval, ext_state);
+
   int idx = path->num_events () - 1;
   while (idx >= 0 && idx < (signed)path->num_events ())
     {
@@ -2579,9 +2588,9 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	{
 	  if (sm)
 	    {
-	      if (sval)
+	      if (uncanonicalized_sval)
 		{
-		  label_text sval_desc = sval->get_desc ();
+		  label_text sval_desc = uncanonicalized_sval->get_desc ();
 		  log ("considering event %i (%s), with sval: %qs, state: %qs",
 		       idx, event_kind_to_string (base_event->get_kind ()),
 		       sval_desc.get (), state->get_name ());
@@ -2654,13 +2663,15 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	    state_change_event *state_change = (state_change_event *)base_event;
 	    gcc_assert (state_change->m_dst_state.m_region_model);
 
-	    if (state_change->m_sval == sval)
+	    if (canonicalized_sval
+		== sm_state_map::canonicalize_svalue (state_change->m_sval,
+						      ext_state))
 	      {
 		if (state_change->m_origin)
 		  {
 		    if (get_logger ())
 		      {
-			label_text sval_desc = sval->get_desc ();
+			label_text sval_desc = uncanonicalized_sval->get_desc ();
 			label_text origin_sval_desc
 			  = state_change->m_origin->get_desc ();
 			log ("event %i:"
@@ -2668,7 +2679,11 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 			     idx, sval_desc.get (),
 			     origin_sval_desc.get ());
 		      }
-		    sval = state_change->m_origin;
+		    uncanonicalized_sval = state_change->m_origin;
+		    canonicalized_sval
+		      = sm_state_map::canonicalize_svalue (uncanonicalized_sval,
+							   ext_state);
+
 		  }
 		log ("event %i: switching state of interest from %qs to %qs",
 		     idx, state_change->m_to->get_name (),
@@ -2683,9 +2698,9 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 		      {
 			label_text change_sval_desc
 			  = state_change->m_sval->get_desc ();
-			if (sval)
+			if (uncanonicalized_sval)
 			  {
-			    label_text sval_desc = sval->get_desc ();
+			    label_text sval_desc = uncanonicalized_sval->get_desc ();
 			    log ("filtering event %i:"
 				 " state change to %qs unrelated to %qs",
 				 idx, change_sval_desc.get (),
@@ -2742,7 +2757,8 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 	      = event->m_eedge.m_dest->get_state ().m_region_model;
 	    const region_model *caller_model
 	      = event->m_eedge.m_src->get_state ().m_region_model;
-	    tree callee_var = callee_model->get_representative_tree (sval);
+	    tree callee_var
+	      = callee_model->get_representative_tree (uncanonicalized_sval);
 	    callsite_expr expr;
 
 	    tree caller_var;
@@ -2756,13 +2772,14 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 							&expr);
 	      }
 	    else
-	      caller_var = caller_model->get_representative_tree (sval);
+	      caller_var
+		= caller_model->get_representative_tree (uncanonicalized_sval);
 
 	    if (caller_var)
 	      {
 		if (get_logger ())
 		  {
-		    label_text sval_desc = sval->get_desc ();
+		    label_text sval_desc = uncanonicalized_sval->get_desc ();
 		    log ("event %i:"
 			 " recording critical state for %qs at call"
 			 " from %qE in callee to %qE in caller",
@@ -2776,12 +2793,13 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 
 	case event_kind::return_:
 	  {
-	    if (sval)
+	    if (uncanonicalized_sval)
 	      {
 		return_event *event = (return_event *)base_event;
                 const region_model *caller_model
                   = event->m_eedge.m_dest->get_state ().m_region_model;
-                tree caller_var = caller_model->get_representative_tree (sval);
+                tree caller_var
+		  = caller_model->get_representative_tree (uncanonicalized_sval);
                 const region_model *callee_model
                   = event->m_eedge.m_src->get_state ().m_region_model;
 		callsite_expr expr;
@@ -2798,13 +2816,15 @@ diagnostic_manager::prune_for_sm_diagnostic (checker_path *path,
 							    &expr);
 		  }
 		else
-		  callee_var = callee_model->get_representative_tree (sval);
+		  callee_var
+		    = callee_model->get_representative_tree (uncanonicalized_sval);
 
 		if (callee_var)
 		  {
 		    if (get_logger ())
 		      {
-			label_text sval_desc = sval->get_desc ();
+			label_text sval_desc
+			  = uncanonicalized_sval->get_desc ();
 			log ("event %i:"
 			     " recording critical state for %qs at return"
 			     " from %qE in caller to %qE in callee",

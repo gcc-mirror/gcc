@@ -42,7 +42,7 @@ def test_nested_types_in_state_graph(sarif):
     bindings = baz_arr['children'][0]
     assert bindings['id'].startswith('concrete-bindings-')
     assert get_state_node_kind(bindings) == 'other'
-    assert get_state_node_value(bindings['children'][0]) == '(int)42'
+    assert get_state_node_value(bindings['children'][0])['constant'] == '42'
 
     # "baz_arr[1]":
     baz_arr_1 = baz_arr['children'][1]
@@ -86,4 +86,4 @@ def test_nested_types_in_state_graph(sarif):
     assert get_state_node_type(baz_arr_1_m_bars_1_m_foos_2_m_ints_1) == 'int'
     assert get_state_node_kind(baz_arr_1_m_bars_1_m_foos_2_m_ints_1) == 'element'
     assert get_state_node_attr(baz_arr_1_m_bars_1_m_foos_2_m_ints_1, 'index') == '1'
-    assert get_state_node_value(baz_arr_1_m_bars_1_m_foos_2_m_ints_1) == '(int)42'
+    assert get_state_node_value(baz_arr_1_m_bars_1_m_foos_2_m_ints_1)['constant'] == '42'

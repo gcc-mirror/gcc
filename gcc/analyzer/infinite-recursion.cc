@@ -212,7 +212,7 @@ public:
 
 	/* Determine if conjured svalues have affected control flow
 	   since the prev entry node.  */
-	if (fedge_uses_conjured_svalue_p (pred_fedge))
+	if (fedge_uses_conjured_value_p (pred_fedge))
 	  /* If so, then reject this diagnostic.  */
 	  return false;
 	iter_fnode = static_cast <feasible_node *> (pred_fedge->m_src);
@@ -242,7 +242,7 @@ public:
 private:
   /* Return true iff control flow along FEDGE was affected by
      a conjured_svalue.  */
-  static bool fedge_uses_conjured_svalue_p (feasible_edge *fedge)
+  static bool fedge_uses_conjured_value_p (feasible_edge *fedge)
   {
     const exploded_edge *eedge = fedge->get_inner_edge ();
     const superedge *sedge = eedge->m_sedge;
@@ -263,43 +263,48 @@ private:
 
     if (const gcond *cond_stmt = dyn_cast <const gcond *> (&last_stmt))
       {
-	if (expr_uses_conjured_svalue_p (model, gimple_cond_lhs (cond_stmt)))
+	if (expr_uses_conjured_value_p (model, gimple_cond_lhs (cond_stmt)))
 	  return true;
-	if (expr_uses_conjured_svalue_p (model, gimple_cond_rhs (cond_stmt)))
+	if (expr_uses_conjured_value_p (model, gimple_cond_rhs (cond_stmt)))
 	  return true;
       }
     else if (const gswitch *switch_stmt
 	       = dyn_cast <const gswitch *> (&last_stmt))
       {
-	if (expr_uses_conjured_svalue_p (model,
-					 gimple_switch_index (switch_stmt)))
+	if (expr_uses_conjured_value_p (model,
+					gimple_switch_index (switch_stmt)))
 	  return true;
       }
     return false;
   }
 
   /* Return true iff EXPR is affected by a conjured_svalue.  */
-  static bool expr_uses_conjured_svalue_p (const region_model &model,
-					   tree expr)
+  static bool expr_uses_conjured_value_p (const region_model &model,
+					  tree expr)
   {
-    class conjured_svalue_finder : public visitor
+    class conjured_bit_vector_finder : public symbolic::node_visitor
     {
     public:
-      conjured_svalue_finder () : m_found_conjured_svalues (false)
+      conjured_bit_vector_finder () : m_found_conjured_svalues (false)
       {
       }
-      void
-      visit_conjured_svalue (const conjured_svalue *) final override
+
+      bool
+      visit_bit_vector (const symbolic::bit_vector &bv) final override
       {
-	m_found_conjured_svalues = true;
+	if (!node_visitor::visit_bit_vector (bv))
+	  return false;
+	if (bv.dyn_cast_conjured_bit_vector ())
+	  m_found_conjured_svalues = true;
+	return true;
       }
 
       bool m_found_conjured_svalues;
     };
 
     const svalue *sval = model.get_rvalue (expr, nullptr);
-    conjured_svalue_finder v;
-    sval->accept (&v);
+    conjured_bit_vector_finder v;
+    sval->accept_node_visitor (v);
     return v.m_found_conjured_svalues;
   }
 
@@ -390,19 +395,54 @@ remap_enclosing_frame (const region *base_reg,
     }
 }
 
-/* Return true iff SVAL is unknown, or contains an unknown svalue.  */
+/* Return true iff NODE is unknown, or contains an unknown value.  */
 
 static bool
-contains_unknown_p (const svalue *sval)
+contains_unknown_p (const symbolic::node &node)
 {
-  if (sval->get_kind () == SK_UNKNOWN)
-    return true;
-  if (const compound_svalue *compound_sval
-	= sval->dyn_cast_compound_svalue ())
-    for (auto iter : *compound_sval)
-      if (iter.second->get_kind () == SK_UNKNOWN)
-	return true;
-  return false;
+  struct unknown_finder : public symbolic::node_visitor
+  {
+    unknown_finder ()
+    : m_found_unknown (false)
+    {
+    }
+
+    bool
+    visit_svalue (const svalue &sval) final override
+    {
+      if (!symbolic::node_visitor::visit_svalue (sval))
+	return false;
+      if (sval.get_kind () == SK_UNKNOWN)
+	m_found_unknown = true;
+      return true;
+    }
+
+    bool
+    visit_bit_vector (const symbolic::bit_vector &bv) final override
+    {
+      if (!symbolic::node_visitor::visit_bit_vector (bv))
+	return false;
+      if (auto *tristate_bv = bv.dyn_cast_tristate_bit_vector ())
+	if (tristate_bv->get_bit_value () == tristate::unknown ())
+	  m_found_unknown = true;
+      return true;
+    }
+
+    bool
+    visit_bit_contents (const symbolic::bit_contents &bc) final override
+    {
+      if (!symbolic::node_visitor::visit_bit_contents (bc))
+	return false;
+      if (bc.get_kind () == symbolic::bit_contents::kind::untracked)
+	m_found_unknown = true;
+      return true;
+    }
+
+    bool m_found_unknown;
+  } v;
+
+  node.accept_node_visitor (v);
+  return v.m_found_unknown;
 }
 
 /* Subroutine of sufficiently_different_p.  Compare the store bindings
@@ -425,18 +465,18 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
   const region_model &prev_model
     = *prev_entry_enode->get_state ().m_region_model;
 
-  /* Get the value within the new frame.  */
-  const svalue *new_sval
-    = new_model.get_store_value (base_reg, nullptr);
+  /* Get the contents of BASE_REG within the new frame.  */
+  const symbolic::bit_contents &new_contents
+    = new_model.get_bit_contents (*base_reg);
 
-  /* If any part of the value is UNKNOWN (e.g. due to hitting
+  /* If any part of the contents is UNKNOWN (e.g. due to hitting
      complexity limits) assume that it differs from the previous
      value.  */
-  if (contains_unknown_p (new_sval))
+  if (contains_unknown_p (new_contents))
     return true;
 
-  /* Get the equivalent value within the old enode.  */
-  const svalue *prev_sval;
+  /* Get the equivalent contents within the old enode.  */
+  const symbolic::bit_contents *prev_contents;
 
   if (const frame_region *enclosing_frame
       = base_reg->maybe_get_frame_region ())
@@ -447,7 +487,7 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
 	 to the recursion.  */
       const int old_stack_depth = prev_entry_enode->get_stack_depth ();
       if (enclosing_frame->get_stack_depth () < old_stack_depth)
-	prev_sval = prev_model.get_store_value (base_reg, nullptr);
+	prev_contents = &prev_model.get_bit_contents (*base_reg);
       else
 	{
 	  /* Ignore bindings within frames below the new entry node.  */
@@ -468,19 +508,19 @@ sufficiently_different_region_binding_p (exploded_node *new_entry_enode,
 				     enclosing_frame,
 				     equiv_prev_frame,
 				     new_model.get_manager ());
-	  prev_sval
-	    = prev_model.get_store_value (equiv_prev_base_reg, nullptr);
+	  prev_contents = &prev_model.get_bit_contents (*equiv_prev_base_reg);
 	}
     }
   else
-    prev_sval = prev_model.get_store_value (base_reg, nullptr);
+    prev_contents = &prev_model.get_bit_contents (*base_reg);
+
 
   /* If the prev_sval contains UNKNOWN (e.g. due to hitting complexity limits)
      assume that it will differ from any new value.  */
-  if (contains_unknown_p (prev_sval))
+  if (contains_unknown_p (*prev_contents))
     return true;
 
-  if (new_sval != prev_sval)
+  if (&new_contents != prev_contents)
     return true;
 
   return false;

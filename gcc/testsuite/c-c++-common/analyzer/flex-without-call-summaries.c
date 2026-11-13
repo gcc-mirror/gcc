@@ -882,15 +882,15 @@ static int yy_get_next_buffer (void)
 				else
 					b->yy_buf_size *= 2;
 
-				b->yy_ch_buf = (char *)  /* { dg-warning "leak of '\\*b.yy_ch_buf'" "" { xfail *-*-* } } */
-							 /* { dg-warning "leak of '\\*b.yy_buffer_state::yy_ch_buf'" "" { target c++ } .-1 } */
+				b->yy_ch_buf = (char *)  /* { dg-warning "leak" "" { xfail *-*-* } } */
+
 					/* Include room in for 2 EOB chars. */
 					yyrealloc( (void *) b->yy_ch_buf,
 							 (yy_size_t) (b->yy_buf_size + 2)  );
 				}
 			else
 				/* Can't grow it, we don't own it. */
-				b->yy_ch_buf = NULL;  /* { dg-bogus "leak" "PR analyzer/103546" { xfail c++ } } */
+				b->yy_ch_buf = NULL;  /* { dg-bogus "leak" "PR analyzer/103546" } */
 
 			if ( ! b->yy_ch_buf )
 				YY_FATAL_ERROR(

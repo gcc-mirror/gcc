@@ -90,10 +90,24 @@ void test_NULL (void)
   mkdtemp (NULL); /* possibly -Wanalyzer-null-argument */
 }
 
-void test_errno (char *s)
+void test_errno_possibly_aliased (char *s)
 {
   errno = 0;
   char *result = mkdtemp (s);
+  if (result == NULL)
+    {
+      __analyzer_eval (errno > 0); /* { dg-warning "TRUE" } */
+      return;
+    }
+  __analyzer_eval (errno == 0); /* { dg-warning "UNKNOWN" } */
+  /* "s" could point at "errno".  */
+}
+
+void test_errno_not_aliased (void)
+{
+  char template_[] = "/tmp/fooXXXXXX";
+  errno = 0;
+  char *result = mkdtemp (template_);
   if (result == NULL)
     {
       __analyzer_eval (errno > 0); /* { dg-warning "TRUE" } */

@@ -43,11 +43,11 @@ public:
 
   label_text get_desc () const;
 
-  void dump_to_pp (const extrinsic_state &ext_state,
-		   pretty_printer *pp,
-		   bool simple) const;
-  void dump (const extrinsic_state &ext_state, FILE *fp, bool simple) const;
-  void dump (const extrinsic_state &ext_state, bool simple) const;
+  void dump_to_logger (logger &) const;
+  void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
 private:
   void get_user_facing_desc (pretty_printer *pp) const;
@@ -75,31 +75,44 @@ public:
   const call_details &get_call_details () const { return m_cd; }
   const gcall &get_call_stmt () const { return m_cd.get_call_stmt (); }
   region_model_manager *get_manager () const { return m_cd.get_manager (); }
-  store_manager *get_store_manager () const
-  {
-    return get_manager ()->get_store_manager ();
-  }
   region_model_context *get_ctxt () const { return m_cd.get_ctxt (); }
   region_model *get_caller_model () const { return m_cd.get_model (); }
 
+  const extrinsic_state &get_ext_state () const { return m_ext_state; }
+
   const svalue *convert_svalue_from_summary (const svalue *);
   const region *convert_region_from_summary (const region *);
-  const binding_key *convert_key_from_summary (const binding_key *);
+
+  const symbolic::bit_contents *
+  convert_bit_contents_from_summary (const symbolic::bit_contents &);
+
+  const symbolic::bit_vector *
+  convert_bit_vector_from_summary (const symbolic::bit_vector &);
+
+  template <typename ConcreteValueType>
+  const symbolic::scalar<ConcreteValueType> *
+  convert_scalar_from_summary (const symbolic::scalar<ConcreteValueType> &);
 
   void add_svalue_mapping (const svalue *summary_sval,
 			   const svalue *caller_sval);
   void add_region_mapping (const region *summary_sval,
 			   const region *caller_sval);
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const;
-  void dump (FILE *fp, bool simple) const;
-  void dump (bool simple) const;
+  void dump_to_logger (logger &) const;
+  void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
 private:
   DISABLE_COPY_AND_ASSIGN (call_summary_replay);
 
   const svalue *convert_svalue_from_summary_1 (const svalue *);
   const region *convert_region_from_summary_1 (const region *);
+
+  template <typename ConcreteValueType>
+  const symbolic::scalar<ConcreteValueType> *
+  impl_bits_from_bytes (const symbolic::scalar<ConcreteValueType> &summary_scalar);
 
   const call_details &m_cd;
   call_summary &m_summary;

@@ -155,7 +155,7 @@ void test_missing_va_end (int placeholder, ...)
   va_start (ap, placeholder); /* { dg-message "\\(1\\) 'va_start' called here" } */
   i = va_arg (ap, int);
 } /* { dg-warning "missing call to 'va_end'" "warning" } */
-/* { dg-message "\\(2\\) missing call to 'va_end' to match 'va_start' at \\(1\\)" "final event" { target *-*-* } .-1 } */
+/* { dg-message "\\(2\\) missing call to 'va_end' \[^\n\r\]*to match 'va_start' at \\(1\\)" "final event" { target *-*-* } .-1 } */
 
 /* Missing va_end due to error-handling.  */
 
@@ -382,7 +382,7 @@ void test_leak_of_va_copy (int placeholder, ...)
   va_copy (ap2, ap1);  /* { dg-message "'va_copy' called here" } */
   va_end (ap1);
 } /* { dg-warning "missing call to 'va_end'" "warning" } */
-  /* { dg-message "missing call to 'va_end' to match 'va_copy' at \\(1\\)" "final event" { target *-*-* } .-1 } */
+  /* { dg-message "missing call to 'va_end' \[^\n\r\]*to match 'va_copy' at \\(1\\)" "final event" { target *-*-* } .-1 } */
 
 /* double va_end.  */
 
@@ -402,7 +402,7 @@ void test_double_va_start (int placeholder, ...)
   va_list ap;
   va_start (ap, placeholder); /* { dg-message "'va_start' called here" } */
   va_start (ap, placeholder);  /* { dg-warning "missing call to 'va_end'" "warning" } */
-  /* { dg-message "missing call to 'va_end' to match 'va_start' at \\(1\\)" "final event" { target *-*-* } .-1 } */
+  /* { dg-message "missing call to 'va_end' \[^\n\r\]*to match 'va_start' at \\(1\\)" "final event" { target *-*-* } .-1 } */
   va_end (ap);
 }
 

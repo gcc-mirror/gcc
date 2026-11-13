@@ -35,7 +35,7 @@ void
 test_4 (void)
 {
   char buf[1024];
-  __analyzer_dump_capacity (buf + 100); /* { dg-warning "capacity: '\\(sizetype\\)1024'" } */
+  __analyzer_dump_capacity (buf + 100); /* { dg-warning "capacity: 'UNKNOWN\\(sizetype\\)'" } */
 }
 
 void

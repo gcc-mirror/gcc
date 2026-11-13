@@ -66,7 +66,7 @@ set_type_attr (diagnostics::digraphs::node &state_node,
 
 static void
 set_bits_attr (diagnostics::digraphs::node & state_node,
-	       bit_range bits)
+	       const concrete_bit_range &bits)
 {
   pretty_printer pp;
   bits.dump_to_pp (&pp);
@@ -94,6 +94,7 @@ analyzer_state_graph::analyzer_state_graph (const program_state &state,
 					    const extrinsic_state &ext_state)
 : m_state (state),
   m_ext_state (ext_state),
+  m_node_mgr (ext_state.get_engine ()->get_node_manager ()),
   m_mgr (*ext_state.get_engine ()->get_model_manager ()),
   m_next_id (0)
 {
@@ -101,17 +102,28 @@ analyzer_state_graph::analyzer_state_graph (const program_state &state,
      so that we have a user-friendly way of showing the memory
      (by field, rather than by byte offset).  */
   for (auto cluster_iter : *state.m_region_model->get_store ())
-    for (auto binding_iter : *cluster_iter.second)
+    cluster_iter.second->for_each_value
+      ([](const symbolic::value_node &val,
+	  void *user_data) -> iter_result
       {
-	const svalue *svalue = binding_iter.m_sval;
-	if (const region *reg = svalue->maybe_get_region ())
-	  if (svalue->get_type () && !reg->get_type ())
-	    {
-	      tree pointed_to_type = TREE_TYPE (svalue->get_type ());
-	      if (!VOID_TYPE_P (pointed_to_type))
-		m_types_for_untyped_regions[reg] = pointed_to_type;
-	    }
-      }
+	return val.for_each_svalue ([] (const svalue &sval,
+					void *user_data) -> iter_result
+	{
+	  auto *sg = (analyzer_state_graph *)user_data;
+	  if (auto *sym_ptr = sval.maybe_get_symbolic_pointer ())
+	    if (sym_ptr->get_byte_offset ().is_zero_p ())
+	      {
+		auto &base_reg = sym_ptr->get_base_region ();
+		if (sval.get_type () && !base_reg.get_type ())
+		  {
+		    tree pointed_to_type = TREE_TYPE (sval.get_type ());
+		    if (!VOID_TYPE_P (pointed_to_type))
+		      sg->m_types_for_untyped_regions[&base_reg] = pointed_to_type;
+		  }
+	      }
+	  return iter_result::keep_going;
+	}, user_data);
+      }, this);
 
   /* TODO: look for vtable pointers at the top of dynamically-allocated
      regions and use that type as a fallback.  */
@@ -433,15 +445,18 @@ create_state_nodes_for_binding_cluster (const binding_cluster &cluster,
      - get current svalue, so as to get "zeros" and "uninitialized".  */
 
   concrete_bindings_t conc_bindings;
-  for (auto iter : cluster)
-    {
-      const binding_key *key = iter.m_key;
-      const svalue *svalue = iter.m_sval;
-      if (auto conc_key = key->dyn_cast_concrete_binding ())
-	conc_bindings[conc_key->get_bit_range ()] = svalue;
-      if (const region *reg = svalue->maybe_get_region ())
-	get_or_create_state_node (*reg);
-    }
+
+  auto &bc = cluster.get_bit_contents ();
+  if (auto *conc_bit_overlay = bc.dyn_cast_concrete_bit_overlay ())
+    for (auto iter : conc_bit_overlay->m_concrete_range_map)
+      {
+	auto &conc_bit_range = iter.first;
+	auto &bv = iter.second;
+	auto *sval = m_mgr.get_svalue_from_bit_vector (NULL_TREE, bv);
+	conc_bindings[conc_bit_range] = sval;
+	if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
+	  get_or_create_state_node (sym_ptr->get_base_region ());
+      }
 
   auto &ref = get_or_create_state_node (*cluster.get_base_region ());
 
@@ -477,7 +492,7 @@ analyzer_state_graph::create_state_node_for_conc_bindings (const concrete_bindin
 			       make_node_id ("concrete-bindings"));
   for (auto iter : conc_bindings)
     {
-      const bit_range bits = iter.first;
+      const concrete_bit_range &bits = iter.first;
       const svalue *sval = iter.second;
       auto binding_state_node
 	= make_state_node (node_properties::kind_t::other,
@@ -493,17 +508,16 @@ analyzer_state_graph::create_state_node_for_conc_bindings (const concrete_bindin
 // Try to get the bit_range of REG within its base region
 bool
 analyzer_state_graph::get_bit_range_within_base_region (const region &reg,
-							bit_range &out)
+							concrete_bit_range &out)
 {
-  region_offset start_offset = reg.get_offset (&m_mgr);
-  if (!start_offset.concrete_p ())
+  symbolic::memory_range mem_range
+    = reg.get_memory_range (m_node_mgr.get_region_model_manager ());
+
+  concrete_bit_range conc_bit_range;
+  if (!concrete_from_symbolic (mem_range.get_bit_range (),
+			       &out))
     return false;
-  region_offset next_offset = reg.get_next_offset (&m_mgr);
-  if (!next_offset.concrete_p ())
-    return false;
-  out = bit_range (start_offset.get_bit_offset (),
-		   next_offset.get_bit_offset ()
-		   - start_offset.get_bit_offset ());
+
   return true;
 }
 
@@ -518,7 +532,7 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
   gcc_assert (reg_type);
   set_type_attr (state_node, reg_type);
 
-  bit_range bits (0, 0);
+  concrete_bit_range bits;
   if (get_bit_range_within_base_region (reg, bits))
     {
       set_bits_attr (state_node, bits);
@@ -529,8 +543,9 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 	  const svalue *bound_sval = search->second;
 	  gcc_assert (bound_sval);
 	  set_value_attrs (state_node, *bound_sval);
-	  if (const region *dst_reg = bound_sval->maybe_get_region ())
-	    m_pending_edges.push_back ({state_node, *dst_reg});
+	  if (auto *sym_ptr = bound_sval->maybe_get_symbolic_pointer ())
+	    m_pending_edges.push_back
+	      ({state_node, sym_ptr->get_base_region ()});
 	}
     }
 
@@ -593,7 +608,8 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 	  {
 	    if (item.m_is_padding)
 	      {
-		const bit_range bits (0, item.m_bit_range.m_size_in_bits);
+		const concrete_bit_range bits
+		  (0_bits, item.m_bit_range.get_size ());
 		const region *child_reg
 		  = m_mgr.get_bit_range (&reg, NULL_TREE, bits);
 		if (show_child_state_node_for_child_region_p (*child_reg,
@@ -604,9 +620,9 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 		      = make_state_node
 			  (node_properties::kind_t::padding,
 			   make_node_id (*child_reg));
-		    set_wi_attr (*child_state_node,
-				 node_properties::num_bits,
-				 item.m_bit_range.m_size_in_bits, SIGNED);
+		    child_state_node->set_property
+		      (node_properties::num_bits,
+		       item.m_bit_range.get_size ().to_json ());
 		    state_node.add_child (std::move (child_state_node));
 		  }
 	      }
@@ -672,7 +688,7 @@ show_child_state_node_for_child_region_p (const region &reg,
 {
   if (create_all)
     return true;
-  bit_range reg_bits (0, 0);
+  concrete_bit_range reg_bits;
   if (!get_bit_range_within_base_region (reg, reg_bits))
     return true;
 
@@ -681,7 +697,7 @@ show_child_state_node_for_child_region_p (const region &reg,
      spatial relationships.  */
   for (auto iter : conc_bindings)
     {
-      const bit_range bound_bits = iter.first;
+      const concrete_bit_range &bound_bits = iter.first;
       if (bound_bits.intersects_p (reg_bits))
 	return true;
     }

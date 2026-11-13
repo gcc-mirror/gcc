@@ -51,8 +51,8 @@ public:
   static void handle_sval_cb (const svalue *sval,
 			      reachable_regions *this_ptr);
 
-  /* Add SVAL.  If it is a pointer, add the pointed-to region.  */
-  void handle_sval (const svalue *sval);
+  /* Add VAL.  If it is a pointer, add the pointed-to region.  */
+  void handle_value (const symbolic::value_node &val);
 
   /* Add SVAL.  If it is a pointer, add the pointed-to region.
      Use PARAM_TYPE for determining mutability.  */
@@ -73,19 +73,19 @@ public:
     return m_reachable_base_regs.end ();
   }
 
-  svalue_set::iterator begin_reachable_svals ()
+  value_set::iterator begin_reachable_svals ()
   {
     return m_reachable_svals.begin ();
   }
-  svalue_set::iterator end_reachable_svals ()
+  value_set::iterator end_reachable_svals ()
   {
     return m_reachable_svals.end ();
   }
-  svalue_set::iterator begin_mutable_svals ()
+  value_set::iterator begin_mutable_svals ()
   {
     return m_mutable_svals.begin ();
   }
-  svalue_set::iterator end_mutable_svals ()
+  value_set::iterator end_mutable_svals ()
   {
     return m_mutable_svals.end ();
   }
@@ -115,10 +115,10 @@ private:
   /* svalues that were passed as const pointers, so e.g. couldn't have
      been freed (but could have e.g. had "close" called on them if an
      int file-descriptor).  */
-  svalue_set m_reachable_svals;
+  value_set m_reachable_svals;
   /* svalues that were passed as non-const pointers, so e.g. could have
      been freed.  */
-  svalue_set m_mutable_svals;
+  value_set m_mutable_svals;
 };
 
 } // namespace ana

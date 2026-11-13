@@ -482,9 +482,8 @@ public:
   template <typename PurgeCriteria>
   void purge (const PurgeCriteria &p, purge_stats *stats);
 
-  void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model);
-  void purge_state_involving (const svalue *sval);
+  void on_liveness_change (symbolic::liveness_context &);
+  void purge_state_involving (const symbolic::node &node);
 
   void canonicalize ();
 

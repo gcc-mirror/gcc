@@ -62,6 +62,10 @@ public:
 
   void print (pretty_printer *pp, const format &f) const;
   void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
+
   void print_source_line (pretty_printer *pp) const;
 
   std::unique_ptr<json::object> to_json () const;

@@ -108,8 +108,35 @@ program_point::print (pretty_printer *pp, const format &f) const
 DEBUG_FUNCTION void
 program_point::dump () const
 {
-  tree_dump_pretty_printer pp (stderr);
-  print (&pp, format (true));
+  symbolic::dump_node_tree_to_stderr<program_point> (*this);
+}
+
+std::unique_ptr<text_art::tree_widget>
+program_point::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+
+  pretty_printer pp;
+  pp_string (&pp, "program_point: ");
+  if (m_snode)
+    pp_printf (&pp, "sn: %i", m_snode->m_id);
+  else
+    pp_string (&pp, "origin");
+
+  auto point_widget = tree_widget::make (nds, &pp);
+
+  if (!m_call_string->empty_p ())
+    point_widget->add_child (m_call_string->make_dump_widget (nds));
+
+  /* Add child quoting source text, if possible.  */
+  {
+    pretty_printer pp;
+    print_source_line (&pp);
+    if (strlen (pp_formatted_text (&pp)) > 0)
+      point_widget->add_child (tree_widget::make (nds, &pp));
+  }
+
+  return point_widget;
 }
 
 /* Return a new json::object of the form

@@ -104,3 +104,38 @@ char test_array_initialization_implicit_length (void)
   return buf[4]; /* { dg-warning "stack-based buffer over-read" } */
 }
 
+static size_t __attribute__((noinline))
+call_strlen_6a (const char *p)
+{
+  return __builtin_strlen (p); /* { dg-warning "use of uninitialized value 'p\\\[3]'" } */
+}
+
+void
+test_memcpy_without_termination (void)
+{
+  char buf[4];
+  __builtin_memcpy (buf, "abc", 3);
+  __analyzer_eval (buf[0] == 'a'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[1] == 'b'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[2] == 'c'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_6a (buf) == 3);
+}
+
+static size_t __attribute__((noinline))
+call_strlen_6b (const char *p)
+{
+  return __builtin_strlen (p);
+}
+
+void
+test_memcpy_with_manual_termination (void)
+{
+  char buf[4];
+  __builtin_memcpy (buf, "abc", 3);
+  buf[3] = '\0';
+  __analyzer_eval (buf[0] == 'a'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[1] == 'b'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[2] == 'c'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (buf[3] == '\0'); /* { dg-warning "TRUE" } */
+  __analyzer_eval (call_strlen_6b (buf) == 3); /* { dg-warning "TRUE" } */
+}

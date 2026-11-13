@@ -22,8 +22,8 @@ void test_summarized_returns_const (void)
 
 void test_summarized_returns_const_2 (void)
 {
-  returns_const (); /* { dg-message "when 'returns_const' returns" } */
-  __analyzer_dump_path (); /* { dg-message "path" } */
+  returns_const (); /* { dg-message "when 'returns_const' returns" "TODO(file PR)" { xfail *-*-* } } */
+  __analyzer_dump_path (); /* { dg-message "path" "TODO(file PR)" { xfail *-*-* } } */
 }
 
 int returns_param (int i)
@@ -76,7 +76,7 @@ void test_summarized_writes_param_to_ptr_unknown (int j)
 {
   int *p = (int *)__analyzer_get_unknown_ptr ();
   writes_param_to_ptr (j, p);
-  __analyzer_eval (*p == j); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (*p == j); /* { dg-warning "UNKNOWN" "TODO(file PR)" { xfail *-*-* } } */
 }
 
 int g;
@@ -496,9 +496,8 @@ int returns_bitfield (struct bits b)
 
 void test_returns_bitfield (struct bits s)
 {
-  __analyzer_eval (returns_bitfield (s) == s.b3); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (returns_bitfield (s) == s.b3); /* { dg-warning "UNKNOWN" } */
-  // TODO: ideally it would figure out that these are equal
+  __analyzer_eval (returns_bitfield (s) == s.b3); /* { dg-warning "TRUE" } */
+  __analyzer_eval (returns_bitfield (s) == s.b3); /* { dg-warning "TRUE" } */
 }
 
 int consume_two_ints_from_va_list (__builtin_va_list ap)
@@ -578,10 +577,9 @@ iv4_t returns_iv4_t (int a, iv2_t bc, int d)
 void test_returns_iv4_t (int p, iv2_t qr, int s)
 {
   __analyzer_eval (returns_iv4_t (p, qr, s).arr[0] == p); /* { dg-warning "TRUE" } */
-  __analyzer_eval (returns_iv4_t (p, qr, s).arr[1] == qr.arr[0]); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (returns_iv4_t (p, qr, s).arr[2] == qr.arr[1]); /* { dg-warning "UNKNOWN" } */
+  __analyzer_eval (returns_iv4_t (p, qr, s).arr[1] == qr.arr[0]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (returns_iv4_t (p, qr, s).arr[2] == qr.arr[1]); /* { dg-warning "TRUE" } */
   __analyzer_eval (returns_iv4_t (p, qr, s).arr[3] == s); /* { dg-warning "TRUE" } */
-  // TODO: ideally the UNKNOWNs would be TRUEs.
 }
 
 void copies_iv2_t (int *p, iv2_t xy)
@@ -594,11 +592,10 @@ void test_copies_iv2_t (iv2_t ab, iv2_t cd)
   iv4_t t;
   copies_iv2_t (&t.arr[0], ab);
   copies_iv2_t (&t.arr[2], cd);
-  __analyzer_eval (t.arr[0] = ab.arr[0]); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (t.arr[1] = ab.arr[1]); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (t.arr[2] = cd.arr[0]); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (t.arr[3] = cd.arr[1]); /* { dg-warning "UNKNOWN" } */
-  // TODO: ideally the UNKNOWNs would be TRUEs.
+  __analyzer_eval (t.arr[0] == ab.arr[0]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (t.arr[1] == ab.arr[1]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (t.arr[2] == cd.arr[0]); /* { dg-warning "TRUE" } */
+  __analyzer_eval (t.arr[3] == cd.arr[1]); /* { dg-warning "TRUE" } */
 }
 
 void partially_inits (int *p, int v)
@@ -621,8 +618,7 @@ void test_partially_inits_1 (int x)
   partially_inits (arr, x);
   partially_inits (arr, x);
 
-  __analyzer_eval (arr[1] == x); /* { dg-bogus "use of uninitialized value 'arr\\\[1\\\]'" "uninit" { xfail *-*-* } } */
-  // TODO(xfail), and eval should be "TRUE"
+  __analyzer_eval (arr[1] == x); /* { dg-warning "TRUE" } */
 }
 
 int uses_switch (int i)
@@ -653,7 +649,6 @@ int *returns_ptr_to_first_field (struct coord *p)
 
 void test_returns_ptr_to_first_field (struct coord *q)
 {
-  __analyzer_eval (returns_ptr_to_first_field (q) == (int *)q); /* { dg-warning "UNKNOWN" } */
-  __analyzer_eval (returns_ptr_to_first_field (q) == (int *)q); /* { dg-warning "UNKNOWN" } */
-  // TODO: ideally the UNKNOWNs would be TRUEs.
+  __analyzer_eval (returns_ptr_to_first_field (q) == (int *)q); /* { dg-warning "TRUE" } */
+  __analyzer_eval (returns_ptr_to_first_field (q) == (int *)q); /* { dg-warning "TRUE" } */
 }

@@ -73,7 +73,7 @@ namespace ana {
    We have:
 
     stack frame:
-      va_list: &impl_reg
+      va_list: &impl_reg at start, then zero fill
       'impl_reg': pointer to next var_arg_region
       var_arg_region for arg 0
       ...
@@ -140,7 +140,7 @@ get_va_list_diag_arg (tree va_list_tree)
   return va_list_tree;
 }
 
-/* Get argument ARG_IDX of va_copy.
+/* Extract a pointer from argument ARG_IDX of va_copy.
 
    builtin-types.def has:
      DEF_PRIMITIVE_TYPE (BT_VALIST_ARG, va_list_arg_type_node)
@@ -161,25 +161,30 @@ get_va_copy_arg (const region_model *model,
 		 unsigned arg_idx)
 {
   tree arg = gimple_call_arg (&call, arg_idx);
-  const svalue *arg_sval = model->get_rvalue (arg, ctxt);
-  if (const svalue *cast = arg_sval->maybe_undo_cast ())
-    arg_sval = cast;
+  auto *rmm = model->get_manager ();
+  const region *src_reg;
   if (TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE
       && TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == ARRAY_TYPE)
     {
-      /* va_list_arg_type_node is a pointer to a va_list;
-	 return *ARG_SVAL.  */
-      const region *src_reg = model->deref_rvalue (arg_sval, arg, ctxt);
-      const svalue *src_reg_sval = model->get_store_value (src_reg, ctxt);
-      if (const svalue *cast = src_reg_sval->maybe_undo_cast ())
-	src_reg_sval = cast;
-      return src_reg_sval;
+      /* va_list_arg_type_node is a pointer to a va_list.  */
+      const svalue *arg_sval = model->get_rvalue (arg, ctxt);
+      if (const svalue *cast = arg_sval->maybe_undo_cast ())
+	arg_sval = cast;
+      src_reg = model->deref_rvalue (arg_sval, arg, ctxt);
     }
   else
     {
-      /* va_list_arg_type_node is a va_list; return ARG_SVAL.  */
-      return arg_sval;
+      /* va_list_arg_type_node is a va_list.
+	 Read the pointer out of the first pointer-sized chunk of
+	 ARG's region.  */
+      src_reg = model->get_lvalue (arg, ctxt);
     }
+
+  const region *cast_reg = rmm->get_cast_region (src_reg, ptr_type_node);
+  const svalue *src_reg_sval = model->get_store_value (cast_reg, ctxt);
+  if (const svalue *cast = src_reg_sval->maybe_undo_cast ())
+    src_reg_sval = cast;
+  return src_reg_sval;
 }
 
 namespace {
@@ -292,7 +297,9 @@ get_stateful_arg (sm_context &sm_ctxt, const gcall &call, unsigned arg_idx)
 	  const region_model *new_model = new_state->m_region_model;
 	  const svalue *ptr_sval = new_model->get_rvalue (ap, nullptr);
 	  const region *reg = new_model->deref_rvalue (ptr_sval, ap, nullptr);
-	  const svalue *impl_sval = new_model->get_store_value (reg, nullptr);
+	  auto *rmm = new_model->get_manager ();
+	  const region *cast_reg = rmm->get_cast_region (reg, ptr_type_node);
+	  const svalue *impl_sval = new_model->get_store_value (cast_reg, nullptr);
 	  if (const svalue *cast = impl_sval->maybe_undo_cast ())
 	    impl_sval = cast;
 	  return impl_sval;
@@ -678,7 +685,8 @@ kf_va_start::impl_call_pre (const call_details &cd) const
 
   /* We abuse the types here, since va_list_type isn't
      necessarily anything to do with a pointer.  */
-  const svalue *ptr_to_impl_reg = mgr->get_ptr_svalue (NULL_TREE, impl_reg);
+  const svalue *ptr_to_impl_reg = mgr->get_ptr_svalue (ptr_type_node, impl_reg);
+  model->zero_fill_region (out_reg, cd.get_ctxt ());
   model->set_value (out_reg, ptr_to_impl_reg, cd.get_ctxt ());
 
   if (model->get_stack_depth () > 1)
@@ -688,18 +696,14 @@ kf_va_start::impl_call_pre (const call_details &cd) const
 	 Initialize IMPL_REGION with a ptr to var_arg_region 0.  */
       const region *init_var_arg_reg = mgr->get_var_arg_region (frame, 0);
       const svalue *ap_sval
-	= mgr->get_ptr_svalue (NULL_TREE, init_var_arg_reg);
+	= mgr->get_ptr_svalue (ptr_type_node, init_var_arg_reg);
       model->set_value (impl_reg, ap_sval, cd.get_ctxt ());
     }
   else
     {
       /* The frame containing va_start is an entry-point to the analysis,
-	 so there won't be any specific var_arg_regions populated within it.
-	 Initialize IMPL_REGION as the UNKNOWN_SVALUE to avoid state
-	 explosions on repeated calls to va_arg.  */
-      const svalue *unknown_sval
-	= mgr->get_or_create_unknown_svalue (NULL_TREE);
-      model->set_value (impl_reg, unknown_sval, cd.get_ctxt ());
+	 so there won't be any specific var_arg_regions populated within it.  */
+      model->mark_region_as_unknown (impl_reg, nullptr);
     }
 }
 
@@ -721,10 +725,10 @@ kf_va_copy::impl_call_pre (const call_details &cd) const
   region_model *model = cd.get_model ();
   region_model_manager *mgr = cd.get_manager ();
   const svalue *out_dst_ptr = cd.get_arg_svalue (0);
-  const svalue *in_va_list
+  const svalue *in_impl_ptr
     = get_va_copy_arg (model, cd.get_ctxt (), cd.get_call_stmt (), 1);
-  in_va_list
-    = model->check_for_poison (in_va_list,
+  in_impl_ptr
+    = model->check_for_poison (in_impl_ptr,
 			       get_va_list_diag_arg (cd.get_arg_tree (1)),
 			       nullptr,
 			       cd.get_ctxt ());
@@ -736,16 +740,19 @@ kf_va_copy::impl_call_pre (const call_details &cd) const
   const region *new_impl_reg
     = mgr->create_region_for_alloca (model->get_current_frame ());
   const svalue *ptr_to_new_impl_reg
-    = mgr->get_ptr_svalue (NULL_TREE, new_impl_reg);
+    = mgr->get_ptr_svalue (ptr_type_node, new_impl_reg);
   model->set_value (out_dst_reg, ptr_to_new_impl_reg, cd.get_ctxt ());
 
-  if (const region *old_impl_reg = in_va_list->maybe_get_region ())
-    {
-      /* "(NEW_IMPL_REGION) = (OLD_IMPL_REGION);".  */
-      const svalue *existing_sval
-	= model->get_store_value (old_impl_reg, cd.get_ctxt ());
-      model->set_value (new_impl_reg, existing_sval, cd.get_ctxt ());
-    }
+  const region *old_impl_reg = model->deref_rvalue (in_impl_ptr,
+						    NULL_TREE,
+						    cd.get_ctxt ());
+  old_impl_reg = mgr->get_cast_region (old_impl_reg, ptr_type_node);
+  new_impl_reg = mgr->get_cast_region (new_impl_reg, ptr_type_node);
+
+  /* "(NEW_IMPL_REGION) = (OLD_IMPL_REGION);".  */
+  const svalue *existing_sval
+    = model->get_store_value (old_impl_reg, cd.get_ctxt ());
+  model->set_value (new_impl_reg, existing_sval, cd.get_ctxt ());
 }
 
 /* Get the number of variadic arguments to CALLEE_FNDECL at CALL_STMT.  */
@@ -1005,11 +1012,34 @@ va_arg_compatible_types_p (tree lhs_type, tree arg_type, const svalue &arg_sval)
    Otherwise return nullptr.  */
 
 static const var_arg_region *
-maybe_get_var_arg_region (const svalue *ap_sval)
+maybe_get_var_arg_region (region_model *model,
+			  const svalue *ap_sval)
 {
-  if (const region *reg = ap_sval->maybe_get_region ())
-    return reg->dyn_cast_var_arg_region ();
-  return nullptr;
+  const region *reg = model->deref_rvalue (ap_sval, NULL_TREE, nullptr, false);
+  return reg->dyn_cast_var_arg_region ();
+}
+
+/* Attempt to extract a typed svalue from VAR_ARG_REG in MODEL, returning
+   nullptr if unsuccessful.
+   Normally the store has no conception of types; this relies on matching
+   the shape of how interprocedural arguments are recorded in frames so
+   that we can reconstruct the types of variadic arguments.  */
+
+static const svalue *
+maybe_get_var_arg_svalue (region_model *model,
+			  const var_arg_region *var_arg_reg)
+{
+  /* A var_arg_region has no inherent size.
+   */
+  auto *cluster = model->get_store ()->get_cluster (var_arg_reg);
+  if (!cluster)
+    return nullptr;
+  auto &contents = cluster->get_bit_contents ();
+  auto *conc_bit_overlay = contents.dyn_cast_concrete_bit_overlay ();
+  if (!conc_bit_overlay)
+    return nullptr;
+
+  return conc_bit_overlay->maybe_get_var_arg_svalue ();
 }
 
 /* Handler for "__builtin_va_arg".  */
@@ -1031,6 +1061,8 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
   const region *ap_reg
     = model->deref_rvalue (in_ptr, cd.get_arg_tree (0), ctxt);
 
+  ap_reg = mgr->get_cast_region (ap_reg, ptr_type_node);
+
   const svalue *ap_sval = model->get_store_value (ap_reg, ctxt);
   if (const svalue *cast = ap_sval->maybe_undo_cast ())
     ap_sval = cast;
@@ -1040,78 +1072,82 @@ kf_va_arg::impl_call_pre (const call_details &cd) const
 
   cd.set_any_lhs_with_defaults ();
 
-  if (const region *impl_reg = ap_sval->maybe_get_region ())
+  if (!(ap_sval->get_type ()
+	&& POINTER_TYPE_P (ap_sval->get_type ())))
+    return;
+
+  const region *impl_reg
+    = model->deref_rvalue (ap_sval, NULL_TREE, ctxt, false);
+  impl_reg = mgr->get_cast_region (impl_reg, ptr_type_node);
+  const svalue *old_impl_sval = model->get_store_value (impl_reg, ctxt);
+  const var_arg_region *arg_reg = maybe_get_var_arg_region (model,
+							  old_impl_sval);
+  if (!arg_reg)
+    return;
+
+  bool saw_problem = false;
+
+  const frame_region *frame_reg = arg_reg->get_frame_region ();
+  unsigned next_arg_idx = arg_reg->get_index ();
+
+  if (frame_reg->get_stack_depth () > 1)
     {
-      const svalue *old_impl_sval = model->get_store_value (impl_reg, ctxt);
-      if (const var_arg_region *arg_reg
-	  = maybe_get_var_arg_region (old_impl_sval))
+      /* The interprocedural case: the called frame will have been
+	 populated with any variadic aruguments.
+	 Attempt to extract arg_reg to cd's return region (which already
+	 has a conjured_svalue), or warn if there's a problem
+	 (incompatible types, or if we've run out of args).  */
+      if (const svalue *arg_sval = maybe_get_var_arg_svalue (model,
+							     arg_reg))
 	{
-	  bool saw_problem = false;
-
-	  const frame_region *frame_reg = arg_reg->get_frame_region ();
-	  unsigned next_arg_idx = arg_reg->get_index ();
-
-	  if (frame_reg->get_stack_depth () > 1)
-	    {
-	      /* The interprocedural case: the called frame will have been
-		 populated with any variadic aruguments.
-		 Attempt to extract arg_reg to cd's return region (which already
-		 has a conjured_svalue), or warn if there's a problem
-		 (incompatible types, or if we've run out of args).  */
-	      if (const svalue *arg_sval
-		  = model->get_store ()->get_any_binding
-		      (mgr->get_store_manager (), arg_reg))
-		{
-		  tree lhs_type = cd.get_lhs_type ();
-		  tree arg_type = arg_sval->get_type ();
-		  if (va_arg_compatible_types_p (lhs_type, arg_type, *arg_sval))
-		    cd.maybe_set_lhs (arg_sval);
-		  else
-		    {
-		      if (ctxt)
-			ctxt->warn (std::make_unique <va_arg_type_mismatch>
-				      (va_list_tree,
-				       arg_reg,
-				       lhs_type,
-				       arg_type));
-		      saw_problem = true;
-		    }
-		}
-	      else
-		{
-		  if (ctxt)
-		    ctxt->warn
-		      (std::make_unique <va_list_exhausted> (va_list_tree,
-							     arg_reg));
-		  saw_problem = true;
-		}
-	    }
+	  tree lhs_type = cd.get_lhs_type ();
+	  tree arg_type = arg_sval->get_type ();
+	  if (va_arg_compatible_types_p (lhs_type, arg_type, *arg_sval))
+	    cd.maybe_set_lhs (arg_sval);
 	  else
 	    {
-	      /* This frame is an entry-point to the analysis, so there won't be
-		 any specific var_arg_regions populated within it.
-		 We already have a conjured_svalue for the result, so leave
-		 it untouched.  */
-	      gcc_assert (frame_reg->get_stack_depth () == 1);
-	    }
-
-	  if (saw_problem)
-	    {
-	      /* Set impl_reg to UNKNOWN to suppress further warnings.  */
-	      const svalue *new_ap_sval
-		= mgr->get_or_create_unknown_svalue (impl_reg->get_type ());
-	      model->set_value (impl_reg, new_ap_sval, ctxt);
-	    }
-	  else
-	    {
-	      /* Update impl_reg to advance to the next arg.  */
-	      const region *next_var_arg_region
-		= mgr->get_var_arg_region (frame_reg, next_arg_idx + 1);
-	      const svalue *new_ap_sval
-		= mgr->get_ptr_svalue (NULL_TREE, next_var_arg_region);
-	      model->set_value (impl_reg, new_ap_sval, ctxt);
+	      if (ctxt)
+		ctxt->warn (std::make_unique <va_arg_type_mismatch>
+			    (va_list_tree,
+			     arg_reg,
+			     lhs_type,
+			     arg_type));
+	      saw_problem = true;
 	    }
 	}
+      else
+	{
+	  if (ctxt)
+	    ctxt->warn
+	      (std::make_unique <va_list_exhausted> (va_list_tree,
+						     arg_reg));
+	  saw_problem = true;
+	}
+    }
+  else
+    {
+      /* This frame is an entry-point to the analysis, so there won't be
+	 any specific var_arg_regions populated within it.
+	 We already have a conjured_svalue for the result, so leave
+	 it untouched.  */
+      gcc_assert (frame_reg->get_stack_depth () == 1);
+    }
+
+  if (saw_problem)
+    {
+      /* Set impl_reg to UNKNOWN to suppress further warnings.  */
+      const svalue *new_ap_sval
+	= mgr->get_or_create_unknown_svalue (impl_reg->get_type ());
+      model->set_value (impl_reg, new_ap_sval, ctxt);
+    }
+  else
+    {
+      /* Update impl_reg to advance to the next arg.  */
+      const region *next_var_arg_region
+	= mgr->get_var_arg_region (frame_reg, next_arg_idx + 1);
+      const svalue *new_ap_sval
+	= mgr->get_ptr_svalue (ptr_type_node, next_var_arg_region);
+      model->set_value (impl_reg, new_ap_sval, ctxt);
     }
 }
 

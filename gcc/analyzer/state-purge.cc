@@ -617,17 +617,19 @@ state_purge_per_decl::add_to_worklist (const supernode &snode,
 
 static bool
 same_binding_p (const region *reg_a, const region *reg_b,
-		store_manager *store_mgr)
+		region_model_manager &mgr)
 {
   if (reg_a->get_base_region () != reg_b->get_base_region ())
     return false;
-  if (reg_a->empty_p ())
+  if (reg_a->empty_p (mgr))
     return false;
-  const binding_key *bind_key_a = binding_key::make (store_mgr, reg_a);
-  if (reg_b->empty_p ())
+  if (reg_b->empty_p (mgr))
     return false;
-  const binding_key *bind_key_b = binding_key::make (store_mgr, reg_b);
-  return bind_key_a == bind_key_b;
+
+  auto mem_range_a = reg_a->get_memory_range (mgr);
+  auto mem_range_b = reg_b->get_memory_range (mgr);
+
+  return mem_range_a == mem_range_b;
 }
 
 /* Return true if STMT fully overwrites DECL.  */
@@ -644,8 +646,7 @@ fully_overwrites_p (const gimple *stmt, tree decl,
 	 of "s", and there's no padding.  */
       const region *lhs_reg = model.get_lvalue (lhs, nullptr);
       const region *decl_reg = model.get_lvalue (decl, nullptr);
-      if (same_binding_p (lhs_reg, decl_reg,
-			  model.get_manager ()->get_store_manager ()))
+      if (same_binding_p (lhs_reg, decl_reg, *model.get_manager ()))
 	return true;
     }
   return false;

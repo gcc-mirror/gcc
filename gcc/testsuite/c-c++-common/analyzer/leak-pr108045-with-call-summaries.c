@@ -74,7 +74,7 @@ void resize_screen(size_t cols, size_t rows)
 {
 	/* create a new screen */
 	struct screen_s *new_scr = NULL;
-	new_scr = screen_create(cols, rows); /* { dg-bogus "leak" "PR 108045" { xfail *-*-* } } */
+	new_scr = screen_create(cols, rows); /* { dg-bogus "leak" "PR 108045" } */
 	if (!new_scr) {
 		return;
 	}
@@ -95,7 +95,7 @@ int main(void)
 	if (!ctx)
 		__builtin_abort();
 
-	ctx->scr = screen_create(80, 25); /* { dg-bogus "leak" "PR 108045" { xfail *-*-* } } */
+	ctx->scr = screen_create(80, 25); /* { dg-bogus "leak" "PR 108045" } */
 	resize_screen(100, 20);
 
 	/* tidy up and quit */

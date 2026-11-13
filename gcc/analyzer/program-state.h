@@ -66,9 +66,11 @@ public:
 
   logger *get_logger () const { return m_logger; }
 
-  void dump_to_pp (pretty_printer *pp) const;
-  void dump_to_file (FILE *outf) const;
+  void dump_to_logger (logger &) const;
   void dump () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
   std::unique_ptr<json::object> to_json () const;
 
@@ -139,8 +141,9 @@ public:
   std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi,
-		    const region_model *model) const;
+  make_dump_widget (symbolic::node_dump_state &nds,
+		    const region_model *model = nullptr) const;
+  void dump () const;
 
   bool is_empty_p () const;
 
@@ -178,16 +181,15 @@ public:
 
   void on_svalue_leak (const svalue *sval,
 		       impl_region_model_context *ctxt);
-  void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model,
+  void on_liveness_change (symbolic::liveness_context &liveness_ctxt,
 			   const extrinsic_state &ext_state,
 			   impl_region_model_context *ctxt);
 
-  void on_unknown_change (const svalue *sval,
+  void on_unknown_change (const symbolic::value_node &val,
 			  bool is_mutable,
 			  const extrinsic_state &ext_state);
 
-  void purge_state_involving (const svalue *sval,
+  void purge_state_involving (const symbolic::node &node,
 			      const extrinsic_state &ext_state);
 
   iterator_t begin () const { return m_map.begin (); }
@@ -207,10 +209,19 @@ public:
 			 const extrinsic_state &ext_state,
 			 sm_state_map **out) const;
 
+  void validate (const extrinsic_state &ext_state) const;
+
 private:
+  state_machine::state_t
+  get_any_inherited_state_of_bit_vector (const symbolic::bit_vector &bv,
+					 const extrinsic_state &ext_state,
+					 region_model_manager &rmm) const;
+
   const state_machine &m_sm;
   map_t m_map;
   state_machine::state_t m_global_state;
+  std::map<const symbolic::unfoldable_bit_contents *,
+	   state_machine::state_t> m_map_ubc_to_state;
 };
 
 /* A class for representing the state of interest at a given path of
@@ -244,11 +255,7 @@ public:
   void print (const extrinsic_state &ext_state,
 	      pretty_printer *pp) const;
 
-  void dump_to_pp (const extrinsic_state &ext_state, bool simple,
-		   bool multiline, pretty_printer *pp) const;
-  void dump_to_file (const extrinsic_state &ext_state, bool simple,
-		     bool multiline, FILE *outf) const;
-  void dump (const extrinsic_state &ext_state, bool simple) const;
+  void dump_to_logger (logger &, const char *label = nullptr) const;
   void dump () const;
 
   std::unique_ptr<diagnostics::digraphs::digraph>
@@ -264,7 +271,8 @@ public:
   to_json (const extrinsic_state &ext_state) const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+  make_dump_widget (symbolic::node_dump_state &nds,
+		    const char *label = nullptr) const;
 
   void push_frame (const extrinsic_state &ext_state, const function &fun);
   const function * get_current_function () const;

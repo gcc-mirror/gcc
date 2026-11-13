@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "intl.h"
 
+#include "diagnostics/markup.h"
+
 #include "text-art/ruler.h"
 
 #include "analyzer/region-model.h"
@@ -201,60 +203,21 @@ fmt_styled_string (style_manager &sm,
 class access_diagram_impl;
 class bit_to_table_map;
 
-static void
-pp_bit_size_t (pretty_printer *pp, bit_size_t num_bits)
-{
-  if (num_bits % BITS_PER_UNIT == 0)
-    {
-      byte_size_t num_bytes = num_bits / BITS_PER_UNIT;
-      if (num_bytes == 1)
-	pp_printf (pp, _("%wi byte"), num_bytes.to_uhwi ());
-      else
-	pp_printf (pp, _("%wi bytes"), num_bytes.to_uhwi ());
-    }
-  else
-    {
-      if (num_bits == 1)
-	pp_printf (pp, _("%wi bit"), num_bits.to_uhwi ());
-      else
-	pp_printf (pp, _("%wi bits"), num_bits.to_uhwi ());
-    }
-}
-
 static styled_string
 get_access_size_str (style_manager &sm,
 		     const access_operation &op,
-		     access_range accessed_range,
+		     symbolic_bit_range accessed_range,
 		     tree type)
 {
-  bit_size_expr num_bits (accessed_range.get_size (op.m_model.get_manager ()));
-  if (type)
-    {
-      styled_string s;
-      pretty_printer pp;
-      pp_format_decoder (&pp) = default_tree_printer;
-      if (num_bits.maybe_print_for_user (&pp, op.m_model))
-	{
-	  if (op.m_dir == access_direction::read)
-	    return fmt_styled_string (sm,
-				      _("read of %qT (%s)"),
-				      type,
-				      pp_formatted_text (&pp));
-	  else
-	    return fmt_styled_string (sm,
-				      _("write of %qT (%s)"),
-				      type,
-				      pp_formatted_text (&pp));
-	}
-    }
+  bit_size_expr num_bits (accessed_range.get_size ());
   if (op.m_dir == access_direction::read)
     {
       if (auto p
 	  = num_bits.maybe_get_formatted_str (sm, op.m_model,
-					      _("read of %wi bit"),
-					      _("read of %wi bits"),
-					      _("read of %wi byte"),
-					      _("read of %wi bytes"),
+					      _("read of %e bit"),
+					      _("read of %e bits"),
+					      _("read of %e byte"),
+					      _("read of %e bytes"),
 					      _("read of %qs bits"),
 					      _("read of %qs bytes")))
 	return std::move (*p.get ());
@@ -263,10 +226,10 @@ get_access_size_str (style_manager &sm,
     {
       if (auto p
 	  = num_bits.maybe_get_formatted_str (sm, op.m_model,
-					      _("write of %wi bit"),
-					      _("write of %wi bits"),
-					      _("write of %wi byte"),
-					      _("write of %wi bytes"),
+					      _("write of %e bit"),
+					      _("write of %e bits"),
+					      _("write of %e byte"),
+					      _("write of %e bytes"),
 					      _("write of %qs bits"),
 					      _("write of %qs bytes")))
 	return std::move (*p.get ());
@@ -279,7 +242,6 @@ get_access_size_str (style_manager &sm,
       else
 	return fmt_styled_string (sm, _("write of %qT"), type);
     }
-
   if (op.m_dir == access_direction::read)
     return styled_string (sm, _("read"));
   else
@@ -342,7 +304,7 @@ clean_up_for_diagram (tree expr)
 /* Attempt to generate a user-facing styled string that mentions this
    bit_size_expr.
    Use MODEL for extracting representative tree values where necessary.
-   The CONCRETE_* format strings should contain a single %wi.
+   The CONCRETE_* format strings should contain a single %e.
    The SYMBOLIC_* format strings should contain a single %qs.
    Return nullptr if unable to represent the expression.  */
 
@@ -356,213 +318,260 @@ bit_size_expr::maybe_get_formatted_str (text_art::style_manager &sm,
 					const char *symbolic_bits_fmt,
 					const char *symbolic_bytes_fmt) const
 {
-  region_model_manager &mgr = *model.get_manager ();
-  if (const svalue *num_bytes = maybe_get_as_bytes (mgr))
+  const diagnostics::markup::lowering_options markup_lowering_opts;
+  if (auto *sym_byte_size = maybe_bytes_from_bits (m_num_bits))
     {
-      if (tree cst = num_bytes->maybe_get_constant ())
+      concrete_byte_size conc_num_bytes;
+      if (concrete_from_symbolic (*sym_byte_size, &conc_num_bytes))
 	{
-	  byte_size_t concrete_num_bytes = wi::to_offset (cst);
-	  if (!wi::fits_uhwi_p (concrete_num_bytes))
-	    return nullptr;
-	  if (concrete_num_bytes == 1)
+	  pp_element_integer e_num_bytes (conc_num_bytes.get_integer ());
+	  if (conc_num_bytes == 1_byte)
 	    return std::make_unique <text_art::styled_string>
 	      (fmt_styled_string (sm, concrete_single_byte_fmt,
-				  concrete_num_bytes.to_uhwi ()));
+				  &e_num_bytes));
 	  else
 	    return std::make_unique <text_art::styled_string>
 	      (fmt_styled_string (sm, concrete_plural_bytes_fmt,
-				  concrete_num_bytes.to_uhwi ()));
+				  &e_num_bytes));
 	}
       else
 	{
+	  symbolic::markup_context ctxt (&model, true);
+	  auto markup = sym_byte_size->make_markup_node (ctxt);
+	  auto lowered = markup->lower (markup_lowering_opts);
 	  pretty_printer pp;
 	  pp_format_decoder (&pp) = default_tree_printer;
-	  if (!num_bytes->maybe_print_for_user (&pp, model))
-	    return nullptr;
+	  lowered->print_to_pp (&pp);
 	  return std::make_unique <text_art::styled_string>
 	    (fmt_styled_string (sm, symbolic_bytes_fmt,
 				pp_formatted_text (&pp)));
 	}
     }
-  else if (tree cst = m_num_bits.maybe_get_constant ())
-    {
-      bit_size_t concrete_num_bits = wi::to_offset (cst);
-      if (!wi::fits_uhwi_p (concrete_num_bits))
-	return nullptr;
-      if (concrete_num_bits == 1)
-	return std::make_unique <text_art::styled_string>
-	  (fmt_styled_string (sm, concrete_single_bit_fmt,
-			      concrete_num_bits.to_uhwi ()));
-      else
-	return std::make_unique <text_art::styled_string>
-	  (fmt_styled_string (sm, concrete_plural_bits_fmt,
-			      concrete_num_bits.to_uhwi ()));
-    }
   else
     {
-      pretty_printer pp;
-      pp_format_decoder (&pp) = default_tree_printer;
-      if (!m_num_bits.maybe_print_for_user (&pp, model))
-	return nullptr;
-      return std::make_unique <text_art::styled_string>
-	(fmt_styled_string (sm, symbolic_bits_fmt,
-			    pp_formatted_text (&pp)));
-    }
-}
-
-bool
-bit_size_expr::maybe_print_for_user (pretty_printer *pp,
-				     const region_model &model) const
-{
-  if (tree cst = m_num_bits.maybe_get_constant ())
-    {
-      bit_size_t concrete_num_bits = wi::to_offset (cst);
-      pp_bit_size_t (pp, concrete_num_bits);
-      return true;
-    }
-  else
-    {
-      if (const svalue *num_bytes = maybe_get_as_bytes (*model.get_manager ()))
+      concrete_bit_size conc_num_bits;
+      if (concrete_from_symbolic (m_num_bits, &conc_num_bits))
 	{
-	  pretty_printer tmp_pp;
-	  pp_format_decoder (&tmp_pp) = default_tree_printer;
-	  if (!num_bytes->maybe_print_for_user (&tmp_pp, model))
-	    return false;
-	  pp_printf (pp, _("%qs bytes"), pp_formatted_text (&tmp_pp));
-	  return true;
+	  pp_element_integer e_num_bits (conc_num_bits.get_integer ());
+	  if (conc_num_bits == 1_bit)
+	    return std::make_unique <text_art::styled_string>
+	      (fmt_styled_string (sm, concrete_single_bit_fmt,
+				  &e_num_bits));
+	  else
+	    return std::make_unique <text_art::styled_string>
+	      (fmt_styled_string (sm, concrete_plural_bits_fmt,
+				  &e_num_bits));
 	}
       else
 	{
-	  pretty_printer tmp_pp;
-	  pp_format_decoder (&tmp_pp) = default_tree_printer;
-	  if (!m_num_bits.maybe_print_for_user (&tmp_pp, model))
-	    return false;
-	  pp_printf (pp, _("%qs bits"), pp_formatted_text (&tmp_pp));
-	  return true;
+	  symbolic::markup_context ctxt (&model, true);
+	  auto markup = m_num_bits.make_markup_node (ctxt);
+	  auto lowered = markup->lower (markup_lowering_opts);
+	  pretty_printer pp;
+	  pp_format_decoder (&pp) = default_tree_printer;
+	  lowered->print_to_pp (&pp);
+	  return std::make_unique <text_art::styled_string>
+	    (fmt_styled_string (sm, symbolic_bits_fmt,
+				pp_formatted_text (&pp)));
 	}
     }
 }
 
-/* Attempt to get a symbolic value for this symbolic bit size,
-   expressed in bytes.
-   Return null if it's not known to divide exactly.  */
+/* A sloppy folding to use when building access diagrams,
+   in the hope that the results will be easier to simplify/draw.  */
 
-const svalue *
-bit_size_expr::maybe_get_as_bytes (region_model_manager &mgr) const
+template<typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> &
+fold_scalar_for_access_diagram (const symbolic::scalar<ConcreteValueType> &s);
+
+template<typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> &
+fold_svalue_for_access_diagram (const svalue &sval,
+				symbolic::scalar_manager<ConcreteValueType> &mgr)
 {
-  if (tree cst = m_num_bits.maybe_get_constant ())
+  switch (sval.get_kind ())
     {
-      bit_offset_t concrete_bits = wi::to_offset (cst);
-      if (concrete_bits % BITS_PER_UNIT != 0)
-	/* Not an exact multiple, so fail.  */
-	return nullptr;
+    default:
+      break;
+
+    case SK_CONSTANT:
+      {
+	tree cst = sval.maybe_get_constant ();
+	gcc_assert (cst);
+	if (TREE_CODE (cst) == INTEGER_CST)
+	  {
+	    integer i = convert_from_integer_cst (cst);
+	    return mgr.get_concrete (ConcreteValueType (i));
+	  }
+      }
+      break;
+
+    case SK_UNARYOP:
+      {
+	const unaryop_svalue *unaryop = as_a<const unaryop_svalue *> (&sval);
+	switch (unaryop->get_op ())
+	  {
+	  default:
+	    break;
+	  case NOP_EXPR:
+	    // Blithely ignore casts
+	    return fold_svalue_for_access_diagram<ConcreteValueType>
+	      (*unaryop->get_arg (), mgr);
+	  }
+      }
+      break;
+
+    case SK_BINOP:
+      {
+	const binop_svalue *binop = as_a<const binop_svalue *> (&sval);
+	switch (binop->get_op ())
+	  {
+	  default:
+	    break;
+	  case PLUS_EXPR:
+	    return (fold_svalue_for_access_diagram<ConcreteValueType>
+		      (*binop->get_arg0 (), mgr)
+		    + fold_svalue_for_access_diagram<ConcreteValueType>
+			(*binop->get_arg1 (), mgr));
+	  case MULT_EXPR:
+	    {
+	      /* Put any constant on the unit side.  */
+	      const svalue *with_unit = binop->get_arg0 ();
+	      const svalue *unitless = binop->get_arg1 ();
+	      if (unitless->maybe_get_constant ())
+		std::swap (with_unit, unitless);
+	      return (fold_svalue_for_access_diagram<ConcreteValueType>
+			(*with_unit, mgr)
+		      * fold_svalue_for_access_diagram<integer>
+			  (*unitless, mgr.get_unitless_manager ()));
+	    }
+	  }
+      }
+      break;
     }
-  const svalue *bits_per_byte
-    = mgr.get_or_create_int_cst (NULL_TREE, BITS_PER_UNIT);
-  return mgr.maybe_fold_binop (NULL_TREE, EXACT_DIV_EXPR,
-			       &m_num_bits, bits_per_byte);
+
+  return mgr.get_scalar_from_svalue (sval);
 }
 
-/* struct access_range.  */
-
-access_range::access_range (const region *base_region, const bit_range &bits)
-: m_start (region_offset::make_concrete (base_region,
-					 bits.get_start_bit_offset ())),
-  m_next (region_offset::make_concrete (base_region,
-					bits.get_next_bit_offset ()))
+template<typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> &
+case_fold_scalar_for_access_diagram (const symbolic::scalar<ConcreteValueType> &s)
 {
-}
-
-access_range::access_range (const region *base_region, const byte_range &bytes)
-: m_start (region_offset::make_concrete (base_region,
-					 bytes.get_start_bit_offset ())),
-  m_next (region_offset::make_concrete (base_region,
-					bytes.get_next_bit_offset ()))
-{
-}
-
-access_range::access_range (const region &reg, region_model_manager *mgr)
-: m_start (strip_types (reg.get_offset (mgr), *mgr)),
-  m_next (strip_types (reg.get_next_offset (mgr), *mgr))
-{
-}
-
-bit_size_expr
-access_range::get_size (region_model_manager *mgr) const
-{
-  const svalue &start_bit_offset = m_start.calc_symbolic_bit_offset (mgr);
-  const svalue &next_bit_offset = m_next.calc_symbolic_bit_offset (mgr);
-  return bit_size_expr
-    (*mgr->get_or_create_binop (NULL_TREE, MINUS_EXPR,
-				&next_bit_offset, &start_bit_offset));
-}
-
-bool
-access_range::contains_p (const access_range &other) const
-{
-  return (m_start <= other.m_start
-	  && other.m_next <= m_next);
-}
-
-bool
-access_range::empty_p () const
-{
-  bit_range concrete_bits (0, 0);
-  if (!as_concrete_bit_range (&concrete_bits))
-    return false;
-  return concrete_bits.empty_p ();
-}
-
-void
-access_range::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  if (m_start.concrete_p () && m_next.concrete_p ())
+  switch (s.get_kind ())
     {
-      bit_range bits (m_start.get_bit_offset (),
-		      m_next.get_bit_offset () - m_start.get_bit_offset ());
-      bits.dump_to_pp (pp);
-      return;
+    default:
+      gcc_unreachable ();
+
+    case symbolic::scalar<ConcreteValueType>::kind::concrete:
+      return s;
+
+    case symbolic::scalar<ConcreteValueType>::kind::sum:
+      {
+	const symbolic::sum<ConcreteValueType> &sum
+	  = (const symbolic::sum<ConcreteValueType> &)s;
+	std::vector<const symbolic::scalar<ConcreteValueType> *> folded_addends;
+	for (size_t i = 0; i < sum.get_num_symbolic_addends (); ++i)
+	  folded_addends.push_back
+	    (&fold_scalar_for_access_diagram<ConcreteValueType>
+	     (sum.get_symbolic_addend (i)));
+	if (auto *conc = sum.get_any_concrete_addend ())
+	  folded_addends.push_back
+	    (&fold_scalar_for_access_diagram<ConcreteValueType> (*conc));
+	return s.get_mgr ().get_sum (std::move (folded_addends));
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::product:
+      {
+	const symbolic::product<ConcreteValueType> &product
+	  = (const symbolic::product<ConcreteValueType> &)s;
+	return s.get_mgr ().get_product
+	  (fold_scalar_for_access_diagram (product.get_lhs ()),
+	   fold_scalar_for_access_diagram (product.get_rhs ()));
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::from_svalue:
+      {
+	const symbolic::scalar_from_svalue<ConcreteValueType> &subclass
+	  = (const symbolic::scalar_from_svalue<ConcreteValueType> &)s;
+	const svalue &sval = subclass.get_svalue ();
+	return fold_svalue_for_access_diagram<ConcreteValueType> (sval,
+								  s.get_mgr ());
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::named_test:
+      gcc_unreachable ();
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::bits_from_bytes:
+      /* Should be handled by caller.  */
+      gcc_unreachable ();
+      break;
     }
-  pp_character (pp, '[');
-  m_start.dump_to_pp (pp, simple);
-  pp_string (pp, " to ");
-  m_next.dump_to_pp (pp, simple);
-  pp_character (pp, ')');
 }
 
-DEBUG_FUNCTION void
-access_range::dump (bool simple) const
+template<typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> &
+fold_scalar_for_access_diagram (const symbolic::scalar<ConcreteValueType> &s)
 {
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple);
-  pp_newline (&pp);
+  return case_fold_scalar_for_access_diagram (s);
 }
 
-void
-access_range::log (const char *title, logger &logger) const
+template <>
+const symbolic_bit_offset &
+fold_scalar_for_access_diagram (const symbolic_bit_offset &s)
 {
-  logger.start_log_line ();
-  logger.log_partial ("%s: ", title);
-  dump_to_pp (logger.get_printer (), true);
-  logger.end_log_line ();
+  if (auto *from_bytes = s.dyn_cast_bits_from_bytes_scalar ())
+    return s.get_mgr ().get_bits_from_bytes
+      (fold_scalar_for_access_diagram (from_bytes->get_bytes ()));
+  return case_fold_scalar_for_access_diagram (s);
+}
+
+template<typename ConcreteValueType>
+symbolic::range<ConcreteValueType>
+fold_range_for_access_diagram (symbolic::range<ConcreteValueType> range)
+{
+  return symbolic::range<ConcreteValueType>
+    (fold_scalar_for_access_diagram (range.get_start_offset ()),
+     fold_scalar_for_access_diagram (range.get_size ()));
+}
+
+symbolic_bit_range
+folded_symbolic_bit_range (const symbolic_bit_offset &start_offset,
+			   const symbolic_bit_size &size)
+{
+  return fold_range_for_access_diagram
+    (symbolic_bit_range (start_offset, size));
+}
+
+template<typename ConcreteValueType>
+bool
+symbolic::range<ConcreteValueType>::
+access_range_contains_p (const symbolic::range<ConcreteValueType> &other) const
+{
+  return (get_start_offset () <= other.get_start_offset ()
+	  && other.get_next_offset () <= get_next_offset ());
 }
 
 /* struct access_operation.  */
 
-access_range
+symbolic_bit_range
 access_operation::get_valid_bits () const
 {
-  const svalue *capacity_in_bytes_sval = m_model.get_capacity (m_base_region);
-  return access_range
-    (region_offset::make_concrete (m_base_region, 0),
-     region_offset::make_byte_offset (m_base_region, capacity_in_bytes_sval),
-     *get_manager ());
+  auto &capacity
+    = m_model.get_capacity_as_scalar (&m_attempted_range.get_base_region ());
+  auto *rmm = m_model.get_manager ();
+  auto &bit_mgr = rmm->get_node_manager ().get_scalars ().get_bits ();
+  return folded_symbolic_bit_range (bit_mgr.get_concrete (0_bits),
+				    bits_from_bytes (capacity));
 }
 
-access_range
+symbolic_bit_range
 access_operation::get_actual_bits () const
 {
-  return access_range (m_reg, get_manager ());
+  return fold_range_for_access_diagram (m_attempted_range.get_bit_range ());
 }
 
 /* If there are any bits accessed invalidly before the valid range,
@@ -571,21 +580,22 @@ access_operation::get_actual_bits () const
    (e.g. symbolic ranges.  */
 
 bool
-access_operation::maybe_get_invalid_before_bits (access_range *out) const
+access_operation::maybe_get_invalid_before_bits (symbolic_bit_range *out) const
 {
-  access_range valid_bits (get_valid_bits ());
-  access_range actual_bits (get_actual_bits ());
+  symbolic_bit_range valid_bits (get_valid_bits ());
+  symbolic_bit_range actual_bits (get_actual_bits ());
 
-  if (actual_bits.m_start >= valid_bits.m_start)
+  if (actual_bits.get_start_offset () >= valid_bits.get_start_offset ())
     {
       /* No part of accessed range is before the valid range.  */
       return false;
     }
-  else if (actual_bits.m_next > valid_bits.m_start)
+  else if (actual_bits.get_next_offset () > valid_bits.get_start_offset ())
     {
       /* Get part of accessed range that's before the valid range.  */
-      *out = access_range (actual_bits.m_start, valid_bits.m_start,
-			   *get_manager ());
+      *out = folded_symbolic_bit_range (actual_bits.get_start_offset (),
+				 (valid_bits.get_start_offset ()
+				  - actual_bits.get_start_offset ()));
       return true;
     }
   else
@@ -601,21 +611,22 @@ access_operation::maybe_get_invalid_before_bits (access_range *out) const
    Return false if there aren't, or if there's a problem.  */
 
 bool
-access_operation::maybe_get_invalid_after_bits (access_range *out) const
+access_operation::maybe_get_invalid_after_bits (symbolic_bit_range *out) const
 {
-  access_range valid_bits (get_valid_bits ());
-  access_range actual_bits (get_actual_bits ());
+  symbolic_bit_range valid_bits (get_valid_bits ());
+  symbolic_bit_range actual_bits (get_actual_bits ());
 
-  if (actual_bits.m_next <= valid_bits.m_next)
+  if (actual_bits.get_next_offset () <= valid_bits.get_next_offset ())
     {
       /* No part of accessed range is after the valid range.  */
       return false;
     }
-  else if (actual_bits.m_start < valid_bits.m_next)
+  else if (actual_bits.get_start_offset () < valid_bits.get_next_offset ())
     {
       /* Get part of accessed range that's after the valid range.  */
-      *out = access_range (valid_bits.m_next, actual_bits.m_next,
-			   *get_manager ());
+      *out = folded_symbolic_bit_range (valid_bits.get_next_offset (),
+				 actual_bits.get_next_offset ()
+				 - valid_bits.get_next_offset ());
       return true;
     }
   else
@@ -637,29 +648,78 @@ access_operation::maybe_get_invalid_after_bits (access_range *out) const
 class boundaries
 {
 public:
+  struct comparator
+  {
+    bool operator() (const symbolic_bit_offset *lhs,
+		     const symbolic_bit_offset *rhs) const
+    {
+      if (lhs == rhs)
+	return false;
+
+      if (auto *conc_lhs = lhs->dyn_cast_concrete_scalar ())
+	{
+	  if (auto *conc_rhs = rhs->dyn_cast_concrete_scalar ())
+	    /* Concrete vs concrete.  */
+	    return conc_lhs->get_concrete () < conc_rhs->get_concrete ();
+	  else
+	    {
+	      /* Concrete vs symbolic: put all concrete before all symbolic.  */
+	      return true;
+	    }
+	}
+      else
+	{
+	  if (rhs->dyn_cast_concrete_scalar ())
+	    {
+	      /* Symbolic vs concrete: put all symbolic after all concrete.  */
+	      return false;
+	    }
+	  else
+	    {
+	      /* Symbolic vs symbolic.  */
+	      return *lhs < *rhs;
+	    }
+	}
+    }
+  };
+
+  using offset_set = std::set<const symbolic_bit_offset *,
+			      comparator>;
+
   enum class kind { HARD, SOFT};
 
-  boundaries (const region &base_reg, logger *logger)
-  : m_base_reg (base_reg), m_logger (logger)
+  boundaries (symbolic::node_manager &node_mgr,
+	      const region &base_reg,
+	      logger *logger)
+   : m_base_reg (base_reg),
+     m_node_mgr (node_mgr),
+     m_logger (logger)
   {
   }
 
-  void add (region_offset offset, enum kind k)
+  void add (const symbolic_bit_offset &offset, enum kind k)
   {
-    m_all_offsets.insert (offset);
+    m_all_offsets.insert (&offset);
     if (k == kind::HARD)
-      m_hard_offsets.insert (offset);
+      m_hard_offsets.insert (&offset);
   }
 
-  void add (const access_range &range, enum kind kind)
+  void add (const concrete_bit_offset &offset, enum kind k)
   {
-    add (range.m_start, kind);
-    add (range.m_next, kind);
+    auto &bit_mgr = m_node_mgr.get_scalars ().get_bits ();
+    auto &sym = symbolic_from_concrete (offset, bit_mgr);
+    add (sym, k);
+  }
+
+  void add (const symbolic_bit_range &range, enum kind kind)
+  {
+    add (range.get_start_offset (), kind);
+    add (range.get_next_offset (), kind);
     if (m_logger)
       {
 	m_logger->start_log_line ();
-	m_logger->log_partial ("added access_range: ");
-	range.dump_to_pp (m_logger->get_printer (), true);
+	m_logger->log_partial ("added symbolic_bit_range: ");
+	range.dump_inline_to_pp (m_logger->get_printer ());
 	m_logger->log_partial (" (%s)",
 			       (kind == boundaries::kind::HARD)
 			       ? "HARD" : "soft");
@@ -669,32 +729,27 @@ public:
 
   void add (const region &reg, region_model_manager *mgr, enum kind kind)
   {
-    add (access_range (reg.get_offset (mgr),
-		       reg.get_next_offset (mgr),
-		       *mgr),
+    add (reg.get_memory_range (*mgr).get_bit_range (),
 	 kind);
   }
 
-  void add (const byte_range bytes, enum kind kind)
+  void add_all_bytes_in_range (const concrete_byte_range &bytes)
   {
-    add (access_range (&m_base_reg, bytes), kind);
+    for (concrete_byte_offset byte_idx = bytes.get_start_offset ();
+	 byte_idx <= bytes.get_next_offset ();
+	 byte_idx += 1_byte)
+      add (bits_from_bytes (byte_idx), kind::SOFT);
   }
 
-  void add_all_bytes_in_range (const byte_range &bytes)
+  void add_all_bytes_in_range (const symbolic_bit_range &range)
   {
-    for (byte_offset_t byte_idx = bytes.get_start_byte_offset ();
-	 byte_idx <= bytes.get_next_byte_offset ();
-	 byte_idx = byte_idx + 1)
-      add (region_offset::make_concrete (&m_base_reg, byte_idx * 8),
-	   kind::SOFT);
-  }
-
-  void add_all_bytes_in_range (const access_range &range)
-  {
-    byte_range bytes (0, 0);
-    bool valid = range.as_concrete_byte_range (&bytes);
+    concrete_bit_range conc_bit_range;
+    bool was_concrete = concrete_from_symbolic (range, &conc_bit_range);
+    gcc_assert (was_concrete);
+    concrete_byte_range conc_byte_range;
+    bool valid = maybe_bytes_from_bits (conc_bit_range, &conc_byte_range);
     gcc_assert (valid);
-    add_all_bytes_in_range (bytes);
+    add_all_bytes_in_range (conc_byte_range);
   }
 
   void log (logger &logger) const
@@ -703,52 +758,54 @@ public:
     logger.inc_indent ();
     for (auto offset : m_all_offsets)
       {
-	enum kind k = get_kind (offset);
+	enum kind k = get_kind (*offset);
 	logger.start_log_line ();
 	logger.log_partial ("%s: ", (k == kind::HARD) ? "HARD" : "soft");
-	offset.dump_to_pp (logger.get_printer (), true);
+	offset->dump_to_pp (logger.get_printer (), true);
 	logger.end_log_line ();
       }
     logger.dec_indent ();
   }
 
-  enum kind get_kind (region_offset offset) const
+  enum kind
+  get_kind (const symbolic::scalar<integer_with_unit<units::bit>> &offset) const
   {
-    gcc_assert (m_all_offsets.find (offset) != m_all_offsets.end ());
-    if (m_hard_offsets.find (offset) != m_hard_offsets.end ())
+    gcc_assert (m_all_offsets.find (&offset) != m_all_offsets.end ());
+    if (m_hard_offsets.find (&offset) != m_hard_offsets.end ())
       return kind::HARD;
     else
       return kind::SOFT;
   }
 
-  std::set<region_offset>::const_iterator begin () const
+  offset_set::const_iterator begin () const
   {
     return m_all_offsets.begin ();
   }
-  std::set<region_offset>::const_iterator end () const
+  offset_set::const_iterator end () const
   {
     return m_all_offsets.end ();
   }
-  std::set<region_offset>::size_type size () const
+  offset_set::size_type size () const
   {
     return m_all_offsets.size ();
   }
 
-  std::vector<region_offset>
-  get_hard_boundaries_in_range (byte_offset_t min_offset,
-				byte_offset_t max_offset) const
+  std::vector<const symbolic_bit_offset *>
+  get_hard_boundaries_in_range (concrete_byte_offset min_offset,
+				concrete_byte_offset max_offset) const
   {
-    std::vector<region_offset> result;
+    std::vector<const symbolic_bit_offset *> result;
     for (auto &offset : m_hard_offsets)
       {
-	if (!offset.concrete_p ())
+	concrete_bit_offset conc_bit;
+	if (!concrete_from_symbolic (*offset, &conc_bit))
 	  continue;
-	byte_offset_t byte;
-	if (!offset.get_concrete_byte_offset (&byte))
+	concrete_byte_offset conc_byte;
+	if (!maybe_bytes_from_bits (conc_bit, &conc_byte))
 	  continue;
-	if (byte < min_offset)
+	if (conc_byte < min_offset)
 	  continue;
-	if (byte > max_offset)
+	if (conc_byte > max_offset)
 	  continue;
 	result.push_back (offset);
       }
@@ -757,9 +814,10 @@ public:
 
 private:
   const region &m_base_reg;
+  symbolic::node_manager &m_node_mgr;
   logger *m_logger;
-  std::set<region_offset> m_all_offsets;
-  std::set<region_offset> m_hard_offsets;
+  offset_set m_all_offsets;
+  offset_set m_hard_offsets;
 };
 
 /* A widget that wraps a table but offloads column-width calculation
@@ -984,7 +1042,7 @@ private:
   std::vector<label> m_labels;
 };
 
-/* A two-way mapping between access_ranges and table columns, for use by
+/* A two-way mapping between symbolic_bit_ranges and table columns, for use by
    spatial_item subclasses for creating tables.
    For example when visualizing a bogus access of 'int arr[10];'
    at 'arr[10]', we might have:
@@ -995,7 +1053,7 @@ private:
      valid/invalid accesses.
    - table column 4 is "bytes 40-44" (for arr[10])
 
-   We store this as a pair of maps from region_offset to table x; in
+   We store this as a pair of maps from symbolic_bit_offset * to table x; in
    the abvove example:
 
      region offset          table_x  prev_table_x
@@ -1011,20 +1069,26 @@ private:
 class bit_to_table_map
 {
 public:
+  bit_to_table_map (symbolic::node_manager &node_mgr)
+  : m_node_mgr (node_mgr)
+  {
+  }
+
   /* Populate m_table_x_for_bit and m_bit_for_table_x.  */
   void populate (const boundaries &boundaries,
-		 region_model_manager &mgr,
 		 logger *logger)
   {
     LOG_SCOPE (logger);
 
     int table_x = 0;
-    std::vector <region_offset> vec_boundaries (boundaries.begin (),
-						boundaries.end ());
+    std::vector <const symbolic_bit_offset *> vec_boundaries
+      (boundaries.begin (),
+       boundaries.end ());
 
     /* Sort into an order that makes sense.  */
     std::sort (vec_boundaries.begin (),
-	       vec_boundaries.end ());
+	       vec_boundaries.end (),
+	       boundaries::comparator ());
 
     if (logger)
       {
@@ -1034,7 +1098,7 @@ public:
 	  {
 	    logger->start_log_line ();
 	    logger->log_partial ("idx: %i: ", idx);
-	    vec_boundaries[idx].dump_to_pp (logger->get_printer (), true);
+	    vec_boundaries[idx]->dump_to_pp (logger->get_printer (), true);
 	    logger->end_log_line ();
 	  }
 	logger->dec_indent ();
@@ -1042,19 +1106,19 @@ public:
 
     for (size_t idx = 0; idx < vec_boundaries.size (); idx++)
       {
-	const region_offset &offset = vec_boundaries[idx];
+	const symbolic_bit_offset &offset = *vec_boundaries[idx];
 	if (idx > 0 && (idx + 1) < vec_boundaries.size ())
 	  {
 	    if (boundaries.get_kind (offset) == boundaries::kind::HARD)
 	      table_x += 1;
 	  }
-	m_table_x_for_offset[offset] = table_x;
+	m_table_x_for_offset[&offset] = table_x;
 	if ((idx + 1) < vec_boundaries.size ())
 	  {
-	    const region_offset &next_offset = vec_boundaries[idx + 1];
-	    m_table_x_for_prev_offset[next_offset] = table_x;
+	    const symbolic_bit_offset &next_offset = *vec_boundaries[idx + 1];
+	    m_table_x_for_prev_offset[&next_offset] = table_x;
 	    m_range_for_table_x[table_x]
-	      = access_range (offset, next_offset, mgr);
+	      = folded_symbolic_bit_range (offset, next_offset - offset);
 	  }
 	table_x += 1;
       }
@@ -1069,13 +1133,13 @@ public:
     return m_num_columns;
   }
 
-  table::range_t get_table_x_for_range (const access_range &range) const
+  table::range_t get_table_x_for_range (const symbolic_bit_range &range) const
   {
-    return table::range_t (get_table_x_for_offset (range.m_start),
-			   get_table_x_for_prev_offset (range.m_next) + 1);
+    return table::range_t (get_table_x_for_offset (range.get_start_offset ()),
+			   get_table_x_for_prev_offset (range.get_next_offset ()) + 1);
   }
 
-  table::rect_t get_table_rect (const access_range &range,
+  table::rect_t get_table_rect (const symbolic_bit_range &range,
 				const int table_y, const int table_h) const
   {
     const table::range_t x_range (get_table_x_for_range (range));
@@ -1083,23 +1147,22 @@ public:
 			  table::size_t (x_range.get_size (), table_h));
   }
 
-  table::rect_t get_table_rect (const region *base_reg,
-				const bit_range &bits,
+  table::rect_t get_table_rect (const concrete_bit_range &bits,
 				const int table_y, const int table_h) const
   {
-    const access_range range (base_reg, bits);
+    auto &bit_mgr = m_node_mgr.get_scalars ().get_bits ();
+    const symbolic_bit_range range (symbolic_from_concrete (bits, bit_mgr));
     return get_table_rect (range, table_y, table_h);
   }
 
-  table::rect_t get_table_rect (const region *base_reg,
-				const byte_range &bytes,
+  table::rect_t get_table_rect (const concrete_byte_range &bytes,
 				const int table_y, const int table_h) const
   {
-    return get_table_rect (base_reg, bytes.as_bit_range (), table_y, table_h);
+    return get_table_rect (bits_from_bytes (bytes), table_y, table_h);
   }
 
-  bool maybe_get_access_range_for_table_x (int table_x,
-					   access_range *out) const
+  bool maybe_get_symbolic_bit_range_for_table_x (int table_x,
+						 symbolic_bit_range *out) const
   {
     auto slot = m_range_for_table_x.find (table_x);
     if (slot == m_range_for_table_x.end ())
@@ -1116,20 +1179,21 @@ public:
       {
 	logger.start_log_line ();
 	logger.log_partial ("table_x: %i", table_x);
-	access_range range_for_column (nullptr, bit_range (0, 0));
-	if (maybe_get_access_range_for_table_x (table_x, &range_for_column))
+	symbolic_bit_range range_for_column;
+	if (maybe_get_symbolic_bit_range_for_table_x (table_x,
+						      &range_for_column))
 	  {
 	    logger.log_partial (": range: ");
-	    range_for_column.dump_to_pp (logger.get_printer (), true);
+	    range_for_column.dump_inline_to_pp (logger.get_printer ());
 	  }
 	logger.end_log_line ();
       }
     logger.dec_indent ();
   }
 
-  int get_table_x_for_offset (region_offset offset) const
+  int get_table_x_for_offset (const symbolic_bit_offset &offset) const
   {
-    auto slot = m_table_x_for_offset.find (offset);
+    auto slot = m_table_x_for_offset.find (&offset);
 
     /* If this fails, then we probably failed to fully populate m_boundaries
        in find_boundaries.  */
@@ -1139,9 +1203,9 @@ public:
   }
 
 private:
-  int get_table_x_for_prev_offset (region_offset offset) const
+  int get_table_x_for_prev_offset (const symbolic_bit_offset &offset) const
   {
-    auto slot = m_table_x_for_prev_offset.find (offset);
+    auto slot = m_table_x_for_prev_offset.find (&offset);
 
     /* If this fails, then we probably failed to fully populate m_boundaries
        in find_boundaries.  */
@@ -1150,9 +1214,10 @@ private:
     return slot->second;
   }
 
-  std::map<region_offset, int> m_table_x_for_offset;
-  std::map<region_offset, int> m_table_x_for_prev_offset;
-  std::map<int, access_range> m_range_for_table_x;
+  symbolic::node_manager &m_node_mgr;
+  std::map<const symbolic_bit_offset *, int> m_table_x_for_offset;
+  std::map<const symbolic_bit_offset *, int> m_table_x_for_prev_offset;
+  std::map<int, symbolic_bit_range> m_range_for_table_x;
   unsigned m_num_columns;
 };
 
@@ -1186,45 +1251,33 @@ public:
   };
 protected:
   svalue_spatial_item (const svalue &sval,
-		       access_range bits,
+		       symbolic_bit_range bit_range,
 		       enum kind kind)
-  : m_sval (sval), m_bits (bits), m_kind (kind)
+  : m_sval (sval), m_bit_range (bit_range), m_kind (kind)
   {
   }
 
   const svalue &m_sval;
-  access_range m_bits;
+  symbolic_bit_range m_bit_range;
   enum kind m_kind;
 };
 
 static std::unique_ptr<spatial_item>
 make_existing_svalue_spatial_item (const svalue *sval,
-				   const access_range &bits,
+				   const symbolic_bit_range &bit_range,
 				   const theme &theme);
 
-class compound_svalue_spatial_item : public svalue_spatial_item
+class svalue_from_bit_vector_spatial_item : public svalue_spatial_item
 {
 public:
-  compound_svalue_spatial_item (const compound_svalue &sval,
-				const access_range &bits,
-				enum kind kind,
-				const theme &theme)
-  : svalue_spatial_item (sval, bits, kind),
-    m_compound_sval (sval)
+  svalue_from_bit_vector_spatial_item (const svalue_from_bit_vector &sval,
+					const symbolic_bit_range &bit_range,
+					enum kind kind,
+					const theme &theme)
+  : svalue_spatial_item (sval, bit_range, kind),
+    m_bv (sval.get_bit_vector ())
   {
-    const concrete_binding_map &map = m_compound_sval.get_concrete_bindings ();
-    auto_vec <const binding_key *> binding_keys;
-    for (auto iter : map)
-      {
-	const bit_range &key = iter.first;
-	const svalue *bound_sval = iter.second;
-	access_range range (nullptr, key);
-	if (std::unique_ptr<spatial_item> child
-	    = make_existing_svalue_spatial_item (bound_sval,
-						 range,
-						 theme))
-	  m_children.push_back (std::move (child));
-      }
+    add_children_for_bit_vector (m_bv, bit_range, theme);
   }
 
   void add_boundaries (boundaries &out, logger *logger) const final override
@@ -1253,7 +1306,68 @@ public:
   }
 
 private:
-  const compound_svalue &m_compound_sval;
+  /* Recursively populate m_children from BV at BIT_RANGE.  */
+  void
+  add_children_for_bit_vector (const symbolic::bit_vector &bv,
+			       const symbolic_bit_range &bit_range,
+			       const theme &theme)
+  {
+    switch (bv.get_kind ())
+      {
+      default:
+	gcc_unreachable ();
+
+      case symbolic::bit_vector::kind::concat:
+	{
+	  auto &concat_bv = (const symbolic::concat_bit_vector &)bv;
+	  const symbolic_bit_offset *iter_start_offset
+	    = &bit_range.get_start_offset ();
+	  for (auto iter : concat_bv)
+	    {
+	      add_children_for_bit_vector
+		(*iter,
+		 folded_symbolic_bit_range (*iter_start_offset,
+				     iter->get_size ()),
+		 theme);
+	      iter_start_offset = &(*iter_start_offset + iter->get_size ());
+	    }
+	}
+	break;
+
+
+      case symbolic::bit_vector::kind::conjured:
+	break;
+      case symbolic::bit_vector::kind::cropped:
+	break;
+      case symbolic::bit_vector::kind::empty:
+	gcc_unreachable ();
+	break;
+      case symbolic::bit_vector::kind::named_test:
+	break;
+      case symbolic::bit_vector::kind::poisoned:
+	break;
+      case symbolic::bit_vector::kind::repeated:
+	break;
+      case symbolic::bit_vector::kind::svalue:
+	{
+	  auto &sval_bv
+	    = (const symbolic::bit_vector_from_svalue &)bv;
+	  auto child
+	    = make_existing_svalue_spatial_item (&sval_bv.get_svalue (),
+						 bit_range,
+						 theme);
+	  if (child)
+	    m_children.push_back (std::move (child));
+	}
+	break;
+      case symbolic::bit_vector::kind::from_ubc:
+	break;
+      case symbolic::bit_vector::kind::tristate:
+	break;
+      }
+  }
+
+  const symbolic::bit_vector &m_bv;
   std::vector<std::unique_ptr<spatial_item>> m_children;
 };
 
@@ -1300,7 +1414,7 @@ public:
   : m_op (op),
     m_region_creation_event_id (region_creation_event_id),
     m_boundaries (nullptr),
-    m_existing_sval (op.m_model.get_store_value (op.m_base_region, nullptr)),
+    m_existing_sval (op.m_model.get_store_value (&op.get_base_region (), nullptr)),
     m_existing_sval_spatial_item
       (make_existing_svalue_spatial_item (m_existing_sval,
 					  op.get_valid_bits (),
@@ -1312,12 +1426,12 @@ public:
   {
     LOG_SCOPE (logger);
     m_boundaries = &out;
-    access_range valid_bits = m_op.get_valid_bits ();
+    symbolic_bit_range valid_bits = m_op.get_valid_bits ();
     if (logger)
       {
 	logger->start_log_line ();
 	logger->log_partial ("valid bits: ");
-	valid_bits.dump_to_pp (logger->get_printer (), true);
+	valid_bits.dump_inline_to_pp (logger->get_printer ());
 	logger->end_log_line ();
       }
     out.add (valid_bits, boundaries::kind::HARD);
@@ -1335,7 +1449,7 @@ public:
       }
 
     /* Support for showing first and final element in array types.  */
-    if (tree base_type = m_op.m_base_region->get_type ())
+    if (tree base_type = m_op.get_base_region ().get_type ())
       if (TREE_CODE (base_type) == ARRAY_TYPE)
 	{
 	  if (logger)
@@ -1349,12 +1463,12 @@ public:
 	      const svalue *max_idx_sval
 		= mgr->get_or_create_constant_svalue (TYPE_MAX_VALUE (domain));
 	      const region *min_element =
-		mgr->get_element_region (m_op.m_base_region,
+		mgr->get_element_region (&m_op.get_base_region (),
 					 TREE_TYPE (base_type),
 					 min_idx_sval);
 	      out.add (*min_element, mgr, boundaries::kind::SOFT);
 	      const region *max_element =
-		mgr->get_element_region (m_op.m_base_region,
+		mgr->get_element_region (&m_op.get_base_region (),
 					 TREE_TYPE (base_type),
 					 max_idx_sval);
 	      out.add (*max_element, mgr, boundaries::kind::SOFT);
@@ -1367,7 +1481,7 @@ public:
 				    const bit_to_table_map &btm,
 				    style_manager &sm) const
   {
-    tree base_type = m_op.m_base_region->get_type ();
+    tree base_type = m_op.get_base_region ().get_type ();
     gcc_assert (TREE_CODE (base_type) == ARRAY_TYPE);
     gcc_assert (m_boundaries != nullptr);
 
@@ -1393,23 +1507,25 @@ public:
 	/* For a char array,: if there are any hard boundaries in
 	   m_boundaries that are *within* the valid region,
 	   then show those index values.  */
-	std::vector<region_offset> hard_boundaries
+	std::vector<const symbolic_bit_offset *> hard_boundaries
 	  = m_boundaries->get_hard_boundaries_in_range
-	      (tree_to_shwi (TYPE_MIN_VALUE (domain)),
-	       tree_to_shwi (TYPE_MAX_VALUE (domain)));
+	  (concrete_byte_offset (convert_from_integer_cst (TYPE_MIN_VALUE (domain))),
+	   concrete_byte_offset (convert_from_integer_cst (TYPE_MAX_VALUE (domain))));
 	for (auto &offset : hard_boundaries)
 	  {
-	    const int table_x = btm.get_table_x_for_offset (offset);
-	    if (!offset.concrete_p ())
+	    const int table_x = btm.get_table_x_for_offset (*offset);
+	    concrete_bit_offset conc_bit;
+	    if (!concrete_from_symbolic (*offset, &conc_bit))
 	      continue;
-	    byte_offset_t byte;
-	    if (!offset.get_concrete_byte_offset (&byte))
+	    concrete_byte_offset conc_byte;
+	    if (!maybe_bytes_from_bits (conc_bit, &conc_byte))
 	      continue;
 	    table::range_t table_x_range (table_x, table_x + 1);
+	    pp_element_integer e_conc_byte (conc_byte.get_integer ());
 	    t.maybe_set_cell_span (table::rect_t (table_x_range,
 						  table_y_range),
-				   fmt_styled_string (sm, "[%wi]",
-						      byte.to_shwi ()));
+				   fmt_styled_string (sm, "[%e]",
+						      &e_conc_byte));
 	  }
       }
 
@@ -1427,13 +1543,14 @@ public:
 				  tree idx_cst) const
   {
     region_model_manager * const mgr = m_op.get_manager ();
-    tree base_type = m_op.m_base_region->get_type ();
+    tree base_type = m_op.get_base_region ().get_type ();
     const svalue *idx_sval
       = mgr->get_or_create_constant_svalue (idx_cst);
-    const region *element_reg = mgr->get_element_region (m_op.m_base_region,
+    const region *element_reg = mgr->get_element_region (&m_op.get_base_region (),
 							 TREE_TYPE (base_type),
 							 idx_sval);
-    const access_range element_range (*element_reg, mgr);
+    symbolic_bit_range element_range
+      = element_reg->get_memory_range (*mgr).get_bit_range ();
     const table::range_t element_x_range
       = btm.get_table_x_for_range (element_range);
 
@@ -1449,7 +1566,7 @@ public:
   {
     table t (table::size_t (btm.get_num_columns (), 0));
 
-    if (tree base_type = m_op.m_base_region->get_type ())
+    if (tree base_type = m_op.get_base_region ().get_type ())
       if (TREE_CODE (base_type) == ARRAY_TYPE)
 	add_array_elements_to_table (t, btm, sm);
 
@@ -1463,12 +1580,12 @@ public:
 			   table::coord_t (0, table_y));
       }
 
-    access_range valid_bits = m_op.get_valid_bits ();
+    symbolic_bit_range valid_bits = m_op.get_valid_bits ();
     const int table_y = t.add_row ();
     const int table_h = 1;
     table::rect_t rect = btm.get_table_rect (valid_bits, table_y, table_h);
     styled_string s;
-    switch (m_op.m_base_region->get_kind ())
+    switch (m_op.get_base_region ().get_kind ())
       {
       default:
 	s = styled_string (sm, _("region"));
@@ -1476,7 +1593,7 @@ public:
       case RK_DECL:
 	{
 	  const decl_region *decl_reg
-	    = as_a <const decl_region *> (m_op.m_base_region);
+	    = as_a <const decl_region *> (&m_op.get_base_region ());
 	  tree decl = decl_reg->get_decl ();
 	  s = fmt_styled_string (sm, "%qE (type: %qT)",
 				 decl,
@@ -1504,7 +1621,7 @@ public:
       case RK_STRING:
 	{
 	  const string_region *string_reg
-	    = as_a <const string_region *> (m_op.m_base_region);
+	    = as_a <const string_region *> (&m_op.get_base_region ());
 	  tree string_cst = string_reg->get_string_cst ();
 	  s = fmt_styled_string (sm, _("string literal (type: %qT)"),
 				 TREE_TYPE (string_cst));
@@ -1536,12 +1653,12 @@ public:
   void add_boundaries (boundaries &out, logger *logger) const final override
   {
     LOG_SCOPE (logger);
-    access_range actual_bits = m_op.get_actual_bits ();
+    symbolic_bit_range actual_bits = m_op.get_actual_bits ();
     if (logger)
       {
 	logger->start_log_line ();
 	logger->log_partial ("actual bits: ");
-	actual_bits.dump_to_pp (logger->get_printer (), true);
+	actual_bits.dump_inline_to_pp (logger->get_printer ());
 	logger->end_log_line ();
       }
     out.add (actual_bits, boundaries::kind::HARD);
@@ -1552,7 +1669,7 @@ public:
   {
     table t (table::size_t (btm.get_num_columns (), 1));
 
-    access_range actual_bits = m_op.get_actual_bits ();
+    symbolic_bit_range actual_bits = m_op.get_actual_bits ();
     const int table_y = 0;
     const int table_h = 1;
     table::rect_t rect = btm.get_table_rect (actual_bits, table_y, table_h);
@@ -1564,11 +1681,11 @@ public:
 private:
   styled_string get_label_string (style_manager &sm) const
   {
-    const access_range accessed_bits (m_op.get_actual_bits ());
+    const symbolic_bit_range accessed_bits (m_op.get_actual_bits ());
     return get_access_size_str (sm,
 				m_op,
 				accessed_bits,
-				m_op.m_reg.get_type ());
+				m_op.get_base_region ().get_type ());
   }
 
   const access_operation &m_op;
@@ -1583,7 +1700,7 @@ class written_svalue_spatial_item : public spatial_item
 public:
   written_svalue_spatial_item (const access_operation &op,
 		       const svalue &sval,
-		       access_range actual_bits)
+		       symbolic_bit_range actual_bits)
   : m_op (op), m_sval (sval), m_actual_bits (actual_bits)
   {}
 
@@ -1632,7 +1749,7 @@ protected:
 	  }
 	}
 
-    const access_range accessed_bits (m_op.get_actual_bits ());
+    const symbolic_bit_range accessed_bits (m_op.get_actual_bits ());
     return get_access_size_str (sm,
 				m_op,
 				accessed_bits,
@@ -1641,7 +1758,7 @@ protected:
 
   const access_operation &m_op;
   const svalue &m_sval;
-  access_range m_actual_bits;
+  symbolic_bit_range m_actual_bits;
 };
 
 /* Subclass of svalue_spatial_item for initial_svalue of a string_region
@@ -1695,7 +1812,7 @@ class string_literal_spatial_item : public svalue_spatial_item
 {
 public:
   string_literal_spatial_item (const svalue &sval,
-			       access_range actual_bits,
+			       symbolic_bit_range actual_bits,
 			       const string_region &string_reg,
 			       const theme &theme,
 			       enum kind kind)
@@ -1713,25 +1830,29 @@ public:
   void add_boundaries (boundaries &out, logger *logger) const override
   {
     LOG_SCOPE (logger);
-    out.add (m_bits, m_kind == svalue_spatial_item::kind::WRITTEN
+    out.add (m_bit_range, m_kind == svalue_spatial_item::kind::WRITTEN
 	     ? boundaries::kind::HARD
 	     : boundaries::kind::SOFT);
 
     tree string_cst = get_string_cst ();
     /* TREE_STRING_LENGTH is sizeof, not strlen.  */
     if (m_show_full_string)
-      out.add_all_bytes_in_range (m_bits);
+      out.add_all_bytes_in_range (m_bit_range);
     else
       {
-	byte_range bytes (0, 0);
-	bool valid = m_bits.as_concrete_byte_range (&bytes);
+	concrete_bit_range conc_bit_range;
+	bool was_concrete
+	  = concrete_from_symbolic (m_bit_range, &conc_bit_range);
+	gcc_assert (was_concrete);
+	concrete_byte_range bytes;
+	bool valid = maybe_bytes_from_bits (conc_bit_range, &bytes);
 	gcc_assert (valid);
-	byte_range head_of_string (bytes.get_start_byte_offset (),
-				   m_ellipsis_head_len);
+	concrete_byte_range head_of_string (bytes.get_start_offset (),
+					    m_ellipsis_head_len);
 	out.add_all_bytes_in_range (head_of_string);
-	byte_range tail_of_string
-	  ((bytes.get_start_byte_offset ()
-	    + TREE_STRING_LENGTH (string_cst)
+	concrete_byte_range tail_of_string
+	  ((bytes.get_start_offset ()
+	    + concrete_byte_size (TREE_STRING_LENGTH (string_cst))
 	    - m_ellipsis_tail_len),
 	   m_ellipsis_tail_len);
 	out.add_all_bytes_in_range (tail_of_string);
@@ -1751,19 +1872,23 @@ public:
 				  : -1);
     const int byte_val_table_y = t.add_row ();
 
-    byte_range bytes (0, 0);
-    bool valid = m_bits.as_concrete_byte_range (&bytes);
+    concrete_bit_range conc_bits;
+    bool valid = concrete_from_symbolic<concrete_bit_offset> (m_bit_range,
+							      &conc_bits);
+    gcc_assert (valid);
+    concrete_byte_range bytes;
+    valid = maybe_bytes_from_bits (conc_bits, &bytes);
     gcc_assert (valid);
     tree string_cst = get_string_cst ();
     if (m_show_full_string)
       {
-       for (byte_offset_t byte_idx_within_cluster
-	      = bytes.get_start_byte_offset ();
-	    byte_idx_within_cluster < bytes.get_next_byte_offset ();
-	    byte_idx_within_cluster = byte_idx_within_cluster + 1)
+       for (concrete_byte_offset byte_idx_within_cluster
+	      = bytes.get_start_offset ();
+	    byte_idx_within_cluster < bytes.get_next_offset ();
+	    byte_idx_within_cluster = byte_idx_within_cluster + 1_byte)
 	 add_column_for_byte
 	   (t, btm, sm, byte_idx_within_cluster,
-	    byte_idx_within_cluster - bytes.get_start_byte_offset (),
+	    byte_idx_within_cluster - bytes.get_start_offset (),
 	    byte_idx_table_y, byte_val_table_y);
 
        if (m_show_utf8)
@@ -1787,17 +1912,17 @@ public:
 
 	       if (!decoded_char.m_valid_ch)
 		 continue;
-	       size_t start_byte_idx
-		 = decoded_char.m_start_byte - TREE_STRING_POINTER (string_cst);
-	       byte_size_t size_in_bytes
-		 = decoded_char.m_next_byte - decoded_char.m_start_byte;
-	       byte_range cluster_bytes_for_codepoint
-		 (start_byte_idx + bytes.get_start_byte_offset (),
+	       concrete_byte_offset start_byte_idx
+		 (decoded_char.m_start_byte - TREE_STRING_POINTER (string_cst));
+	       concrete_byte_size size_in_bytes
+		 (decoded_char.m_next_byte - decoded_char.m_start_byte);
+	       concrete_byte_range cluster_bytes_for_codepoint
+		 (concrete_byte_offset (start_byte_idx)
+		  + bytes.get_start_offset (),
 		  size_in_bytes);
 
 	       const table::rect_t code_point_table_rect
-		 = btm.get_table_rect (&m_string_reg,
-				       cluster_bytes_for_codepoint,
+		 = btm.get_table_rect (cluster_bytes_for_codepoint,
 				       utf8_code_point_table_y, 1);
 	       char buf[100];
 	       sprintf (buf, "U+%04x", decoded_char.m_ch);
@@ -1807,8 +1932,7 @@ public:
 	       if (show_unichars)
 		 {
 		   const table::rect_t character_table_rect
-		     = btm.get_table_rect (&m_string_reg,
-					   cluster_bytes_for_codepoint,
+		     = btm.get_table_rect (cluster_bytes_for_codepoint,
 					   utf8_character_table_y, 1);
 		   if (cpp_is_printable_char (decoded_char.m_ch))
 		     t.set_cell_span (character_table_rect,
@@ -1826,32 +1950,34 @@ public:
     else
       {
 	/* Head of string.  */
-	for (int byte_idx = 0; byte_idx < m_ellipsis_head_len; byte_idx++)
+	for (concrete_byte_offset byte_idx = 0_bytes;
+	     byte_idx < m_ellipsis_head_len; ++byte_idx)
 	  add_column_for_byte (t, btm, sm,
-			       byte_idx + bytes.get_start_byte_offset (),
+			       byte_idx + bytes.get_start_offset (),
 			       byte_idx,
 			       byte_idx_table_y, byte_val_table_y);
 
 	/* Ellipsis.  */
-	const byte_range ellipsis_bytes
-	  (m_ellipsis_head_len + bytes.get_start_byte_offset (),
-	   TREE_STRING_LENGTH (string_cst)
+	concrete_byte_range ellipsis_bytes
+	  (m_ellipsis_head_len + bytes.get_start_offset (),
+	   concrete_byte_size (TREE_STRING_LENGTH (string_cst))
 	   - (m_ellipsis_head_len + m_ellipsis_tail_len));
 	const table::rect_t table_rect
 	  = ((byte_idx_table_y != -1)
-	     ? btm.get_table_rect (&m_string_reg, ellipsis_bytes,
+	     ? btm.get_table_rect (ellipsis_bytes,
 				   byte_idx_table_y, 2)
-	     : btm.get_table_rect (&m_string_reg, ellipsis_bytes,
+	     : btm.get_table_rect (ellipsis_bytes,
 				   byte_val_table_y, 1));
 	t.set_cell_span(table_rect, styled_string (sm, "..."));
 
 	/* Tail of string.  */
-	for (int byte_idx
-	       = (TREE_STRING_LENGTH (string_cst) - m_ellipsis_tail_len);
-	     byte_idx < TREE_STRING_LENGTH (string_cst);
-	     byte_idx++)
+	for (concrete_byte_offset byte_idx
+	       = (concrete_byte_size (TREE_STRING_LENGTH (string_cst))
+		  - m_ellipsis_tail_len);
+	     byte_idx < concrete_byte_size (TREE_STRING_LENGTH (string_cst));
+	     ++byte_idx)
 	  add_column_for_byte (t, btm, sm,
-			       byte_idx + bytes.get_start_byte_offset (),
+			       byte_idx + bytes.get_start_offset (),
 			       byte_idx,
 			       byte_idx_table_y, byte_val_table_y);
       }
@@ -1859,7 +1985,7 @@ public:
     if (m_kind == svalue_spatial_item::kind::WRITTEN)
       {
 	const int summary_table_y = t.add_row ();
-	t.set_cell_span (btm.get_table_rect (&m_string_reg, bytes,
+	t.set_cell_span (btm.get_table_rect (bytes,
 					     summary_table_y, 1),
 			 fmt_styled_string (sm,
 					    _("string literal (type: %qT)"),
@@ -1875,10 +2001,10 @@ private:
   bool calc_show_full_string () const
   {
     tree string_cst = get_string_cst ();
-    if (TREE_STRING_LENGTH (string_cst) < m_ellipsis_threshold)
+    concrete_byte_size string_len (TREE_STRING_LENGTH (string_cst));
+    if (string_len < m_ellipsis_threshold)
       return true;
-    if (TREE_STRING_LENGTH (string_cst) <
-	(m_ellipsis_head_len + m_ellipsis_tail_len))
+    if (string_len < (m_ellipsis_head_len + m_ellipsis_tail_len))
       return true;
     return false;
   }
@@ -1899,29 +2025,32 @@ private:
 
   void add_column_for_byte (table &t, const bit_to_table_map &btm,
 			    style_manager &sm,
-			    const byte_offset_t byte_idx_within_cluster,
-			    const byte_offset_t byte_idx_within_string,
+			    const concrete_byte_offset byte_idx_within_cluster,
+			    const concrete_byte_offset byte_idx_within_string,
 			    const int byte_idx_table_y,
 			    const int byte_val_table_y) const
   {
     tree string_cst = get_string_cst ();
-    gcc_assert (byte_idx_within_string >= 0);
-    gcc_assert (byte_idx_within_string < TREE_STRING_LENGTH (string_cst));
+    gcc_assert (byte_idx_within_string >= 0_bytes);
+    gcc_assert (byte_idx_within_string
+		< concrete_byte_size (TREE_STRING_LENGTH (string_cst)));
 
-    const byte_range bytes (byte_idx_within_cluster, 1);
+    const concrete_byte_range bytes (byte_idx_within_cluster, 1_byte);
     if (byte_idx_table_y != -1)
       {
 	const table::rect_t idx_table_rect
-	  = btm.get_table_rect (&m_string_reg, bytes, byte_idx_table_y, 1);
+	  = btm.get_table_rect (bytes, byte_idx_table_y, 1);
+	pp_element_integer e_byte_idx_within_string
+	  (byte_idx_within_string.get_integer ());
 	t.set_cell_span (idx_table_rect,
-			 fmt_styled_string (sm, "[%wu]",
-					    byte_idx_within_string.ulow ()));
+			 fmt_styled_string (sm, "[%e]",
+					    &e_byte_idx_within_string));
       }
 
     char byte_val
-      = TREE_STRING_POINTER (string_cst)[byte_idx_within_string.ulow ()];
+      = TREE_STRING_POINTER (string_cst)[byte_idx_within_string.as_unsigned_long ()];
     const table::rect_t val_table_rect
-      = btm.get_table_rect (&m_string_reg, bytes, byte_val_table_y, 1);
+      = btm.get_table_rect (bytes, byte_val_table_y, 1);
     table_cell_content content (make_cell_content_for_byte (sm, byte_val));
     t.set_cell_span (val_table_rect, std::move (content));
   }
@@ -1944,9 +2073,9 @@ private:
 
   const string_region &m_string_reg;
   const theme &m_theme;
-  const int m_ellipsis_threshold;
-  const int m_ellipsis_head_len;
-  const int m_ellipsis_tail_len;
+  const concrete_byte_size m_ellipsis_threshold;
+  const concrete_byte_size m_ellipsis_head_len;
+  const concrete_byte_size m_ellipsis_tail_len;
   const bool m_show_full_string;
   const bool m_show_utf8;
 };
@@ -1954,7 +2083,7 @@ private:
 static std::unique_ptr<spatial_item>
 make_written_svalue_spatial_item (const access_operation &op,
 				  const svalue &sval,
-				  access_range actual_bits,
+				  symbolic_bit_range actual_bits,
 				  const theme &theme)
 {
   if (const initial_svalue *initial_sval = sval.dyn_cast_initial_svalue ())
@@ -1969,7 +2098,7 @@ make_written_svalue_spatial_item (const access_operation &op,
 
 static std::unique_ptr<spatial_item>
 make_existing_svalue_spatial_item (const svalue *sval,
-				   const access_range &bits,
+				   const symbolic_bit_range &bit_range,
 				   const theme &theme)
 {
   if (!sval)
@@ -1986,16 +2115,16 @@ make_existing_svalue_spatial_item (const svalue *sval,
 	if (const string_region *string_reg
 	    = initial_sval->get_region ()->dyn_cast_string_region ())
 	  return std::make_unique <string_literal_spatial_item>
-	    (*sval, bits,
+	    (*sval, bit_range,
 	     *string_reg, theme,
 	     svalue_spatial_item::kind::EXISTING);
 	return nullptr;
       }
 
-    case SK_COMPOUND:
-      return std::make_unique<compound_svalue_spatial_item>
-	(*((const compound_svalue *)sval),
-	 bits,
+    case SK_BIT_VECTOR:
+      return std::make_unique<svalue_from_bit_vector_spatial_item>
+	(*((const svalue_from_bit_vector *)sval),
+	 bit_range,
 	 svalue_spatial_item::kind::EXISTING,
 	 theme);
     }
@@ -2011,7 +2140,8 @@ public:
 		       style_manager &sm,
 		       const theme &theme,
 		       logger *logger)
-  : m_op (op),
+  : m_node_mgr (op.m_model.get_manager ()->get_node_manager ()),
+    m_op (op),
     m_region_creation_event_id (region_creation_event_id),
     m_sm (sm),
     m_theme (theme),
@@ -2019,17 +2149,17 @@ public:
     m_invalid (false),
     m_valid_region_spatial_item (op, region_creation_event_id, theme),
     m_accessed_region_spatial_item (op),
-    m_btm (),
+    m_btm (m_node_mgr),
     m_calc_req_size_called (false)
   {
     LOG_SCOPE (logger);
 
     if (logger)
       {
-	access_range invalid_before_bits;
+	symbolic_bit_range invalid_before_bits;
 	if (op.maybe_get_invalid_before_bits (&invalid_before_bits))
 	  invalid_before_bits.log ("invalid before range", *logger);
-	access_range invalid_after_bits;
+	symbolic_bit_range invalid_after_bits;
 	if (op.maybe_get_invalid_after_bits (&invalid_after_bits))
 	  invalid_after_bits.log ("invalid after range", *logger);
 
@@ -2053,7 +2183,7 @@ public:
 
     if (op.m_sval_hint)
       {
-	access_range actual_bits = m_op.get_actual_bits ();
+	symbolic_bit_range actual_bits = m_op.get_actual_bits ();
 	m_written_svalue_spatial_item
 	  = make_written_svalue_spatial_item (m_op,
 					      *op.m_sval_hint,
@@ -2075,7 +2205,7 @@ public:
        We don't create a column in the table for the final offset, but we
        do populate it, so that looking at the table_x of one beyond the
        final table column gives us the upper bound offset.  */
-    m_btm.populate (*m_boundaries, *m_op.get_manager (), logger);
+    m_btm.populate (*m_boundaries, logger);
 
     /* Gracefully reject cases where the boundary sorting has gone wrong
        (due to awkward combinations of symbolic values).  */
@@ -2157,6 +2287,7 @@ public:
     /* Populate the canvas_x per table_x.  */
     m_col_start_x.clear ();
     int iter_canvas_x = 0;
+    gcc_assert (m_col_widths);
     for (auto w : m_col_widths->m_requirements)
       {
 	m_col_start_x.push_back (iter_canvas_x);
@@ -2197,13 +2328,13 @@ private:
   find_boundaries () const
   {
     auto result
-      = std::make_unique<boundaries> (*m_op.m_base_region, m_logger);
-
+      = std::make_unique<boundaries> (m_op.get_manager ()->get_node_manager (),
+				      m_op.m_attempted_range.get_base_region (),
+				      m_logger);
     m_valid_region_spatial_item.add_boundaries (*result, m_logger);
     m_accessed_region_spatial_item.add_boundaries (*result, m_logger);
     if (m_written_svalue_spatial_item)
       m_written_svalue_spatial_item->add_boundaries (*result, m_logger);
-
     return result;
   }
 
@@ -2239,13 +2370,13 @@ private:
     for (int table_x = 0; table_x < t.get_size ().w; table_x++)
       {
 	const int table_y = 1;
-	access_range range_for_column (nullptr, bit_range (0, 0));
-	if (m_btm.maybe_get_access_range_for_table_x (table_x,
+	symbolic_bit_range range_for_column;
+	if (m_btm.maybe_get_symbolic_bit_range_for_table_x (table_x,
 						      &range_for_column))
 	  {
 	    pretty_printer pp;
 	    pp_format_decoder (&pp) = default_tree_printer;
-	    range_for_column.dump_to_pp (&pp, true);
+	    range_for_column.dump_inline_to_pp (&pp);
 	    t.set_cell (table::coord_t (table_x, table_y),
 			styled_string (m_sm, pp_formatted_text (&pp)));
 	  }
@@ -2266,7 +2397,7 @@ private:
     const int table_y = 0;
     const int table_h = t_region.get_size ().h;
 
-    access_range invalid_before_bits;
+    symbolic_bit_range invalid_before_bits;
     if (m_op.maybe_get_invalid_before_bits (&invalid_before_bits))
       {
 	t_region.set_cell_span (m_btm.get_table_rect (invalid_before_bits,
@@ -2274,7 +2405,7 @@ private:
 				styled_string (m_sm,
 					       _("before valid range")));
       }
-    access_range invalid_after_bits;
+    symbolic_bit_range invalid_after_bits;
     if (m_op.maybe_get_invalid_after_bits (&invalid_after_bits))
       {
 	t_region.set_cell_span (m_btm.get_table_rect (invalid_after_bits,
@@ -2285,8 +2416,8 @@ private:
   }
 
   void maybe_add_gap (x_aligned_x_ruler_widget *w,
-		      const access_range &lower,
-		      const access_range &upper) const
+		      const symbolic_bit_range &lower,
+		      const symbolic_bit_range &upper) const
   {
     LOG_SCOPE (m_logger);
     if (m_logger)
@@ -2294,42 +2425,39 @@ private:
 	lower.log ("lower", *m_logger);
 	upper.log ("upper", *m_logger);
       }
-    region_model_manager *mgr = m_op.get_manager ();
-    const svalue &lower_next = lower.m_next.calc_symbolic_bit_offset (mgr);
-    const svalue &upper_start = upper.m_start.calc_symbolic_bit_offset (mgr);
-    const svalue *num_bits_gap
-      = mgr->get_or_create_binop (NULL_TREE, MINUS_EXPR,
-				  &upper_start, &lower_next);
+    auto &num_bits_gap = (upper.get_start_offset ()
+			  - lower.get_next_offset ());
     if (m_logger)
-      m_logger->log ("num_bits_gap: %qs", num_bits_gap->get_desc ().get ());
+      {
+	symbolic::pp_element_for_node e (num_bits_gap);
+	m_logger->log ("num_bits_gap: %e", &e);
+      }
 
-    const svalue *zero = mgr->get_or_create_int_cst (NULL_TREE, 0);
-    tristate ts_gt_zero = m_op.m_model.eval_condition (num_bits_gap,
-						       GT_EXPR,
-						       zero);
-    if (ts_gt_zero.is_false ())
+    auto &bit_mgr = m_node_mgr.get_scalars ().get_bits ();
+    auto &zero = bit_mgr.get_concrete (0_bits);
+    if (num_bits_gap <= zero)
       {
 	if (m_logger)
 	  m_logger->log ("rejecting as not > 0");
 	return;
       }
 
-    bit_size_expr num_bits (*num_bits_gap);
+    bit_size_expr num_bits (num_bits_gap);
     if (auto p = num_bits.maybe_get_formatted_str (m_sm, m_op.m_model,
-						   _("%wi bit"),
-						   _("%wi bits"),
-						   _("%wi byte"),
-						   _("%wi bytes"),
+						   _("%e bit"),
+						   _("%e bits"),
+						   _("%e byte"),
+						   _("%e bytes"),
 						   _("%qs bits"),
 						   _("%qs bytes")))
       {
 	styled_string label = std::move (*p.get ());
-	w->add_range (m_btm.get_table_x_for_range
-		      (access_range (lower.m_next,
-				     upper.m_start,
-				     *mgr)),
-		      std::move (label),
-		      style::id_plain);
+	w->add_range
+	  (m_btm.get_table_x_for_range
+	   (folded_symbolic_bit_range (lower.get_next_offset (),
+				       num_bits_gap)),
+	   std::move (label),
+	   style::id_plain);
       }
   }
 
@@ -2358,30 +2486,32 @@ private:
 
     auto w = std::make_unique<x_aligned_x_ruler_widget> (*this, m_theme);
 
-    access_range invalid_before_bits;
-    if (m_op.maybe_get_invalid_before_bits (&invalid_before_bits))
+    symbolic_bit_range invalid_before_bits;
+    bool got_invalid_before_bits
+      = m_op.maybe_get_invalid_before_bits (&invalid_before_bits);
+    if (got_invalid_before_bits)
       {
 	if (m_logger)
 	  invalid_before_bits.log ("invalid_before_bits", *m_logger);
-	bit_size_expr num_before_bits
-	  (invalid_before_bits.get_size (m_op.get_manager ()));
+
+	bit_size_expr num_before_bits (invalid_before_bits.get_size ());
 	std::unique_ptr<styled_string> label;
 	if (m_op.m_dir == access_direction::read)
 	  label = num_before_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
-	     _("under-read of %wi bit"),
-	     _("under-read of %wi bits"),
-	     _("under-read of %wi byte"),
-	     _("under-read of %wi bytes"),
+	     _("under-read of %e bit"),
+	     _("under-read of %e bits"),
+	     _("under-read of %e byte"),
+	     _("under-read of %e bytes"),
 	     _("under-read of %qs bits"),
 	     _("under-read of %qs bytes"));
 	else
 	  label = num_before_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
-	     _("underwrite of %wi bit"),
-	     _("underwrite of %wi bits"),
-	     _("underwrite of %wi byte"),
-	     _("underwrite of %wi bytes"),
+	     _("underwrite of %e bit"),
+	     _("underwrite of %e bits"),
+	     _("underwrite of %e byte"),
+	     _("underwrite of %e bytes"),
 	     _("underwrite of %qs bits"),
 	     _("underwrite of %qs bytes"));
 	if (label)
@@ -2395,35 +2525,37 @@ private:
 	  m_logger->log ("no invalid_before_bits");
       }
 
-    /* It would be nice to be able to use std::optional<access_range> here,
+    /* It would be nice to be able to use std::optional<symbolic_bit_range> here,
        but std::optional is C++17.  */
     bool got_valid_bits = false;
-    access_range valid_bits (m_op.get_valid_bits ());
-    bit_size_expr num_valid_bits (valid_bits.get_size (m_op.get_manager ()));
+    symbolic_bit_range valid_bits (m_op.get_valid_bits ());
+    bit_size_expr num_valid_bits (valid_bits.get_size ());
+
     if (m_logger)
       valid_bits.log ("valid_bits", *m_logger);
 
     got_valid_bits = true;
-    maybe_add_gap (w.get (), invalid_before_bits, valid_bits);
+    if (got_invalid_before_bits && got_valid_bits)
+      maybe_add_gap (w.get (), invalid_before_bits, valid_bits);
 
     std::unique_ptr<styled_string> label;
     if (m_op.m_dir == access_direction::read)
       label = num_valid_bits.maybe_get_formatted_str (m_sm,
 						      m_op.m_model,
-						      _("size: %wi bit"),
-						      _("size: %wi bits"),
-						      _("size: %wi byte"),
-						      _("size: %wi bytes"),
+						      _("size: %e bit"),
+						      _("size: %e bits"),
+						      _("size: %e byte"),
+						      _("size: %e bytes"),
 						      _("size: %qs bits"),
 						      _("size: %qs bytes"));
     else
       label
 	= num_valid_bits.maybe_get_formatted_str (m_sm,
 						  m_op.m_model,
-						  _("capacity: %wi bit"),
-						  _("capacity: %wi bits"),
-						  _("capacity: %wi byte"),
-						  _("capacity: %wi bytes"),
+						  _("capacity: %e bit"),
+						  _("capacity: %e bits"),
+						  _("capacity: %e byte"),
+						  _("capacity: %e bytes"),
 						  _("capacity: %qs bits"),
 						  _("capacity: %qs bytes"));
     if (label)
@@ -2431,34 +2563,35 @@ private:
 		    std::move (*label),
 		    m_valid_style_id);
 
-    access_range invalid_after_bits;
-    if (m_op.maybe_get_invalid_after_bits (&invalid_after_bits))
+    symbolic_bit_range invalid_after_bits;
+    bool got_invalid_after_bits
+      = m_op.maybe_get_invalid_after_bits (&invalid_after_bits);
+    if (got_invalid_after_bits)
       {
 	if (got_valid_bits)
 	  maybe_add_gap (w.get (), valid_bits, invalid_after_bits);
 
 	if (m_logger)
-	  invalid_before_bits.log ("invalid_after_bits", *m_logger);
+	  invalid_after_bits.log ("invalid_after_bits", *m_logger);
 
-	bit_size_expr num_after_bits
-	  (invalid_after_bits.get_size (m_op.get_manager ()));
+	bit_size_expr num_after_bits (invalid_after_bits.get_size ());
 	std::unique_ptr<styled_string> label;
 	if (m_op.m_dir == access_direction::read)
 	  label = num_after_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
-	     _("over-read of %wi bit"),
-	     _("over-read of %wi bits"),
-	     _("over-read of %wi byte"),
-	     _("over-read of %wi bytes"),
+	     _("over-read of %e bit"),
+	     _("over-read of %e bits"),
+	     _("over-read of %e byte"),
+	     _("over-read of %e bytes"),
 	     _("over-read of %qs bits"),
 	     _("over-read of %qs bytes"));
 	else
 	  label = num_after_bits.maybe_get_formatted_str
 	    (m_sm, m_op.m_model,
-	     _("overflow of %wi bit"),
-	     _("overflow of %wi bits"),
-	     _("overflow of %wi byte"),
-	     _("overflow of %wi bytes"),
+	     _("overflow of %e bit"),
+	     _("overflow of %e bits"),
+	     _("overflow of %e byte"),
+	     _("overflow of %e bytes"),
 	     _("overflow of %qs bits"),
 	     _("overflow of %qs bytes"));
 	if (label)
@@ -2489,12 +2622,15 @@ private:
     std::vector<bit_offset_t> bit_sizes (num_columns);
     for (unsigned table_x = 0; table_x < num_columns; table_x++)
       {
-	access_range range_for_column (nullptr, bit_range (0, 0));
-	if (m_btm.maybe_get_access_range_for_table_x (table_x,
-						      &range_for_column))
+	symbolic_bit_range range_for_column;
+	if (m_btm.maybe_get_symbolic_bit_range_for_table_x (table_x,
+							    &range_for_column))
 	  {
 	    bit_size_t size_in_bits;
-	    if (!range_for_column.get_size_in_bits (&size_in_bits))
+	    concrete_bit_size conc_bit_size;
+	    if (concrete_from_symbolic (range_for_column.get_size (), &conc_bit_size))
+	      size_in_bits = convert_to_bit_size_t (conc_bit_size);
+	    else
 	      size_in_bits = BITS_PER_UNIT; // arbitrary non-zero value
 	    gcc_assert (size_in_bits > 0);
 	    bit_sizes[table_x] = size_in_bits;
@@ -2557,6 +2693,7 @@ private:
     return true; // keep going
   }
 
+  symbolic::node_manager &m_node_mgr;
   const access_operation &m_op;
   diagnostics::paths::event_id_t m_region_creation_event_id;
   style_manager &m_sm;
@@ -2616,22 +2753,22 @@ x_aligned_x_ruler_widget::make_x_ruler () const
 void
 direction_widget::paint_to_canvas (canvas &canvas)
 {
-  const access_range accessed_bits (m_dia_impl.get_op ().get_actual_bits ());
+  const symbolic_bit_range accessed_bits (m_dia_impl.get_op ().get_actual_bits ());
 
-  const access_range valid_bits (m_dia_impl.get_op ().get_valid_bits ());
+  const symbolic_bit_range valid_bits (m_dia_impl.get_op ().get_valid_bits ());
 
   for (unsigned table_x = 0; table_x < m_btm.get_num_columns (); table_x++)
     {
-      access_range column_access_range;
-      if (m_btm.maybe_get_access_range_for_table_x (table_x,
-						    &column_access_range))
+      symbolic_bit_range column_symbolic_bit_range;
+      if (m_btm.maybe_get_symbolic_bit_range_for_table_x (table_x,
+						    &column_symbolic_bit_range))
 	{
 	  /* Only paint arrows in the accessed region.  */
-	  if (!accessed_bits.contains_p (column_access_range))
+	  if (!accessed_bits.access_range_contains_p (column_symbolic_bit_range))
 	    continue;
-
 	  /* Are we within the valid region?  */
-	  const bool is_valid (valid_bits.contains_p (column_access_range));
+	  const bool is_valid
+	    (valid_bits.access_range_contains_p (column_symbolic_bit_range));
 	  const style::id_t style_id
 	    = m_dia_impl.get_style_id_for_validity (is_valid);
 	  const canvas::range_t x_canvas_range
@@ -2673,92 +2810,12 @@ access_diagram::access_diagram (const access_operation &op,
 
 namespace selftest {
 
-/* Implementation detail of ASSERT_EQ_TYPELESS_INTEGER.  */
-
-static void
-assert_eq_typeless_integer (const location &loc,
-			    const svalue *sval,
-			    int expected_int_val)
-{
-  ASSERT_NE_AT (loc, sval, nullptr);
-  ASSERT_EQ_AT (loc, sval->get_kind (), SK_CONSTANT);
-  ASSERT_EQ_AT (loc,
-		wi::to_offset (sval->maybe_get_constant ()),
-		expected_int_val);
-  ASSERT_EQ_AT (loc, sval->get_type (), NULL_TREE);
-}
-
-/* Assert that SVAL is a constant_svalue equal to EXPECTED_INT_VAL,
-   with NULL_TREE as its type.  */
-
-#define ASSERT_EQ_TYPELESS_INTEGER(SVAL, EXPECTED_INT_VAL) \
-  SELFTEST_BEGIN_STMT						       \
-  assert_eq_typeless_integer ((SELFTEST_LOCATION),		       \
-			      (SVAL),				       \
-			      (EXPECTED_INT_VAL));		       \
-  SELFTEST_END_STMT
-
-
-/* Various tests of bit_size_expr::maybe_get_as_bytes.  */
-
-static void
-test_bit_size_expr_to_bytes ()
-{
-  symbolic::node_manager node_mgr;
-  auto &mgr = node_mgr.get_region_model_manager ();
-
-  /* 40 bits: should be 5 bytes.  */
-  {
-    bit_size_expr num_bits (*mgr.get_or_create_int_cst (NULL_TREE, 40));
-    const svalue *as_bytes = num_bits.maybe_get_as_bytes (mgr);
-    ASSERT_EQ_TYPELESS_INTEGER (as_bytes, 5);
-  }
-
-  /* 41 bits: should not convert to bytes.  */
-  {
-    bit_size_expr num_bits (*mgr.get_or_create_int_cst (NULL_TREE, 41));
-    const svalue *as_bytes = num_bits.maybe_get_as_bytes (mgr);
-    ASSERT_EQ (as_bytes, nullptr);
-  }
-
-  tree n = build_global_decl ("n", size_type_node);
-
-  const svalue *init_n
-    = mgr.get_or_create_initial_value (mgr.get_region_for_global (n));
-
-  const svalue *n_times_8
-    = mgr.get_or_create_binop (NULL_TREE, MULT_EXPR,
-			       init_n,
-			       mgr.get_or_create_int_cst (NULL_TREE, 8));
-
-  /* (n * 8) bits should be n bytes */
-  {
-    bit_size_expr num_bits (*n_times_8);
-    const svalue *as_bytes = num_bits.maybe_get_as_bytes (mgr);
-    ASSERT_EQ (as_bytes, mgr.get_or_create_cast (NULL_TREE, init_n));
-  }
-
-  /* (n * 8) + 16 bits should be n + 2 bytes */
-  {
-    bit_size_expr num_bits
-      (*mgr.get_or_create_binop (NULL_TREE, PLUS_EXPR,
-				 n_times_8,
-				 mgr.get_or_create_int_cst (NULL_TREE, 16)));
-    const svalue *as_bytes = num_bits.maybe_get_as_bytes (mgr);
-    ASSERT_EQ (as_bytes->get_kind (), SK_BINOP);
-    const binop_svalue *binop = as_bytes->dyn_cast_binop_svalue ();
-    ASSERT_EQ (binop->get_op (), PLUS_EXPR);
-    ASSERT_EQ (binop->get_arg0 (), mgr.get_or_create_cast (NULL_TREE, init_n));
-    ASSERT_EQ_TYPELESS_INTEGER (binop->get_arg1 (), 2);
-  }
-}
-
 /* Run all of the selftests within this file.  */
 
 void
 analyzer_access_diagram_cc_tests ()
 {
-  test_bit_size_expr_to_bytes ();
+  // Empty
 }
 
 } // namespace selftest

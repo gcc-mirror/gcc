@@ -15,5 +15,6 @@ struct int_and_addr {
 int test (int_container ic)
 {
   int_and_addr *iaddr = new (ic.addr ()) int_and_addr; /* { dg-warning "stack-based buffer overflow" } */
+  /* { dg-warning "allocated buffer size is not a multiple of the pointee's size" "allocation-size" { target *-*-* } .-1 } */
   return iaddr->i;
 }

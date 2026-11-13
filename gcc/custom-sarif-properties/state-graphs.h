@@ -82,7 +82,7 @@ namespace custom_sarif_properties {
       extern const json::string_property bits;
 
       /* The size of a padding region.  */
-      extern const json::string_property num_bits;
+      extern const json::json_property num_bits;
 
       extern const json::string_property deallocator;
       extern const json::string_property expected_deallocators;

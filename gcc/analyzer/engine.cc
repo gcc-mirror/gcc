@@ -147,29 +147,29 @@ impl_region_model_context::add_event (std::unique_ptr<checker_event> event)
 
 void
 impl_region_model_context::on_svalue_leak (const svalue *sval)
-
 {
+  sval = sm_state_map::canonicalize_svalue (sval, m_ext_state);
   for (sm_state_map *smap : m_new_state->m_checker_states)
     smap->on_svalue_leak (sval, this);
 }
 
 void
 impl_region_model_context::
-on_liveness_change (const svalue_set &live_svalues,
-		    const region_model *model)
+on_liveness_change (symbolic::liveness_context &liveness_ctxt)
 {
   for (sm_state_map *smap : m_new_state->m_checker_states)
-    smap->on_liveness_change (live_svalues, model, m_ext_state, this);
+    smap->on_liveness_change (liveness_ctxt, m_ext_state, this);
 }
 
 void
-impl_region_model_context::on_unknown_change (const svalue *sval,
+impl_region_model_context::on_unknown_change (const symbolic::value_node &val,
 					      bool is_mutable)
 {
-  if (!sval->can_have_associated_state_p ())
-    return;
+  if (auto *sval = val.dyn_cast_svalue ())
+    if (!sval->can_have_associated_state_p ())
+      return;
   for (sm_state_map *smap : m_new_state->m_checker_states)
-    smap->on_unknown_change (sval, is_mutable, m_ext_state);
+    smap->on_unknown_change (val, is_mutable, m_ext_state);
 }
 
 void
@@ -189,12 +189,12 @@ impl_region_model_context::get_uncertainty ()
    the sm-state.  */
 
 void
-impl_region_model_context::purge_state_involving (const svalue *sval)
+impl_region_model_context::purge_state_involving (const symbolic::node &node)
 {
   int i;
   sm_state_map *smap;
   FOR_EACH_VEC_ELT (m_new_state->m_checker_states, i, smap)
-    smap->purge_state_involving (sval, m_ext_state);
+    smap->purge_state_involving (node, m_ext_state);
 }
 
 void
@@ -704,7 +704,7 @@ impl_region_model_context::on_state_leak (const state_machine &sm,
      regions.
      We need to convert it back to a tree, but since it's likely no regions
      use it, we have to find the "best" tree for it in the old_state.  */
-  svalue_set visited;
+  value_set visited;
   path_var leaked_pv
     = m_old_state->m_region_model->get_representative_path_var (sval,
 								&visited,
@@ -1090,7 +1090,7 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
   pretty_printer *pp = gv->get_pp ();
 
   dump_dot_id (pp);
-  pp_printf (pp, " [shape=none,margin=0,style=filled,fillcolor=%s,label=\"",
+  pp_printf (pp, " [shape=none,margin=0,style=filled,fillcolor=%s,fontname=\"Monospace\",label=\"",
 	     get_dot_fillcolor ());
   pp_write_text_to_stream (pp);
 
@@ -1117,9 +1117,14 @@ exploded_node::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 
       if (show_state)
 	{
-	  const extrinsic_state &ext_state = args.m_eg.get_ext_state ();
 	  const program_state &state = m_ps.get_state ();
-	  state.dump_to_pp (ext_state, false, true, pp);
+	  text_art::theme *theme = global_dc->get_diagram_theme ();
+	  symbolic::dump_node_tree_to_pp (state, theme, pp, true, true);
+	  pp_newline (pp);
+	}
+      else
+	{
+	  pp_string (pp, "(same state as predecessor)");
 	  pp_newline (pp);
 	}
     }
@@ -1178,39 +1183,43 @@ exploded_node::dump_dot_id (pretty_printer *pp) const
   pp_printf (pp, "exploded_node_%i", m_index);
 }
 
-/* Dump a multiline representation of this node to PP.  */
-
-void
-exploded_node::dump_to_pp (pretty_printer *pp,
-			   const extrinsic_state &ext_state) const
-{
-  pp_printf (pp, "EN: %i", m_index);
-  pp_newline (pp);
-
-  format f (true);
-  m_ps.get_point ().print (pp, f);
-  pp_newline (pp);
-
-  m_ps.get_state ().dump_to_pp (ext_state, false, true, pp);
-  pp_newline (pp);
-}
-
-/* Dump a multiline representation of this node to FILE.  */
-
-void
-exploded_node::dump (FILE *fp,
-		     const extrinsic_state &ext_state) const
-{
-  tree_dump_pretty_printer pp (fp);
-  dump_to_pp (&pp, ext_state);
-}
-
-/* Dump a multiline representation of this node to stderr.  */
+/* Dump a tree-like representation of this exploded_node to stderr.  */
 
 DEBUG_FUNCTION void
-exploded_node::dump (const extrinsic_state &ext_state) const
+exploded_node::dump () const
 {
-  dump (stderr, ext_state);
+  symbolic::dump_node_tree_to_stderr<exploded_node> (*this);
+}
+
+/* Dump a tree-like representation of this exploded_node to PP.  */
+
+void
+exploded_node::dump_to_pp (pretty_printer *pp) const
+{
+  text_art::theme *theme = global_dc->get_diagram_theme ();
+  symbolic::dump_node_tree_to_pp<exploded_node> (*this, theme, pp, true, true);
+}
+
+/* Dump a tree-like representation of this exploded_node to LOG.  */
+
+void
+exploded_node::dump_to_logger (logger &log) const
+{
+  symbolic::dump_node_tree_to_logger<exploded_node> (*this, log);
+}
+
+std::unique_ptr<text_art::tree_widget>
+exploded_node::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  pretty_printer pp;
+  pp_printf (&pp, "EN: %i", m_index);
+  std::unique_ptr<text_art::tree_widget> w
+    (text_art::tree_widget::make (nds, &pp));
+
+  w->add_child (m_ps.get_point ().make_dump_widget (nds));
+  w->add_child (m_ps.get_state ().make_dump_widget (nds));
+
+  return w;
 }
 
 /* Return a new json::object of the form
@@ -2654,10 +2663,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       pp_string (pp, "point: ");
       point.print (pp, f);
       logger->end_log_line ();
-      logger->start_log_line ();
-      pp_string (pp, "state: ");
-      state.dump_to_pp (m_ext_state, true, false, pp);
-      logger->end_log_line ();
+      state.dump_to_logger (*logger);
     }
 
   /* Stop exploring paths for which we don't know how to effectively
@@ -2694,15 +2700,7 @@ exploded_graph::get_or_create_node (const program_point &point,
   //pruned_state.dump (get_ext_state ());
 
   if (logger)
-    {
-      pretty_printer *pp = logger->get_printer ();
-      logger->start_log_line ();
-      pp_string (pp, "pruned_state: ");
-      pruned_state.dump_to_pp (m_ext_state, true, false, pp);
-      logger->end_log_line ();
-      pruned_state.m_region_model->dump_to_pp (logger->get_printer (), true,
-						false);
-    }
+    pruned_state.dump_to_logger (*logger, "pruned_state");
 
   stats *per_fn_stats = get_or_create_function_stats (point.get_function ());
 
@@ -2814,10 +2812,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       pp_string (pp, "point: ");
       point.print (pp, f);
       logger->end_log_line ();
-      logger->start_log_line ();
-      pp_string (pp, "state: ");
-      node->get_state ().dump_to_pp (m_ext_state, true, false, pp);
-      logger->end_log_line ();
+      node->get_state ().dump_to_logger (*logger);
     }
 
   /* Add the new node to the worlist.  */
@@ -3594,9 +3589,8 @@ exploded_graph::process_node (exploded_node *node)
       logger->start_log_line ();
       pp_string (pp, "point: ");
       point.print (pp, format (false));
-      pp_string (pp, ", state: ");
-      state.dump_to_pp (m_ext_state, true, false, pp);
       logger->end_log_line ();
+      state.dump_to_logger (*logger);
     }
 
   /* Don't do anything for the origin enode; the initial population of the
@@ -3656,12 +3650,10 @@ exploded_graph::process_node (exploded_node *node)
 	      if (logger)
 		{
 		  pretty_printer *pp = logger->get_printer ();
-		  logger->start_log_line ();
-		  logger->log_partial
+		  logger->log
 		    ("would create function summary for %qE; state: ",
 		     point.get_fndecl ());
-		  state.dump_to_pp (m_ext_state, true, false, pp);
-		  logger->end_log_line ();
+		  state.dump_to_logger (*logger);
 		}
 	      per_function_data *per_fn_data
 		= get_or_create_per_function_data (point.get_function ());
@@ -3942,18 +3934,51 @@ exploded_graph::to_json () const
 
 /* class feasibility_problem.  */
 
+std::unique_ptr<text_art::tree_widget>
+feasibility_problem::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  std::unique_ptr<text_art::tree_widget> w
+    (text_art::tree_widget::make (nds, "feasibility_problem"));
+
+  {
+    pretty_printer pp;
+    pp_printf (&pp, "edge from EN: %i to EN: %i",
+	       m_eedge.m_src->m_index, m_eedge.m_dest->m_index);
+    w->add_child (text_art::tree_widget::make (nds, &pp));
+  }
+
+  if (m_rc)
+    {
+      auto rc_w = (text_art::tree_widget::make (nds, "rejected_constraint"));
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      m_rc->dump_to_pp (&pp);
+      rc_w->add_child (text_art::tree_widget::make (nds, &pp));
+      rc_w->add_child (m_rc->get_model ().make_dump_widget (nds));
+      w->add_child (std::move (rc_w));
+    }
+
+  return w;
+}
+
+DEBUG_FUNCTION void
+feasibility_problem::dump () const
+{
+  symbolic::dump_node_tree_to_stderr<feasibility_problem> (*this);
+}
+
 void
 feasibility_problem::dump_to_pp (pretty_printer *pp) const
 {
-  pp_printf (pp, "edge from EN: %i to EN: %i",
-	     m_eedge.m_src->m_index, m_eedge.m_dest->m_index);
-  if (m_rc)
-    {
-      pp_string (pp, "; rejected constraint: ");
-      m_rc->dump_to_pp (pp);
-      pp_string (pp, "; rmodel: ");
-      m_rc->get_model ().dump_to_pp (pp, true, false);
-    }
+  text_art::theme *theme = global_dc->get_diagram_theme ();
+  symbolic::dump_node_tree_to_pp<feasibility_problem> (*this, theme, pp,
+						       true, true);
+}
+
+void
+feasibility_problem::dump_to_logger (logger &log) const
+{
+  symbolic::dump_node_tree_to_logger<feasibility_problem> (*this, log);
 }
 
 std::unique_ptr<json::object>
@@ -4057,10 +4082,8 @@ maybe_update_for_edge (logger *logger,
 	      {
 		if (logger)
 		  {
-		    logger->start_log_line ();
-		    logger->log_partial ("rejecting due to region model: ");
-		    m_model.dump_to_pp (logger->get_printer (), true, false);
-		    logger->end_log_line ();
+		    logger->log ("rejecting due to region model: ");
+		    m_model.dump_to_logger (*logger);
 		  }
 		return false;
 	      }
@@ -4090,13 +4113,25 @@ maybe_update_for_edge (logger *logger,
   return true;
 }
 
-/* Dump this object to PP.  */
+std::unique_ptr<text_art::tree_widget>
+feasibility_state::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> fs_widget
+    (tree_widget::from_fmt (nds, nullptr, "feasibility_state"));
+
+  fs_widget->add_child (m_model.make_dump_widget (nds));
+  // TODO: m_snodes_visited;
+  return fs_widget;
+}
+
+/* Dump a tree-like representation of this feasibility_state to PP.  */
 
 void
-feasibility_state::dump_to_pp (pretty_printer *pp,
-			       bool simple, bool multiline) const
+feasibility_state::dump_to_pp (pretty_printer *pp) const
 {
-  m_model.dump_to_pp (pp, simple, multiline);
+  text_art::theme *theme = global_dc->get_diagram_theme ();
+  symbolic::dump_node_tree_to_pp<feasibility_state> (*this, theme, pp, true, true);
 }
 
 /* A family of cluster subclasses for use when generating .dot output for
@@ -4400,11 +4435,7 @@ class enode_label : public range_label
 
   label_text get_text (unsigned) const final override
   {
-    pretty_printer pp;
-    pp_format_decoder (&pp) = default_tree_printer;
-    m_enode->get_state ().dump_to_pp (m_ext_state, true, false, &pp);
-    return make_label_text (false, "EN: %i: %s",
-			    m_enode->m_index, pp_formatted_text (&pp));
+    return make_label_text (false, "EN: %i", m_enode->m_index);
   }
 
 private:
@@ -4487,7 +4518,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  text_art::dump_to_file (enode->get_state (), outf);
+	  symbolic::dump_node_tree_to_file<program_state> (enode->get_state (), outf);
 	}
 
       fclose (outf);
@@ -4515,7 +4546,7 @@ exploded_graph::dump_exploded_nodes () const
 	  pretty_printer pp;
 	  enode->get_point ().print (&pp, format (true));
 	  fprintf (outf, "%s\n", pp_formatted_text (&pp));
-	  text_art::dump_to_file (enode->get_state (), outf);
+	  symbolic::dump_node_tree_to_file<program_state> (enode->get_state (), outf);
 
 	  fclose (outf);
 	}
@@ -4622,7 +4653,7 @@ exploded_graph::dump_exploded_nodes () const
 			   other_enode->m_index);
 		  other_enode->dump_succs_and_preds (stderr);
 		  /* Dump state.  */
-		  other_enode->get_state ().dump (m_ext_state, false);
+		  other_enode->get_state ().dump ();
 		}
 	    }
 	}

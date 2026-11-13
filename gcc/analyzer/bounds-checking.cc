@@ -63,17 +63,20 @@ public:
   };
 
   out_of_bounds (const region_model &model,
-		 const region *reg,
+		 const symbolic::memory_range &access_range,
 		 tree diag_arg,
 		 const svalue *sval_hint)
-  : m_model (model), m_reg (reg), m_diag_arg (diag_arg), m_sval_hint (sval_hint)
+  : m_model (model),
+    m_access_range (access_range),
+    m_diag_arg (diag_arg),
+    m_sval_hint (sval_hint)
   {}
 
   bool subclass_equal_p (const pending_diagnostic &base_other) const override
   {
     const out_of_bounds &other
       (static_cast <const out_of_bounds &>(base_other));
-    return (m_reg == other.m_reg
+    return (m_access_range == other.m_access_range
 	    && pending_diagnostic::same_tree_p (m_diag_arg, other.m_diag_arg));
   }
 
@@ -84,7 +87,7 @@ public:
 
   void mark_interesting_stuff (interesting_t *interest) final override
   {
-    interest->add_region_creation (m_reg->get_base_region ());
+    interest->add_region_creation (&m_access_range.get_base_region ());
   }
 
   void add_region_creation_events (const region *,
@@ -110,7 +113,7 @@ public:
     props.set_string (PROPERTY_PREFIX "dir",
 		      get_dir () == access_direction::read ? "read" : "write");
     props.set (PROPERTY_PREFIX "model", m_model.to_json ());
-    props.set (PROPERTY_PREFIX "region", m_reg->to_json ());
+    props.set (PROPERTY_PREFIX "access_range", m_access_range.to_json ());
     props.set (PROPERTY_PREFIX "diag_arg", tree_to_json (m_diag_arg));
     if (m_sval_hint)
       props.set (PROPERTY_PREFIX "sval_hint", m_sval_hint->to_json ());
@@ -124,7 +127,7 @@ public:
 protected:
   enum memory_space get_memory_space () const
   {
-    return m_reg->get_memory_space ();
+    return m_access_range.get_base_region ().get_memory_space ();
   }
 
   void
@@ -165,11 +168,11 @@ protected:
   void
   maybe_show_diagram (logger *logger) const
   {
-    access_operation op (m_model, get_dir (), *m_reg, m_sval_hint);
+    access_operation op (m_model, get_dir (), m_access_range, m_sval_hint);
 
     /* Don't attempt to make a diagram if there's no valid way of
        accessing the base region (e.g. a 0-element array).  */
-    if (op.get_valid_bits ().empty_p ())
+    if (op.get_valid_bits ().get_size ().is_zero_p ())
       return;
 
     if (const text_art::theme *theme = global_dc->get_diagram_theme ())
@@ -201,7 +204,7 @@ protected:
   }
 
   region_model m_model;
-  const region *m_reg;
+  symbolic::memory_range m_access_range;
   tree m_diag_arg;
   const svalue *m_sval_hint;
   diagnostics::paths::event_id_t m_region_creation_event_id;
@@ -214,10 +217,11 @@ class concrete_out_of_bounds : public out_of_bounds
 {
 public:
   concrete_out_of_bounds (const region_model &model,
-			  const region *reg, tree diag_arg,
-			  bit_range out_of_bounds_bits,
+			  const symbolic::memory_range &access_range,
+			  tree diag_arg,
+			  concrete_bit_range out_of_bounds_bits,
 			  const svalue *sval_hint)
-  : out_of_bounds (model, reg, diag_arg, sval_hint),
+  : out_of_bounds (model, access_range, diag_arg, sval_hint),
     m_out_of_bounds_bits (out_of_bounds_bits)
   {}
 
@@ -237,20 +241,16 @@ public:
 #define PROPERTY_PREFIX "gcc/analyzer/concrete_out_of_bounds/"
     props.set (PROPERTY_PREFIX "out_of_bounds_bits",
 	       m_out_of_bounds_bits.to_json ());
-    byte_range out_of_bounds_bytes (0, 0);
-    if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
-      props.set (PROPERTY_PREFIX "out_of_bounds_bytes",
-		 out_of_bounds_bytes.to_json ());
 #undef PROPERTY_PREFIX
   }
 
-  bool get_out_of_bounds_bytes (byte_range *out) const
+  bool get_out_of_bounds_bytes (concrete_byte_range *out) const
   {
-    return m_out_of_bounds_bits.as_byte_range (out);
+    return maybe_bytes_from_bits (m_out_of_bounds_bits, out);
   }
 
 protected:
-  bit_range m_out_of_bounds_bits;
+  concrete_bit_range m_out_of_bounds_bits;
 };
 
 /* Abstract subclass to complain about concrete out-of-bounds
@@ -260,17 +260,18 @@ class concrete_past_the_end : public concrete_out_of_bounds
 {
 public:
   concrete_past_the_end (const region_model &model,
-			 const region *reg, tree diag_arg, bit_range range,
-			 tree bit_bound,
+			 const symbolic::memory_range &access_range,tree diag_arg,
+			 concrete_bit_range bad_range,
+			 concrete_bit_size conc_bit_capacity,
 			 const svalue *sval_hint)
-  : concrete_out_of_bounds (model, reg, diag_arg, range, sval_hint),
-    m_bit_bound (bit_bound),
-    m_byte_bound (NULL_TREE)
+  : concrete_out_of_bounds (model, access_range, diag_arg, bad_range, sval_hint),
+    m_conc_bit_capacity (conc_bit_capacity),
+    m_conc_byte_capacity (nullptr)
   {
-    if (m_bit_bound && TREE_CODE (m_bit_bound) == INTEGER_CST)
-      m_byte_bound
-	= wide_int_to_tree (size_type_node,
-			    wi::to_offset (m_bit_bound) >> LOG2_BITS_PER_UNIT);
+    concrete_byte_size bytes;
+    if (maybe_bytes_from_bits (m_conc_bit_capacity, &bytes))
+      m_conc_byte_capacity
+	= std::make_unique<concrete_byte_size> (bytes);
   }
 
   bool
@@ -279,8 +280,7 @@ public:
     const concrete_past_the_end &other
       (static_cast <const concrete_past_the_end &>(base_other));
     return (concrete_out_of_bounds::subclass_equal_p (other)
-	    && pending_diagnostic::same_tree_p (m_bit_bound,
-						other.m_bit_bound));
+	    && m_conc_bit_capacity == other.m_conc_bit_capacity);
   }
 
   void add_region_creation_events (const region *,
@@ -288,11 +288,17 @@ public:
 				   const event_loc_info &loc_info,
 				   checker_path &emission_path) final override
   {
-    if (m_byte_bound && TREE_CODE (m_byte_bound) == INTEGER_CST)
-      emission_path.add_event
-	(std::make_unique<oob_region_creation_event_capacity> (m_byte_bound,
-							       loc_info,
-							       *this));
+    if (m_conc_byte_capacity)
+      {
+	tree byte_bound
+	  = make_integer_cst_from_integer (size_type_node,
+					   m_conc_byte_capacity->get_integer (),
+					   true);
+	emission_path.add_event
+	  (std::make_unique<oob_region_creation_event_capacity> (byte_bound,
+								 loc_info,
+								 *this));
+      }
   }
 
   void maybe_add_sarif_properties (diagnostics::sarif_object &result_obj)
@@ -301,16 +307,17 @@ public:
     concrete_out_of_bounds::maybe_add_sarif_properties (result_obj);
     auto &props = result_obj.get_or_create_properties ();
 #define PROPERTY_PREFIX "gcc/analyzer/concrete_past_the_end/"
-    props.set (PROPERTY_PREFIX "bit_bound",
-	       tree_to_json (m_bit_bound));
-    props.set (PROPERTY_PREFIX "byte_bound",
-	       tree_to_json (m_byte_bound));
+    props.set (PROPERTY_PREFIX "conc_bit_capacity",
+	       m_conc_bit_capacity.to_json ());
+    if (m_conc_byte_capacity)
+      props.set (PROPERTY_PREFIX "conc_byte_capacity",
+		 m_conc_byte_capacity->to_json ());
 #undef PROPERTY_PREFIX
   }
 
 protected:
-  tree m_bit_bound;
-  tree m_byte_bound;
+  concrete_bit_size  m_conc_bit_capacity;
+  std::unique_ptr<concrete_byte_size> m_conc_byte_capacity;
 };
 
 /* Concrete subclass to complain about buffer overflows.  */
@@ -319,10 +326,13 @@ class concrete_buffer_overflow : public concrete_past_the_end
 {
 public:
   concrete_buffer_overflow (const region_model &model,
-			    const region *reg, tree diag_arg,
-			    bit_range range, tree bit_bound,
+			    const symbolic::memory_range &access_range,
+			    tree diag_arg,
+			    concrete_bit_range bad_range,
+			    concrete_bit_size conc_bit_capacity,
 			    const svalue *sval_hint)
-  : concrete_past_the_end (model, reg, diag_arg, range, bit_bound, sval_hint)
+  : concrete_past_the_end (model, access_range, diag_arg, bad_range,
+			   conc_bit_capacity, sval_hint)
   {}
 
   const char *get_kind () const final override
@@ -351,49 +361,42 @@ public:
 
     if (warned)
       {
-	if (wi::fits_uhwi_p (m_out_of_bounds_bits.m_size_in_bits))
+	auto num_bad_bits = m_out_of_bounds_bits.get_size ();
+	concrete_byte_size num_bad_bytes;
+	if (maybe_bytes_from_bits (num_bad_bits, &num_bad_bytes))
 	  {
-	    unsigned HOST_WIDE_INT num_bad_bits
-	      = m_out_of_bounds_bits.m_size_in_bits.to_uhwi ();
-	    if (num_bad_bits % BITS_PER_UNIT == 0)
-	      {
-		unsigned HOST_WIDE_INT num_bad_bytes
-		  = num_bad_bits / BITS_PER_UNIT;
-		if (m_diag_arg)
-		  inform_n (ctxt.get_location (),
-			    num_bad_bytes,
-			    "write of %wu byte to beyond the end of %qE",
-			    "write of %wu bytes to beyond the end of %qE",
-			    num_bad_bytes,
-			    m_diag_arg);
-		else
-		  inform_n (ctxt.get_location (),
-			    num_bad_bytes,
-			    "write of %wu byte to beyond the end of the region",
-			    "write of %wu bytes to beyond the end of the region",
-			    num_bad_bytes);
-	      }
+	    pp_element_integer e_num_bad_bytes (num_bad_bytes.get_integer ());
+	    if (m_diag_arg)
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bytes.as_unsigned_long (),
+			"write of %e byte to beyond the end of %qE",
+			"write of %e bytes to beyond the end of %qE",
+			&e_num_bad_bytes,
+			m_diag_arg);
 	    else
-	      {
-		if (m_diag_arg)
-		  inform_n (ctxt.get_location (),
-			    num_bad_bits,
-			    "write of %wu bit to beyond the end of %qE",
-			    "write of %wu bits to beyond the end of %qE",
-			    num_bad_bits,
-			    m_diag_arg);
-		else
-		  inform_n (ctxt.get_location (),
-			    num_bad_bits,
-			    "write of %wu bit to beyond the end of the region",
-			    "write of %wu bits to beyond the end of the region",
-			    num_bad_bits);
-	      }
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bytes.as_unsigned_long (),
+			"write of %e byte to beyond the end of the region",
+			"write of %e bytes to beyond the end of the region",
+			&e_num_bad_bytes);
 	  }
-	else if (m_diag_arg)
-	  inform (ctxt.get_location (),
-		  "write to beyond the end of %qE",
-		  m_diag_arg);
+	else
+	  {
+	    pp_element_integer e_num_bad_bits (num_bad_bits.get_integer ());
+	    if (m_diag_arg)
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bits.as_unsigned_long (),
+			"write of %e bit to beyond the end of %qE",
+			"write of %e bits to beyond the end of %qE",
+			&e_num_bad_bits,
+			m_diag_arg);
+	    else
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bits.as_unsigned_long (),
+			"write of %e bit to beyond the end of the region",
+			"write of %e bits to beyond the end of the region",
+			&e_num_bad_bits);
+	  }
 
 	maybe_show_notes (ctxt);
       }
@@ -405,9 +408,9 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    if (m_byte_bound || !m_bit_bound)
+    if (m_conc_byte_capacity)
       {
-	byte_range out_of_bounds_bytes (0, 0);
+	concrete_byte_range out_of_bounds_bytes;
 	if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
 	  {
 	    describe_final_event_as_bytes (pp, out_of_bounds_bytes);
@@ -420,84 +423,85 @@ public:
 
   void
   describe_final_event_as_bytes (pretty_printer &pp,
-				 const byte_range &out_of_bounds_bytes)
+				 const concrete_byte_range &out_of_bounds_bytes)
   {
-    byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
-    byte_size_t end = out_of_bounds_bytes.get_last_byte_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    gcc_assert (m_conc_byte_capacity);
 
-    if (start == end)
+    auto start = out_of_bounds_bytes.get_start_offset ();
+    auto last = out_of_bounds_bytes.get_last_offset ();
+
+    pp_element_integer e_start (start.get_integer ());
+    pp_element_integer e_byte_capacity (m_conc_byte_capacity->get_integer ());
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write at byte %s but %qE"
-		     " ends at byte %E", start_buf, m_diag_arg,
-		     m_byte_bound);
+		     "out-of-bounds write at byte %e but %qE"
+		     " ends at byte %e", &e_start, m_diag_arg,
+		     &e_byte_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write at byte %s but region"
-		     " ends at byte %E", start_buf,
-		     m_byte_bound);
+		     "out-of-bounds write at byte %e but region"
+		     " ends at byte %e", &e_start,
+		     &e_byte_capacity);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write from byte %s till"
-		     " byte %s but %qE ends at byte %E",
-		     start_buf, end_buf, m_diag_arg,
-		     m_byte_bound);
+		     "out-of-bounds write from byte %e till"
+		     " byte %e but %qE ends at byte %e",
+		     &e_start, &e_last, m_diag_arg,
+		     &e_byte_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write from byte %s till"
-		     " byte %s but region ends at byte %E",
-		     start_buf, end_buf, m_byte_bound);
+		     "out-of-bounds write from byte %e till"
+		     " byte %e but region ends at byte %e",
+		     &e_start, &e_last, &e_byte_capacity);
       }
   }
 
   void
   describe_final_event_as_bits (pretty_printer &pp)
   {
-    bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
-    bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = m_out_of_bounds_bits.get_start_offset ();
+    auto last = m_out_of_bounds_bits.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+    pp_element_integer e_bit_capacity (m_conc_bit_capacity.get_integer ());
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write at bit %s but %qE"
-		     " ends at bit %E", start_buf, m_diag_arg,
-		     m_bit_bound);
+		     "out-of-bounds write at bit %e but %qE"
+		     " ends at bit %e", &e_start, m_diag_arg,
+		     &e_bit_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write at bit %s but region"
-		     " ends at bit %E", start_buf,
-		     m_bit_bound);
+		     "out-of-bounds write at bit %e but region"
+		     " ends at bit %e", &e_start,
+		     &e_bit_capacity);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write from bit %s till"
-		     " bit %s but %qE ends at bit %E",
-		     start_buf, end_buf, m_diag_arg,
-		     m_bit_bound);
+		     "out-of-bounds write from bit %e till"
+		     " bit %e but %qE ends at bit %e",
+		     &e_start, &e_last, m_diag_arg,
+		     &e_bit_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write from bit %s till"
-		     " bit %s but region ends at bit %E",
-		     start_buf, end_buf, m_bit_bound);
+		     "out-of-bounds write from bit %e till"
+		     " bit %e but region ends at bit %e",
+		     &e_start, &e_last, &e_bit_capacity);
       }
   }
 
-  enum access_direction get_dir () const final override { return access_direction::write; }
+  enum access_direction
+  get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer over-reads.  */
@@ -506,9 +510,12 @@ class concrete_buffer_over_read : public concrete_past_the_end
 {
 public:
   concrete_buffer_over_read (const region_model &model,
-			     const region *reg, tree diag_arg,
-			     bit_range range, tree bit_bound)
-  : concrete_past_the_end (model, reg, diag_arg, range, bit_bound, nullptr)
+			     const symbolic::memory_range &access_range,
+			     tree diag_arg,
+			     concrete_bit_range bad_range,
+			     concrete_bit_size conc_bit_capacity)
+  : concrete_past_the_end (model, access_range, diag_arg,
+			   bad_range, conc_bit_capacity, nullptr)
   {}
 
   const char *get_kind () const final override
@@ -535,49 +542,42 @@ public:
 
     if (warned)
       {
-	if (wi::fits_uhwi_p (m_out_of_bounds_bits.m_size_in_bits))
+	auto num_bad_bits = m_out_of_bounds_bits.get_size ();
+	concrete_byte_size num_bad_bytes;
+	if (maybe_bytes_from_bits (num_bad_bits, &num_bad_bytes))
 	  {
-	    unsigned HOST_WIDE_INT num_bad_bits
-	      = m_out_of_bounds_bits.m_size_in_bits.to_uhwi ();
-	    if (num_bad_bits % BITS_PER_UNIT == 0)
-	      {
-		unsigned HOST_WIDE_INT num_bad_bytes
-		  = num_bad_bits / BITS_PER_UNIT;
-		if (m_diag_arg)
-		  inform_n (ctxt.get_location (),
-			    num_bad_bytes,
-			    "read of %wu byte from after the end of %qE",
-			    "read of %wu bytes from after the end of %qE",
-			    num_bad_bytes,
-			    m_diag_arg);
-		else
-		  inform_n (ctxt.get_location (),
-			    num_bad_bytes,
-			    "read of %wu byte from after the end of the region",
-			    "read of %wu bytes from after the end of the region",
-			    num_bad_bytes);
-	      }
+	    pp_element_integer e_num_bad_bytes (num_bad_bytes.get_integer ());
+	    if (m_diag_arg)
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bytes.as_unsigned_long (),
+			"read of %e byte from after the end of %qE",
+			"read of %e bytes from after the end of %qE",
+			&e_num_bad_bytes,
+			m_diag_arg);
 	    else
-	      {
-		if (m_diag_arg)
-		  inform_n (ctxt.get_location (),
-			    num_bad_bits,
-			    "read of %wu bit from after the end of %qE",
-			    "read of %wu bits from after the end of %qE",
-			    num_bad_bits,
-			    m_diag_arg);
-		else
-		  inform_n (ctxt.get_location (),
-			    num_bad_bits,
-			    "read of %wu bit from after the end of the region",
-			    "read of %wu bits from after the end of the region",
-			    num_bad_bits);
-	      }
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bytes.as_unsigned_long (),
+			"read of %e byte from after the end of the region",
+			"read of %e bytes from after the end of the region",
+			&e_num_bad_bytes);
 	  }
-	else if (m_diag_arg)
-	  inform (ctxt.get_location (),
-		  "read from after the end of %qE",
-		  m_diag_arg);
+	else
+	  {
+	    pp_element_integer e_num_bad_bits (num_bad_bits.get_integer ());
+	    if (m_diag_arg)
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bits.as_unsigned_long (),
+			"read of %e bit from after the end of %qE",
+			"read of %e bits from after the end of %qE",
+			&e_num_bad_bits,
+			m_diag_arg);
+	    else
+	      inform_n (ctxt.get_location (),
+			(size_t)num_bad_bits.as_unsigned_long (),
+			"read of %e bit from after the end of the region",
+			"read of %e bits from after the end of the region",
+			&e_num_bad_bits);
+	  }
 
 	maybe_show_notes (ctxt);
       }
@@ -589,9 +589,9 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    if (m_byte_bound || !m_bit_bound)
+    if (m_conc_byte_capacity)
       {
-	byte_range out_of_bounds_bytes (0, 0);
+	concrete_byte_range out_of_bounds_bytes;
 	if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
 	  {
 	    describe_final_event_as_bytes (pp, out_of_bounds_bytes);
@@ -604,84 +604,87 @@ public:
 
   void
   describe_final_event_as_bytes (pretty_printer &pp,
-				 const byte_range &out_of_bounds_bytes)
+				 const concrete_byte_range &out_of_bounds_bytes)
   {
-    byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
-    byte_size_t end = out_of_bounds_bytes.get_last_byte_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    gcc_assert (m_conc_byte_capacity);
 
-    if (start == end)
+    auto start = out_of_bounds_bytes.get_start_offset ();
+    auto last = out_of_bounds_bytes.get_last_offset ();
+
+    pp_element_integer e_start (start.get_integer ());
+    pp_element_integer e_byte_capacity (m_conc_byte_capacity->get_integer ());
+
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read at byte %s but %qE"
-		     " ends at byte %E", start_buf, m_diag_arg,
-		     m_byte_bound);
+		     "out-of-bounds read at byte %e but %qE"
+		     " ends at byte %e", &e_start, m_diag_arg,
+		     &e_byte_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read at byte %s but region"
-		     " ends at byte %E", start_buf,
-		     m_byte_bound);
+		     "out-of-bounds read at byte %e but region"
+		     " ends at byte %e", &e_start,
+		     &e_byte_capacity);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read from byte %s till"
-		     " byte %s but %qE ends at byte %E",
-		     start_buf, end_buf, m_diag_arg,
-		     m_byte_bound);
+		     "out-of-bounds read from byte %e till"
+		     " byte %e but %qE ends at byte %e",
+		     &e_start, &e_last, m_diag_arg,
+		     &e_byte_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read from byte %s till"
-		     " byte %s but region ends at byte %E",
-		     start_buf, end_buf, m_byte_bound);
+		     "out-of-bounds read from byte %e till"
+		     " byte %e but region ends at byte %e",
+		     &e_start, &e_last, &e_byte_capacity);
       }
   }
 
   void
   describe_final_event_as_bits (pretty_printer &pp)
   {
-    bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
-    bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = m_out_of_bounds_bits.get_start_offset ();
+    auto last = m_out_of_bounds_bits.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+    pp_element_integer e_bit_capacity (m_conc_bit_capacity.get_integer ());
+
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read at bit %s but %qE"
-		     " ends at bit %E", start_buf, m_diag_arg,
-		     m_bit_bound);
+		     "out-of-bounds read at bit %e but %qE"
+		     " ends at bit %e", &e_start, m_diag_arg,
+		     &e_bit_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read at bit %s but region"
-		     " ends at bit %E", start_buf,
-		     m_bit_bound);
+		     "out-of-bounds read at bit %e but region"
+		     " ends at bit %e", &e_start,
+		     &e_bit_capacity);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read from bit %s till"
-		     " bit %s but %qE ends at bit %E",
-		     start_buf, end_buf, m_diag_arg,
-		     m_bit_bound);
+		     "out-of-bounds read from bit %e till"
+		     " bit %e but %qE ends at bit %e",
+		     &e_start, &e_last, m_diag_arg,
+		     &e_bit_capacity);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read from bit %s till"
-		     " bit %s but region ends at bit %E",
-		     start_buf, end_buf, m_bit_bound);
+		     "out-of-bounds read from bit %e till"
+		     " bit %e but region ends at bit %e",
+		     &e_start, &e_last, &e_bit_capacity);
       }
   }
 
-  enum access_direction get_dir () const final override { return access_direction::read; }
+  enum access_direction
+  get_dir () const final override { return access_direction::read; }
 };
 
 /* Concrete subclass to complain about buffer underwrites.  */
@@ -690,10 +693,12 @@ class concrete_buffer_underwrite : public concrete_out_of_bounds
 {
 public:
   concrete_buffer_underwrite (const region_model &model,
-			      const region *reg, tree diag_arg,
-			      bit_range range,
+			      const symbolic::memory_range &access_range,
+			      tree diag_arg,
+			      concrete_bit_range bad_range,
 			      const svalue *sval_hint)
-  : concrete_out_of_bounds (model, reg, diag_arg, range, sval_hint)
+  : concrete_out_of_bounds (model, access_range, diag_arg,
+			    bad_range, sval_hint)
   {}
 
   const char *get_kind () const final override
@@ -726,7 +731,7 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    byte_range out_of_bounds_bytes (0, 0);
+    concrete_byte_range out_of_bounds_bytes;
     if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
       describe_final_event_as_bytes (pp, out_of_bounds_bytes);
     else
@@ -736,80 +741,78 @@ public:
 
   void
   describe_final_event_as_bytes (pretty_printer &pp,
-				 const byte_range &out_of_bounds_bytes)
+				 const concrete_byte_range &out_of_bounds_bytes)
   {
-    byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
-    byte_size_t end = out_of_bounds_bytes.get_last_byte_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = out_of_bounds_bytes.get_start_offset ();
+    auto last = out_of_bounds_bytes.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write at byte %s but %qE"
+		     "out-of-bounds write at byte %e but %qE"
 		     " starts at byte 0",
-		     start_buf, m_diag_arg);
+		     &e_start, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write at byte %s but region"
-		     " starts at byte 0", start_buf);
+		     "out-of-bounds write at byte %e but region"
+		     " starts at byte 0", &e_start);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write from byte %s till"
-		     " byte %s but %qE starts at byte 0",
-		     start_buf, end_buf, m_diag_arg);
+		     "out-of-bounds write from byte %e till"
+		     " byte %e but %qE starts at byte 0",
+		     &e_start, &e_last, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write from byte %s till"
-		     " byte %s but region starts at byte 0",
-		     start_buf, end_buf);;
+		     "out-of-bounds write from byte %e till"
+		     " byte %e but region starts at byte 0",
+		     &e_start, &e_last);
       }
   }
 
   void
   describe_final_event_as_bits (pretty_printer &pp)
   {
-    bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
-    bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = m_out_of_bounds_bits.get_start_offset ();
+    auto last = m_out_of_bounds_bits.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write at bit %s but %qE"
+		     "out-of-bounds write at bit %e but %qE"
 		     " starts at bit 0",
-		     start_buf, m_diag_arg);
+		     &e_start, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write at bit %s but region"
-		     " starts at bit 0", start_buf);
+		     "out-of-bounds write at bit %e but region"
+		     " starts at bit 0", &e_start);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds write from bit %s till"
-		     " bit %s but %qE starts at bit 0",
-		     start_buf, end_buf, m_diag_arg);
+		     "out-of-bounds write from bit %e till"
+		     " bit %e but %qE starts at bit 0",
+		     &e_start, &e_last, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds write from bit %s till"
-		     " bit %s but region starts at bit 0",
-		     start_buf, end_buf);;
+		     "out-of-bounds write from bit %e till"
+		     " bit %e but region starts at bit 0",
+		     &e_start, &e_last);
       }
   }
 
-  enum access_direction get_dir () const final override { return access_direction::write; }
+  enum access_direction
+  get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about buffer under-reads.  */
@@ -818,9 +821,10 @@ class concrete_buffer_under_read : public concrete_out_of_bounds
 {
 public:
   concrete_buffer_under_read (const region_model &model,
-			      const region *reg, tree diag_arg,
-			      bit_range range)
-  : concrete_out_of_bounds (model, reg, diag_arg, range, nullptr)
+			      const symbolic::memory_range &access_range,
+			      tree diag_arg,
+			      concrete_bit_range bad_range)
+  : concrete_out_of_bounds (model, access_range, diag_arg, bad_range, nullptr)
   {}
 
   const char *get_kind () const final override
@@ -853,7 +857,7 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    byte_range out_of_bounds_bytes (0, 0);
+    concrete_byte_range out_of_bounds_bytes;
     if (get_out_of_bounds_bytes (&out_of_bounds_bytes))
       describe_final_event_as_bytes (pp, out_of_bounds_bytes);
     else
@@ -863,81 +867,79 @@ public:
 
   void
   describe_final_event_as_bytes (pretty_printer &pp,
-				 const byte_range &out_of_bounds_bytes)
+				 const concrete_byte_range &out_of_bounds_bytes)
   {
-    byte_size_t start = out_of_bounds_bytes.get_start_byte_offset ();
-    byte_size_t end = out_of_bounds_bytes.get_last_byte_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = out_of_bounds_bytes.get_start_offset ();
+    auto last = out_of_bounds_bytes.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read at byte %s but %qE"
+		     "out-of-bounds read at byte %e but %qE"
 		     " starts at byte 0",
-		     start_buf, m_diag_arg);
+		     &e_start, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read at byte %s but region"
+		     "out-of-bounds read at byte %e but region"
 		     " starts at byte 0",
-		     start_buf);
+		     &e_start);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read from byte %s till"
-		     " byte %s but %qE starts at byte 0",
-		     start_buf, end_buf, m_diag_arg);
+		     "out-of-bounds read from byte %e till"
+		     " byte %e but %qE starts at byte 0",
+		     &e_start, &e_last, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read from byte %s till"
-		     " byte %s but region starts at byte 0",
-		     start_buf, end_buf);;
+		     "out-of-bounds read from byte %e till"
+		     " byte %e but region starts at byte 0",
+		     &e_start, &e_last);
       }
   }
 
   void
   describe_final_event_as_bits (pretty_printer &pp)
   {
-    bit_size_t start = m_out_of_bounds_bits.get_start_bit_offset ();
-    bit_size_t end = m_out_of_bounds_bits.get_last_bit_offset ();
-    char start_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (start, start_buf, SIGNED);
-    char end_buf[WIDE_INT_PRINT_BUFFER_SIZE];
-    print_dec (end, end_buf, SIGNED);
+    auto start = m_out_of_bounds_bits.get_start_offset ();
+    auto last = m_out_of_bounds_bits.get_last_offset ();
 
-    if (start == end)
+    pp_element_integer e_start (start.get_integer ());
+
+    if (start == last)
       {
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read at bit %s but %qE"
+		     "out-of-bounds read at bit %e but %qE"
 		     " starts at bit 0",
-		     start_buf, m_diag_arg);
+		     &e_start, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read at bit %s but region"
-		     " starts at bit 0", start_buf);
+		     "out-of-bounds read at bit %e but region"
+		     " starts at bit 0", &e_start);
       }
     else
       {
+	pp_element_integer e_last (last.get_integer ());
 	if (m_diag_arg)
 	  pp_printf (&pp,
-		     "out-of-bounds read from bit %s till"
-		     " bit %s but %qE starts at bit 0",
-		     start_buf, end_buf, m_diag_arg);
+		     "out-of-bounds read from bit %e till"
+		     " bit %e but %qE starts at bit 0",
+		     &e_start, &e_last, m_diag_arg);
 	else
 	  pp_printf (&pp,
-		     "out-of-bounds read from bit %s till"
-		     " bit %s but region starts at bit 0",
-		     start_buf, end_buf);;
+		     "out-of-bounds read from bit %e till"
+		     " bit %e but region starts at bit 0",
+		     &e_start, &e_last);
       }
   }
 
-  enum access_direction get_dir () const final override { return access_direction::read; }
+  enum access_direction
+  get_dir () const final override { return access_direction::read; }
 };
 
 /* Abstract class to complain about out-of-bounds read/writes where
@@ -947,10 +949,13 @@ class symbolic_past_the_end : public out_of_bounds
 {
 public:
   symbolic_past_the_end (const region_model &model,
-			 const region *reg, tree diag_arg, tree offset,
-			 tree num_bytes, tree capacity,
+			 const symbolic::memory_range &access_range,
+			 tree diag_arg,
+			 tree offset,
+			 tree num_bytes,
+			 tree capacity,
 			 const svalue *sval_hint)
-  : out_of_bounds (model, reg, diag_arg, sval_hint),
+  : out_of_bounds (model, access_range, diag_arg, sval_hint),
     m_offset (offset),
     m_num_bytes (num_bytes),
     m_capacity (capacity)
@@ -992,10 +997,15 @@ class symbolic_buffer_overflow : public symbolic_past_the_end
 {
 public:
   symbolic_buffer_overflow (const region_model &model,
-			    const region *reg, tree diag_arg, tree offset,
-			    tree num_bytes, tree capacity,
+			    const symbolic::memory_range &access_range,
+			    tree diag_arg,
+			    tree offset,
+			    tree num_bytes,
+			    tree capacity,
 			    const svalue *sval_hint)
-  : symbolic_past_the_end (model, reg, diag_arg, offset, num_bytes, capacity,
+  : symbolic_past_the_end (model, access_range, diag_arg,
+			   offset, num_bytes,
+			   capacity,
 			   sval_hint)
   {
   }
@@ -1109,7 +1119,8 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return access_direction::write; }
+  enum access_direction
+  get_dir () const final override { return access_direction::write; }
 };
 
 /* Concrete subclass to complain about over-reads with symbolic values.  */
@@ -1118,9 +1129,14 @@ class symbolic_buffer_over_read : public symbolic_past_the_end
 {
 public:
   symbolic_buffer_over_read (const region_model &model,
-			     const region *reg, tree diag_arg, tree offset,
-			     tree num_bytes, tree capacity)
-  : symbolic_past_the_end (model, reg, diag_arg, offset, num_bytes, capacity,
+			     const symbolic::memory_range &access_range,
+			     tree diag_arg,
+			     tree offset,
+			     tree num_bytes,
+			     tree capacity)
+  : symbolic_past_the_end (model, access_range, diag_arg,
+			   offset, num_bytes,
+			   capacity,
 			   nullptr)
   {
   }
@@ -1236,160 +1252,15 @@ public:
     return true;
   }
 
-  enum access_direction get_dir () const final override { return access_direction::read; }
+  enum access_direction
+  get_dir () const final override { return access_direction::read; }
 };
 
-const svalue *
-strip_types (const svalue *sval,
-	     region_model_manager &mgr)
-{
-  switch (sval->get_kind ())
-    {
-    default:
-      gcc_unreachable ();
-    case SK_REGION:
-      {
-	const region_svalue *region_sval = (const region_svalue *)sval;
-	return mgr.get_ptr_svalue (NULL_TREE, region_sval->get_pointee ());
-      }
-    case SK_CONSTANT:
-      return sval;
-    case SK_UNKNOWN:
-      return mgr.get_or_create_unknown_svalue (NULL_TREE);
-    case SK_POISONED:
-      {
-	const poisoned_svalue *poisoned_sval = (const poisoned_svalue *)sval;
-	return mgr.get_or_create_poisoned_svalue
-	  (poisoned_sval->get_poison_kind (),
-	   NULL_TREE);
-      }
-    case SK_SETJMP:
-      return sval;
-    case SK_INITIAL:
-      return sval;
-    case SK_UNARYOP:
-      {
-	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
-	const enum tree_code op = unaryop_sval->get_op ();
-	if (op == VIEW_CONVERT_EXPR || op == NOP_EXPR)
-	  return strip_types (unaryop_sval->get_arg (), mgr);
-	return mgr.get_or_create_unaryop
-	  (NULL_TREE,
-	   op,
-	   strip_types (unaryop_sval->get_arg (), mgr));
-      }
-    case SK_BINOP:
-      {
-	const binop_svalue *binop_sval = (const binop_svalue *)sval;
-	const enum tree_code op = binop_sval->get_op ();
-	return mgr.get_or_create_binop
-	  (NULL_TREE,
-	   op,
-	   strip_types (binop_sval->get_arg0 (), mgr),
-	   strip_types (binop_sval->get_arg1 (), mgr));
-      }
-    case SK_SUB:
-      {
-	const sub_svalue *sub_sval = (const sub_svalue *)sval;
-	return mgr.get_or_create_sub_svalue
-	  (NULL_TREE,
-	   strip_types (sub_sval->get_parent (), mgr),
-	   sub_sval->get_subregion ());
-      }
-    case SK_REPEATED:
-      {
-	const repeated_svalue *repeated_sval = (const repeated_svalue *)sval;
-	return mgr.get_or_create_repeated_svalue
-	  (NULL_TREE,
-	   strip_types (repeated_sval->get_outer_size (), mgr),
-	   strip_types (repeated_sval->get_inner_svalue (), mgr));
-      }
-    case SK_BITS_WITHIN:
-      {
-	const bits_within_svalue *bits_within_sval
-	  = (const bits_within_svalue *)sval;
-	return mgr.get_or_create_bits_within
-	  (NULL_TREE,
-	   bits_within_sval->get_bits (),
-	   strip_types (bits_within_sval->get_inner_svalue (), mgr));
-      }
-    case SK_UNMERGEABLE:
-      {
-	const unmergeable_svalue *unmergeable_sval
-	  = (const unmergeable_svalue *)sval;
-	return mgr.get_or_create_unmergeable
-	  (strip_types (unmergeable_sval->get_arg (), mgr));
-      }
-    case SK_PLACEHOLDER:
-      return sval;
-    case SK_WIDENING:
-      {
-	const widening_svalue *widening_sval = (const widening_svalue *)sval;
-	return mgr.get_or_create_widening_svalue
-	  (NULL_TREE,
-	   widening_sval->get_snode (),
-	   strip_types (widening_sval->get_base_svalue (), mgr),
-	   strip_types (widening_sval->get_iter_svalue (), mgr));
-      }
-    case SK_COMPOUND:
-      {
-	const compound_svalue *compound_sval = (const compound_svalue *)sval;
-	concrete_binding_map typeless_map;
-	for (auto iter : compound_sval->get_concrete_bindings ())
-	  {
-	    const bit_range &bits = iter.first;
-	    const svalue *bound_sval = iter.second;
-	    typeless_map.insert (bits, strip_types (bound_sval, mgr));
-	  }
-	return mgr.get_or_create_compound_svalue (NULL_TREE,
-						  std::move (typeless_map));
-      }
-    case SK_CONJURED:
-      return sval;
-    case SK_ASM_OUTPUT:
-      {
-	const asm_output_svalue *asm_output_sval
-	  = (const asm_output_svalue *)sval;
-	auto_vec<const svalue *> typeless_inputs
-	  (asm_output_sval->get_num_inputs ());
-	for (unsigned idx = 0; idx < asm_output_sval->get_num_inputs (); idx++)
-	  typeless_inputs.quick_push
-	    (strip_types (asm_output_sval->get_input (idx),
-			  mgr));
-	return mgr.get_or_create_asm_output_svalue
-	  (NULL_TREE,
-	   asm_output_sval->get_asm_string (),
-	   asm_output_sval->get_output_idx (),
-	   asm_output_sval->get_num_outputs (),
-	   typeless_inputs);
-      }
-    case SK_CONST_FN_RESULT:
-      {
-	const const_fn_result_svalue *const_fn_result_sval
-	  = (const const_fn_result_svalue *)sval;
-	auto_vec<const svalue *> typeless_inputs
-	  (const_fn_result_sval->get_num_inputs ());
-	for (unsigned idx = 0;
-	     idx < const_fn_result_sval->get_num_inputs ();
-	     idx++)
-	  typeless_inputs.quick_push
-	    (strip_types (const_fn_result_sval->get_input (idx),
-			  mgr));
-	return mgr.get_or_create_const_fn_result_svalue
-	  (NULL_TREE,
-	   const_fn_result_sval->get_fndecl (),
-	   typeless_inputs);
-      }
-    }
-}
-
 /* Check whether an access is past the end of the BASE_REG.
-  Return TRUE if the access was valid, FALSE otherwise.  */
+   Return TRUE if the access was valid, FALSE otherwise.  */
 
 bool
-region_model::check_symbolic_bounds (const region *base_reg,
-				     const svalue *sym_byte_offset,
-				     const svalue *num_bytes_sval,
+region_model::check_symbolic_bounds (const symbolic::memory_range &attempted_range,
 				     const svalue *capacity,
 				     enum access_direction dir,
 				     const svalue *sval_hint,
@@ -1397,25 +1268,37 @@ region_model::check_symbolic_bounds (const region *base_reg,
 {
   gcc_assert (ctxt);
 
-  const svalue *next_byte
-    = m_mgr->get_or_create_binop (NULL_TREE, PLUS_EXPR,
-				  sym_byte_offset, num_bytes_sval);
+  auto &next_bit = attempted_range.get_bit_range ().get_next_offset ();
+  auto *next_byte_as_scalar = maybe_bytes_from_bits (next_bit);
+  if (!next_byte_as_scalar)
+    return true;
+  
+  auto &start_bit = attempted_range.get_bit_range ().get_start_offset ();
+  auto *start_byte_as_scalar = maybe_bytes_from_bits (start_bit);
+  if (!start_byte_as_scalar)
+    return true;
 
-  next_byte = strip_types (next_byte, *m_mgr);
-  capacity = strip_types (capacity, *m_mgr);
+  auto &attempted_size_in_bits = attempted_range.get_bit_range ().get_size ();
+  auto *attempted_size_in_bytes
+    = maybe_bytes_from_bits (attempted_size_in_bits);
+  if (!attempted_size_in_bytes)
+    return true;
+
+  const svalue *next_byte
+    = m_mgr->get_svalue_from_scalar (size_type_node, *next_byte_as_scalar);
 
   if (eval_condition (next_byte, GT_EXPR, capacity).is_true ())
     {
-      tree diag_arg = get_representative_tree (base_reg);
+      auto &base_reg = attempted_range.get_base_region ();
+      tree diag_arg = get_representative_tree (&base_reg);
+      const svalue *sym_byte_offset
+	= m_mgr->get_svalue_from_scalar (size_type_node, *start_byte_as_scalar);
       tree offset_tree = get_representative_tree (sym_byte_offset);
+      const svalue *num_bytes_sval
+	= m_mgr->get_svalue_from_scalar (size_type_node,
+					 *attempted_size_in_bytes);
       tree num_bytes_tree = get_representative_tree (num_bytes_sval);
       tree capacity_tree = get_representative_tree (capacity);
-      const region *offset_reg = m_mgr->get_offset_region (base_reg,
-							   NULL_TREE,
-							   sym_byte_offset);
-      const region *sized_offset_reg = m_mgr->get_sized_region (offset_reg,
-								NULL_TREE,
-								num_bytes_sval);
       switch (dir)
 	{
 	default:
@@ -1425,7 +1308,7 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	  gcc_assert (sval_hint == nullptr);
 	  ctxt->warn
 	    (std::make_unique<symbolic_buffer_over_read> (*this,
-							  sized_offset_reg,
+							  attempted_range,
 							  diag_arg,
 							  offset_tree,
 							  num_bytes_tree,
@@ -1435,7 +1318,7 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	case access_direction::write:
 	  ctxt->warn
 	    (std::make_unique<symbolic_buffer_overflow> (*this,
-							 sized_offset_reg,
+							 attempted_range,
 							 diag_arg,
 							 offset_tree,
 							 num_bytes_tree,
@@ -1445,17 +1328,125 @@ region_model::check_symbolic_bounds (const region *base_reg,
 	  break;
 	}
     }
+
   return true;
 }
 
-static tree
-maybe_get_integer_cst_tree (const svalue *sval)
-{
-  tree cst_tree = sval->maybe_get_constant ();
-  if (cst_tree && TREE_CODE (cst_tree) == INTEGER_CST)
-    return cst_tree;
+/* Complain to CTXT if an access of ATTEMPTED_RANGE is outside the bounds
+   of the underlying region.  SVAL_HINT can be non-null for writes and, if
+   so, may be used to make the diagnostic more readable.
+   Return true if the access was valid, false otherwise.  */
 
-  return NULL_TREE;
+bool
+region_model::
+check_memory_range_bounds (const symbolic::memory_range &attempted_range,
+			   enum access_direction dir,
+			   const svalue *sval_hint,
+			   region_model_context *ctxt) const
+{
+  gcc_assert (ctxt);
+
+  /* Bail out if 0 bits are accessed.  */
+  if (attempted_range.get_bit_range ().get_size ().is_zero_p ())
+    return true;
+
+  const region &base_reg = attempted_range.get_base_region ();
+
+  /* Get the capacity of the buffer (in bytes).  */
+  auto &byte_capacity = get_capacity_as_scalar (&base_reg);
+
+  integer_with_unit<units::byte> conc_byte_capacity;
+  bool capacity_is_concrete
+    = concrete_from_symbolic (byte_capacity, &conc_byte_capacity);
+
+  /* If any of the base region, the offset, or the number of bytes accessed
+     are symbolic, we have to reason about symbolic values.  */
+
+  concrete_bit_range conc_attempted_range;
+  bool attempted_range_is_concrete
+    = concrete_from_symbolic (attempted_range.get_bit_range (),
+			      &conc_attempted_range);
+  if (base_reg.symbolic_p () || !attempted_range_is_concrete)
+    {
+      auto *byte_capacity_as_sval = get_capacity (&base_reg);
+      gcc_assert (byte_capacity_as_sval);
+      return check_symbolic_bounds (attempted_range,
+				    byte_capacity_as_sval,
+				    dir, sval_hint, ctxt);
+    }
+
+  /* Otherwise continue to check with concrete values.  */
+  concrete_bit_range bits_outside;
+  bool oob_safe = true;
+  /* If conc_attempted_range has a subset < 0, we do have an underwrite.  */
+  if (conc_attempted_range.falls_short_of_p (0_bits, &bits_outside))
+    {
+      tree diag_arg = get_representative_tree (&base_reg);
+      switch (dir)
+	{
+	default:
+	  gcc_unreachable ();
+	  break;
+	case access_direction::read:
+	  gcc_assert (sval_hint == nullptr);
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_under_read> (*this,
+							   attempted_range,
+							   diag_arg,
+							   bits_outside));
+	  oob_safe = false;
+	  break;
+	case access_direction::write:
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_underwrite> (*this,
+							   attempted_range,
+							   diag_arg,
+							   bits_outside,
+							   sval_hint));
+	  oob_safe = false;
+	  break;
+	}
+    }
+
+  /* For accesses past the end, we do need a concrete capacity.  No need to
+     do a symbolic check here because the inequality check does not reason
+     whether constants are greater than symbolic values.  */
+  if (!capacity_is_concrete)
+    return oob_safe;
+
+  auto conc_bit_capacity = bits_from_bytes (conc_byte_capacity);
+  if (conc_attempted_range.exceeds_p (conc_bit_capacity, &bits_outside))
+    {
+      tree diag_arg = get_representative_tree (&base_reg);
+
+      switch (dir)
+	{
+	default:
+	  gcc_unreachable ();
+	  break;
+	case access_direction::read:
+	  gcc_assert (sval_hint == nullptr);
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_over_read> (*this,
+							  attempted_range,
+							  diag_arg,
+							  bits_outside,
+							  conc_bit_capacity));
+	  oob_safe = false;
+	  break;
+	case access_direction::write:
+	  ctxt->warn
+	    (std::make_unique<concrete_buffer_overflow> (*this,
+							 attempted_range,
+							 diag_arg,
+							 bits_outside,
+							 conc_bit_capacity,
+							 sval_hint));
+	  oob_safe = false;
+	  break;
+	}
+    }
+  return oob_safe;
 }
 
 /* May complain when the access on REG is out-of-bounds.
@@ -1469,127 +1460,10 @@ region_model::check_region_bounds (const region *reg,
 {
   gcc_assert (ctxt);
 
-  /* Get the offset.  */
-  region_offset reg_offset = reg->get_offset (m_mgr);
-  const region *base_reg = reg_offset.get_base_region ();
-
-  /* Find out how many bits were accessed.  */
-  const svalue *num_bits_sval = reg->get_bit_size_sval (m_mgr);
-  tree num_bits_tree = maybe_get_integer_cst_tree (num_bits_sval);
-  /* Bail out if 0 bits are accessed.  */
-  if (num_bits_tree && zerop (num_bits_tree))
-	  return true;
-
-  /* Get the capacity of the buffer (in bytes).  */
-  const svalue *byte_capacity = get_capacity (base_reg);
-  tree cst_byte_capacity_tree = maybe_get_integer_cst_tree (byte_capacity);
-
-  /* The constant offset from a pointer is represented internally as a sizetype
-     but should be interpreted as a signed value here.  The statement below
-     converts the offset from bits to bytes and then to a signed integer with
-     the same precision the sizetype has on the target system.
-
-     For example, this is needed for out-of-bounds-3.c test1 to pass when
-     compiled with a 64-bit gcc build targeting 32-bit systems.  */
-  bit_offset_t bit_offset;
-  if (!reg_offset.symbolic_p ())
-    bit_offset = wi::sext (reg_offset.get_bit_offset (),
-			   TYPE_PRECISION (size_type_node));
-
-  /* If any of the base region, the offset, or the number of bytes accessed
-     are symbolic, we have to reason about symbolic values.  */
-  if (base_reg->symbolic_p () || reg_offset.symbolic_p () || !num_bits_tree)
-    {
-      const svalue* byte_offset_sval;
-      if (!reg_offset.symbolic_p ())
-	{
-	  tree byte_offset_tree
-	    = wide_int_to_tree (integer_type_node,
-				bit_offset >> LOG2_BITS_PER_UNIT);
-	  byte_offset_sval
-	    = m_mgr->get_or_create_constant_svalue (byte_offset_tree);
-	}
-      else
-	byte_offset_sval = reg_offset.get_symbolic_byte_offset ();
-      const svalue *num_bytes_sval = reg->get_byte_size_sval (m_mgr);
-      return check_symbolic_bounds (base_reg, byte_offset_sval, num_bytes_sval,
-				    byte_capacity, dir, sval_hint, ctxt);
-    }
-
-  /* Otherwise continue to check with concrete values.  */
-  bit_range bits_outside (0, 0);
-  bool oob_safe = true;
-  /* NUM_BITS_TREE should always be interpreted as unsigned.  */
-  bit_offset_t num_bits_unsigned = wi::to_offset (num_bits_tree);
-  bit_range read_bits (bit_offset, num_bits_unsigned);
-  /* If read_bits has a subset < 0, we do have an underwrite.  */
-  if (read_bits.falls_short_of_p (0, &bits_outside))
-    {
-      tree diag_arg = get_representative_tree (base_reg);
-      switch (dir)
-	{
-	default:
-	  gcc_unreachable ();
-	  break;
-	case access_direction::read:
-	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn
-	    (std::make_unique<concrete_buffer_under_read> (*this, reg,
-							   diag_arg,
-							   bits_outside));
-	  oob_safe = false;
-	  break;
-	case access_direction::write:
-	  ctxt->warn
-	    (std::make_unique<concrete_buffer_underwrite> (*this,
-							   reg, diag_arg,
-							   bits_outside,
-							   sval_hint));
-	  oob_safe = false;
-	  break;
-	}
-    }
-
-  /* For accesses past the end, we do need a concrete capacity.  No need to
-     do a symbolic check here because the inequality check does not reason
-     whether constants are greater than symbolic values.  */
-  if (!cst_byte_capacity_tree)
-    return oob_safe;
-
-  bit_range buffer (0, wi::to_offset (cst_byte_capacity_tree) * BITS_PER_UNIT);
-  /* If READ_BITS exceeds BUFFER, we do have an overflow.  */
-  if (read_bits.exceeds_p (buffer, &bits_outside))
-    {
-      tree bit_bound = wide_int_to_tree (size_type_node,
-					 buffer.get_next_bit_offset ());
-      tree diag_arg = get_representative_tree (base_reg);
-
-      switch (dir)
-	{
-	default:
-	  gcc_unreachable ();
-	  break;
-	case access_direction::read:
-	  gcc_assert (sval_hint == nullptr);
-	  ctxt->warn
-	    (std::make_unique<concrete_buffer_over_read> (*this,
-							  reg, diag_arg,
-							  bits_outside,
-							  bit_bound));
-	  oob_safe = false;
-	  break;
-	case access_direction::write:
-	  ctxt->warn
-	    (std::make_unique<concrete_buffer_overflow> (*this,
-							 reg, diag_arg,
-							 bits_outside,
-							 bit_bound,
-							 sval_hint));
-	  oob_safe = false;
-	  break;
-	}
-    }
-  return oob_safe;
+  return check_memory_range_bounds (reg->get_memory_range (*m_mgr),
+				    dir,
+				    sval_hint,
+				    ctxt);
 }
 
 } // namespace ana

@@ -30,10 +30,22 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/store.h"
 #include "analyzer/region-model.h"
 #include "analyzer/region-model-reachability.h"
+#include "analyzer/liveness-context.h"
 
 #if ENABLE_ANALYZER
 
 namespace ana {
+
+static bool
+recurse_into_children_p (const symbolic::value_node &val)
+{
+  /* Don't recurse into children for cropped bit vectors:
+     the values aren't complete, so aren't live.  */
+  if (auto *bv = val.dyn_cast_bit_vector ())
+    if (bv->get_kind () == symbolic::bit_vector::kind::cropped)
+      return false;
+  return true;
+}
 
 reachable_regions::reachable_regions (region_model *model)
 : m_model (model), m_store (model->get_store ()),
@@ -68,7 +80,8 @@ reachable_regions::init_cluster (const region *base_reg)
   if (const symbolic_region *sym_reg = base_reg->dyn_cast_symbolic_region ())
     {
       const svalue *ptr = sym_reg->get_pointer ();
-      if (ptr->implicitly_live_p (nullptr, m_model))
+      symbolic::liveness_context liveness_ctxt (value_set (), *m_model);
+      if (ptr->implicitly_live_p (liveness_ctxt))
 	add (base_reg, true);
       switch (ptr->get_kind ())
 	{
@@ -91,10 +104,9 @@ reachable_regions::init_cluster (const region *base_reg)
 	  break;
 
 	case SK_UNKNOWN:
-	case SK_CONJURED:
 	  {
-	    /* If this cluster is due to dereferencing an unknown/conjured
-	       pointer, any values written through the pointer could still
+	    /* If this cluster is due to dereferencing an unknown pointer,
+	       any values written through the pointer could still
 	       be live.  */
 	    add (base_reg, true);
 	  }
@@ -129,89 +141,109 @@ reachable_regions::add (const region *reg, bool is_mutable)
 
   /* Add values within the cluster.  If any are pointers, add the pointee.  */
   if (binding_cluster *bind_cluster = m_store->get_cluster (base_reg))
-    bind_cluster->for_each_value (handle_sval_cb, this);
-  else
-    handle_sval (m_model->get_store_value (reg, nullptr));
+    {
+      bind_cluster->for_each_value
+	([] (const symbolic::value_node &val,
+	     void *user_data) -> iter_result
+	 {
+	   ((reachable_regions *)user_data)->handle_value (val);
+	   return iter_result::keep_going;
+	 },
+	 this);
+    }
 }
 
 void
 reachable_regions::handle_sval_cb (const svalue *sval,
 				   reachable_regions *this_ptr)
 {
-  this_ptr->handle_sval (sval);
+  this_ptr->handle_value (*sval);
 }
 
-/* Add SVAL.  If it is a pointer, add the pointed-to region.  */
+/* Add VAL.  If it is a pointer, add the pointed-to region.  */
 
 void
-reachable_regions::handle_sval (const svalue *sval)
+reachable_regions::handle_value (const symbolic::value_node &val)
 {
-  m_reachable_svals.add (sval);
-  m_mutable_svals.add (sval);
-  if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
-    {
-      const region *pointee = ptr->get_pointee ();
-      /* Use const-ness of pointer type to affect mutability.  */
-      bool ptr_is_mutable = true;
-      if (ptr->get_type ()
-	  && TREE_CODE (ptr->get_type ()) == POINTER_TYPE
-	  && TYPE_READONLY (TREE_TYPE (ptr->get_type ())))
-	{
-	  ptr_is_mutable = false;
-	}
-      else
-	{
-	  m_mutable_svals.add (sval);
-	}
-      add (pointee, ptr_is_mutable);
-    }
-  /* Treat all svalues within a compound_svalue as reachable.  */
-  if (const compound_svalue *compound_sval
-      = sval->dyn_cast_compound_svalue ())
-    {
-      for (auto iter = compound_sval->begin ();
-	   iter != compound_sval->end (); ++iter)
-	{
-	  const svalue *iter_sval = iter->second;
-	  handle_sval (iter_sval);
-	}
-    }
-  if (const svalue *cast = sval->maybe_undo_cast ())
-    handle_sval (cast);
+  auto cb = [] (const symbolic::value_node &val, void *user_data) -> bool
+  {
+    reachable_regions *rr = (reachable_regions *)user_data;
+    if (!rr->m_reachable_svals.contains (&val))
+      {
+	rr->m_reachable_svals.insert (&val);
+	rr->handle_value (val);
+      }
 
-  /* If SVAL is the result of a reversible operation, then the operands
-     are reachable.  */
-  switch (sval->get_kind ())
+    return recurse_into_children_p (val);
+  };
+
+  symbolic::value_node_visitor v {cb, this};
+  val.accept_node_visitor (v);
+
+  m_mutable_svals.insert (&val);
+
+  if (auto sval = val.dyn_cast_svalue ())
     {
-    default:
-      break;
-    case SK_UNARYOP:
-      {
-	const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
-	switch (unaryop_sval->get_op ())
+      if (auto *bit_vec_sval = sval->dyn_cast_svalue_from_bit_vector ())
+	handle_value (bit_vec_sval->get_bit_vector ());
+
+      if (auto *ptr = sval->maybe_get_symbolic_pointer ())
+	{
+	  /* Use const-ness of pointer type to affect mutability.  */
+	  bool ptr_is_mutable = true;
+	  if (sval->get_type ()
+	      && TREE_CODE (sval->get_type ()) == POINTER_TYPE
+	      && TYPE_READONLY (TREE_TYPE (sval->get_type ())))
+	    {
+	      ptr_is_mutable = false;
+	    }
+	  else
+	    {
+	      m_mutable_svals.insert (sval);
+	    }
+	  add (&ptr->get_base_region (), ptr_is_mutable);
+	}
+      if (const svalue *cast = sval->maybe_undo_cast ())
+	handle_value (*cast);
+
+      /* If SVAL is the result of a reversible operation, then the operands
+	 are reachable.  */
+      switch (sval->get_kind ())
+	{
+	default:
+	  break;
+	case SK_UNARYOP:
 	  {
-	  default:
-	    break;
-	  case NEGATE_EXPR:
-	    handle_sval (unaryop_sval->get_arg ());
-	    break;
+	    const unaryop_svalue *unaryop_sval = (const unaryop_svalue *)sval;
+	    switch (unaryop_sval->get_op ())
+	      {
+	      default:
+		break;
+	      case NEGATE_EXPR:
+		handle_value (*unaryop_sval->get_arg ());
+		break;
+	      }
 	  }
-      }
-      break;
-    case SK_BINOP:
-      {
-	const binop_svalue *binop_sval = (const binop_svalue *)sval;
-	switch (binop_sval->get_op ())
+	  break;
+	case SK_BINOP:
 	  {
-	  default:
-	    break;
-	  case POINTER_PLUS_EXPR:
-	    handle_sval (binop_sval->get_arg0 ());
-	    handle_sval (binop_sval->get_arg1 ());
-	    break;
+	    const binop_svalue *binop_sval = (const binop_svalue *)sval;
+	    switch (binop_sval->get_op ())
+	      {
+	      default:
+		break;
+	      case POINTER_PLUS_EXPR:
+		handle_value (*binop_sval->get_arg0 ());
+		handle_value (*binop_sval->get_arg1 ());
+		break;
+	      }
 	  }
-      }
+	}
     }
+
+  if (auto *bv = val.dyn_cast_bit_vector ())
+    if (auto *from_svalue = bv->dyn_cast_bit_vector_from_svalue ())
+      handle_value (from_svalue->get_svalue ());
 }
 
 /* Add SVAL.  If it is a pointer, add the pointed-to region.
@@ -226,24 +258,21 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
       &&  TYPE_READONLY (TREE_TYPE (param_type)))
     is_mutable = false;
   if (is_mutable)
-    m_mutable_svals.add (sval);
+    m_mutable_svals.insert (sval);
   else
-    m_reachable_svals.add (sval);
+    m_reachable_svals.insert (sval);
   if (const region *base_reg = sval->maybe_get_deref_base_region ())
     add (base_reg, is_mutable);
-  /* Treat all svalues within a compound_svalue as reachable.  */
-  if (const compound_svalue *compound_sval
-      = sval->dyn_cast_compound_svalue ())
+  if (auto *sval_from_bv = sval->dyn_cast_svalue_from_bit_vector ())
     {
-      for (auto iter = compound_sval->begin ();
-	   iter != compound_sval->end (); ++iter)
-	{
-	  const svalue *iter_sval = iter->second;
-	  handle_sval (iter_sval);
-	}
+      auto &bv = sval_from_bv->get_bit_vector ();
+      if (auto *concat_bv = bv.dyn_cast_concat_bit_vector ())
+	for (auto child_bv : *concat_bv)
+	  if (auto *bv_from_sval = child_bv->dyn_cast_bit_vector_from_svalue ())
+	    handle_value (bv_from_sval->get_svalue ());
     }
   if (const svalue *cast = sval->maybe_undo_cast ())
-    handle_sval (cast);
+    handle_value (*cast);
 }
 
 /* Update the store to mark the clusters that were found to be mutable
@@ -259,8 +288,8 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
        iter != m_mutable_base_regs.end (); ++iter)
     {
       const region *base_reg = *iter;
-      store_manager *store_mgr = m_model->get_manager ()->get_store_manager ();
-      m_store->mark_as_escaped (*store_mgr, base_reg);
+      m_store->mark_as_escaped (base_reg,
+				m_model->get_baseline_state ());
 
       /* If we have a function that's escaped, potentially add
 	 it to the worklist.  */
@@ -316,11 +345,11 @@ reachable_regions::dump_to_pp (pretty_printer *pp) const
 
   pp_string (pp, "reachable svals: ");
   pp_newline (pp);
-  dump_set (m_reachable_svals, pp);
+  m_reachable_svals.dump_to_pp (pp);
 
   pp_string (pp, "mutable svals: ");
   pp_newline (pp);
-  dump_set (m_mutable_svals, pp);
+  m_mutable_svals.dump_to_pp (pp);
 }
 
 /* Dump a multiline representation of this object to stderr.  */

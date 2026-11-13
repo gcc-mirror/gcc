@@ -309,7 +309,7 @@ void test_26 (void)
 {
   boxed_ptr p;
   p.value = global_buffer;
-  free (p.value); /* { dg-warning "'free' of '&global_buffer' which points to memory not on the heap \\\[CWE-590\\\]" } */
+  free (p.value); /* { dg-warning "'free' of 'p.value' which points to memory not on the heap \\\[CWE-590\\\]" } */
 }
 
 struct coord {
@@ -470,7 +470,7 @@ void test_50b (void)
 {
   boxed_ptr ptr;
   ptr.value = test_50a;
-  free (ptr.value); /* { dg-warning "'free' of '&test_50a' which points to memory not on the heap \\\[CWE-590\\\]" } */
+  free (ptr.value); /* { dg-warning "'free' of 'ptr.value' which points to memory not on the heap \\\[CWE-590\\\]" } */
 }
 
 void test_50c (void)
@@ -478,7 +478,7 @@ void test_50c (void)
  my_label:
   boxed_ptr ptr;
   ptr.value = &&my_label;
-  free (ptr.value); /* { dg-warning "'free' of '&my_label' which points to memory not on the heap \\\[CWE-590\\\]" } */
+  free (ptr.value); /* { dg-warning "'free' of 'ptr.value' which points to memory not on the heap \\\[CWE-590\\\]" } */
 }
 
 /* { dg-prune-output "\\\[-Wfree-nonheap-object" } */

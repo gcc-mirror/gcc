@@ -60,7 +60,7 @@ private:
   create_state_node (const region &reg);
 
   /* Spatially sorted concrete bindings.  */
-  typedef std::map<bit_range, const svalue *> concrete_bindings_t;
+  typedef std::map<concrete_bit_range, const svalue *> concrete_bindings_t;
 
   void
   create_state_nodes_for_binding_cluster (const binding_cluster &cluster,
@@ -72,7 +72,7 @@ private:
   // Try to get the bit_range of REG within its base region
   bool
   get_bit_range_within_base_region (const region &reg,
-				    bit_range &out);
+				    concrete_bit_range &out);
 
   void
   populate_state_node_for_typed_region (diagnostics::digraphs::node &,
@@ -98,6 +98,7 @@ private:
   tree_logical_location_manager m_logical_loc_mgr;
   const program_state &m_state;
   const extrinsic_state &m_ext_state;
+  symbolic::node_manager &m_node_mgr;
   region_model_manager &m_mgr;
   std::map<const region *,
 	   diagnostics::digraphs::node *> m_region_to_state_node_map;

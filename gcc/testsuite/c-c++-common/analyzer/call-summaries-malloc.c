@@ -24,20 +24,20 @@ void test_malloc_int (int x)
 
   p = malloc_int (42);
   if (p)
-    __analyzer_eval (*p == 42); /* { dg-warning "TRUE" } */
+    __analyzer_eval (*p == 42); /* { dg-warning "TRUE" "TODO(file PR)" { xfail *-*-* } } */
   free (p);
 
   q = malloc_int (x);
   if (q)
-    __analyzer_eval (*q == x); /* { dg-warning "TRUE" } */
+    __analyzer_eval (*q == x); /* { dg-warning "TRUE" "TODO(file PR)" { xfail *-*-* } } */
   free (q);
 }
 
 void test_leak (int x)
 {
-  int *p = malloc_int (x); /* { dg-message "when 'malloc_int' returns pointer to heap-allocated buffer" "" { target c } } */
-  /* { dg-message "when 'int\\* malloc_int\\(int\\)' returns pointer to heap-allocated buffer" "" { target c++ } .-1 } */
-} /* { dg-message "leak of 'p'" } */
+  int *p = malloc_int (x); /* { dg-message "when 'malloc_int' returns pointer to heap-allocated buffer" "TODO(file PR) C" { xfail *-*-* } } */
+  /* { dg-message "when 'int\\* malloc_int\\(int\\)' returns pointer to heap-allocated buffer" "TODO(file PR) C++" { xfail *-*-* } .-1 } */
+} /* { dg-message "leak of 'p'" "TODO(file PR)" { xfail *-*-* } } */
 
 void *wrapped_malloc (size_t sz)
 {

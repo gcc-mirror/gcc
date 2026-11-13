@@ -78,12 +78,12 @@ call_summary::get_user_facing_desc (pretty_printer *pp) const
 	    {
 	    default:
 	      break;
-	    case SK_REGION:
+	    case SK_POINTER:
 	      {
-		const region_svalue *region_sval
-		  = as_a <const region_svalue *> (result_sval);
-		const region *pointee_reg = region_sval->get_pointee ();
-		switch (pointee_reg->get_kind ())
+		const pointer_svalue *ptr_sval
+		  = as_a <const pointer_svalue *> (result_sval);
+		const region *base_reg = &ptr_sval->get_base_region ();
+		switch (base_reg->get_kind ())
 		  {
 		  default:
 		    break;
@@ -116,37 +116,24 @@ call_summary::get_user_facing_desc (pretty_printer *pp) const
   pp_printf (pp, "when %qE returns", fndecl);
 }
 
-/* Dump a multiline representation of this object to PP.  */
-
 void
-call_summary::dump_to_pp (const extrinsic_state &ext_state,
-			  pretty_printer *pp,
-			  bool simple) const
+call_summary::dump_to_logger (logger &logger) const
 {
+  symbolic::dump_node_tree_to_logger<call_summary> (*this, logger);
+}
+
+std::unique_ptr<text_art::tree_widget>
+call_summary::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+
   label_text desc = get_desc ();
-  pp_printf (pp, "desc: %qs", desc.get ());
-  pp_newline (pp);
+  std::unique_ptr<tree_widget> summary_widget
+    (tree_widget::from_fmt (nds, nullptr, "call_summary: %qs", desc.get ()));
 
-  get_state ().dump_to_pp (ext_state, simple, true, pp);
-}
+  summary_widget->add_child (get_state ().make_dump_widget (nds));
 
-/* Dump a multiline representation of this object to FILE.  */
-
-void
-call_summary::dump (const extrinsic_state &ext_state,
-		    FILE *fp,
-		    bool simple) const
-{
-  tree_dump_pretty_printer pp (fp);
-  dump_to_pp (ext_state, &pp, simple);
-}
-
-/* Dump a multiline representation of this object to stderr.  */
-
-DEBUG_FUNCTION void
-call_summary::dump (const extrinsic_state &ext_state, bool simple) const
-{
-  dump (ext_state, stderr, simple);
+  return summary_widget;
 }
 
 /* class call_summary_replay.  */
@@ -245,19 +232,24 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
     {
     default:
       gcc_unreachable ();
-    case SK_REGION:
+    case SK_POINTER:
       {
-	const region_svalue *region_summary_sval
-	  = as_a <const region_svalue *> (summary_sval);
-	const region *summary_reg = region_summary_sval->get_pointee ();
-	const region *caller_reg = convert_region_from_summary (summary_reg);
-	if (!caller_reg)
+	const pointer_svalue *region_summary_sval
+	  = as_a <const pointer_svalue *> (summary_sval);
+	auto &summary_sym_ptr = region_summary_sval->get_symbolic_pointer ();
+
+	const region *caller_base_reg
+	  = convert_region_from_summary (&summary_sym_ptr.get_base_region ());
+	if (!caller_base_reg)
+	  return nullptr;
+	auto *caller_byte_offset
+	  = convert_scalar_from_summary (summary_sym_ptr.get_byte_offset ());
+	if (!caller_byte_offset)
 	  return nullptr;
 	region_model_manager *mgr = get_manager ();
-	const svalue *caller_ptr
-	  = mgr->get_ptr_svalue (summary_sval->get_type (),
-				 caller_reg);
-	return caller_ptr;
+	return mgr->get_ptr_svalue (summary_sval->get_type (),
+				    symbolic::pointer (*caller_base_reg,
+						       *caller_byte_offset));
       }
       break;
 
@@ -321,59 +313,17 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 					 caller_arg1);
       }
       break;
-    case SK_SUB:
+    case SK_BIT_VECTOR:
       {
-	const sub_svalue *sub_summary_sval
-	  = as_a <const sub_svalue *> (summary_sval);
-	region_model_manager *mgr = get_manager ();
-	const svalue *summary_parent_sval = sub_summary_sval->get_parent ();
-	if (!summary_parent_sval)
-	  return nullptr;
-	const region *summary_subregion = sub_summary_sval->get_subregion ();
-	if (!summary_subregion)
-	  return nullptr;
-	return mgr->get_or_create_sub_svalue (summary_sval->get_type (),
-					      summary_parent_sval,
-					      summary_subregion);
-      }
-      break;
-    case SK_REPEATED:
-      {
-	const repeated_svalue *repeated_summary_sval
-	  = as_a <const repeated_svalue *> (summary_sval);
-	const svalue *summary_outer_size
-	  = repeated_summary_sval->get_outer_size ();
-	const svalue *caller_outer_size
-	  = convert_svalue_from_summary (summary_outer_size);
-	if (!caller_outer_size)
-	  return nullptr;
-	const svalue *summary_inner_sval
-	  = repeated_summary_sval->get_inner_svalue ();
-	const svalue *caller_inner_sval
-	  = convert_svalue_from_summary (summary_inner_sval);
-	if (!caller_inner_sval)
+	auto *sval_from_bv
+	  = as_a<const svalue_from_bit_vector *> (summary_sval);
+	auto *caller_bv
+	  = convert_bit_vector_from_summary (sval_from_bv->get_bit_vector ());
+	if (!caller_bv)
 	  return nullptr;
 	region_model_manager *mgr = get_manager ();
-	return mgr->get_or_create_repeated_svalue (summary_sval->get_type (),
-						   caller_outer_size,
-						   caller_inner_sval);
-      }
-      break;
-    case SK_BITS_WITHIN:
-      {
-	const bits_within_svalue *bits_within_summary_sval
-	  = as_a <const bits_within_svalue *> (summary_sval);
-	const bit_range &bits = bits_within_summary_sval->get_bits ();
-	const svalue *summary_inner_sval
-	  = bits_within_summary_sval->get_inner_svalue ();
-	const svalue *caller_inner_sval
-	  = convert_svalue_from_summary (summary_inner_sval);
-	if (!caller_inner_sval)
-	  return nullptr;
-	region_model_manager *mgr = get_manager ();
-	return mgr->get_or_create_bits_within (summary_sval->get_type (),
-					       bits,
-					       caller_inner_sval);
+	return mgr->get_svalue_from_bit_vector (summary_sval->get_type (),
+						*caller_bv);
       }
       break;
     case SK_UNMERGEABLE:
@@ -414,53 +364,6 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	   snode,
 	   caller_base_sval,
 	   caller_iter_sval);
-      }
-      break;
-    case SK_COMPOUND:
-      {
-	const compound_svalue *compound_summary_sval
-	  = as_a <const compound_svalue *> (summary_sval);
-	region_model_manager *mgr = get_manager ();
-	concrete_binding_map caller_map;
-	for (auto iter_summary : *compound_summary_sval)
-	  {
-	    /* No remapping is needed for concrete binding keys.  */
-	    const bit_range &summary_bits = iter_summary.first;
-	    const svalue *bound_summary_sval = iter_summary.second;
-	    const svalue *caller_sval
-	      = convert_svalue_from_summary (bound_summary_sval);
-	    if (!caller_sval)
-	      caller_sval = mgr->get_or_create_unknown_svalue (NULL_TREE);
-
-	    if (const compound_svalue *inner_compound_sval
-		= caller_sval->dyn_cast_compound_svalue ())
-	      {
-		const bit_range &outer_key = summary_bits;
-		for (auto inner_kv : *inner_compound_sval)
-		  {
-		    // These should already be mapped to the caller.
-		    const bit_range &inner_key = inner_kv.first;
-		    const svalue *inner_sval = inner_kv.second;
-		    bit_offset_t effective_start
-		      = (inner_key.get_start_bit_offset ()
-			 + outer_key.get_start_bit_offset ());
-		    const bit_range effective_concrete_key
-		      (effective_start,
-		       summary_bits.m_size_in_bits);
-		    caller_map.insert (effective_concrete_key, inner_sval);
-		  }
-	      }
-	    else
-	      caller_map.insert (summary_bits, caller_sval);
-	  }
-	return mgr->get_or_create_compound_svalue (summary_sval->get_type (),
-						   std::move (caller_map));
-      }
-      break;
-    case SK_CONJURED:
-      {
-	region_model_manager *mgr = get_manager ();
-	return mgr->get_or_create_unknown_svalue (summary_sval->get_type ());
       }
       break;
     case SK_ASM_OUTPUT:
@@ -564,7 +467,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
     case RK_HEAP:
     case RK_THREAD_LOCAL:
     case RK_ROOT:
-      /* These should never be pointed to by a region_svalue.  */
+      /* These should never be pointed to by a pointer_svalue.  */
       gcc_unreachable ();
 
     case RK_FUNCTION:
@@ -729,7 +632,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
 	  = convert_region_from_summary (summary_parent_reg);
 	if (!caller_parent_reg)
 	  return nullptr;
-	const bit_range &bits = summary_bit_range_reg->get_bits ();
+	const concrete_bit_range &bits = summary_bit_range_reg->get_bits ();
 	return mgr->get_bit_range (caller_parent_reg,
 				   summary_reg->get_type (),
 				   bits);
@@ -740,25 +643,343 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
     }
 }
 
-/* Try to convert SUMMARY_KEY in the summary to a corresponding binding key
+/* Try to convert SUMMARY_BC in the summary to a corresponding bit_contents
    in the caller.
 
    Return nullptr if the conversion is not possible.  */
 
-const binding_key *
-call_summary_replay::convert_key_from_summary (const binding_key *summary_key)
+const symbolic::bit_contents *
+call_summary_replay::
+convert_bit_contents_from_summary (const symbolic::bit_contents &summary_bc)
 {
-  if (summary_key->concrete_p ())
-    return summary_key;
+  auto &bc_mgr = summary_bc.get_bit_contents_manager ();
+  switch (summary_bc.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
 
-  const symbolic_binding *symbolic_key = (const symbolic_binding *)summary_key;
-  const region *summary_reg = symbolic_key->get_region ();
-  const region *caller_reg = convert_region_from_summary (summary_reg);
-  if (!caller_reg)
+    case symbolic::bit_contents::kind::uninit:
+    case symbolic::bit_contents::kind::zero:
+      return &summary_bc;
+
+    case symbolic::bit_contents::kind::untracked:
+      {
+	auto &summary_untracked
+	  = (const symbolic::untracked_bit_contents &)summary_bc;
+	value_set maybe_live_caller;
+	for (auto iter : summary_untracked.get_maybe_live ())
+	  {
+	    if (auto *sval = iter->dyn_cast_svalue ())
+	      {
+		if (auto *caller_sval = convert_svalue_from_summary (sval))
+		  maybe_live_caller.add (caller_sval);
+	      }
+	    else if (auto *bv = iter->dyn_cast_bit_vector ())
+	      {
+		if (auto *caller_bv = convert_bit_vector_from_summary (*bv))
+		  maybe_live_caller.add (caller_bv);
+	      }
+	    else
+	      gcc_unreachable ();
+	  }
+	return &bc_mgr.get_untracked (maybe_live_caller);
+      }
+      break;
+
+    case symbolic::bit_contents::kind::baseline:
+      {
+	auto &summary_baseline
+	  = (const symbolic::baseline_bit_contents &)summary_bc;
+
+	auto &summary_baseline_key = summary_baseline.get_baseline_key ();
+	auto *caller_reg
+	  = convert_region_from_summary (summary_baseline_key.m_base_reg);
+	if (!caller_reg)
+	  return nullptr;
+
+	/* Note that caller_reg might not itself be a base region;
+	   get its offset within its base region.  */
+	auto &rmm = summary_bc.get_node_mgr ().get_region_model_manager ();
+	auto caller_mem_offset = caller_reg->get_memory_offset (rmm);
+
+	/* We want the state of base_reg in the caller at the call,
+	   rather than at its baseline.  */
+	region_model *caller_model = get_caller_model ();
+	auto *caller_cluster
+	  = caller_model->get_store ()->get_cluster (&caller_mem_offset.get_base_region ());
+	if (!caller_cluster)
+	  return nullptr;
+	auto &caller_bc = caller_cluster->get_bit_contents ();
+	return &bc_mgr.get_offset_bit_contents
+	  (caller_bc,
+	   -caller_mem_offset.get_bit_offset ());
+      }
+      break;
+
+    case symbolic::bit_contents::kind::conjured:
+      return nullptr; // TODO
+
+    case symbolic::bit_contents::kind::named_test:
+      return nullptr; // TODO
+
+    case symbolic::bit_contents::kind::concrete_overlay:
+      {
+	auto &summary_overlay
+	  = (const symbolic::concrete_bit_overlay &)summary_bc;
+	auto *caller_baseline
+	  = convert_bit_contents_from_summary (summary_overlay.get_baseline ());
+	if (!caller_baseline)
+	  return nullptr;
+	auto *caller_result = caller_baseline;
+	for (auto iter : summary_overlay.m_concrete_range_map)
+	  {
+	    auto &summary_bv = iter.second;
+	    auto *caller_bv
+	      = convert_bit_vector_from_summary (summary_bv);
+	    if (!caller_bv)
+	      return nullptr;
+	    caller_result
+	      = &caller_result->set_bits (iter.first, *caller_bv, nullptr);
+	  }
+	return caller_result;
+      }
+      break;
+    case symbolic::bit_contents::kind::symbolic_overlay:
+      {
+	auto &summary_overlay
+	  = (const symbolic::symbolic_bit_overlay &)summary_bc;
+	auto *caller_baseline
+	  = convert_bit_contents_from_summary (summary_overlay.get_baseline ());
+	if (!caller_baseline)
+	  return nullptr;
+	symbolic::symbolic_bit_overlay::key caller_key {caller_baseline, {}};
+	for (auto iter : summary_overlay.m_symbolic_range_map)
+	  {
+	    auto &summary_bit_range = iter.first;
+	    auto &summary_bv = iter.second;
+	    auto *caller_start_offset = convert_scalar_from_summary
+	      (summary_bit_range.get_start_offset ());
+	    if (!caller_start_offset)
+	      return nullptr;
+	    auto *caller_size
+	      = convert_scalar_from_summary (summary_bit_range.get_size ());
+	    if (!caller_size)
+	      return nullptr;
+	    auto *caller_bv
+	      = convert_bit_vector_from_summary (summary_bv);
+	    if (!caller_bv)
+	      return nullptr;
+	    caller_key.m_symbolic_range_map.insert
+	      ({symbolic_bit_range (*caller_start_offset, *caller_size),
+		*caller_bv});
+	  }
+	return &bc_mgr.get_symbolic_bit_overlay (std::move (caller_key),
+						 nullptr /* FIMXE: uncertainty */);
+      }
+      break;
+    case symbolic::bit_contents::kind::offset:
+      return nullptr; // TODO
+    }
+}
+
+/* Try to convert SUMMARY_BV in the summary to a corresponding bit_vector
+   in the caller.
+
+   Return nullptr if the conversion is not possible.  */
+
+const symbolic::bit_vector *
+call_summary_replay::
+convert_bit_vector_from_summary (const symbolic::bit_vector &summary_bv)
+{
+  auto &bv_mgr = summary_bv.get_bit_vector_manager ();
+  switch (summary_bv.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+
+    case symbolic::bit_vector::kind::concat:
+      return nullptr; // TODO
+
+    case symbolic::bit_vector::kind::conjured:
+      {
+	auto &summary_conjured_bv
+	  = (const symbolic::conjured_bit_vector &)summary_bv;
+
+	auto *caller_id_reg
+	  = convert_region_from_summary (summary_conjured_bv.get_id_reg ());
+	if (!caller_id_reg)
+	  return nullptr;
+
+	conjured_purge p (get_caller_model (), get_ctxt ());
+	auto &caller_bv
+	  = bv_mgr.get_conjured_bits (summary_conjured_bv.get_stmt (),
+				      caller_id_reg,
+				      p,
+				      summary_conjured_bv.get_idx ());
+	return &caller_bv;
+      }
+      break;
+    case symbolic::bit_vector::kind::cropped:
+      {
+	auto &summary_cropped_bv
+	  = (const symbolic::cropped_bit_vector &)summary_bv;
+	auto &summary_uncropped_bv
+	  = summary_cropped_bv.get_uncropped_bit_vector ();
+	auto *caller_uncropped_bv
+	  = convert_bit_vector_from_summary (summary_uncropped_bv);
+	if (!caller_uncropped_bv)
+	  return nullptr;
+	auto summary_bit_range
+	  = summary_cropped_bv.get_uncropped_bits_to_use ();
+	auto *caller_start_offset
+	  = convert_scalar_from_summary (summary_bit_range.get_start_offset ());
+	if (!caller_start_offset)
+	  return nullptr;
+	auto *caller_size
+	  = convert_scalar_from_summary (summary_bit_range.get_size ());
+	return &bv_mgr.get_cropped_bits
+	  (*caller_uncropped_bv,
+	   symbolic_bit_range (*caller_start_offset,
+			       *caller_size));
+      }
+      break;
+
+    case symbolic::bit_vector::kind::empty:
+    case symbolic::bit_vector::kind::named_test:
+    case symbolic::bit_vector::kind::poisoned:
+      return &summary_bv;
+
+    case symbolic::bit_vector::kind::repeated:
+      return nullptr; // TODO
+
+    case symbolic::bit_vector::kind::svalue:
+      {
+	auto &summary_bv_for_sval
+	  = (const symbolic::bit_vector_from_svalue &)summary_bv;
+	auto &summary_sval = summary_bv_for_sval.get_svalue ();
+	auto *caller_sval = convert_svalue_from_summary (&summary_sval);
+	if (!caller_sval)
+	  return nullptr;
+	return &bv_mgr.get_bit_vector_from_svalue (*caller_sval);
+      }
+      break;
+
+    case symbolic::bit_vector::kind::from_ubc:
+      {
+	auto &summary_bv_from_ubc
+	  = (const symbolic::bit_vector_from_ubc &)summary_bv;
+	auto &summary_bc = summary_bv_from_ubc.get_bit_contents ();
+	auto *caller_bc = convert_bit_contents_from_summary (summary_bc);
+	if (!caller_bc)
+	  return nullptr;
+
+	auto &summary_sym_bit_range = summary_bv_from_ubc.get_bit_range ();
+	auto *caller_start_offset
+	  = convert_scalar_from_summary (summary_sym_bit_range.get_start_offset ());
+	if (!caller_start_offset)
+	  return nullptr;
+	auto *caller_size
+	  = convert_scalar_from_summary (summary_sym_bit_range.get_size ());
+	if (!caller_size)
+	  return nullptr;
+	return &caller_bc->get_bits (symbolic_bit_range (*caller_start_offset,
+							 *caller_size));
+      }
+      break;
+    case symbolic::bit_vector::kind::tristate:
+      return &summary_bv;
+    }
+}
+
+template <typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> *
+call_summary_replay::impl_bits_from_bytes (const symbolic::scalar<ConcreteValueType> &summary_scalar)
+{
+  gcc_unreachable ();
+}
+
+template <>
+const symbolic_bit_size *
+call_summary_replay::impl_bits_from_bytes (const symbolic_bit_size &summary_scalar)
+{
+  auto &summary_from_bytes
+    = (const symbolic::bits_from_bytes_scalar &)summary_scalar;
+  auto &summary_bytes = summary_from_bytes.get_bytes ();
+  auto *caller_bytes = convert_scalar_from_summary (summary_bytes);
+  if (!caller_bytes)
     return nullptr;
-  region_model_manager *mgr = get_manager ();
-  store_manager *store_mgr = mgr->get_store_manager ();
-  return store_mgr->get_symbolic_binding (caller_reg);
+  auto &scalar_mgr = summary_scalar.get_mgr ();
+  return &scalar_mgr.get_bits_from_bytes (*caller_bytes);
+}
+
+template <typename ConcreteValueType>
+const symbolic::scalar<ConcreteValueType> *
+call_summary_replay::
+convert_scalar_from_summary (const symbolic::scalar<ConcreteValueType> &summary_scalar)
+{
+  switch (summary_scalar.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+    case symbolic::scalar<ConcreteValueType>::kind::concrete:
+      return &summary_scalar;
+
+    case symbolic::scalar<ConcreteValueType>::kind::sum:
+      {
+	auto &summary_sum
+	  = (const symbolic::sum<ConcreteValueType> &)summary_scalar;
+
+	auto &scalar_mgr = summary_scalar.get_mgr ();
+	std::vector<const symbolic::scalar<ConcreteValueType> *> caller_addends;
+	for (size_t i = 0; i < summary_sum.get_num_symbolic_addends (); ++i)
+	  {
+	    auto &summary_addend = summary_sum.get_symbolic_addend (i);
+	    auto *caller_addend = convert_scalar_from_summary (summary_addend);
+	    gcc_assert (caller_addend);
+	    caller_addends.push_back (caller_addend);
+	  }
+	if (auto *summary_conc_addend = summary_sum.get_any_concrete_addend ())
+	  caller_addends.push_back (summary_conc_addend);
+	return &scalar_mgr.get_sum (std::move (caller_addends));
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::product:
+      {
+	auto &summary_product
+	  = (const symbolic::product<ConcreteValueType> &)summary_scalar;
+	auto *caller_lhs
+	  = convert_scalar_from_summary (summary_product.get_lhs ());
+	if (!caller_lhs)
+	  return nullptr;
+	auto *caller_rhs
+	  = convert_scalar_from_summary (summary_product.get_rhs ());
+	if (!caller_rhs)
+	  return nullptr;
+	auto &scalar_mgr = summary_scalar.get_mgr ();
+	return &scalar_mgr.get_product (*caller_lhs, *caller_rhs);
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::from_svalue:
+      {
+	auto &summary_from_sval
+	  = (const symbolic::scalar_from_svalue<ConcreteValueType> &)summary_scalar;
+	auto *caller_sval
+	  = convert_svalue_from_summary (&summary_from_sval.get_svalue ());
+	if (!caller_sval)
+	  return nullptr;
+	auto &scalar_mgr = summary_scalar.get_mgr ();
+	return &scalar_mgr.get_scalar_from_svalue (*caller_sval);
+      }
+      break;
+
+    case symbolic::scalar<ConcreteValueType>::kind::named_test:
+      return &summary_scalar;
+
+    case symbolic::scalar<ConcreteValueType>::kind::bits_from_bytes:
+      return impl_bits_from_bytes (summary_scalar);
+    }
 }
 
 /* Record that SUMMARY_SVAL maps to CALLER_SVAL for this replay.  */
@@ -783,93 +1004,108 @@ call_summary_replay::add_region_mapping (const region *summary_reg,
   m_map_region_from_summary_to_caller.put (summary_reg, caller_reg);
 }
 
-/* Dump a multiline representation of this object to PP.  */
-
-void
-call_summary_replay::dump_to_pp (pretty_printer *pp, bool simple) const
+std::unique_ptr<text_art::tree_widget>
+call_summary_replay::make_dump_widget (symbolic::node_dump_state &nds) const
 {
-  pp_newline (pp);
-  pp_string (pp, "CALL DETAILS:");
-  pp_newline (pp);
-  m_cd.dump_to_pp (pp, simple);
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> replay_widget
+    (tree_widget::from_fmt (nds, nullptr, "call_summary_replay"));
 
-  pp_newline (pp);
-  pp_string (pp, "CALLEE SUMMARY:");
-  pp_newline (pp);
-  m_summary.dump_to_pp (m_ext_state, pp, simple);
+  replay_widget->add_child (m_cd.make_dump_widget (nds));
+  replay_widget->add_child (m_summary.make_dump_widget (nds));
 
   /* Current state of caller (could be in mid-update).  */
-  pp_newline (pp);
-  pp_string (pp, "CALLER:");
-  pp_newline (pp);
-  m_cd.get_model ()->dump_to_pp (pp, simple, true);
+  {
+    auto w = tree_widget::from_fmt (nds, nullptr, "Current state of caller");
+    w->add_child (m_cd.get_model ()->make_dump_widget (nds));
+    replay_widget->add_child (std::move (w));
+  }
 
-  pp_newline (pp);
-  pp_string (pp, "REPLAY STATE:");
-  pp_newline (pp);
-  pp_string (pp, "svalue mappings from summary to caller:");
-  pp_newline (pp);
-  auto_vec <const svalue *> summary_svals;
-  for (auto kv : m_map_svalue_from_summary_to_caller)
-    summary_svals.safe_push (kv.first);
-  summary_svals.qsort (svalue::cmp_ptr_ptr);
-  for (auto summary_sval : summary_svals)
+  {
+    auto details_widget = tree_widget::from_fmt (nds, nullptr, "Replay state");
+
     {
-      pp_string (pp, "sval in summary: ");
-      summary_sval->dump_to_pp (pp, simple);
-      pp_newline (pp);
+      auto sval_map_widget = tree_widget::from_fmt
+	(nds, nullptr, "svalue mappings from summary to caller:");
 
-      const svalue *caller_sval
-	= *((const_cast<svalue_map_t &>
-	     (m_map_svalue_from_summary_to_caller)).get (summary_sval));
-      pp_string (pp, " sval in caller: ");
-      caller_sval->dump_to_pp (pp, simple);
-      pp_newline (pp);
+      auto_vec <const svalue *> summary_svals;
+      for (auto kv : m_map_svalue_from_summary_to_caller)
+	summary_svals.safe_push (kv.first);
+      summary_svals.qsort (svalue::cmp_ptr_ptr);
+      for (auto summary_sval : summary_svals)
+	{
+	  auto in_summary_widget = tree_widget::from_fmt
+	    (nds, nullptr, "sval in summary:");
+	  in_summary_widget->add_child (summary_sval->make_dump_widget (nds));
+	  sval_map_widget->add_child (std::move (in_summary_widget));
+
+	  const svalue *caller_sval
+	    = *((const_cast<svalue_map_t &>
+		 (m_map_svalue_from_summary_to_caller)).get (summary_sval));
+	  auto in_caller_widget = tree_widget::from_fmt
+	    (nds, nullptr, "sval in caller:");
+	  in_caller_widget->add_child (caller_sval->make_dump_widget (nds));
+	  sval_map_widget->add_child (std::move (in_caller_widget));
+	}
+
+      details_widget->add_child (std::move (sval_map_widget));
     }
 
-  pp_newline (pp);
-  pp_string (pp, "region mappings from summary to caller:");
-  pp_newline (pp);
-  auto_vec <const region *> summary_regs;
-  for (auto kv : m_map_region_from_summary_to_caller)
-    summary_regs.safe_push (kv.first);
-  summary_regs.qsort (region::cmp_ptr_ptr);
-  for (auto summary_reg : summary_regs)
     {
-      pp_string (pp, "reg in summary: ");
-      if (summary_reg)
-	summary_reg->dump_to_pp (pp, simple);
-      else
-	pp_string (pp, "(null)");
-      pp_newline (pp);
+      auto reg_map_widget = tree_widget::from_fmt
+	(nds, nullptr, "region mappings from summary to caller:");
 
-      const region *caller_reg
-	= *((const_cast<region_map_t &>
-	     (m_map_region_from_summary_to_caller)).get (summary_reg));
-      pp_string (pp, " reg in caller: ");
-      if (caller_reg)
-	caller_reg->dump_to_pp (pp, simple);
-      else
-	pp_string (pp, "(null)");
-      pp_newline (pp);
+      auto_vec <const region *> summary_regs;
+      for (auto kv : m_map_region_from_summary_to_caller)
+	summary_regs.safe_push (kv.first);
+      summary_regs.qsort (region::cmp_ptr_ptr);
+      for (auto summary_reg : summary_regs)
+	{
+	  auto in_summary_widget = tree_widget::from_fmt
+	    (nds, nullptr, "reg in summary:");
+	  if (summary_reg)
+	    in_summary_widget->add_child (summary_reg->make_dump_widget (nds));
+	  else
+	    in_summary_widget->add_child
+	      (tree_widget::from_fmt (nds, nullptr, "(null)"));
+	  reg_map_widget->add_child (std::move (in_summary_widget));
+
+	  const region *caller_reg
+	    = *((const_cast<region_map_t &>
+		 (m_map_region_from_summary_to_caller)).get (summary_reg));
+	  auto in_caller_widget = tree_widget::from_fmt
+	    (nds, nullptr, "reg in caller:");
+	  if (caller_reg)
+	    in_caller_widget->add_child (caller_reg->make_dump_widget (nds));
+	  else
+	    in_caller_widget->add_child
+	      (tree_widget::from_fmt (nds, nullptr, "(null)"));
+	  reg_map_widget->add_child (std::move (in_caller_widget));
+	}
+
+      details_widget->add_child (std::move (reg_map_widget));
     }
+
+    replay_widget->add_child (std::move (details_widget));
+  }
+
+  return replay_widget;
 }
 
-/* Dump a multiline representation of this object to FILE.  */
-
-void
-call_summary_replay::dump (FILE *fp, bool simple) const
-{
-  tree_dump_pretty_printer pp (fp);
-  dump_to_pp (&pp, simple);
-}
-
-/* Dump a multiline representation of this object to stderr.  */
+/* Dump a tree-like representation of this object to stderr.  */
 
 DEBUG_FUNCTION void
-call_summary_replay::dump (bool simple) const
+call_summary_replay::dump () const
 {
-  dump (stderr, simple);
+  symbolic::dump_node_tree_to_stderr<call_summary_replay> (*this);
+}
+
+/* Dump a tree-like representation of this object to LOG.  */
+
+void
+call_summary_replay::dump_to_logger (logger &log) const
+{
+  symbolic::dump_node_tree_to_logger<call_summary_replay> (*this, log);
 }
 
 } // namespace ana

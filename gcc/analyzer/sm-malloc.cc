@@ -364,15 +364,12 @@ public:
   state_machine::state_t
   get_default_state (const svalue *sval) const final override
   {
-    if (tree cst = sval->maybe_get_constant ())
+    if (sval->all_zeroes_p ())
+      return m_null;
+    if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
       {
-	if (zerop (cst))
-	  return m_null;
-      }
-    if (const region_svalue *ptr = sval->dyn_cast_region_svalue ())
-      {
-	const region *reg = ptr->get_pointee ();
-	switch (reg->get_memory_space ())
+	const region &reg = sym_ptr->get_base_region ();
+	switch (reg.get_memory_space ())
 	  {
 	  default:
 	    break;
@@ -2810,9 +2807,10 @@ add_state_to_state_graph (analyzer_state_graph &out_state_graph,
 			  const svalue &sval,
 			  state_machine::state_t state) const
 {
-  if (const region *reg = sval.maybe_get_region ())
+  if (auto *sym_ptr = sval.maybe_get_symbolic_pointer ())
     {
-      auto &reg_node = out_state_graph.get_or_create_state_node (*reg);
+      const region &reg = sym_ptr->get_base_region ();
+      auto &reg_node = out_state_graph.get_or_create_state_node (reg);
       auto alloc_state = as_a_allocation_state (state);
       gcc_assert (alloc_state);
 

@@ -54,6 +54,12 @@ class logger
 
   void log_canvas (const text_art::canvas &);
 
+  const text_art::theme *
+  get_text_art_theme () const
+  {
+    return m_text_art_theme.get ();
+  }
+
   void enter_scope (const char *scope_name);
   void enter_scope (const char *scope_name, const char *fmt, va_list *ap)
     ATTRIBUTE_GCC_DIAG(3, 0);
@@ -72,6 +78,7 @@ private:
   int m_indent_level;
   bool m_log_refcount_changes;
   std::unique_ptr<pretty_printer> m_pp;
+  std::unique_ptr<text_art::theme> m_text_art_theme;
 };
 
 /* The class log_scope is an RAII-style class intended to make

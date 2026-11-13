@@ -46,6 +46,14 @@ along with GCC; see the file COPYING3.  If not see
 
 class graphviz_out;
 
+namespace diagnostics {
+namespace markup {
+
+class node;
+class lowering_options;
+
+} } // namespace diagnostics:markup
+
 namespace ana {
 
 /* Forward decls of common types, with indentation to show inheritance.  */
@@ -54,14 +62,70 @@ class supergraph;
 class supernode;
 class superedge;
 
-namespace symbolic
-{
-  class node;
-  class node_manager;
+class integer;
+template<typename Unit> class integer_with_unit;
+
+namespace units {
+  struct bit;
+  struct byte;
 }
 
+namespace symbolic
+{
+  template<typename ConcreteValueType>
+  class range;
+
+  class node_dump_state;
+  template <typename NodeClass> class node_set;
+
+  class node_visitor;
+  class liveness_context;
+  struct markup_context;
+
+  class node;
+    class bit_contents;
+      class unfoldable_bit_contents;
+	class baseline_bit_contents;
+	class conjured_bit_contents;
+	class offset_bit_contents;
+      class uniform_bit_contents;
+      class bit_overlay;
+	class concrete_bit_overlay;
+	class symbolic_bit_overlay;
+
+    template <typename ConcreteValueType>
+    class scalar;
+
+    class value_node;
+      class bit_vector;
+	class concat_bit_vector;
+	class conjured_bit_vector;
+	class constant_bit_vector;
+	class cropped_bit_vector;
+	class repeated_bit_vector;
+	class bit_vector_from_svalue;
+	class bit_vector_from_ubc;
+	class uniform_bit_vector;
+	  class empty_bit_vector;
+	  class poisoned_bit_vector;
+	  class tristate_bit_vector;
+
+  /* Top-level manager class.  */
+  class node_manager;
+
+  /* Managers for specific kinds of symbolic::node.  */
+  class bit_contents_manager;
+  class bit_vector_manager;
+  class scalar_managers;
+  template<typename ConcreteValueType> class scalar_manager;
+
+} // namespace ana::symbolic
+
+using symbolic_bit_range = symbolic::range<integer_with_unit<units::bit>>;
+using symbolic_byte_range = symbolic::range<integer_with_unit<units::byte>>;
+
 class svalue;
-  class region_svalue;
+  class pointer_svalue;
   class constant_svalue;
   class unknown_svalue;
   class poisoned_svalue;
@@ -69,17 +133,12 @@ class svalue;
   class initial_svalue;
   class unaryop_svalue;
   class binop_svalue;
-  class sub_svalue;
-  class repeated_svalue;
-  class bits_within_svalue;
+  class svalue_from_bit_vector;
   class unmergeable_svalue;
   class placeholder_svalue;
   class widening_svalue;
-  class compound_svalue;
-  class conjured_svalue;
   class asm_output_svalue;
   class const_fn_result_svalue;
-typedef hash_set<const svalue *> svalue_set;
 class region;
   class frame_region;
   class function_region;
@@ -97,7 +156,6 @@ class region;
 class region_model_manager;
 class conjured_purge;
 struct model_merger;
-class store_manager;
 class store;
 class region_model;
 class region_model_context;
@@ -109,6 +167,8 @@ class equiv_class;
 class reachable_regions;
 class bounded_ranges;
 class bounded_ranges_manager;
+
+class setjmp_record;
 
 struct pending_location;
 class pending_diagnostic;
@@ -216,99 +276,13 @@ typedef offset_int byte_size_t;
 
 extern bool int_size_in_bits (const_tree type, bit_size_t *out);
 
-extern tree get_field_at_bit_offset (tree record_type, bit_offset_t bit_offset);
-
 extern bool
 compare_bit_offsets_p (bit_offset_t a,
 		       enum tree_code op,
 		       bit_offset_t b);
 
-/* The location of a region expressesd as an offset relative to a
-   base region.  */
-
-class region_offset
-{
-public:
-  region_offset ()
-  : m_base_region (nullptr), m_offset (0), m_sym_offset (nullptr)
-  {
-  }
-
-  static region_offset make_concrete (const region *base_region,
-				      bit_offset_t offset)
-  {
-    return region_offset (base_region, offset, nullptr);
-  }
-  static region_offset make_symbolic (const region *base_region,
-				      const svalue *sym_offset)
-  {
-    return region_offset (base_region, 0, sym_offset);
-  }
-  static region_offset make_byte_offset (const region *base_region,
-					 const svalue *num_bytes_sval);
-
-  const region *get_base_region () const { return m_base_region; }
-
-  bool concrete_p () const { return m_sym_offset == nullptr; }
-  bool symbolic_p () const { return m_sym_offset != nullptr; }
-
-  bit_offset_t get_bit_offset () const
-  {
-    gcc_assert (!symbolic_p ());
-    return m_offset;
-  }
-
-  bool get_concrete_byte_offset (byte_offset_t *out) const
-  {
-    gcc_assert (!symbolic_p ());
-    if (m_offset % BITS_PER_UNIT == 0)
-      {
-	*out = m_offset / BITS_PER_UNIT;
-	return true;
-      }
-    return false;
-  }
-
-  const svalue *get_symbolic_byte_offset () const
-  {
-    gcc_assert (symbolic_p ());
-    return m_sym_offset;
-  }
-
-  const svalue &calc_symbolic_bit_offset (region_model_manager *mgr) const;
-  const svalue *calc_symbolic_byte_offset (region_model_manager *mgr) const;
-
-  bool operator== (const region_offset &other) const
-  {
-    return (m_base_region == other.m_base_region
-	    && m_offset == other.m_offset
-	    && m_sym_offset == other.m_sym_offset);
-  }
-
-  void dump_to_pp (pretty_printer *pp, bool) const;
-  void dump (bool) const;
-
-private:
-  region_offset (const region *base_region, bit_offset_t offset,
-		 const svalue *sym_offset)
-  : m_base_region (base_region), m_offset (offset), m_sym_offset (sym_offset)
-  {}
-
-  const region *m_base_region;
-  bit_offset_t m_offset;
-  const svalue *m_sym_offset;
-};
-
-extern bool operator< (const region_offset &, const region_offset &);
-extern bool operator<= (const region_offset &, const region_offset &);
-extern bool operator> (const region_offset &, const region_offset &);
-extern bool operator>= (const region_offset &, const region_offset &);
-
-extern tristate
-eval_region_offset_comparison (region_offset lhs_offset,
-			       enum tree_code op,
-			       region_offset rhs_offset,
-			       const region_model &model);
+extern int
+cmp_csts_and_types (const_tree cst1, const_tree cst2);
 
 extern location_t get_stmt_location (const gimple *stmt, function *fun);
 
@@ -538,10 +512,63 @@ get_ssa_default_def (const function &fun, tree var);
 extern const svalue *
 strip_types (const svalue *sval, region_model_manager &mgr);
 
-extern region_offset
-strip_types (const region_offset &offset, region_model_manager &mgr);
-
 extern tree remove_ssa_names (tree expr);
+
+/* An enum describing a particular kind of "poisoned" value.  */
+
+enum class poison_kind
+{
+  /* For use to describe uninitialized memory.  */
+  uninit,
+
+  /* For use to describe freed memory.  */
+  freed,
+
+  /* For use to describe deleted memory.  */
+  deleted,
+
+  /* For use on pointers to regions within popped stack frames.  */
+  popped_stack,
+
+  /* Placeholder value (e.g. for string_scan when we don't have
+     a poison_kind).  */
+  other
+};
+
+extern const char *
+poison_kind_to_str (enum poison_kind);
+
+/* An enum for discriminating different baseline states,
+   for determining the implicit contents of base regions
+   that don't have their contents explicitly tracked.  */
+
+enum class baseline_state
+{
+  /* Analysis is on a direct path from entry to "main", so
+     the implicit contents of a global variable is that of
+     its initializer (or 0).  */
+  main,
+
+  /* Analysis is on an entrypoint that isn't on "main", so
+     the implicit contents of a global variable is its initial_svalue.  */
+  after_main
+};
+
+extern const char *
+baseline_state_to_str (baseline_state);
+
+/* An enum for tracking the state of an iteration.  */
+
+enum class iter_result
+{
+  keep_going,
+  stop
+};
+
+extern void
+append_pathvar_with_type (path_var pv,
+			  tree type,
+			  auto_vec<path_var> *out_pvs);
 
 } // namespace ana
 

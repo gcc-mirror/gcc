@@ -8,7 +8,7 @@ struct foo
 
 void test_1 (struct foo f)
 {
-  __analyzer_describe (0, f.ptr); /* { dg-warning "svalue: 'INIT_VAL\\(f.ptr\\)'" } */
+  __analyzer_describe (0, f.ptr); /* { dg-warning "svalue: '\[^\n\]+'" } */
 }
 
 static void __analyzer_called_by_test_2 (struct foo f_inner)

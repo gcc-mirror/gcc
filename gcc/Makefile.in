@@ -1371,6 +1371,7 @@ ANALYZER_OBJS = \
 	analyzer/function-set.o \
 	analyzer/infinite-loop.o \
 	analyzer/infinite-recursion.o \
+	analyzer/initializers.o \
 	analyzer/integer.o \
 	analyzer/integer-with-unit.o \
 	analyzer/kf.o \
@@ -1382,7 +1383,6 @@ ANALYZER_OBJS = \
 	analyzer/poisoned-value-diagnostic.o \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
-	analyzer/ranges.o \
 	analyzer/record-layout.o \
 	analyzer/region.o \
 	analyzer/region-model.o \
@@ -1402,12 +1402,19 @@ ANALYZER_OBJS = \
 	analyzer/state-purge.o \
 	analyzer/state-transition.o \
 	analyzer/store.o \
+	analyzer/string-scan.o \
 	analyzer/supergraph.o \
 	analyzer/supergraph-fixup-locations.o \
 	analyzer/supergraph-simplify.o \
 	analyzer/supergraph-sorting.o \
 	analyzer/svalue.o \
+	analyzer/symbolic-bit-contents.o \
+	analyzer/symbolic-bit-vectors.o \
+	analyzer/symbolic-memory-ranges.o \
 	analyzer/symbolic-nodes.o \
+	analyzer/symbolic-pointers.o \
+	analyzer/symbolic-ranges.o \
+	analyzer/symbolic-scalars.o \
 	analyzer/trimmed-graph.o \
 	analyzer/varargs.o \
 	analyzer/write-to-const-diagnostics.o \

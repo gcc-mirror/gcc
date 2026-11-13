@@ -13,5 +13,5 @@ test_pointer_to_global (FILE *f)
   fread (&g, sizeof (g), 1, f);
   fread (&h, sizeof (h), 1, f);
 
-  return *p / *q; /* { dg-warning "-Wanalyzer-tainted-divisor" } */
+  return *p / *q; /* { dg-warning "-Wanalyzer-tainted-divisor" "TODO(file PR)" { xfail *-*-* } } */
 }

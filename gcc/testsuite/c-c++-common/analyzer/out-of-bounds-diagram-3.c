@@ -27,10 +27,11 @@ make_str_badly (const char *src)
   return str;
 }
 
+// TODO: we've lost the description of what the write is ("write of '(char) 0'")
 /* { dg-begin-multiline-output "" }
 
                                       ┌──────────────────────────────────┐
-                                      │       write of '(char) 0'        │
+                                      │         write of 1 byte          │
                                       └──────────────────────────────────┘
                                                        │
                                                        │

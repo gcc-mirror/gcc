@@ -328,7 +328,7 @@ read_alias_file (fname, fname_len)
 		  string_space_max = new_size;
 		}
 
-	      map[nmap].alias = memcpy (&string_space[string_space_act], /* { dg-bogus "uninit" "FIXME" { xfail *-*-* } } */
+	      map[nmap].alias = memcpy (&string_space[string_space_act], /* { dg-bogus "uninit" } */
 					alias, alias_len);
 	      string_space_act += alias_len;
 

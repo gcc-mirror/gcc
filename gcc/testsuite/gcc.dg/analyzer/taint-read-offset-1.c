@@ -83,7 +83,7 @@ char test_6(FILE *f)
   struct bar tmp;
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
-    return *(p + tmp.offset); /* { dg-warning "use of attacker-controlled value 'tmp.offset' as offset without upper-bounds checking" } */
+    return *(p + tmp.offset); /* { dg-warning "use of attacker-controlled value 'tmp.offset' as offset without bounds checking" } */
   }
   return 0;
 }
@@ -94,7 +94,7 @@ char test_7(FILE *f)
 
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.offset >= 0) {
-      return *(p + tmp.offset); /* { dg-warning "use of attacker-controlled value 'tmp.offset' as offset without upper-bounds checking" } */
+      return *(p + tmp.offset); /* { dg-warning "use of attacker-controlled value 'tmp.offset' as offset without bounds checking" } */
     }
   }
   return 0;
@@ -107,7 +107,7 @@ char test_8(FILE *f)
   if (1 == fread(&tmp, sizeof(tmp), 1, f)) {
     if (tmp.offset < 256) {
       /* not a bug: has an upper bound, and an implicit lower bound: */
-      return *(p + tmp.offset);
+      return *(p + tmp.offset); /* { dg-bogus "attacker-controlled" "TODO(file PR)" { xfail *-*-* } } */
     }
   }
   return 0;

@@ -175,18 +175,17 @@ public:
 
   bool is_empty () const { return m_hash_map.is_empty (); }
 
-  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
-  void dump (bool simple) const;
+  void dump_to_logger (logger &) const;
 
   std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
   bool can_merge_with_p (const region_to_value_map &other,
 			 region_to_value_map *out) const;
 
-  void purge_state_involving (const svalue *sval);
+  void purge_state_involving (const symbolic::node &node);
 
 private:
   hash_map_t m_hash_map;
@@ -222,7 +221,7 @@ struct purge_stats
 class visitor
 {
 public:
-  virtual void visit_region_svalue (const region_svalue *) {}
+  virtual void visit_pointer_svalue (const pointer_svalue *) {}
   virtual void visit_constant_svalue (const constant_svalue *) {}
   virtual void visit_unknown_svalue (const unknown_svalue *) {}
   virtual void visit_poisoned_svalue (const poisoned_svalue *) {}
@@ -230,14 +229,10 @@ public:
   virtual void visit_initial_svalue (const initial_svalue *) {}
   virtual void visit_unaryop_svalue (const unaryop_svalue *) {}
   virtual void visit_binop_svalue (const binop_svalue *) {}
-  virtual void visit_sub_svalue (const sub_svalue *) {}
-  virtual void visit_repeated_svalue (const repeated_svalue *) {}
-  virtual void visit_bits_within_svalue (const bits_within_svalue *) {}
+  virtual void visit_svalue_from_bit_vector (const svalue_from_bit_vector *) {}
   virtual void visit_unmergeable_svalue (const unmergeable_svalue *) {}
   virtual void visit_placeholder_svalue (const placeholder_svalue *) {}
   virtual void visit_widening_svalue (const widening_svalue *) {}
-  virtual void visit_compound_svalue (const compound_svalue *) {}
-  virtual void visit_conjured_svalue (const conjured_svalue *) {}
   virtual void visit_asm_output_svalue (const asm_output_svalue *) {}
   virtual void visit_const_fn_result_svalue (const const_fn_result_svalue *) {}
 
@@ -245,6 +240,8 @@ public:
 };
 
 struct append_regions_cb_data;
+
+// TODO: should this be a new kind of symbolic::node ?
 
 /* Roughly equivalent to a struct __cxa_exception, except we store a std::vector
    rather than a linked list.    */
@@ -262,15 +259,13 @@ struct exception_node
 
   bool operator== (const exception_node &other) const;
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const;
-  void dump (FILE *fp, bool simple) const;
-  void dump (bool simple) const;
+  void dump_to_logger (logger &) const;
   void dump () const;
 
   std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
   tree maybe_get_type () const;
 
@@ -310,17 +305,14 @@ class region_model
 
   void print (pretty_printer *pp) const;
 
-  void dump_to_pp (pretty_printer *pp, bool simple, bool multiline) const;
-  void dump (FILE *fp, bool simple, bool multiline) const;
-  void dump (bool simple) const;
+  void dump_to_logger (logger &) const;
+  void dump_to_pp (pretty_printer *pp) const;
   void dump () const;
-
-  void debug () const;
 
   std::unique_ptr<json::object> to_json () const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
   void validate () const;
 
@@ -341,7 +333,8 @@ class region_model
 		     bool unknown_side_effects,
 		     region_model_context *ctxt);
 
-  void purge_state_involving (const svalue *sval, region_model_context *ctxt);
+  void purge_state_involving (const symbolic::node &node,
+			      region_model_context *ctxt);
 
   void impl_deallocation_call (const call_details &cd);
 
@@ -358,7 +351,7 @@ class region_model
 
   void handle_unrecognized_call (const gcall &call,
 				 region_model_context *ctxt);
-  void get_reachable_svalues (svalue_set *out,
+  void get_reachable_svalues (value_set *out,
 			      const svalue *extra_sval,
 			      const uncertainty_t *uncertainty);
 
@@ -410,31 +403,40 @@ class region_model
   void set_value (tree lhs, tree rhs, region_model_context *ctxt);
   void clobber_region (const region *reg);
   void purge_region (const region *reg);
-  void fill_region (const region *reg,
-		    const svalue *sval,
-		    region_model_context *ctxt);
   void zero_fill_region (const region *reg,
 			 region_model_context *ctxt);
-  void write_bytes (const region *dest_reg,
-		    const svalue *num_bytes_sval,
-		    const svalue *sval,
-		    region_model_context *ctxt);
-  const svalue *read_bytes (const region *src_reg,
-			    tree src_ptr_expr,
-			    const svalue *num_bytes_sval,
-			    region_model_context *ctxt) const;
-  void copy_bytes (const region *dest_reg,
-		   const region *src_reg,
-		   tree src_ptr_expr,
-		   const svalue *num_bytes_sval,
-		   region_model_context *ctxt);
-  void mark_region_as_unknown (const region *reg, uncertainty_t *uncertainty);
+
+  void
+  write_bytes (symbolic::pointer dest_sym_ptr,
+	       const symbolic::bit_vector &bytes,
+	       region_model_context *ctxt);
+
+  const symbolic::bit_vector &
+  read_bytes (symbolic::pointer src_sym_ptr,
+	      tree src_ptr_expr,
+	      const symbolic_byte_size &num_bytes,
+	      region_model_context *ctxt) const;
+
+  void
+  copy_bytes (symbolic::pointer dest_sym_ptr,
+	      symbolic::pointer src_sym_ptr,
+	      tree src_ptr_expr,
+	      const symbolic_byte_size &num_bytes,
+	      region_model_context *ctxt);
+
+  void
+  mark_region_as_unknown (const region *reg,
+			  uncertainty_t *uncertainty);
+  void
+  mark_region_as_conjured (const region &base_reg,
+			   const gimple &stmt,
+			   region_model_context *ctxt);
 
   tristate eval_condition (const svalue *lhs,
 			   enum tree_code op,
 			   const svalue *rhs) const;
   tristate compare_initial_and_pointer (const initial_svalue *init,
-					const region_svalue *ptr) const;
+					const symbolic::pointer &ptr) const;
   tristate symbolic_greater_than (const binop_svalue *a,
 				  const svalue *b) const;
   tristate structural_equality (const svalue *a, const svalue *b) const;
@@ -464,12 +466,17 @@ class region_model
 				logger *logger = nullptr) const;
   path_var
   get_representative_path_var (const svalue *sval,
-			       svalue_set *visited,
+			       value_set *visited,
 			       logger *logger) const;
   path_var
   get_representative_path_var (const region *reg,
-			       svalue_set *visited,
+			       value_set *visited,
 			       logger *logger) const;
+
+  const region *
+  maybe_get_region_for_mem_range (const symbolic::memory_range &mem_range,
+				  tree type,
+				  logger *logger = nullptr) const;
 
   /* For selftests.  */
   constraint_manager *get_constraints ()
@@ -523,23 +530,40 @@ class region_model
 
   const svalue *get_store_value (const region *reg,
 				 region_model_context *ctxt) const;
-  const svalue *get_store_bytes (const region *base_reg,
-				 const byte_range &bytes,
-				 region_model_context *ctxt) const;
+
+  const symbolic::bit_vector &
+  get_store_bits (const symbolic::memory_range &mem_range,
+		  region_model_context *ctxt) const;
+
+  const symbolic::bit_contents &
+  get_bit_contents (const region &base_reg) const;
+
+  void
+  set_bit_contents_raw (const region &base_reg,
+			const symbolic::bit_contents &new_bc);
+
   const svalue *scan_for_null_terminator (const region *reg,
 					  tree expr,
-					  const svalue **out_sval,
+					  const symbolic::bit_vector **out_bv,
 					  region_model_context *ctxt) const;
   const svalue *scan_for_null_terminator_1 (const region *reg,
 					    tree expr,
-					    const svalue **out_sval,
+					    const symbolic::bit_vector **out_bv,
 					    region_model_context *ctxt) const;
+
+  void
+  write_to_memory_offset (const symbolic::memory_offset &mem_offset,
+			  const symbolic::bit_vector &bv,
+			  region_model_context *ctxt);
 
   bool region_exists_p (const region *reg) const;
 
   void loop_replay_fixup (const region_model *dst_state);
 
   const svalue *get_capacity (const region *reg) const;
+
+  const symbolic::scalar<integer_with_unit<units::byte>> &
+  get_capacity_as_scalar (const region *reg) const;
 
   bool replay_call_summary (call_summary_replay &r,
 			    const region_model &summary);
@@ -578,6 +602,12 @@ class region_model
 				  const region *src_region,
 				  region_model_context *ctxt) const;
 
+  void
+  check_bytes_for_poison (const symbolic::bit_vector &bv,
+			  symbolic::pointer sym_ptr,
+			  tree sym_ptr_expr,
+			  region_model_context *ctxt) const;
+
   void check_region_for_write (const region *dest_reg,
 			       const svalue *sval_hint,
 			       region_model_context *ctxt) const;
@@ -589,13 +619,16 @@ class region_model
   check_for_null_terminated_string_arg (const call_details &cd,
 					unsigned idx,
 					bool include_terminator,
-					const svalue **out_sval) const;
+					const symbolic::bit_vector **out_bv) const;
 
   const builtin_known_function *
   get_builtin_kf (const gcall &call,
 		  region_model_context *ctxt = nullptr) const;
 
   bool called_from_main_p () const;
+
+  baseline_state
+  get_baseline_state () const;
 
   void push_thrown_exception (const exception_node &node)
   {
@@ -633,22 +666,45 @@ class region_model
     return retval;
   }
 
+  bool
+  bits_live_p (const symbolic::bit_vector_from_ubc &bv_from_ubc) const
+  {
+    return m_store.bits_live_p (bv_from_ubc, *this);
+  }
+
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
 
   path_var
   get_representative_path_var_1 (const svalue *sval,
-				 svalue_set *visited,
+				 value_set *visited,
 				 logger *logger) const;
   path_var
   get_representative_path_var_1 (const region *reg,
-				 svalue_set *visited,
+				 value_set *visited,
 				 logger *logger) const;
 
   const known_function *get_known_function (tree fndecl,
 					    const call_details &cd) const;
   const known_function *get_known_function (enum internal_fn) const;
+
+  const region *
+  maybe_get_subregion_for_symbolic_bit_range (const region &reg,
+					      tree type,
+					      symbolic_bit_range bit_range) const;
+  const region *
+  maybe_get_subregion_for_concrete_bit_range (const region &reg,
+					      tree desired_type,
+					      concrete_bit_range bit_range) const;
+  const region *
+  maybe_get_subregion_for_symbolic_bit_range_in_array (const region &array_reg,
+						       tree desired_type,
+						       symbolic_bit_range bit_range) const;
+  const region *
+  maybe_get_subregion_for_symbolic_bit_range_in_record (const region &record_reg,
+							tree desired_type,
+							symbolic_bit_range bit_range) const;
 
   bool add_constraints_from_binop (const svalue *outer_lhs,
 				   enum tree_code outer_op,
@@ -667,31 +723,51 @@ private:
 
   const region * get_region_for_poisoned_expr (tree expr) const;
 
+  const svalue *
+  complain_about_poison (const svalue *sval,
+			 tree expr,
+			 const region *src_region,
+			 region_model_context *ctxt,
+			 enum poison_kind pkind) const;
+
   void check_dynamic_size_for_taint (enum memory_space mem_space,
 				     const svalue *size_in_bytes,
 				     region_model_context *ctxt) const;
   void check_dynamic_size_for_floats (const svalue *size_in_bytes,
 				      region_model_context *ctxt) const;
 
+  void check_memory_range_for_taint (const symbolic::memory_range &mem_range,
+				     enum access_direction dir,
+				     region_model_context *ctxt) const;
   void check_region_for_taint (const region *reg,
-			       enum access_direction dir,
+			       enum access_direction,
 			       region_model_context *ctxt) const;
 
   void check_for_writable_region (const region* dest_reg,
 				  region_model_context *ctxt) const;
+
+  bool
+  check_memory_range_access (const symbolic::memory_range &mem_range,
+			     enum access_direction dir,
+			     const svalue *sval_hint,
+			     region_model_context *ctxt) const;
+
   bool check_region_access (const region *reg,
 			    enum access_direction dir,
 			    const svalue *sval_hint,
 			    region_model_context *ctxt) const;
-  bool check_region_for_read (const region *src_reg,
-			      region_model_context *ctxt) const;
+
   void check_region_size (const region *lhs_reg, const svalue *rhs_sval,
 			  region_model_context *ctxt) const;
 
   /* Implemented in bounds-checking.cc  */
-  bool check_symbolic_bounds (const region *base_reg,
-			      const svalue *sym_byte_offset,
-			      const svalue *num_bytes_sval,
+  bool
+  check_memory_range_bounds (const symbolic::memory_range &mem_range,
+			     enum access_direction dir,
+			     const svalue *sval_hint,
+			     region_model_context *ctxt) const;
+
+  bool check_symbolic_bounds (const symbolic::memory_range &attempted_range,
 			      const svalue *capacity,
 			      enum access_direction dir,
 			      const svalue *sval_hint,
@@ -723,6 +799,12 @@ private:
   void check_for_throw_inside_call (const gcall &call,
 				    tree fndecl,
 				    region_model_context *ctxt);
+
+  const svalue *
+  canonicalize_svalue_for_constraint (const svalue *sval) const;
+
+  bool
+  can_recurse_eval_condition_p (const unaryop_svalue *unary_op) const;
 
   /* Storing this here to avoid passing it around everywhere.  */
   symbolic::node_manager &m_node_mgr;
@@ -786,9 +868,8 @@ class region_model_context
 
   /* Hook for clients to be notified when the set of explicitly live
      svalues changes, so that they can purge state relating to dead
-     svalues.  */
-  virtual void on_liveness_change (const svalue_set &live_svalues,
-				   const region_model *model) = 0;
+     svalues and report leaks.  */
+  virtual void on_liveness_change (symbolic::liveness_context &liveness_ctxt) = 0;
 
   virtual logger *get_logger () = 0;
 
@@ -813,8 +894,9 @@ class region_model_context
   virtual void on_pop_frame (const frame_region *) = 0;
 
   /* Hooks for clients to be notified when an unknown change happens
-     to SVAL (in response to a call to an unknown function).  */
-  virtual void on_unknown_change (const svalue *sval, bool is_mutable) = 0;
+     to VAL (in response to a call to an unknown function).  */
+  virtual void on_unknown_change (const symbolic::value_node &val,
+				  bool is_mutable) = 0;
 
   /* Hooks for clients to be notified when a phi node is handled,
      where RHS is the pertinent argument.  */
@@ -830,8 +912,8 @@ class region_model_context
 
   virtual uncertainty_t *get_uncertainty () = 0;
 
-  /* Hook for clients to purge state involving SVAL.  */
-  virtual void purge_state_involving (const svalue *sval) = 0;
+  /* Hook for clients to purge state involving NODE.  */
+  virtual void purge_state_involving (const symbolic::node &node) = 0;
 
   /* Hook for clients to split state with a non-standard path.  */
   virtual void bifurcate (std::unique_ptr<custom_edge_info> info) = 0;
@@ -908,8 +990,7 @@ public:
   void add_note (std::unique_ptr<pending_note>) override;
   void add_event (std::unique_ptr<checker_event>) override;
   void on_svalue_leak (const svalue *) override {}
-  void on_liveness_change (const svalue_set &,
-			   const region_model *) override {}
+  void on_liveness_change (symbolic::liveness_context &) override {}
   logger *get_logger () override { return nullptr; }
   void on_condition (const svalue *lhs ATTRIBUTE_UNUSED,
 		     enum tree_code op ATTRIBUTE_UNUSED,
@@ -921,7 +1002,7 @@ public:
   {
   }
   void on_pop_frame (const frame_region *) override {}
-  void on_unknown_change (const svalue *sval ATTRIBUTE_UNUSED,
+  void on_unknown_change (const symbolic::value_node &val ATTRIBUTE_UNUSED,
 			  bool is_mutable ATTRIBUTE_UNUSED) override
   {
   }
@@ -935,7 +1016,7 @@ public:
 
   uncertainty_t *get_uncertainty () override { return nullptr; }
 
-  void purge_state_involving (const svalue *sval ATTRIBUTE_UNUSED) override {}
+  void purge_state_involving (const symbolic::node &) override {}
 
   void bifurcate (std::unique_ptr<custom_edge_info> info) override;
   void terminate_path () override;
@@ -1018,11 +1099,10 @@ class region_model_context_decorator : public region_model_context
       m_inner->on_svalue_leak (sval);
   }
 
-  void on_liveness_change (const svalue_set &live_svalues,
-			   const region_model *model) override
+  void on_liveness_change (symbolic::liveness_context &liveness_ctxt) override
   {
     if (m_inner)
-      m_inner->on_liveness_change (live_svalues, model);
+      m_inner->on_liveness_change (liveness_ctxt);
   }
 
   logger *get_logger () override
@@ -1054,10 +1134,11 @@ class region_model_context_decorator : public region_model_context
       m_inner->on_pop_frame (frame_reg);
   }
 
-  void on_unknown_change (const svalue *sval, bool is_mutable) override
+  void on_unknown_change (const symbolic::value_node &val,
+			  bool is_mutable) override
   {
     if (m_inner)
-      m_inner->on_unknown_change (sval, is_mutable);
+      m_inner->on_unknown_change (val, is_mutable);
   }
 
   void on_phi (const gphi *phi, tree rhs) override
@@ -1087,10 +1168,10 @@ class region_model_context_decorator : public region_model_context
       return nullptr;
   }
 
-  void purge_state_involving (const svalue *sval) override
+  void purge_state_involving (const symbolic::node &node) override
   {
     if (m_inner)
-      m_inner->purge_state_involving (sval);
+      m_inner->purge_state_involving (node);
   }
 
   void bifurcate (std::unique_ptr<custom_edge_info> info) override
@@ -1227,9 +1308,8 @@ struct model_merger
   {
   }
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const;
-  void dump (FILE *fp, bool simple) const;
-  void dump (bool simple) const;
+  void dump_to_logger (logger &) const;
+  void dump () const;
 
   region_model_manager *get_manager () const
   {
@@ -1237,6 +1317,7 @@ struct model_merger
   }
 
   bool mergeable_svalue_p (const svalue *) const;
+  bool mergeable_bit_vector_p (const symbolic::bit_vector &) const;
 
   const supernode *get_supernode () const
   {
@@ -1381,6 +1462,23 @@ make_write_to_const_diagnostic (const region *dest_reg, tree decl);
 
 extern std::unique_ptr<pending_diagnostic>
 make_write_to_string_literal_diagnostic (const region *reg);
+
+struct poison_finder : public symbolic::node_visitor
+{
+  poison_finder ()
+    : m_found_poison (false)
+  {
+  }
+
+  bool
+  visit_svalue (const svalue &sval) final override;
+
+  bool
+  visit_bit_vector (const symbolic::bit_vector &bv) final override;
+
+  bool m_found_poison;
+  enum poison_kind m_pkind;
+};
 
 } // namespace ana
 

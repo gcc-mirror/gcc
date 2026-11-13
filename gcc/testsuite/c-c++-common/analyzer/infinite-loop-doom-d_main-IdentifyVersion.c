@@ -16,7 +16,7 @@ D_AddFile(const char* file)
   __builtin_strcpy(newfile, file); /* { dg-warning "possibly-NULL" } */
 
   wadfiles[numwadfiles] = newfile;
-}
+} /* { dg-bogus "leak of 'newfile'" } */
 
 void
 IdentifyVersion(void)

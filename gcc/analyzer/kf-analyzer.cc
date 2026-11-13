@@ -333,7 +333,7 @@ public:
     if (!ctxt)
       return;
     region_model *model = cd.get_model ();
-    model->dump (false);
+    model->dump ();
   }
 };
 
@@ -384,6 +384,51 @@ public:
   }
 };
 
+/* Handler for "__analyzer_hexdump".  */
+
+class kf_analyzer_hexdump : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    return (cd.num_args () == 2
+	    && cd.arg_is_pointer_p (0)
+	    && cd.arg_is_size_p (1));
+  }
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    region_model_manager *mgr = cd.get_manager ();
+    region_model *model = cd.get_model ();
+    region_model_context *ctxt = cd.get_ctxt ();
+
+    tree t_ptr = cd.get_arg_tree (0);
+    const svalue *sval_ptr = model->get_rvalue (t_ptr, ctxt);
+    auto *sym_ptr = sval_ptr->maybe_get_symbolic_pointer ();
+    if (!sym_ptr)
+      return;
+
+    tree t_size = cd.get_arg_tree (1);
+    const svalue *sval_size = model->get_rvalue (t_size, ctxt);
+    auto &byte_mgr = mgr->get_node_manager ().get_scalars ().get_bytes ();
+    auto &sym_byte_size = byte_mgr.get_scalar_from_svalue (*sval_size);
+
+    auto &bv = model->read_bytes (*sym_ptr, t_ptr,
+				  sym_byte_size,
+				  nullptr);
+
+    warning_at (cd.get_location (), 0, "hexdump");
+
+    hexdump_options hexdump_opts;
+    hexdump_opts.m_show_headings = true;
+    hexdump_opts.m_show_binary = true;
+    hexdump_opts.m_show_hex = true;
+    hexdump_opts.m_show_ascii = true;
+    bv.hexdump (hexdump_opts);
+
+    bv.dump ();
+  }
+};
+
 /* Populate KFM with instances of known functions used for debugging the
    analyzer and for writing DejaGnu tests, all with a "__analyzer_" prefix.  */
 
@@ -412,6 +457,8 @@ register_known_analyzer_functions (known_function_manager &kfm)
 	   std::make_unique<kf_analyzer_get_unknown_ptr> ());
   kfm.add ("__analyzer_get_strlen",
 	   make_kf_strlen ());
+  kfm.add ("__analyzer_hexdump",
+	   std::make_unique<kf_analyzer_hexdump> ());
 }
 
 } // namespace ana

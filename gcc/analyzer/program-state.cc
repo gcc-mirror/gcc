@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/call-summary.h"
 #include "analyzer/analyzer-selftests.h"
 #include "analyzer/ana-state-to-diagnostic-state.h"
+#include "analyzer/liveness-context.h"
 
 #if ENABLE_ANALYZER
 
@@ -58,35 +59,21 @@ namespace ana {
 
 /* class extrinsic_state.  */
 
-/* Dump a multiline representation of this state to PP.  */
-
-void
-extrinsic_state::dump_to_pp (pretty_printer *pp) const
+std::unique_ptr<text_art::tree_widget>
+extrinsic_state::make_dump_widget (symbolic::node_dump_state &nds) const
 {
-  pp_printf (pp, "extrinsic_state: %i checker(s)\n", get_num_checkers ());
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> w
+    (tree_widget::from_fmt (nds, nullptr, "Extrinsic State"));
   unsigned i = 0;
   for (auto &checker : m_checkers)
     {
-      pp_printf (pp, "m_checkers[%i]: %qs\n", ++i, checker->get_name ());
-      checker->dump_to_pp (pp);
+      std::unique_ptr<tree_widget> cw
+	(tree_widget::from_fmt (nds, nullptr, "m_checkers[%i]: %qs\n",
+				++i, checker->get_name ()));
+      w->add_child (std::move (cw));
     }
-}
-
-/* Dump a multiline representation of this state to OUTF.  */
-
-void
-extrinsic_state::dump_to_file (FILE *outf) const
-{
-  tree_dump_pretty_printer pp (outf);
-  dump_to_pp (&pp);
-}
-
-/* Dump a multiline representation of this state to stderr.  */
-
-DEBUG_FUNCTION void
-extrinsic_state::dump () const
-{
-  dump_to_file (stderr);
+  return w;
 }
 
 /* Return a new json::object of the form
@@ -257,6 +244,7 @@ sm_state_map::print (const region_model *model,
     }
   if (!multiline)
     pp_string (pp, "}");
+  // TODO: m_map_ubc_to_state
 }
 
 /* Dump this object to stderr.  */
@@ -292,6 +280,7 @@ sm_state_map::to_json () const
 
       /* This doesn't yet JSONify e.m_origin.  */
     }
+  // TODO: m_map_ubc_to_state
   return map_obj;
 }
 
@@ -299,13 +288,13 @@ sm_state_map::to_json () const
    using MODEL if non-null to describe svalues.  */
 
 std::unique_ptr<text_art::tree_widget>
-sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
-				const region_model *model) const
+sm_state_map::make_dump_widget (symbolic::node_dump_state &nds,
+				const region_model *) const
 {
   using text_art::styled_string;
   using text_art::tree_widget;
   std::unique_ptr<tree_widget> state_widget
-    (tree_widget::from_fmt (dwi, nullptr,
+    (tree_widget::from_fmt (nds, nullptr,
 			    "%qs state machine", m_sm.get_name ()));
 
   if (m_global_state != m_sm.get_start_state ())
@@ -315,7 +304,7 @@ sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
       pp_format_decoder (pp) = default_tree_printer;
       pp_string (pp, "Global State: ");
       m_global_state->dump_to_pp (pp);
-      state_widget->add_child (tree_widget::make (dwi, pp));
+      state_widget->add_child (tree_widget::make (nds, pp));
     }
 
   auto_vec <const svalue *> keys (m_map.elements ());
@@ -328,50 +317,36 @@ sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
   const svalue *sval;
   FOR_EACH_VEC_ELT (keys, i, sval)
     {
-      pretty_printer the_pp;
-      pretty_printer * const pp = &the_pp;
-      const bool simple = true;
-      pp_format_decoder (pp) = default_tree_printer;
-      if (!flag_dump_noaddr)
-	{
-	  pp_pointer (pp, sval);
-	  pp_string (pp, ": ");
-	}
-      sval->dump_to_pp (pp, simple);
-
       entry_t e = *const_cast <map_t &> (m_map).get (sval);
-      pp_string (pp, ": ");
-      e.m_state->dump_to_pp (pp);
-      if (model)
-	if (tree rep = model->get_representative_tree (sval))
-	  {
-	    pp_string (pp, " (");
-	    dump_quoted_tree (pp, rep);
-	    pp_character (pp, ')');
-	  }
-      if (e.m_origin)
-	{
-	  pp_string (pp, " (origin: ");
-	  if (!flag_dump_noaddr)
-	    {
-	      pp_pointer (pp, e.m_origin);
-	      pp_string (pp, ": ");
-	    }
-	  e.m_origin->dump_to_pp (pp, simple);
-	  if (model)
-	    if (tree rep = model->get_representative_tree (e.m_origin))
-	      {
-		pp_string (pp, " (");
-		dump_quoted_tree (pp, rep);
-		pp_character (pp, ')');
-	      }
-	  pp_string (pp, ")");
-	}
 
-      state_widget->add_child (tree_widget::make (dwi, pp));
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      e.m_state->dump_to_pp (&pp);
+      std::unique_ptr<tree_widget> per_key_widget
+	= tree_widget::make (nds, &pp);
+      per_key_widget->add_child (sval->make_dump_widget (nds));
+      state_widget->add_child (std::move (per_key_widget));
+    }
+  for (auto iter : m_map_ubc_to_state)
+    {
+      auto *ubc = iter.first;
+      auto state = iter.second;
+      pretty_printer pp;
+      pp_format_decoder (&pp) = default_tree_printer;
+      state->dump_to_pp (&pp);
+      std::unique_ptr<tree_widget> per_key_widget
+	= tree_widget::make (nds, &pp);
+      per_key_widget->add_child (ubc->make_dump_widget (nds));
+      state_widget->add_child (std::move (per_key_widget));
     }
 
   return state_widget;
+}
+
+DEBUG_FUNCTION void
+sm_state_map::dump () const
+{
+  symbolic::dump_node_tree_to_stderr<sm_state_map> (*this);
 }
 
 /* Return true if no states have been set within this map
@@ -380,7 +355,9 @@ sm_state_map::make_dump_widget (const text_art::dump_widget_info &dwi,
 bool
 sm_state_map::is_empty_p () const
 {
-  return m_map.elements () == 0 && m_global_state == m_sm.get_start_state ();
+  return (m_map.elements () == 0
+	  && m_global_state == m_sm.get_start_state ()
+	  && m_map_ubc_to_state.empty ());
 }
 
 /* Generate a hash value for this sm_state_map.  */
@@ -433,9 +410,87 @@ sm_state_map::operator== (const sm_state_map &other) const
 	return false;
     }
 
+  if (m_map_ubc_to_state != other.m_map_ubc_to_state)
+    return false;
+
   gcc_checking_assert (hash () == other.hash ());
 
   return true;
+}
+
+state_machine::state_t
+sm_state_map::
+get_any_inherited_state_of_bit_vector (const symbolic::bit_vector &bv,
+				       const extrinsic_state &ext_state,
+				       region_model_manager &rmm) const
+{
+  switch (bv.get_kind ())
+    {
+    default:
+      gcc_unreachable ();
+
+    case symbolic::bit_vector::kind::concat:
+      break;
+    case symbolic::bit_vector::kind::conjured:
+      break;
+    case symbolic::bit_vector::kind::cropped:
+      {
+	auto &cropped_bv
+	  = static_cast<const symbolic::cropped_bit_vector &> (bv);
+	auto &inner_bv = cropped_bv.get_uncropped_bit_vector ();
+	return get_any_inherited_state_of_bit_vector (inner_bv, ext_state, rmm);
+      }
+      break;
+    case symbolic::bit_vector::kind::empty:
+      break;
+    case symbolic::bit_vector::kind::named_test:
+      break;
+    case symbolic::bit_vector::kind::poisoned:
+      break;
+    case symbolic::bit_vector::kind::repeated:
+      break;
+    case symbolic::bit_vector::kind::svalue:
+      {
+	auto &from_sval
+	  = static_cast<const symbolic::bit_vector_from_svalue &> (bv);
+	auto &sval = from_sval.get_svalue ();
+	return get_state (&sval, ext_state);
+      }
+      break;
+    case symbolic::bit_vector::kind::from_ubc:
+      {
+	auto &from_ubc
+	  = static_cast<const symbolic::bit_vector_from_ubc &> (bv);
+	auto &ubc = from_ubc.get_bit_contents ();
+	auto iter = m_map_ubc_to_state.find (&ubc);
+	if (iter != m_map_ubc_to_state.end ())
+	  return iter->second;
+	if (auto *conjured_bc = ubc.dyn_cast_conjured_bit_contents ())
+	  {
+	    auto *id_reg = conjured_bc->get_id_region ();
+	    const svalue *id_reg_ptr = rmm.get_ptr_svalue (NULL_TREE, id_reg);
+	    state_machine::state_t parent_state
+	      = get_state (id_reg_ptr, ext_state);
+	    if (parent_state)
+	      return parent_state;
+	  }
+	if (auto *baseline_bc = ubc.dyn_cast_baseline_bit_contents ())
+	  {
+	    auto &bkey = baseline_bc->get_baseline_key ();
+	    const region *reg = bkey.m_base_reg;
+	    const svalue *reg_ptr = rmm.get_ptr_svalue (NULL_TREE, reg);
+	    state_machine::state_t parent_state
+	      = get_state (reg_ptr, ext_state);
+	    if (parent_state)
+	      return parent_state;
+	  }
+      }
+      break;
+    case symbolic::bit_vector::kind::tristate:
+      break;
+    }
+
+  return nullptr;
 }
 
 /* Get the state of SVAL within this object.
@@ -443,7 +498,7 @@ sm_state_map::operator== (const sm_state_map &other) const
 
 state_machine::state_t
 sm_state_map::get_state (const svalue *sval,
-			  const extrinsic_state &ext_state) const
+			 const extrinsic_state &ext_state) const
 {
   gcc_assert (sval);
 
@@ -477,13 +532,13 @@ sm_state_map::get_state (const svalue *sval,
 		    return parent_state;
 		}
 	  }
-	else if (const sub_svalue *sub_sval = sval->dyn_cast_sub_svalue ())
-	  {
-	    const svalue *parent_sval = sub_sval->get_parent ();
-	    if (state_machine::state_t parent_state
-		  = get_state (parent_sval, ext_state))
-	      return parent_state;
-	  }
+	if (auto *from_bv = sval->dyn_cast_svalue_from_bit_vector ())
+	  if (auto state
+		= get_any_inherited_state_of_bit_vector
+		    (from_bv->get_bit_vector (),
+		     ext_state,
+		     *mgr))
+	    return state;
       }
 
   if (state_machine::state_t state
@@ -565,19 +620,6 @@ sm_state_map::impl_set_state (const svalue *sval,
 
   gcc_assert (sval->can_have_associated_state_p ());
 
-  if (m_sm.inherited_state_p ())
-    {
-      if (const compound_svalue *compound_sval
-	    = sval->dyn_cast_compound_svalue ())
-	for (auto iter = compound_sval->begin ();
-	     iter != compound_sval->end (); ++iter)
-	  {
-	    const svalue *inner_sval = iter->second;
-	    if (inner_sval->can_have_associated_state_p ())
-	      impl_set_state (inner_sval, state, origin, ext_state);
-	  }
-    }
-
   /* Special-case state 0 as the default value.  */
   if (state == 0)
     {
@@ -587,6 +629,14 @@ sm_state_map::impl_set_state (const svalue *sval,
     }
   gcc_assert (sval);
   m_map.put (sval, entry_t (state, origin));
+
+  /* Update m_map_ubc_to_state.  */
+  if (m_sm.inherited_state_p ())
+    if (auto *from_bv = sval->dyn_cast_svalue_from_bit_vector ())
+      if (auto *from_ubc
+	  = from_bv->get_bit_vector ().dyn_cast_bit_vector_from_ubc ())
+	m_map_ubc_to_state[&from_ubc->get_bit_contents ()] = state;
+
   return true;
 }
 
@@ -596,6 +646,7 @@ void
 sm_state_map::clear_any_state (const svalue *sval)
 {
   m_map.remove (sval);
+  // TODO: what about m_map_ubc_to_state?
 }
 
 /* Clear all per-svalue state within this state map.  */
@@ -604,6 +655,7 @@ void
 sm_state_map::clear_all_per_svalue_state ()
 {
   m_map.empty ();
+  m_map_ubc_to_state.clear ();
 }
 
 /* Set the "global" state within this state map to STATE.  */
@@ -639,16 +691,15 @@ sm_state_map::on_svalue_leak (const svalue *sval,
     }
 }
 
-/* Purge any state for svalues that aren't live with respect to LIVE_SVALUES
-   and MODEL.  */
+/* Purge any state for svalues that aren't live with respect to
+   LIVENESS_CTXT.  */
 
 void
-sm_state_map::on_liveness_change (const svalue_set &live_svalues,
-				  const region_model *model,
+sm_state_map::on_liveness_change (symbolic::liveness_context &liveness_ctxt,
 				  const extrinsic_state &ext_state,
 				  impl_region_model_context *ctxt)
 {
-  svalue_set svals_to_unset;
+  symbolic::node_set<svalue> svals_to_unset;
   uncertainty_t *uncertainty = ctxt->get_uncertainty ();
 
   auto_vec<const svalue *> leaked_svals (m_map.elements ());
@@ -657,16 +708,16 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
        ++iter)
     {
       const svalue *iter_sval = (*iter).first;
-      if (!iter_sval->live_p (&live_svalues, model))
+      if (!liveness_ctxt.node_live_p (*iter_sval))
 	{
-	  svals_to_unset.add (iter_sval);
+	  svals_to_unset.insert (iter_sval);
 	  entry_t e = (*iter).second;
 	  if (!m_sm.can_purge_p (e.m_state))
 	    leaked_svals.quick_push (iter_sval);
 	}
       if (uncertainty)
 	if (uncertainty->unknown_sm_state_p (iter_sval))
-	  svals_to_unset.add (iter_sval);
+	  svals_to_unset.insert (iter_sval);
     }
 
   leaked_svals.qsort (svalue::cmp_ptr_ptr);
@@ -681,7 +732,7 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
 
   sm_state_map old_sm_map = *this;
 
-  for (svalue_set::iterator iter = svals_to_unset.begin ();
+  for (auto iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
     m_map.remove (*iter);
 
@@ -743,58 +794,78 @@ sm_state_map::on_liveness_change (const svalue_set &live_svalues,
     }
 }
 
-/* Purge state from SVAL (in response to a call to an unknown function).  */
+/* Purge state from VAL (in response to a call to an unknown function).  */
 
 void
-sm_state_map::on_unknown_change (const svalue *sval,
+sm_state_map::on_unknown_change (const symbolic::value_node &val,
 				 bool is_mutable,
 				 const extrinsic_state &ext_state)
 {
-  svalue_set svals_to_unset;
+  symbolic::node_set<svalue> svals_to_unset;
 
-  for (map_t::iterator iter = m_map.begin ();
-       iter != m_map.end ();
-       ++iter)
+  if (auto *sval = val.dyn_cast_svalue ())
     {
-      const svalue *key = (*iter).first;
-      entry_t e = (*iter).second;
-      /* We only want to purge state for some states when things
-	 are mutable.  For example, in sm-malloc.cc, an on-stack ptr
-	 doesn't stop being stack-allocated when passed to an unknown fn.  */
-      if (!m_sm.reset_when_passed_to_unknown_fn_p (e.m_state, is_mutable))
-	continue;
-      if (key == sval)
-	svals_to_unset.add (key);
-      /* If we have INIT_VAL(BASE_REG), then unset any INIT_VAL(REG)
-	 for REG within BASE_REG.  */
-      if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
-	if (const initial_svalue *init_key = key->dyn_cast_initial_svalue ())
-	  {
-	    const region *changed_reg = init_sval->get_region ();
-	    const region *changed_key = init_key->get_region ();
-	    if (changed_key->get_base_region () == changed_reg)
-	      svals_to_unset.add (key);
-	  }
-    }
+      sval = canonicalize_svalue (sval, ext_state);
 
-  for (svalue_set::iterator iter = svals_to_unset.begin ();
+      for (map_t::iterator iter = m_map.begin ();
+	   iter != m_map.end ();
+	   ++iter)
+	{
+	  const svalue *key = (*iter).first;
+	  entry_t e = (*iter).second;
+	  /* We only want to purge state for some states when things
+	     are mutable.  For example, in sm-malloc.cc, an on-stack ptr
+	     doesn't stop being stack-allocated when passed to an unknown fn.  */
+	  if (!m_sm.reset_when_passed_to_unknown_fn_p (e.m_state, is_mutable))
+	    continue;
+	  if (key == sval)
+	    svals_to_unset.add (key);
+	  /* If we have INIT_VAL(BASE_REG), then unset any INIT_VAL(REG)
+	     for REG within BASE_REG.  */
+	  if (const initial_svalue *init_sval = sval->dyn_cast_initial_svalue ())
+	    if (const initial_svalue *init_key = key->dyn_cast_initial_svalue ())
+	      {
+		const region *changed_reg = init_sval->get_region ();
+		const region *changed_key = init_key->get_region ();
+		if (changed_key->get_base_region () == changed_reg)
+		  svals_to_unset.add (key);
+	      }
+	}
+    }
+  else if (auto *bv = val.dyn_cast_bit_vector ())
+    {
+      for (map_t::iterator iter = m_map.begin ();
+	   iter != m_map.end ();
+	   ++iter)
+	{
+	  const svalue *key = (*iter).first;
+	  entry_t e = (*iter).second;
+	  /* We only want to purge state for some states when things
+	     are mutable.  For example, in sm-malloc.cc, an on-stack ptr
+	     doesn't stop being stack-allocated when passed to an unknown fn.  */
+	  if (!m_sm.reset_when_passed_to_unknown_fn_p (e.m_state, is_mutable))
+	    continue;
+	  if (auto *sval_from_bv = key->dyn_cast_svalue_from_bit_vector ())
+	    if (&sval_from_bv->get_bit_vector () == bv)
+	      svals_to_unset.add (key);
+	}
+    }
+  else
+    gcc_unreachable ();
+
+  for (auto iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
     impl_set_state (*iter, (state_machine::state_t)0, nullptr, ext_state);
 }
 
-/* Purge state for things involving SVAL.
-   For use when SVAL changes meaning, at the def_stmt on an SSA_NAME.   */
+/* Purge state for things involving NODE.
+   For use when NODE changes meaning, at the def_stmt on an SSA_NAME.   */
 
 void
-sm_state_map::purge_state_involving (const svalue *sval,
+sm_state_map::purge_state_involving (const symbolic::node &node,
 				     const extrinsic_state &ext_state)
 {
-  /* Currently svalue::involves_p requires this.  */
-  if (!(sval->get_kind () == SK_INITIAL
-	|| sval->get_kind () == SK_CONJURED))
-    return;
-
-  svalue_set svals_to_unset;
+  symbolic::node_set<svalue> svals_to_unset;
 
   for (map_t::iterator iter = m_map.begin ();
        iter != m_map.end ();
@@ -804,11 +875,11 @@ sm_state_map::purge_state_involving (const svalue *sval,
       entry_t e = (*iter).second;
       if (!m_sm.can_purge_p (e.m_state))
 	continue;
-      if (key->involves_p (sval))
+      if (key->involves_p (node))
 	svals_to_unset.add (key);
     }
 
-  for (svalue_set::iterator iter = svals_to_unset.begin ();
+  for (auto iter = svals_to_unset.begin ();
        iter != svals_to_unset.end (); ++iter)
     impl_set_state (*iter, (state_machine::state_t)0, nullptr, ext_state);
 }
@@ -848,6 +919,8 @@ sm_state_map::cmp (const sm_state_map &smap_a, const sm_state_map &smap_b)
 	return cmp_entry;
     }
 
+  // TODO: m_map_ubc_to_state
+
   return 0;
 }
 
@@ -859,11 +932,28 @@ const svalue *
 sm_state_map::canonicalize_svalue (const svalue *sval,
 				   const extrinsic_state &ext_state)
 {
+  if (!sval)
+    return nullptr;
+
   region_model_manager *mgr = ext_state.get_model_manager ();
-  if (mgr && sval->get_type () && POINTER_TYPE_P (sval->get_type ()))
-    if (tree cst = sval->maybe_get_constant ())
-      if (zerop (cst))
-	return mgr->get_or_create_constant_svalue (null_pointer_node);
+  if (!mgr)
+    return sval;
+
+  if (sval->get_type () && POINTER_TYPE_P (sval->get_type ()))
+    {
+      if (tree cst = sval->maybe_get_constant ())
+	if (zerop (cst))
+	  return mgr->get_or_create_constant_svalue (null_pointer_node);
+    }
+
+  /* Strip types from symbolic pointers.  */
+  if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
+    return mgr->get_ptr_svalue (ptr_type_node, *sym_ptr);
+
+  /* Strip types from svalue_from_bit_vector.  */
+  if (auto *from_bv = sval->dyn_cast_svalue_from_bit_vector ())
+    return mgr->get_svalue_from_bit_vector (NULL_TREE,
+					    from_bv->get_bit_vector ());
 
   return sval;
 }
@@ -925,8 +1015,25 @@ sm_state_map::can_merge_with_p (const sm_state_map &other,
 	return false;
     }
 
+  // TODO: m_map_ubc_to_state
+
   /* Successfully merged all elements.  */
   return true;
+}
+
+void
+sm_state_map::validate (const extrinsic_state &ext_state) const
+{
+  for (auto iter : m_map)
+    {
+      const svalue *key = iter.first;
+      state_machine::state_t state = iter.second.m_state;
+      const svalue *origin = iter.second.m_origin;
+
+      gcc_assert (canonicalize_svalue (key, ext_state) == key);
+      if (origin)
+	gcc_assert (canonicalize_svalue (origin, ext_state) == origin);
+    }
 }
 
 /* class program_state.  */
@@ -962,6 +1069,7 @@ sm_state_map::replay_call_summary (call_summary_replay &r,
       const svalue *caller_sval = r.convert_svalue_from_summary (summary_sval);
       if (!caller_sval)
 	continue;
+      caller_sval = canonicalize_svalue (caller_sval, r.get_ext_state ());
       if (!caller_sval->can_have_associated_state_p ())
 	continue;
       const svalue *summary_origin = kv.second.m_origin;
@@ -1098,109 +1206,20 @@ program_state::operator== (const program_state &other) const
   return true;
 }
 
-/* Print a compact representation of this state to PP.  */
-
-void
-program_state::print (const extrinsic_state &ext_state,
-		      pretty_printer *pp) const
-{
-  pp_printf (pp, "rmodel: ");
-  m_region_model->dump_to_pp (pp, true, false);
-  pp_newline (pp);
-
-  int i;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_checker_states, i, smap)
-    {
-      if (!smap->is_empty_p ())
-	{
-	  pp_printf (pp, "%s: ", ext_state.get_name (i));
-	  smap->print (m_region_model, true, false, pp);
-	  pp_newline (pp);
-	}
-    }
-  if (!m_valid)
-    {
-      pp_printf (pp, "invalid state");
-      pp_newline (pp);
-    }
-}
-
-/* Dump a representation of this state to PP.  */
-
-void
-program_state::dump_to_pp (const extrinsic_state &ext_state,
-			   bool /*summarize*/, bool multiline,
-			   pretty_printer *pp) const
-{
-  if (!multiline)
-    pp_string (pp, "{");
-  {
-    pp_printf (pp, "rmodel:");
-    if (multiline)
-      pp_newline (pp);
-    else
-      pp_string (pp, " {");
-    m_region_model->dump_to_pp (pp, true, multiline);
-    if (!multiline)
-      pp_string (pp, "}");
-  }
-
-  int i;
-  sm_state_map *smap;
-  FOR_EACH_VEC_ELT (m_checker_states, i, smap)
-    {
-      if (!smap->is_empty_p ())
-	{
-	  if (!multiline)
-	    pp_string (pp, " {");
-	  pp_printf (pp, "%s: ", ext_state.get_name (i));
-	  if (multiline)
-	    pp_newline (pp);
-	  smap->print (m_region_model, true, multiline, pp);
-	  if (!multiline)
-	    pp_string (pp, "}");
-	}
-    }
-
-  if (!m_valid)
-    {
-      if (!multiline)
-	pp_space (pp);
-      pp_printf (pp, "invalid state");
-      if (multiline)
-	pp_newline (pp);
-    }
-  if (!multiline)
-    pp_string (pp, "}");
-}
-
-/* Dump a representation of this state to OUTF.  */
-
-void
-program_state::dump_to_file (const extrinsic_state &ext_state,
-			     bool summarize, bool multiline,
-			     FILE *outf) const
-{
-  tree_dump_pretty_printer pp (outf);
-  dump_to_pp (ext_state, summarize, multiline, &pp);
-}
-
-/* Dump a multiline representation of this state to stderr.  */
-
-DEBUG_FUNCTION void
-program_state::dump (const extrinsic_state &ext_state,
-		     bool summarize) const
-{
-  dump_to_file (ext_state, summarize, true, stderr);
-}
-
 /* Dump a tree-like representation of this state to stderr.  */
 
 DEBUG_FUNCTION void
 program_state::dump () const
 {
-  text_art::dump (*this);
+  symbolic::dump_node_tree_to_stderr<program_state> (*this);
+}
+
+/* Dump a tree-like representation of this state to LOG.  */
+
+void
+program_state::dump_to_logger (logger &log, const char *label) const
+{
+  symbolic::dump_node_tree_to_logger<program_state> (*this, log, label);
 }
 
 /* Return a new json::object of the form
@@ -1242,13 +1261,17 @@ program_state::to_json (const extrinsic_state &ext_state) const
 
 
 std::unique_ptr<text_art::tree_widget>
-program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
+program_state::make_dump_widget (symbolic::node_dump_state &nds,
+				 const char *label) const
 {
+  if (!label)
+    label = "program_state";
+
   using text_art::tree_widget;
   std::unique_ptr<tree_widget> state_widget
-    (tree_widget::from_fmt (dwi, nullptr, "State"));
+    (tree_widget::from_fmt (nds, nullptr, "%s", label));
 
-  state_widget->add_child (m_region_model->make_dump_widget (dwi));
+  state_widget->add_child (m_region_model->make_dump_widget (nds));
 
   /* Add nodes for any sm_state_maps with state.  */
   {
@@ -1256,7 +1279,7 @@ program_state::make_dump_widget (const text_art::dump_widget_info &dwi) const
     sm_state_map *smap;
     FOR_EACH_VEC_ELT (m_checker_states, i, smap)
       if (!smap->is_empty_p ())
-	state_widget->add_child (smap->make_dump_widget (dwi, m_region_model));
+	state_widget->add_child (smap->make_dump_widget (nds, m_region_model));
   }
 
   return state_widget;
@@ -1432,12 +1455,41 @@ program_state::can_purge_base_region_p (const extrinsic_state &ext_state,
   if (!cluster)
     return true;
 
-  for (auto iter : *cluster)
-    {
-      const svalue *sval = iter.m_sval;
-      if (!can_purge_p (ext_state, sval))
-	return false;
-    }
+  symbolic::node_set<symbolic::value_node> bound_value_nodes;
+  cluster->for_each_value ([](const symbolic::value_node &val,
+			      void *user_data) -> iter_result
+  {
+    auto *bound_value_nodes
+      = static_cast <symbolic::node_set<symbolic::value_node> *> (user_data);
+    bound_value_nodes->add (&val);
+    return iter_result::keep_going;
+  }, &bound_value_nodes);
+
+  if (bound_value_nodes.empty ())
+    return true;
+
+  auto &bv_mgr
+    = ext_state.get_node_manager ().get_bit_vector_manager ();
+
+  int i;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_checker_states, i, smap)
+    for (auto iter : *smap)
+      {
+	const svalue *sval = iter.first;
+	sm_state_map::entry_t e = iter.second;
+	if (!ext_state.get_sm (i).can_purge_p (e.m_state))
+	  {
+	    if (bound_value_nodes.contains (sval))
+	      return false;
+
+	    if (auto *as_bv = bv_mgr.maybe_get_bit_vector_from_svalue (*sval))
+	      {
+		if (bound_value_nodes.contains (as_bv))
+		  return false;
+	      }
+	  }
+      }
 
   return true;
 }
@@ -1499,35 +1551,123 @@ program_state::validate (const extrinsic_state &ext_state) const
 
   gcc_assert (m_checker_states.length () == ext_state.get_num_checkers ());
   m_region_model->validate ();
+
+  int i;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_checker_states, i, smap)
+    m_checker_states[i]->validate (ext_state);
 }
 
 static void
-log_set_of_svalues (logger *logger, const char *name,
-		    const svalue_set &set)
+log_set_of_values (logger *logger, const char *name,
+		   const value_set &set)
 {
   logger->log ("%s", name);
   logger->inc_indent ();
-  auto_vec<const svalue *> sval_vecs (set.elements ());
-  for (svalue_set::iterator iter = set.begin ();
+  auto_vec<const symbolic::value_node *> val_vec (set.size ());
+  for (value_set::iterator iter = set.begin ();
        iter != set.end (); ++iter)
-    sval_vecs.quick_push (*iter);
-  sval_vecs.qsort (svalue::cmp_ptr_ptr);
+    val_vec.quick_push (*iter);
+  val_vec.qsort (svalue::cmp_ptr_ptr);
   unsigned i;
-  const svalue *sval;
-  FOR_EACH_VEC_ELT (sval_vecs, i, sval)
-    {
-      logger->start_log_line ();
-      pretty_printer *pp = logger->get_printer ();
-      if (!flag_dump_noaddr)
-	{
-	  pp_pointer (pp, sval);
-	  pp_string (pp, ": ");
-	}
-      sval->dump_to_pp (pp, false);
-      logger->end_log_line ();
-    }
+  const symbolic::value_node *val;
+  FOR_EACH_VEC_ELT (val_vec, i, val)
+    val->dump_to_logger (*logger);
   logger->dec_indent ();
 }
+
+// class symbolic::liveness_context
+
+namespace symbolic {
+
+liveness_context::liveness_context (const value_set &known_live_values,
+				    const region_model &model)
+: m_model (model)
+{
+  for (auto iter : known_live_values)
+    set_known_liveness_for_node (*iter, true);
+}
+
+bool
+liveness_context::node_live_p (const symbolic::value_node &n)
+{
+  /* Do we already know the liveness of N?  */
+  auto iter = m_known_liveness.find (&n);
+  if (iter != m_known_liveness.end ())
+    return iter->second;
+
+  /* Otherwise, determine if SVAL is implicitly live due to being made of
+     other live svalues.  */
+  bool implicitly_live = n.implicitly_live_p (*this);
+  set_known_liveness_for_node (n, implicitly_live);
+  return implicitly_live;
+}
+
+bool
+liveness_context::bits_live_p (const bit_vector_from_ubc &bv_from_ubc)
+{
+  return m_model.bits_live_p (bv_from_ubc);
+}
+
+/* Consider any pointer to base_reg in LIVENESS_CTXT as keeping it live, so
+   that different (X*)ptr and (Y*)ptr are effectively the same from
+   a liveness perspective.  */
+
+bool
+liveness_context::known_live_ptr_to_base_region_p (const region &base_reg) const
+{
+  auto iter = m_known_base_regions.find (&base_reg);
+  if (iter != m_known_base_regions.end ())
+    return true;
+
+  return false;
+}
+
+void
+liveness_context::set_known_liveness_for_node (const symbolic::value_node &n,
+					       bool is_live)
+{
+  m_known_liveness.insert ({&n, is_live});
+
+  /* Consider any pointer to a base region as keeping that region live, so
+     that different (X*)ptr and (Y*)ptr are effectively the same from
+     a liveness perspective.  */
+  if (is_live)
+    if (auto *sval = n.dyn_cast_svalue ())
+      if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
+	m_known_base_regions.insert (&sym_ptr->get_base_region ());
+}
+
+void
+liveness_context::dump_to_pp (pretty_printer *pp) const
+{
+  text_art::theme *theme = global_dc->get_diagram_theme ();
+  symbolic::dump_node_tree_to_pp<liveness_context>
+    (*this, theme, pp,
+     true /* show_ids */,
+     true /* elide_repeated_nodes */);
+}
+
+std::unique_ptr<text_art::tree_widget>
+liveness_context::make_dump_widget (symbolic::node_dump_state &nds) const
+{
+  using text_art::tree_widget;
+  std::unique_ptr<tree_widget> widget
+    = tree_widget::from_fmt (nds, nullptr, "impl_liveness_context");
+  for (auto iter : m_known_liveness)
+    {
+      const symbolic::value_node *node = iter.first;
+      bool liveness = iter.second;
+      const char *prefix = liveness ? "live" : "dead";
+      widget->add_child (node->make_dump_widget (nds, prefix));
+    }
+  for (auto iter : m_known_base_regions)
+    widget->add_child (iter->make_dump_widget (nds, "known region"));
+  widget->add_child (m_model.make_dump_widget (nds));
+  return widget;
+}
+
+} // namespace ana::symbolic
 
 /* Compare the sets of svalues reachable from each of SRC_STATE and DEST_STATE.
    For all svalues that are reachable in SRC_STATE and are not live in
@@ -1553,64 +1693,53 @@ program_state::detect_leaks (const program_state &src_state,
   const uncertainty_t *uncertainty = ctxt->get_uncertainty ();
   if (logger)
     {
-      pretty_printer *pp = logger->get_printer ();
-      logger->start_log_line ();
-      pp_string (pp, "src_state: ");
-      src_state.dump_to_pp (ext_state, true, false, pp);
-      logger->end_log_line ();
-      logger->start_log_line ();
-      pp_string (pp, "dest_state: ");
-      dest_state.dump_to_pp (ext_state, true, false, pp);
-      logger->end_log_line ();
+      src_state.dump_to_logger (*logger, "src_state");
+      dest_state.dump_to_logger (*logger, "dest_state");
       if (extra_sval)
 	{
-	  logger->start_log_line ();
-	  pp_string (pp, "extra_sval: ");
-	  extra_sval->dump_to_pp (pp, true);
-	  logger->end_log_line ();
+	  logger->log ("extra_sval:");
+	  extra_sval->dump_to_logger (*logger);
 	}
       if (uncertainty)
-	{
-	  logger->start_log_line ();
-	  pp_string (pp, "uncertainty: ");
-	  uncertainty->dump_to_pp (pp, true);
-	  logger->end_log_line ();
-	}
+	uncertainty->dump_to_logger (*logger);
     }
 
   /* Get svalues reachable from each of src_state and dest_state.
      Get svalues *known* to be reachable in src_state.
      Pass in uncertainty for dest_state so that we additionally get svalues that
      *might* still be reachable in dst_state.  */
-  svalue_set known_src_svalues;
+  value_set known_src_svalues;
   src_state.m_region_model->get_reachable_svalues (&known_src_svalues,
 						   nullptr, nullptr);
-  svalue_set maybe_dest_svalues;
+  value_set maybe_dest_svalues;
   dest_state.m_region_model->get_reachable_svalues (&maybe_dest_svalues,
 						    extra_sval, uncertainty);
 
   if (logger)
     {
-      log_set_of_svalues (logger, "src_state known reachable svalues:",
-			  known_src_svalues);
-      log_set_of_svalues (logger, "dest_state maybe reachable svalues:",
-			  maybe_dest_svalues);
+      log_set_of_values (logger, "src_state known reachable values:",
+			 known_src_svalues);
+      log_set_of_values (logger, "dest_state maybe reachable values:",
+			 maybe_dest_svalues);
     }
 
-  auto_vec <const svalue *> dead_svals (known_src_svalues.elements ());
-  for (svalue_set::iterator iter = known_src_svalues.begin ();
+  symbolic::liveness_context dest_liveness (maybe_dest_svalues,
+					    *dest_state.m_region_model);
+
+  auto_vec <const svalue *> dead_svals (known_src_svalues.size ());
+  for (value_set::iterator iter = known_src_svalues.begin ();
        iter != known_src_svalues.end (); ++iter)
-    {
-      const svalue *sval = (*iter);
-      /* For each sval reachable from SRC_STATE, determine if it is
-	 live in DEST_STATE: either explicitly reachable, implicitly
-	 live based on the set of explicitly reachable svalues,
-	 or possibly reachable as recorded in uncertainty.
-	 Record those that have ceased to be live i.e. were known
-	 to be live, and are now not known to be even possibly-live.  */
-      if (!sval->live_p (&maybe_dest_svalues, dest_state.m_region_model))
-	dead_svals.quick_push (sval);
-    }
+    if (auto *sval = (*iter)->dyn_cast_svalue ())
+      {
+	/* For each sval reachable from SRC_STATE, determine if it is
+	   live in DEST_STATE: either explicitly reachable, implicitly
+	   live based on the set of explicitly reachable svalues,
+	   or possibly reachable as recorded in uncertainty.
+	   Record those that have ceased to be live i.e. were known
+	   to be live, and are now not known to be even possibly-live.  */
+	if (!dest_liveness.node_live_p (*sval))
+	  dead_svals.quick_push (sval);
+      }
 
   /* Call CTXT->on_svalue_leak on all svals in SRC_STATE  that have ceased
      to be live, sorting them first to ensure deterministic behavior.  */
@@ -1621,18 +1750,20 @@ program_state::detect_leaks (const program_state &src_state,
     ctxt->on_svalue_leak (sval);
 
   /* Purge dead svals from sm-state.  */
-  ctxt->on_liveness_change (maybe_dest_svalues,
-			    dest_state.m_region_model);
+  ctxt->on_liveness_change (dest_liveness);
 
   /* Purge dead svals from constraints.  */
   dest_state.m_region_model->get_constraints ()->on_liveness_change
-    (maybe_dest_svalues, dest_state.m_region_model);
+    (dest_liveness);
 
   /* Purge dead heap-allocated regions from dynamic extents.  */
   for (const svalue *sval : dead_svals)
-    if (const region *reg = sval->maybe_get_region ())
-      if (reg->get_kind () == RK_HEAP_ALLOCATED)
-	dest_state.m_region_model->unset_dynamic_extents (reg);
+    if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
+      {
+	const region &reg = sym_ptr->get_base_region ();
+	if (reg.get_kind () == RK_HEAP_ALLOCATED)
+	  dest_state.m_region_model->unset_dynamic_extents (&reg);
+      }
 }
 
 /* Attempt to use R to replay SUMMARY into this object.

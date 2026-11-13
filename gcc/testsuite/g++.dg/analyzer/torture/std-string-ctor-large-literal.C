@@ -18,6 +18,5 @@ test_ctor_large ()
 		 "0123456789012345678901234567890123456789"};
   __analyzer_eval (s.length () == 80); // { dg-warning "TRUE" }
   __analyzer_eval (s.size () == 80); // { dg-warning "TRUE" }
-  __analyzer_eval (__builtin_strlen (s.c_str ()) == 80); // { dg-warning "TRUE" "ideal" { xfail *-*-* } }
-  // { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 }
+  __analyzer_eval (__builtin_strlen (s.c_str ()) == 80); // { dg-warning "TRUE" }
 }

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -25,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h" /* for print_version */
 #include "diagnostic.h"
 #include "tree-diagnostic.h"
+
+#include "text-art/theme.h"
 
 #include "analyzer/analyzer-logging.h"
 
@@ -56,6 +59,8 @@ logger::logger (FILE *f_out,
   /* %qE in logs for SSA_NAMEs should show the ssa names, rather than
      trying to prettify things by showing the underlying var.  */
   pp_format_decoder (m_pp.get ()) = default_tree_printer;
+
+  m_text_art_theme = std::make_unique<text_art::unicode_theme> ();
 
   /* Begin the log by writing the GCC version.  */
   print_version (f_out, "", false);

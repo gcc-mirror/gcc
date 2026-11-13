@@ -43,15 +43,9 @@ test_pointer_eq (unsigned *p, int i, int j)
     {
       __analyzer_eval (&local_buf[i] == hide_from_optimizer (&local_buf[j])); // { dg-warning "UNKNOWN" }
       if (i == j)
-	{
-	  __analyzer_eval (&local_buf[i] == hide_from_optimizer (&local_buf[j])); // { dg-warning "TRUE" "ideal behavior" { xfail *-*-* } }
-	  // { dg-message "UNKNOWN" "current behavior" { target *-*-* } .-1 }
-	}
+	__analyzer_eval (&local_buf[i] == hide_from_optimizer (&local_buf[j])); // { dg-warning "TRUE" }
       else
-	{
-	  __analyzer_eval (&local_buf[i] == hide_from_optimizer (&local_buf[j])); // { dg-warning "FALSE" "ideal behavior" { xfail *-*-* } }
-	  // { dg-message "UNKNOWN" "current behavior" { target *-*-* } .-1 }
-	}
+	__analyzer_eval (&local_buf[i] == hide_from_optimizer (&local_buf[j])); // { dg-warning "FALSE" }
     }
   }
 
@@ -138,14 +132,12 @@ test_string_literals (void)
  
   __analyzer_eval (hide_from_optimizer (abc) == &abc[0]); // { dg-warning "TRUE" }
 
-  __analyzer_eval (hide_from_optimizer (abc) == &abc[1]); // { dg-warning "FALSE" "ideal" { xfail *-*-* } }
-  // { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 }
+  __analyzer_eval (hide_from_optimizer (abc) == &abc[1]); // { dg-warning "FALSE" }
   
   __analyzer_eval (hide_from_optimizer (abc) == &def[0]); // { dg-warning "FALSE" "ideal" { xfail *-*-* } }
   // { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 }
 
-  __analyzer_eval (hide_from_optimizer (abc) == &def[1]); // { dg-warning "FALSE" "ideal" { xfail *-*-* } }
-  // { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 }
+  __analyzer_eval (hide_from_optimizer (abc) == &def[1]); // { dg-warning "FALSE" }
 }
 
 struct coord {int x; int y; };

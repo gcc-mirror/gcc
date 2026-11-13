@@ -137,9 +137,7 @@ exploded_path::feasible_p (logger *logger,
 		       edge_idx,
 		       eedge->m_src->m_index,
 		       eedge->m_dest->m_index);
-	  logger->start_log_line ();
-	  state.get_model ().dump_to_pp (logger->get_printer (), true, false);
-	  logger->end_log_line ();
+	  state.get_model ().dump_to_logger (*logger);
 	}
     }
 
@@ -170,7 +168,7 @@ exploded_path::dump_to_pp (pretty_printer *pp,
       pp_newline (pp);
 
       if (ext_state)
-	eedge->m_dest->dump_to_pp (pp, *ext_state);
+	eedge->m_dest->dump_to_pp (pp);
     }
 }
 

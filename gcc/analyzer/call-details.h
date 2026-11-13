@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_ANALYZER_CALL_DETAILS_H
 
 #include "pending-diagnostic.h"
+#include "symbolic-pointers.h"
 
 namespace ana {
 
@@ -63,17 +64,22 @@ public:
   tree get_arg_tree (unsigned idx) const;
   tree get_arg_type (unsigned idx) const;
   const svalue *get_arg_svalue (unsigned idx) const;
+
+  symbolic::pointer
+  get_arg_as_sym_ptr (unsigned idx) const;
+
+  const symbolic_byte_size &
+  get_arg_as_num_bytes (unsigned idx) const;
+
   const region *deref_ptr_arg (unsigned idx) const;
   const char *get_arg_string_literal (unsigned idx) const;
 
   tree get_fndecl_for_call () const;
 
-  void dump_to_pp (pretty_printer *pp, bool simple) const;
-  void dump (bool simple) const;
   void dump () const;
 
   std::unique_ptr<text_art::tree_widget>
-  make_dump_widget (const text_art::dump_widget_info &dwi) const;
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
   const svalue *get_or_create_conjured_svalue (const region *) const;
 
@@ -84,7 +90,7 @@ public:
   const svalue *
   check_for_null_terminated_string_arg (unsigned arg_idx,
 					bool include_terminator,
-					const svalue **out_sval) const;
+					const symbolic::bit_vector **out_bit_vec) const;
 
   void
   complain_about_overlap (unsigned arg_idx_a,

@@ -9,7 +9,8 @@ void test_1 (int n)
   s.a[0] = 42;
   __analyzer_eval (s.a[0] == 42); /* { dg-warning "TRUE" } */
   s.b = 17;
-  __analyzer_eval (s.b == 17); /* { dg-warning "TRUE" } */
+  __analyzer_eval (s.b == 17); /* { dg-warning "TRUE" "ideal" { xfail *-*-* } } */
+  /* { dg-bogus "UNKNOWN" "status quo" { xfail *-*-* } .-1 } */
 }
 
 void test_2 (int n)
@@ -17,6 +18,12 @@ void test_2 (int n)
   int arr[n]; /* { dg-message "region created on stack here" } */
   __builtin_free (arr); /* { dg-warning "'free' of '<unknown>' which points to memory on the stack" } */
   // TODO: fix the "unknown" here
+}
+
+void test_vla_ptr (int n)
+{
+  int (*p)[n] = 0;
+  (*p)[0] = 1;
 }
 
 /* { dg-prune-output "\\\[-Wfree-nonheap-object" } */

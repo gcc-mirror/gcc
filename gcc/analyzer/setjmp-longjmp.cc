@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "analyzer/common.h"
 
+#include "diagnostics/markup.h"
+
 #include "analyzer/region-model.h"
 #include "analyzer/checker-path.h"
 #include "analyzer/checker-event.h"
@@ -103,7 +105,7 @@ setjmp_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
    setjmp_svalue.  */
 
 void
-setjmp_svalue::print_dump_widget_label (pretty_printer *pp) const
+setjmp_svalue::print_svalue_for_dump_widget_label (pretty_printer *pp) const
 {
   pp_printf (pp, "setjmp_svalue(EN: %i)", get_enode_index ());
 }
@@ -114,9 +116,29 @@ setjmp_svalue::print_dump_widget_label (pretty_printer *pp) const
 void
 setjmp_svalue::
 add_dump_widget_children (text_art::tree_widget &,
-			  const text_art::dump_widget_info &) const
+			  symbolic::node_dump_state &) const
 {
   /* No children.  */
+}
+
+void
+setjmp_svalue::accept_node_visitor (symbolic::node_visitor &v) const
+{
+  v.visit_svalue (*this);
+}
+
+std::unique_ptr<json::object>
+setjmp_svalue::to_json () const
+{
+  auto obj = svalue::make_json_obj ("setjmp_svalue");
+  obj->set_integer ("enode_index", get_enode_index ());
+  return obj;
+}
+
+std::unique_ptr<diagnostics::markup::node>
+setjmp_svalue::make_markup_node (symbolic::markup_context &) const
+{
+  return diagnostics::markup::make_text_node ("setjmp_svalue");
 }
 
 /* Get the index of the stored exploded_node.  */

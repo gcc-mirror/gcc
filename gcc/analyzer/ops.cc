@@ -94,7 +94,7 @@ void
 operation_context::dump () const
 {
   fprintf (stderr, "src enode: EN: %i\n", m_src_enode.m_index);
-  m_src_enode.dump (m_eg.get_ext_state ());
+  m_src_enode.dump ();
 
   fprintf (stderr, "superedge\n");
   pretty_printer pp;
@@ -1236,15 +1236,11 @@ replay_call_summary (operation_context &op_ctxt,
     {
       pretty_printer *pp = logger->get_printer ();
 
-      logger->start_log_line ();
       pp_string (pp, "callsite state: ");
-      old_state.dump_to_pp (ext_state, true, false, pp);
-      logger->end_log_line ();
+      old_state.dump_to_logger (*logger);
 
-      logger->start_log_line ();
       pp_string (pp, "summary end state: ");
-      summary_end_state.dump_to_pp (ext_state, true, false, pp);
-      logger->end_log_line ();
+      summary_end_state.dump_to_logger (*logger);
     }
 
   program_state new_state (old_state);
@@ -1277,7 +1273,7 @@ dump_op::execute (operation_context &op_ctxt) const
     case dump_kind::state:
       /* Handle the builtin "__analyzer_dump" by dumping state
 	 to stderr.  */
-      state.dump (op_ctxt.get_ext_state (), true);
+      state.dump ();
       break;
     case dump_kind::sarif:
       state.dump_sarif (op_ctxt.get_ext_state ());
@@ -2428,7 +2424,7 @@ phis_for_edge_op::update_state (const program_state &src_state,
     }
 
  for (auto iter : svals_changing_meaning)
-   dst_model.get_constraints ()->purge_state_involving (iter);
+   dst_model.get_constraints ()->purge_state_involving (*iter);
 }
 
 bool
@@ -2456,7 +2452,7 @@ execute_for_feasibility (const exploded_edge &eedge,
     }
 
   for (auto iter : svals_changing_meaning)
-    model.get_constraints ()->purge_state_involving (iter);
+    model.get_constraints ()->purge_state_involving (*iter);
 
   {
     /* If we've entering an snode that we've already visited on this

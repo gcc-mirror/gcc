@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
 #include "analyzer/call-details.h"
-#include "analyzer/ranges.h"
 
 #if ENABLE_ANALYZER
 
@@ -290,6 +289,31 @@ call_details::get_arg_svalue (unsigned idx) const
   return m_model->get_rvalue (arg, m_ctxt);
 }
 
+/* Get argument IDX at the callsite as a symbolic::pointer.  */
+
+symbolic::pointer
+call_details::get_arg_as_sym_ptr (unsigned idx) const
+{
+  gcc_assert (arg_is_pointer_p (idx));
+
+  auto *ptr_sval = get_arg_svalue (idx);
+  const region *dest_reg
+    = m_model->deref_rvalue (ptr_sval, get_arg_tree (idx), m_ctxt);
+  return dest_reg->get_pointer (*get_manager ());
+}
+
+const symbolic_byte_size &
+call_details::get_arg_as_num_bytes (unsigned idx) const
+{
+  gcc_assert (arg_is_size_p (idx));
+
+  auto *sval = get_arg_svalue (idx);
+
+  auto &node_mgr = get_manager ()->get_node_manager ();
+  auto &bytes_mgr = node_mgr.get_scalars ().get_bytes ();
+  return bytes_mgr.get_scalar_from_svalue (*sval);
+}
+
 /* If argument IDX's svalue at the callsite is of pointer type,
    return the region it points to.
    Otherwise return nullptr.  */
@@ -310,8 +334,8 @@ const char *
 call_details::get_arg_string_literal (unsigned idx) const
 {
   const svalue *str_arg = get_arg_svalue (idx);
-  if (const region *pointee = str_arg->maybe_get_region ())
-    if (const string_region *string_reg = pointee->dyn_cast_string_region ())
+  if (auto *sym_ptr = str_arg->maybe_get_symbolic_pointer ())
+    if (const string_region *string_reg = sym_ptr->get_base_region ().dyn_cast_string_region ())
       {
 	tree string_cst = string_reg->get_string_cst ();
 	return TREE_STRING_POINTER (string_cst);
@@ -328,52 +352,20 @@ call_details::get_fndecl_for_call () const
   return m_model->get_fndecl_for_call (m_call, m_ctxt);
 }
 
-/* Dump a multiline representation of this call to PP.  */
-
-void
-call_details::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  pp_string (pp, "gcall: ");
-  pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
-  pp_newline (pp);
-  pp_string (pp, "return region: ");
-  if (m_lhs_region)
-    m_lhs_region->dump_to_pp (pp, simple);
-  else
-    pp_string (pp, "NULL");
-  pp_newline (pp);
-  for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
-    {
-      const svalue *arg_sval = get_arg_svalue (i);
-      pp_printf (pp, "arg %i: ", i);
-      arg_sval->dump_to_pp (pp, simple);
-      pp_newline (pp);
-    }
-}
-
-/* Dump a multiline representation of this call to stderr.  */
-
-DEBUG_FUNCTION void
-call_details::dump (bool simple) const
-{
-  tree_dump_pretty_printer pp (stderr);
-  dump_to_pp (&pp, simple);
-}
-
 /* Dump a tree-like representation of this call to stderr.  */
 
 DEBUG_FUNCTION void
 call_details::dump () const
 {
-  text_art::dump (*this);
+  symbolic::dump_node_tree_to_stderr<call_details> (*this);
 }
 
 std::unique_ptr<text_art::tree_widget>
-call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
+call_details::make_dump_widget (symbolic::node_dump_state &nds) const
 {
   using text_art::tree_widget;
   std::unique_ptr<tree_widget> cd_widget
-    (tree_widget::from_fmt (dwi, nullptr, "Call Details"));
+    (tree_widget::from_fmt (nds, nullptr, "Call Details"));
 
   {
     pretty_printer the_pp;
@@ -381,7 +373,7 @@ call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
     pp_format_decoder (pp) = default_tree_printer;
     pp_string (pp, "gcall: ");
     pp_gimple_stmt_1 (pp, &m_call, 0 /* spc */, TDF_NONE /* flags */);
-    cd_widget->add_child (tree_widget::make (dwi, pp));
+    cd_widget->add_child (tree_widget::make (nds, pp));
   }
   {
     pretty_printer the_pp;
@@ -392,15 +384,15 @@ call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
       m_lhs_region->dump_to_pp (pp, true);
     else
       pp_string (pp, "NULL");
-    auto w = tree_widget::make (dwi, pp);
+    auto w = tree_widget::make (nds, pp);
     if (m_lhs_region)
-      w->add_child (m_lhs_region->make_dump_widget (dwi));
+      w->add_child (m_lhs_region->make_dump_widget (nds));
     cd_widget->add_child (std::move (w));
   }
   if (gimple_call_num_args (&m_call) > 0)
     {
       std::unique_ptr<tree_widget> args_widget
-	(tree_widget::from_fmt (dwi, nullptr, "Arguments"));
+	(tree_widget::from_fmt (nds, nullptr, "Arguments"));
       for (unsigned i = 0; i < gimple_call_num_args (&m_call); i++)
 	{
 	  pretty_printer the_pp;
@@ -409,8 +401,8 @@ call_details::make_dump_widget (const text_art::dump_widget_info &dwi) const
 	  const svalue *arg_sval = get_arg_svalue (i);
 	  pp_printf (pp, "%i: ", i);
 	  arg_sval->dump_to_pp (pp, true);
-	  auto w = tree_widget::make (dwi, pp);
-	  w->add_child (arg_sval->make_dump_widget (dwi));
+	  auto w = tree_widget::make (nds, pp);
+	  w->add_child (arg_sval->make_dump_widget (nds));
 	  args_widget->add_child (std::move (w));
 	}
       cd_widget->add_child (std::move (args_widget));
@@ -459,13 +451,13 @@ const svalue *
 call_details::
 check_for_null_terminated_string_arg (unsigned arg_idx,
 				      bool include_terminator,
-				      const svalue **out_sval) const
+				      const symbolic::bit_vector **out_bv) const
 {
   region_model *model = get_model ();
   return model->check_for_null_terminated_string_arg (*this,
 						      arg_idx,
 						      include_terminator,
-						      out_sval);
+						      out_bv);
 }
 
 /* A subclass of pending_diagnostic for complaining about overlapping
@@ -583,14 +575,17 @@ call_details::complain_about_overlap (unsigned arg_idx_a,
   if (arg_a_reg->get_base_region () != arg_b_reg->get_base_region ())
     return;
 
+  auto &byte_mgr = mgr->get_node_manager ().get_scalars ().get_bytes ();
+  auto &num_bytes_read = byte_mgr.get_scalar_from_svalue (*num_bytes_read_sval);
+
   /* Are they within NUM_BYTES_READ_SVAL of each other?  */
-  symbolic_byte_range byte_range_a (arg_a_reg->get_offset (mgr),
-				    num_bytes_read_sval,
-				    *mgr);
-  symbolic_byte_range byte_range_b (arg_b_reg->get_offset (mgr),
-				    num_bytes_read_sval,
-				    *mgr);
-  if (!byte_range_a.intersection (byte_range_b, *model).is_true ())
+  symbolic_byte_range byte_range_a
+    (arg_a_reg->get_pointer (*mgr).get_byte_offset (),
+     num_bytes_read);
+  symbolic_byte_range byte_range_b
+    (arg_b_reg->get_pointer (*mgr).get_byte_offset (),
+     num_bytes_read);
+  if (!byte_range_a.intersects (byte_range_b, *model).is_true ())
     return;
 
   ctxt->warn (std::make_unique<overlapping_buffers> (get_fndecl_for_call (),

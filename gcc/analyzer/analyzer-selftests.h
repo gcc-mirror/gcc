@@ -29,6 +29,24 @@ namespace selftest {
 
 extern tree build_global_decl (const char *name, tree type);
 
+extern tree
+make_string_constant (const char *str);
+
+extern tree
+make_test_compound_type (const char *name, bool is_struct,
+			 const std::vector<tree> fields);
+
+/* Selftest fixture for creating the type "struct coord {int x; int y; };".  */
+
+struct coord_test
+{
+  coord_test ();
+
+  tree m_x_field;
+  tree m_y_field;
+  tree m_coord_type;
+};
+
 extern void run_analyzer_selftests ();
 
 /* Declarations for specific families of tests (by source file), in
@@ -42,11 +60,19 @@ extern void analyzer_integer_cc_tests ();
 extern void analyzer_integer_with_unit_cc_tests ();
 extern void analyzer_program_point_cc_tests ();
 extern void analyzer_program_state_cc_tests ();
-extern void analyzer_ranges_cc_tests ();
 extern void analyzer_region_model_cc_tests ();
+extern void analyzer_region_model_manager_cc_tests ();
 extern void analyzer_sm_file_cc_tests ();
 extern void analyzer_sm_signal_cc_tests ();
 extern void analyzer_store_cc_tests ();
+extern void analyzer_string_scan_cc_tests ();
+extern void analyzer_symbolic_bit_contents_cc_tests ();
+extern void analyzer_symbolic_bit_vectors_cc_tests ();
+extern void analyzer_symbolic_memory_ranges_cc_tests ();
+extern void analyzer_symbolic_nodes_cc_tests ();
+extern void analyzer_symbolic_pointers_cc_tests ();
+extern void analyzer_symbolic_ranges_cc_tests ();
+extern void analyzer_symbolic_scalars_cc_tests ();
 
 } /* end of namespace ana::selftest.  */
 

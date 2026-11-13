@@ -25,6 +25,13 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+extern concrete_bit_offset
+get_bit_position (const_tree field);
+
+extern tree
+get_field_at_bit_offset (tree record_type,
+			 concrete_bit_offset bit_offset);
+
 /* Information of the layout of a RECORD_TYPE, capturing it as a vector
    of items, where each item is either a field or padding.  */
 
@@ -35,7 +42,7 @@ public:
   struct item
   {
   public:
-    item (const bit_range &br,
+    item (const concrete_bit_range &br,
 	  const_tree field,
 	  bool is_padding)
     : m_bit_range (br),
@@ -44,16 +51,16 @@ public:
     {
     }
 
-    bit_offset_t get_start_bit_offset () const
+    concrete_bit_offset get_start_offset () const
     {
-      return m_bit_range.get_start_bit_offset ();
+      return m_bit_range.get_start_offset ();
     }
-    bit_offset_t get_next_bit_offset () const
+    concrete_bit_offset get_next_offset () const
     {
-      return m_bit_range.get_next_bit_offset ();
+      return m_bit_range.get_next_offset ();
     }
 
-    bool contains_p (bit_offset_t offset) const
+    bool contains_p (concrete_bit_offset offset) const
     {
       return m_bit_range.contains_p (offset);
     }
@@ -68,7 +75,7 @@ public:
       m_bit_range.dump_to_pp (pp);
     }
 
-    bit_range m_bit_range;
+    concrete_bit_range m_bit_range;
     const_tree m_field;
     bool m_is_padding;
   };
@@ -78,13 +85,13 @@ public:
   void dump_to_pp (pretty_printer *pp) const;
   DEBUG_FUNCTION void dump () const;
 
-  const record_layout::item *get_item_at (bit_offset_t offset) const;
+  const record_layout::item *get_item_at (concrete_bit_offset offset) const;
 
   auto begin () const { return m_items.begin (); }
   auto end () const { return m_items.end (); }
 
 private:
-  void maybe_pad_to (bit_offset_t next_offset);
+  void maybe_pad_to (concrete_bit_offset next_offset);
 
   auto_vec<item> m_items;
 };

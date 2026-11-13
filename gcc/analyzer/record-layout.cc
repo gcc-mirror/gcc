@@ -39,23 +39,23 @@ record_layout::record_layout (const_tree record_type)
     {
       if (TREE_CODE (iter) == FIELD_DECL)
 	{
-	  int iter_field_offset = int_bit_position (iter);
-	  bit_size_t size_in_bits;
-	  if (!int_size_in_bits (TREE_TYPE (iter), &size_in_bits))
-	    size_in_bits = 0;
+	  concrete_bit_offset iter_field_offset = get_bit_position (iter);
+	  concrete_bit_size size_in_bits;
+	  if (!get_type_size (TREE_TYPE (iter), &size_in_bits))
+	    size_in_bits = 0_bits;
 
 	  maybe_pad_to (iter_field_offset);
 
 	  /* Add field.  */
-	  m_items.safe_push (item (bit_range (iter_field_offset,
-					      size_in_bits),
+	  m_items.safe_push (item (concrete_bit_range (iter_field_offset,
+						       size_in_bits),
 				   iter, false));
 	}
     }
 
   /* Add any trailing padding.  */
-  bit_size_t size_in_bits;
-  if (int_size_in_bits (record_type, &size_in_bits))
+  concrete_bit_size size_in_bits;
+  if (get_type_size (record_type, &size_in_bits))
     maybe_pad_to (size_in_bits);
 }
 
@@ -79,7 +79,7 @@ record_layout::dump () const
 }
 
 const record_layout::item *
-record_layout::get_item_at (bit_offset_t offset) const
+record_layout::get_item_at (concrete_bit_offset offset) const
 {
   unsigned i;
   item *it;
@@ -92,19 +92,19 @@ record_layout::get_item_at (bit_offset_t offset) const
 /* Subroutine of ctor.  Add padding item to NEXT_OFFSET if necessary.  */
 
 void
-record_layout::maybe_pad_to (bit_offset_t next_offset)
+record_layout::maybe_pad_to (concrete_bit_offset next_offset)
 {
   if (m_items.length () > 0)
     {
       const item &last_item = m_items[m_items.length () - 1];
-      bit_offset_t offset_after_last_item
-	= last_item.get_next_bit_offset ();
+      concrete_bit_offset offset_after_last_item
+	= last_item.get_next_offset ();
       if (next_offset > offset_after_last_item)
 	{
-	  bit_size_t padding_size
+	  concrete_bit_size padding_size
 	    = next_offset - offset_after_last_item;
-	  m_items.safe_push (item (bit_range (offset_after_last_item,
-					      padding_size),
+	  m_items.safe_push (item (concrete_bit_range (offset_after_last_item,
+						       padding_size),
 				   last_item.m_field, true));
 	}
     }

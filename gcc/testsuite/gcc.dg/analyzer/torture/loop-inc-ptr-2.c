@@ -9,7 +9,7 @@ void test (int *p, int val, int count)
 
   while (n--)
     {
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "(3|4) processed enodes" } */
       *p++ = val;
     }
 

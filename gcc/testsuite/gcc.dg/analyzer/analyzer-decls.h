@@ -107,4 +107,10 @@ extern __SIZE_TYPE__
 __analyzer_get_strlen (const char *ptr)
   __attribute__ ((nothrow));
 
+/* Dump a representation of a run of bytes in the analyzer's state
+   when reached.  */
+extern void
+__analyzer_hexdump (const void *, __SIZE_TYPE__)
+  __attribute__ ((nothrow));
+
 #endif /* #ifndef ANALYZER_DECLS_H.  */

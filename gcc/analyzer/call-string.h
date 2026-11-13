@@ -21,6 +21,9 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CALL_STRING_H
 #define GCC_ANALYZER_CALL_STRING_H
 
+#include "text-art/widget.h"
+#include "text-art/tree-widget.h"
+
 namespace ana {
 
 class supergraph;
@@ -70,6 +73,9 @@ public:
     const supernode *get_return_snode_in_caller () const;
     const gcall &get_call_stmt () const;
 
+    std::unique_ptr<text_art::tree_widget>
+    make_dump_widget (symbolic::node_dump_state &nds) const;
+
     const superedge *m_call_sedge;
     const call_and_return_op *m_call_op;
     function *m_called_fun;
@@ -109,6 +115,9 @@ public:
   int count_occurrences_of_function (function *) const;
 
   void validate () const;
+
+  std::unique_ptr<text_art::tree_widget>
+  make_dump_widget (symbolic::node_dump_state &nds) const;
 
 private:
   struct hashmap_traits_t

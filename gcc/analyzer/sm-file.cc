@@ -581,11 +581,12 @@ public:
        error vs no error cases.  */
     region_model *model = cd.get_model ();
     const svalue *ptr_sval = cd.get_arg_svalue (0);
-    if (const region *reg = ptr_sval->maybe_get_region ())
+    if (auto *sym_ptr = ptr_sval->maybe_get_symbolic_pointer ())
       {
-	const region *base_reg = reg->get_base_region ();
-	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-	model->set_value (base_reg, new_sval, cd.get_ctxt ());
+	const region &base_reg = sym_ptr->get_base_region ();
+	model->mark_region_as_conjured (base_reg,
+					cd.get_call_stmt (),
+					cd.get_ctxt ());
       }
     cd.set_any_lhs_with_defaults ();
   }
@@ -617,11 +618,12 @@ public:
   {
     region_model *model = cd.get_model ();
     const svalue *ptr_sval = cd.get_arg_svalue (0);
-    if (const region *reg = ptr_sval->maybe_get_region ())
+    if (auto *sym_ptr = ptr_sval->maybe_get_symbolic_pointer ())
       {
-	const region *base_reg = reg->get_base_region ();
-	const svalue *new_sval = cd.get_or_create_conjured_svalue (base_reg);
-	model->set_value (base_reg, new_sval, cd.get_ctxt ());
+	const region &base_reg = sym_ptr->get_base_region ();
+	model->mark_region_as_conjured (base_reg,
+					cd.get_call_stmt (),
+					cd.get_ctxt ());
       }
     cd.set_any_lhs_with_defaults ();
   }
