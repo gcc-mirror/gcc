@@ -2261,7 +2261,7 @@ pass_waccess::set_pass_param (unsigned int n, bool param)
   else if (n == 1)
     m_check_dangling_p = param;
   else
-    __builtin_unreachable ();
+    gcc_unreachable ();
 }
 
 /* Return true when any checks performed by the pass are enabled.  */
