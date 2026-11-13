@@ -7,7 +7,7 @@
 /*
 **foo1_lo:
 **	xvld	(\$xr[0-9]+),\$r4,0
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */
@@ -21,7 +21,7 @@ foo1_lo (__m256 x)
 **foo1_hi:
 **	xvld	(\$xr[0-9]+),\$r4,0
 **	xvpermi.d	(\$xr[0-9]+),(\$xr[0-9]+),0xe
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */
@@ -34,7 +34,7 @@ foo1_hi (__m256 x)
 /*
 **foo2_lo:
 **	xvld	(\$xr[0-9]+),\$r4,0
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */
@@ -48,7 +48,7 @@ foo2_lo (__m256d x)
 **foo2_hi:
 **	xvld	(\$xr[0-9]+),\$r4,0
 **	xvpermi.d	(\$xr[0-9]+),(\$xr[0-9]+),0xe
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */    
@@ -61,7 +61,7 @@ foo2_hi (__m256d x)
 /*
 **foo3_lo:
 **	xvld	(\$xr[0-9]+),\$r4,0
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */
@@ -75,7 +75,7 @@ foo3_lo (__m256i x)
 **foo3_hi:
 **	xvld	(\$xr[0-9]+),\$r4,0
 **	xvpermi.d	(\$xr[0-9]+),(\$xr[0-9]+),0xe
-**	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
+**	movfr2gr.d	\$r4,(\$f[0-9]+)
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
 */

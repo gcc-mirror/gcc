@@ -459,14 +459,34 @@
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lsx_vpickve2gr_<lsxfmt_f><u>"
+(define_insn "lsx_vpickve2gr_<lsxfmt_f>u"
   [(set (match_operand:<UNITMODE> 0 "register_operand" "=r")
-	(any_extend:<UNITMODE>
+	(zero_extend:<UNITMODE>
 	  (vec_select:<UNITMODE>
 	    (match_operand:LSX_W 1 "register_operand" "f")
 	    (parallel [(match_operand 2 "const_<indeximm>_operand" "")]))))]
   "ISA_HAS_LSX"
-  "vpickve2gr.<lsxfmt><u>\t%0,%w1,%2"
+  "vpickve2gr.<lsxfmt>u\t%0,%w1,%2"
+  [(set_attr "type" "simd_copy")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "lsx_vpickve2gr_<lsxfmt_f>"
+  [(set (match_operand:<UNITMODE> 0 "register_operand" "=r")
+	(sign_extend:<UNITMODE>
+	  (vec_select:<UNITMODE>
+	    (match_operand:LSX_W 1 "register_operand" "f")
+	    (parallel [(match_operand 2 "const_<indeximm>_operand" "")]))))]
+  "ISA_HAS_LSX"
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  if (val == 0 && <MODE>mode == V4SImode)
+    return "movfr2gr.s\t%0,%1";
+  else if (val == 1 && <MODE>mode == V4SImode)
+    return "movfrh2gr.s\t%0,%1";
+
+  return "vpickve2gr.<lsxfmt>\t%0,%w1,%2";
+}
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "<MODE>")])
 
@@ -476,7 +496,14 @@
 	  (match_operand:V2DI 1 "register_operand" "f")
 	  (parallel [(match_operand 2 "const_0_or_1_operand" "")])))]
   "ISA_HAS_LSX"
-  "vpickve2gr.du\t%0,%w1,%2"
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  if (val == 0)
+    return "movfr2gr.d\t%0,%1";
+
+  return "vpickve2gr.du\t%0,%w1,%2";
+}
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "V2DI")])
 

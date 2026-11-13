@@ -563,7 +563,16 @@
 	    (match_operand:V4DI 1 "register_operand" "f")
 	    (parallel [(match_operand 2 "const_0_to_3_operand" "")]))))]
   "ISA_HAS_LASX"
-  "xvpickve2gr.d<u>\t%0,%u1,%2"
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  if (val == 0)
+    return "movfr2gr.d\t%0,%1";
+  else if (val == 1)
+    return "vpickve2gr.d\t%0,%w1,%2";
+
+  return "xvpickve2gr.d<u>\t%0,%u1,%2";
+}
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "V4DI")])
 
@@ -3099,17 +3108,45 @@
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "lasx_xvpickve2gr_w<u>"
+(define_insn "lasx_xvpickve2gr_wu"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(any_extend:SI
+	(zero_extend:SI
 	  (vec_select:SI
 	    (match_operand:V8SI 1 "register_operand" "f")
 	    (parallel [(match_operand 2 "const_0_to_7_operand" "")]))))]
   "ISA_HAS_LASX"
-  "xvpickve2gr.w<u>\t%0,%u1,%2"
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  if (val <= 3)
+    return "vpickve2gr.wu\t%0,%w1,%2";
+
+  return "xvpickve2gr.wu\t%0,%u1,%2";
+}
   [(set_attr "type" "simd_copy")
    (set_attr "mode" "V8SI")])
 
+(define_insn "lasx_xvpickve2gr_w"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+       (sign_extend:SI
+	 (vec_select:SI
+	   (match_operand:V8SI 1 "register_operand" "f")
+	   (parallel [(match_operand 2 "const_0_to_7_operand" "")]))))]
+  "ISA_HAS_LASX"
+{
+  HOST_WIDE_INT val = INTVAL (operands[2]);
+
+  if (val == 0)
+    return "movfr2gr.s\t%0,%1";
+  else if (val == 1)
+    return "movfrh2gr.s\t%0,%1";
+  else if (val == 2 || val == 3)
+    return "vpickve2gr.w\t%0,%w1,%2";
+
+  return "xvpickve2gr.w\t%0,%u1,%2";
+}
+  [(set_attr "type" "simd_copy")
+   (set_attr "mode" "V8SI")])
 
 (define_insn "lasx_xvmskgez_b"
   [(set (match_operand:V32QI 0 "register_operand" "=f")

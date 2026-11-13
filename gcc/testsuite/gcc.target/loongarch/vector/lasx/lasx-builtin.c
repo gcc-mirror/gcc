@@ -3336,22 +3336,22 @@ __lasx_xvldrepl_d (void *_1)
 int
 __lasx_xvpickve2gr_w (v8i32 _1)
 {
-  return __builtin_lasx_xvpickve2gr_w (_1, 1);
+  return __builtin_lasx_xvpickve2gr_w (_1, 4);
 }
 unsigned int
 __lasx_xvpickve2gr_wu (v8i32 _1)
 {
-  return __builtin_lasx_xvpickve2gr_wu (_1, 1);
+  return __builtin_lasx_xvpickve2gr_wu (_1, 4);
 }
 long
 __lasx_xvpickve2gr_d (v4i64 _1)
 {
-  return __builtin_lasx_xvpickve2gr_d (_1, 1);
+  return __builtin_lasx_xvpickve2gr_d (_1, 2);
 }
 unsigned long int
 __lasx_xvpickve2gr_du (v4i64 _1)
 {
-  return __builtin_lasx_xvpickve2gr_du (_1, 1);
+  return __builtin_lasx_xvpickve2gr_du (_1, 2);
 }
 v4i64
 __lasx_xvaddwev_q_d (v4i64 _1, v4i64 _2)

@@ -2299,7 +2299,7 @@ __lsx_vpickve2gr_h (v8i16 _1)
 int
 __lsx_vpickve2gr_w (v4i32 _1)
 {
-  return __builtin_lsx_vpickve2gr_w (_1, 1);
+  return __builtin_lsx_vpickve2gr_w (_1, 2);
 }
 long
 __lsx_vpickve2gr_d (v2i64 _1)
