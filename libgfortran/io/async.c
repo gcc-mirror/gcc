@@ -446,6 +446,20 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
   return ret;
 }
 
+/* Assign an ID to a statement on an asynchronous unit that was
+   completed synchronously.  */
+
+int
+async_complete_id (async_unit *au)
+{
+  int ret;
+  LOCK (&au->lock);
+  ret = au->id.high++;
+  au->id.low++;
+  UNLOCK (&au->lock);
+  return ret;
+}
+
 /* Perform a wait operation an an asynchronous unit without an ID.  */
 
 bool
@@ -553,6 +567,14 @@ bool
 async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
 {
   return false;
+}
+
+/* Do-nothing function, which will not be called.  */
+
+int
+async_complete_id (async_unit *au)
+{
+  return 0;
 }
 
 /* Do-nothing function, which will not be called.  */

@@ -638,6 +638,9 @@ internal_proto (async_wait);
 bool async_wait_id (st_parameter_common *, async_unit *, int);
 internal_proto (async_wait_id);
 
+int async_complete_id (async_unit *);
+internal_proto (async_complete_id);
+
 bool collect_async_errors (st_parameter_common *, async_unit *);
 internal_proto (collect_async_errors);
 
