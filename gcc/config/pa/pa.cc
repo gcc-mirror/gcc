@@ -214,6 +214,7 @@ static void pa_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool pa_use_lra_p (void);
 static bool pa_frame_pointer_required (void);
 static bool pa_can_share_jump_table_p (rtx_insn *);
+static reg_class_t pa_preferred_reload_class (rtx, reg_class_t);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -448,6 +449,9 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV pa_atomic_assign_expand_fenv
+
+#undef TARGET_PREFERRED_RELOAD_CLASS
+#define TARGET_PREFERRED_RELOAD_CLASS pa_preferred_reload_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1630,13 +1634,31 @@ hppa_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 {
   if (from == SHIFT_REGS)
     return 0x100;
-  else if (to == SHIFT_REGS && FP_REG_CLASS_P (from))
+  if (to == SHIFT_REGS && FP_REG_CLASS_P (from))
     return 18;
-  else if ((FP_REG_CLASS_P (from) && ! FP_REG_CLASS_P (to))
-           || (FP_REG_CLASS_P (to) && ! FP_REG_CLASS_P (from)))
-    return 16;
-  else
+
+  /* Keep R1_REGS to GENERAL_REGS move costs basic and unpenalized.  */
+  if ((from == R1_REGS && to == GENERAL_REGS)
+      || (from == GENERAL_REGS && to == R1_REGS))
     return 2;
+
+  /* Cross-class moves between general/R1 registers and floating-point
+     registers bounce through the -16(%sp) frame marker slot (store + load).
+     A cost of 8 reflects this two-instruction penalty while remaining low
+     enough for LRA to spill integer pseudos into FP registers under tight
+     register pressure — avoiding address-reload overhead on large frames
+     and preventing spill failures when all callee-saved general registers
+     are exhausted.  */
+  if (((from == GENERAL_REGS || from == R1_REGS) && FP_REG_CLASS_P (to))
+      || (FP_REG_CLASS_P (from) && (to == GENERAL_REGS || to == R1_REGS)))
+    return 8;
+
+  /* General fallback for other cross-register-file changes.  */
+  if ((FP_REG_CLASS_P (from) && ! FP_REG_CLASS_P (to))
+      || (FP_REG_CLASS_P (to) && ! FP_REG_CLASS_P (from)))
+    return 16;
+
+  return 2;
 }
 
 /* For the HPPA, REG and REG+CONST is cost 0
@@ -6474,7 +6496,6 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	    }
 	}
 
-      sri->icode = CODE_FOR_nothing;
       return NO_REGS;
     }
 
@@ -11281,6 +11302,12 @@ pa_spill_class (reg_class_t rclass, machine_mode mode)
   if ((mode == SImode || mode == DImode) && FP_REG_CLASS_P (rclass))
     return GENERAL_REGS;
 
+  /* If LRA attempts to spill out of the R1_REGS singleton class,
+     force it to route through GENERAL_REGS first.  This ensures that a
+     safe, fully valid general register is chosen to handle the frame
+     marker offsets.  */
+  if (rclass == R1_REGS)
+    return GENERAL_REGS;
   return NO_REGS;
 }
 
@@ -11600,6 +11627,22 @@ pa_frame_pointer_required (void)
     return true;
 
   return false;
+}
+
+/* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
+
+static reg_class_t
+pa_preferred_reload_class (rtx x, reg_class_t rclass)
+{
+  /* Prefer R1_REGS (%r1) when reloading HIGH expressions or PIC labels
+     so that single-instruction addil sequences are selected whenever %r1
+     is available, reserving the multi-instruction general-register
+     fallback for high register contention.  */
+  if ((GET_CODE (x) == HIGH || pic_label_operand (x, GET_MODE (x)))
+      && reg_class_subset_p (R1_REGS, rclass))
+    return R1_REGS;
+
+  return rclass;
 }
 
 #include "gt-pa.h"

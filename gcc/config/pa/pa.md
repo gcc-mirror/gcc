@@ -2605,17 +2605,16 @@
   [(set_attr "type" "store")
    (set_attr "length" "4")])
 
-;; For loading the address of a label while generating PIC code.
-;; Note since this pattern can be created at reload time (via movsi), all
-;; the same rules for movsi apply here.  (no new pseudos, no temporaries).
+;; For loading the address of a label while generating PIC code.  Note
+;; since this pattern can be created at reload time (via movsi), all
+;; the same rules for movsi apply here (no new pseudos, no temporaries).
 (define_insn ""
-  [(set (match_operand 0 "pmode_register_operand" "=a")
-	(match_operand 1 "pic_label_operand" ""))]
-  "TARGET_PA_20"
+  [(set (match_operand 0 "pmode_register_operand" "=a,!???????????????r")
+	(match_operand:P 1 "pic_label_operand" ""))]
+  ""
   "*
 {
   rtx xoperands[3];
-
   xoperands[0] = operands[0];
   xoperands[1] = operands[1];
 
@@ -2623,109 +2622,234 @@
       && !LABEL_REF_NONLOCAL_P (operands[1]))
     {
       xoperands[2] = gen_label_rtx ();
-      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-					 CODE_LABEL_NUMBER (xoperands[2]));
-      output_asm_insn (\"mfia %0\", xoperands);
+      if (TARGET_PA_20)
+	{
+	  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+					     CODE_LABEL_NUMBER (xoperands[2]));
+	  output_asm_insn (\"mfia %0\", xoperands);
+	}
+      else
+	{
+	  output_asm_insn (\"bl .+8,%0\", xoperands);
+	  output_asm_insn (\"depi 0,31,2,%0\", xoperands);
+	  (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
+					     CODE_LABEL_NUMBER (xoperands[2]));
+	}
 
-      /* If we're trying to load the address of a label that happens to be
-	 close, then we can use a shorter sequence.  */
       if (INSN_ADDRESSES_SET_P ()
 	  && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
 		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
 	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
       else
 	{
-	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
+	  if (which_alternative == 0)
+	    {
+	      output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+	      output_asm_insn (\"ldo R%%%1-%2(%%r1),%0\", xoperands);
+	    }
+	  else
+	    {
+	      /* Alternative 1: Temporarily save %r1 in the frame marker
+		 to avoid clobbering it during addil.  */
+	      if (TARGET_64BIT)
+		{
+		  output_asm_insn (\"std %%r1,-40(%%r30)\", xoperands);
+		  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+		  output_asm_insn (\"ldo R%%%1-%2(%%r1),%0\", xoperands);
+		  output_asm_insn (\"ldd -40(%%r30),%%r1\", xoperands);
+		}
+	      else
+		{
+		  output_asm_insn (\"stw %%r1,-16(%%r30)\", xoperands);
+		  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
+		  output_asm_insn (\"ldo R%%%1-%2(%%r1),%0\", xoperands);
+		  output_asm_insn (\"ldw -16(%%r30),%%r1\", xoperands);
+		}
+	    }
 	}
     }
   else
     {
       /* Load using linkage table.  */
-      if (TARGET_64BIT)
+      if (which_alternative == 0)
 	{
-	  output_asm_insn (\"addil LT%%%1,%%r27\", xoperands);
-	  output_asm_insn (\"ldd RT%%%1(%0),%0\", xoperands);
+	  if (TARGET_64BIT)
+	    {
+	      output_asm_insn (\"addil LT%%%1,%%r27\", xoperands);
+	      output_asm_insn (\"ldd RT%%%1(%%r1),%0\", xoperands);
+	    }
+	  else
+	    {
+	      output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
+	      output_asm_insn (\"ldw RT%%%1(%%r1),%0\", xoperands);
+	    }
 	}
       else
 	{
-	  output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
-	  output_asm_insn (\"ldw RT%%%1(%0),%0\", xoperands);
+	  /* Alternative 1: Linkage table load avoiding %r1 clobber.  */
+	  if (TARGET_64BIT)
+	    {
+	      output_asm_insn (\"ldil LT%%%1,%0\", xoperands);
+	      output_asm_insn (\"add,l %0,%%r27,%0\", xoperands);
+	      output_asm_insn (\"ldd RT%%%1(%0),%0\", xoperands);
+	    }
+	  else
+	    {
+	      output_asm_insn (\"stw %%r1,-16(%%r30)\", xoperands);
+	      output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
+	      output_asm_insn (\"ldw RT%%%1(%%r1),%0\", xoperands);
+	      output_asm_insn (\"ldw -16(%%r30),%%r1\", xoperands);
+	    }
 	}
     }
   return \"\";
 }"
-  [(set_attr "type" "multi")
-   (set_attr "length" "12")])		; 8 or 12
+  [(set_attr "type" "multi,multi")
+   (set (attr "length")
+      (if_then_else (and (match_test "GET_CODE (operands[1]) == LABEL_REF")
+			 (not (match_test "LABEL_REF_NONLOCAL_P (operands[1])")))
+		    (if_then_else (match_test "TARGET_PA_20")
+				  (if_then_else (match_test "INSN_ADDRESSES_SET_P ()
+							     && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
+								     - INSN_ADDRESSES (INSN_UID (insn))) < 8100")
+						(const_int 8)
+						(if_then_else (eq_attr "alternative" "0")
+							      (const_int 12)
+							      (const_int 20)))
+				  (if_then_else (match_test "INSN_ADDRESSES_SET_P ()
+							     && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
+								     - INSN_ADDRESSES (INSN_UID (insn))) < 8100")
+						(const_int 12)
+						(if_then_else (eq_attr "alternative" "0")
+							      (const_int 16)
+							      (const_int 24))))
+		    (if_then_else (eq_attr "alternative" "0")
+				  (const_int 8)
+				  (if_then_else (match_test "TARGET_64BIT")
+						(const_int 12)
+						(const_int 16)))))])
 
-(define_insn ""
-  [(set (match_operand 0 "pmode_register_operand" "=a")
-	(match_operand 1 "pic_label_operand" ""))]
-  "!TARGET_PA_20"
-  "*
+;; Optimize PIC label address load when LRA choses a general register
+;; other than %r1, but %r1 is actually dead.
+(define_peephole2
+  [(set (match_operand 0 "pmode_register_operand")
+	(match_operand:P 1 "pic_label_operand"))]
+  "REGNO (operands[0]) != 1
+   && peep2_regno_dead_p (0, 1)"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (match_dup 2))]
+  "
 {
-  rtx xoperands[3];
-
-  xoperands[0] = operands[0];
-  xoperands[1] = operands[1];
-
-  if (GET_CODE (operands[1]) == LABEL_REF
-      && !LABEL_REF_NONLOCAL_P (operands[1]))
-    {
-      xoperands[2] = gen_label_rtx ();
-      output_asm_insn (\"bl .+8,%0\", xoperands);
-      output_asm_insn (\"depi 0,31,2,%0\", xoperands);
-      (*targetm.asm_out.internal_label) (asm_out_file, \"L\",
-					 CODE_LABEL_NUMBER (xoperands[2]));
-
-      /* If we're trying to load the address of a label that happens to be
-	 close, then we can use a shorter sequence.  */
-      if (INSN_ADDRESSES_SET_P ()
-	  && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
-		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
-	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
-      else
-	{
-	  output_asm_insn (\"addil L%%%1-%2,%0\", xoperands);
-	  output_asm_insn (\"ldo R%%%1-%2(%0),%0\", xoperands);
-	}
-    }
-  else
-    {
-      /* Load using linkage table.  */
-      output_asm_insn (\"addil LT%%%1,%%r19\", xoperands);
-      output_asm_insn (\"ldw RT%%%1(%0),%0\", xoperands);
-    }
-  return \"\";
-}"
-  [(set_attr "type" "multi")
-   (set_attr "length" "16")])		; 12 or 16
+  operands[2] = gen_rtx_REG (Pmode, 1);
+}")
 
 ;; DLTIND relocs need to be converted to DPREL relocs when PIC code
 ;; isn't used in a shared object.  Currently, GNU ld only supports
 ;; converting addil instructions.
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(plus:SI (match_operand:SI 1 "register_operand" "r")
+  [(set (match_operand:SI 0 "register_operand" "=a,!???????????????r")
+	(plus:SI (match_operand:SI 1 "register_operand" "r,r")
 		 (high:SI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2], Pmode)
    && flag_pic"
-  "addil LT'%G2,%1"
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+  "*
+{
+  if (which_alternative == 0 || REGNO (operands[0]) == 1)
+    return \"addil LT'%G2,%1\";
+  else
+    return \"stw %%r1,-16(%%r30)\;addil LT'%G2,%1\;copy %%r1,%0\;ldw -16(%%r30),%%r1\";
+}"
+  [(set_attr "type" "binary,multi")
+   (set_attr "length" "4,16")])
+
+;; Optimize 32-bit PIC HIGH + LO_SUM when LRA choses a general register
+;; other than %r1, but %r1 is actually dead.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (match_operand:SI 1 "register_operand")
+		 (high:SI (match_operand 2 ""))))
+   (set (match_operand:SI 3 "register_operand")
+	(lo_sum:SI (match_dup 0)
+		   (match_dup 2)))]
+  "!TARGET_64BIT
+   && flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_reg_dead_p (2, operands[0])
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:SI 1) (plus:SI (match_dup 1) (high:SI (match_dup 2))))
+   (set (match_dup 3) (lo_sum:SI (reg:SI 1) (match_dup 2)))]
+  "")
+
+;; Same optimization for standalone 32-bit PIC HIGH when %r1 is dead.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(plus:SI (match_operand:SI 1 "register_operand")
+		 (high:SI (match_operand 2 ""))))]
+  "!TARGET_64BIT
+   && flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:SI 1) (plus:SI (match_dup 1) (high:SI (match_dup 2))))
+   (set (match_dup 0) (reg:SI 1))]
+  "")
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
-	         (high:DI (match_operand 2 "" ""))))]
+  [(set (match_operand:DI 0 "register_operand" "=a,!???????????????r")
+	(plus:DI (match_operand:DI 1 "register_operand" "r,r")
+		 (high:DI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2], Pmode)
    && TARGET_64BIT
    && flag_pic"
-  "addil LT'%G2,%1"
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+  "*
+{
+  if (which_alternative == 0 || REGNO (operands[0]) == 1)
+    return \"addil LT'%G2,%1\";
+  else if (REGNO (operands[0]) != REGNO (operands[1]))
+    return \"ldil LT'%G2,%0\;add,l %0,%1,%0\";
+  else
+    return \"std %%r1,-40(%%r30)\;addil LT'%G2,%1\;copy %%r1,%0\;ldd -40(%%r30),%%r1\";
+}"
+  [(set_attr "type" "binary,multi")
+   (set (attr "length")
+      (if_then_else (ior (eq_attr "alternative" "0")
+			 (match_test "REGNO (operands[0]) == 1"))
+		    (const_int 4)
+		    (if_then_else (match_test "REGNO (operands[0]) != REGNO (operands[1])")
+				  (const_int 8)
+				  (const_int 16))))])
+
+;; Optimize 64-bit PIC HIGH + LO_SUM when LRA choses a general register
+;; other than %r1, but %r1 is actually dead.
+(define_peephole2
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (high:DI (match_operand 2 ""))))
+   (set (match_operand:DI 3 "register_operand")
+	(lo_sum:DI (match_dup 0)
+		   (match_dup 2)))]
+  "TARGET_64BIT
+   && flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_reg_dead_p (2, operands[0])
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:DI 1) (plus:DI (match_dup 1) (high:DI (match_dup 2))))
+   (set (match_dup 3) (lo_sum:DI (reg:DI 1) (match_dup 2)))]
+  "")
+
+;; Same optimization for standalone 64-bit PIC HIGH when %r1 is dead.
+(define_peephole2
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (match_operand:DI 1 "register_operand")
+		 (high:DI (match_operand 2 ""))))]
+  "TARGET_64BIT
+   && flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:DI 1) (plus:DI (match_dup 1) (high:DI (match_dup 2))))
+   (set (match_dup 0) (reg:DI 1))]
+  "")
 
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2754,25 +2878,70 @@
 ;; HP linker to eliminate the dp relocation if the symbolic operand
 ;; lives in the TEXT space.
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a")
+  [(set (match_operand:SI 0 "register_operand" "=a,!???????????????r")
 	(high:SI (match_operand 1 "" "")))]
-  "symbolic_operand (operands[1], Pmode)
+  "TARGET_LONG_LOAD_STORE
+   && symbolic_operand (operands[1], Pmode)
    && ! function_label_operand (operands[1], Pmode)
    && ! read_only_operand (operands[1], Pmode)
    && ! flag_pic"
   "*
 {
-  if (TARGET_LONG_LOAD_STORE)
+  if (which_alternative == 0 || REGNO (operands[0]) == 1)
     return \"addil NLR'%H1,%%r27\;ldo N'%H1(%%r1),%%r1\";
   else
-    return \"addil LR'%H1,%%r27\";
+    return \"stw %%r1,-16(%%r30)\;addil NLR'%H1,%%r27\;ldo N'%H1(%%r1),%0\;ldw -16(%%r30),%%r1\";
 }"
-  [(set_attr "type" "binary")
-   (set (attr "length")
-      (if_then_else (not (match_test "TARGET_LONG_LOAD_STORE"))
-		    (const_int 4)
-		    (const_int 8)))])
+  [(set_attr "type" "multi,multi")
+   (set_attr "length" "8,16")])
 
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=a,!???????????????r")
+	(high:SI (match_operand 1 "" "")))]
+  "!TARGET_LONG_LOAD_STORE
+   && symbolic_operand (operands[1], Pmode)
+   && ! function_label_operand (operands[1], Pmode)
+   && ! read_only_operand (operands[1], Pmode)
+   && ! flag_pic"
+  "*
+{
+  if (which_alternative == 0 || REGNO (operands[0]) == 1)
+    return \"addil LR'%H1,%%r27\";
+  else
+    return \"stw %%r1,-16(%%r30)\;addil LR'%H1,%%r27\;copy %%r1,%0\;ldw -16(%%r30),%%r1\";
+}"
+  [(set_attr "type" "binary,multi")
+   (set_attr "length" "4,16")])
+
+;; Optimize non-PIC HIGH + LO_SUM when LRA choses a general register
+;; other than %r1, but %r1 is actually dead.  This avoids saving and
+;; restoring %r1 in the frame marker.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(high:SI (match_operand 1 "")))
+   (set (match_operand:SI 2 "register_operand")
+	(lo_sum:SI (match_dup 0)
+		   (match_dup 1)))]
+  "!TARGET_64BIT
+   && !flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_reg_dead_p (2, operands[0])
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:SI 1) (high:SI (match_dup 1)))
+   (set (match_dup 2) (lo_sum:SI (reg:SI 1) (match_dup 1)))]
+  "")
+
+;; Same optimization for standalone non-PIC HIGH when %r1 is dead.
+(define_peephole2
+  [(set (match_operand:SI 0 "register_operand")
+	(high:SI (match_operand 1 "")))]
+  "!TARGET_64BIT
+   && !flag_pic
+   && REGNO (operands[0]) != 1
+   && peep2_regno_dead_p (0, 1)"
+  [(set (reg:SI 1) (high:SI (match_dup 1)))
+   (set (match_dup 0) (reg:SI 1))]
+  "")
 
 ;; This is for use in the prologue/epilogue code.  We need it
 ;; to add large constants to a stack pointer or frame pointer.
@@ -2804,8 +2973,9 @@
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(high:SI (match_operand 1 "" "")))]
-  "(!flag_pic || !symbolic_operand (operands[1], Pmode))
-    && !pa_is_function_label_plus_const (operands[1])"
+  "(!symbolic_operand (operands[1], Pmode)
+    || (!flag_pic && read_only_operand (operands[1], Pmode)))
+   && !pa_is_function_label_plus_const (operands[1])"
   "*
 {
   if (symbolic_operand (operands[1], Pmode))
@@ -7658,7 +7828,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_symref"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 0))]
   "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
@@ -7675,7 +7844,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_symref_pic"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (match_operand 2))
    (use (reg:SI 19))
@@ -7695,7 +7863,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:SI 19))
@@ -7705,7 +7872,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:SI 19))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 0))])]
@@ -7714,7 +7880,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:SI 19))
@@ -7723,7 +7888,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:SI 19))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 0))])
@@ -7733,7 +7897,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "*call_symref_pic_post_reload"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (reg:SI 19))
    (use (const_int 0))]
@@ -7753,7 +7916,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_symref_64bit"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (clobber (match_operand 2))
    (use (reg:DI 27))
@@ -7774,7 +7936,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:DI 27))
@@ -7785,7 +7946,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:DI 27))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -7795,7 +7955,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 		    (match_operand 1 "" ""))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:DI 27))
@@ -7805,7 +7964,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 2) (reg:DI 27))
    (parallel [(call (mem:SI (match_dup 0))
 		    (match_dup 1))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -7816,7 +7974,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "*call_symref_64bit_post_reload"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (use (reg:DI 27))
    (use (reg:DI 29))
@@ -7834,7 +7991,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_reg"
   [(call (mem:SI (reg:SI 22))
 	 (match_operand 0 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   "!TARGET_64BIT"
@@ -7852,7 +8008,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "call_reg_pic"
   [(call (mem:SI (reg:SI 22))
 	 (match_operand 0 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (match_operand 1))
    (use (reg:SI 19))
@@ -7872,7 +8027,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (reg:SI 22))
 		    (match_operand 0 "" ""))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 1))
 	      (use (reg:SI 19))
@@ -7882,7 +8036,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 1) (reg:SI 19))
    (parallel [(call (mem:SI (reg:SI 22))
 		    (match_dup 0))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 1))])]
@@ -7891,7 +8044,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_split
   [(parallel [(call (mem:SI (reg:SI 22))
 		    (match_operand 0 "" ""))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 1))
 	      (use (reg:SI 19))
@@ -7900,7 +8052,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_dup 1) (reg:SI 19))
    (parallel [(call (mem:SI (reg:SI 22))
 		    (match_dup 0))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 1))])
@@ -7910,7 +8061,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "*call_reg_pic_post_reload"
   [(call (mem:SI (reg:SI 22))
 	 (match_operand 0 "" "i"))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (reg:SI 19))
    (use (const_int 1))]
@@ -8146,7 +8296,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 0))]
   "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
@@ -8165,7 +8314,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:DF 48))
    (use (const_int 1))]
@@ -8184,7 +8332,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (match_operand 3))
    (use (reg:SI 19))
@@ -8205,7 +8352,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 3))
 	      (use (reg:SI 19))
@@ -8216,7 +8362,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 0))])]
@@ -8226,7 +8371,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 3))
 	      (use (reg:SI 19))
@@ -8236,7 +8380,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 0))])
@@ -8247,7 +8390,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (reg:SI 19))
    (use (const_int 0))]
@@ -8267,7 +8409,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:DF 48))
    (clobber (match_operand 3))
@@ -8289,7 +8430,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (reg:DF 48))
 	      (clobber (match_operand 3))
@@ -8301,7 +8441,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (reg:DF 48))
 	      (use (reg:SI 19))
@@ -8312,7 +8451,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (reg:DF 48))
 	      (clobber (match_operand 3))
@@ -8323,7 +8461,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (reg:DF 48))
 	      (use (reg:SI 19))
@@ -8335,7 +8472,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (reg:DF 48))
    (use (reg:SI 19))
@@ -8357,7 +8493,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (clobber (match_operand 3))
    (use (reg:DI 27))
@@ -8379,7 +8514,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 3))
 	      (use (reg:DI 27))
@@ -8391,7 +8525,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -8402,7 +8535,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (match_operand 3))
 	      (use (reg:DI 27))
@@ -8413,7 +8545,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (use (reg:DI 27))
 	      (use (reg:DI 29))
@@ -8425,7 +8556,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (use (reg:DI 27))
    (use (reg:DI 29))
@@ -8445,7 +8575,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (clobber (reg:DF 40))
    (clobber (match_operand 3))
@@ -8468,7 +8597,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (reg:DF 40))
 	      (clobber (match_operand 3))
@@ -8481,7 +8609,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (reg:DF 40))
 	      (use (reg:DI 27))
@@ -8493,7 +8620,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 	      (call (mem:SI (match_operand 1 "call_operand_address" ""))
 		    (match_operand 2 "" "")))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (reg:DF 40))
 	      (clobber (match_operand 3))
@@ -8505,7 +8631,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 	      (call (mem:SI (match_dup 1))
 		    (match_dup 2)))
-	      (clobber (reg:DI 1))
 	      (clobber (reg:DI 2))
 	      (clobber (reg:DF 40))
 	      (use (reg:DI 27))
@@ -8518,7 +8643,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:DI 1))
    (clobber (reg:DI 2))
    (clobber (reg:DF 40))
    (use (reg:DI 27))
@@ -8538,7 +8662,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (reg:SI 22))
 	      (match_operand 1 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (const_int 1))]
   "!TARGET_64BIT"
@@ -8557,7 +8680,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (reg:SI 22))
 	      (match_operand 1 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (clobber (match_operand 2))
    (use (reg:SI 19))
@@ -8578,7 +8700,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:SI (reg:SI 22))
 			 (match_operand 1 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:SI 19))
@@ -8589,7 +8710,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 		   (call (mem:SI (reg:SI 22))
 			 (match_dup 1)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 1))])]
@@ -8599,7 +8719,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(parallel [(set (match_operand 0 "" "")
 		   (call (mem:SI (reg:SI 22))
 			 (match_operand 1 "" "")))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (clobber (match_operand 2))
 	      (use (reg:SI 19))
@@ -8609,7 +8728,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
    (parallel [(set (match_dup 0)
 		   (call (mem:SI (reg:SI 22))
 			 (match_dup 1)))
-	      (clobber (reg:SI 1))
 	      (clobber (reg:SI 2))
 	      (use (reg:SI 19))
 	      (use (const_int 1))])
@@ -8620,7 +8738,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (reg:SI 22))
 	      (match_operand 1 "" "i")))
-   (clobber (reg:SI 1))
    (clobber (reg:SI 2))
    (use (reg:SI 19))
    (use (const_int 1))]
@@ -8963,7 +9080,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "sibcall_internal_symref"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:SI 1))
    (use (reg:SI 2))
    (use (const_int 0))]
   "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
@@ -8980,7 +9096,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 (define_insn "sibcall_internal_symref_64bit"
   [(call (mem:SI (match_operand 0 "call_operand_address" ""))
 	 (match_operand 1 "" "i"))
-   (clobber (reg:DI 1))
    (use (reg:DI 2))
    (use (const_int 0))]
   "TARGET_64BIT"
@@ -9050,7 +9165,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:SI 1))
    (use (reg:SI 2))
    (use (const_int 0))]
   "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
@@ -9068,7 +9182,6 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   [(set (match_operand 0 "" "")
 	(call (mem:SI (match_operand 1 "call_operand_address" ""))
 	      (match_operand 2 "" "i")))
-   (clobber (reg:DI 1))
    (use (reg:DI 2))
    (use (const_int 0))]
   "TARGET_64BIT"
