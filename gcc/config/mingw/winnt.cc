@@ -254,21 +254,36 @@ i386_pe_maybe_mangle_decl_assembler_name (tree decl, tree id)
 
 #endif
 
-/* Return the symbol spelling used by .drectve exclude-symbols directives.
-   This is the external name without the user label prefix, while preserving
-   calling-convention decoration such as fastcall's leading '@' or a
-   stdcall suffix.  */
+/* Return the symbol spelling used by the .drectve `-exclude-symbols:` and
+   `-export:` directives.  This is the external name without the user label
+   prefix, while preserving calling-convention decoration such as fastcall's
+   leading `@` or a stdcall suffix.
+
+   When the name doesn't start with `*`, no user label prefix has been
+   added yet (it will be added by `ASM_OUTPUT_LABELREF()`), and the linker
+   will also add one to the name given in a directive, so we pass the name
+   unchanged.
+
+   When the name starts with `*`, the remaining part is exactly the symbol
+   that is specified with `asm` in the declaration.  The compiler does not
+   add a user label prefix in this case, but the linker will add one: For
+   example, if the symbol is `_foo`, we must pass `-export:"foo"` without
+   the prefix.  This relies on the convention that an `asm` label includes
+   a user label prefix; an `asm` label such as `foo`, which doesn't
+   include one, cannot be exported this way.  */
 
 static const char *
-i386_pe_drectve_name (tree id)
+i386_pe_drectve_name (const char *name)
 {
-  const char *name = targetm.strip_name_encoding (IDENTIFIER_POINTER (id));
-  size_t prefix_len = strlen (user_label_prefix);
-
-  if (prefix_len != 0
-      && strncmp (name, user_label_prefix, prefix_len) == 0)
-    name += prefix_len;
-
+  if (*name == '*')
+    {
+      /* The name is from an `asm` label.  */
+      name++;
+      size_t prefix_len = strlen (user_label_prefix);
+      if (prefix_len != 0
+	  && strncmp (name, user_label_prefix, prefix_len) == 0)
+	name += prefix_len;
+    }
   return name;
 }
 
@@ -285,8 +300,8 @@ i386_pe_assemble_visibility (tree decl, int vis)
 
   if (vis == VISIBILITY_HIDDEN || vis == VISIBILITY_INTERNAL)
     {
-      tree id = DECL_ASSEMBLER_NAME (decl);
-      const char *name = i386_pe_drectve_name (id);
+      const char *name = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl));
+      name = i386_pe_drectve_name (name);
       drectve_section ();
       fprintf (asm_out_file, "\t.ascii \" -exclude-symbols:%s\"\n", name);
     }
@@ -847,7 +862,7 @@ mingw_pe_file_end (void)
       for (q = export_head; q != NULL; q = q->next)
 	{
 	  fprintf (asm_out_file, "\t.ascii \" -export:\\\"%s\\\"%s\"\n",
-		   default_strip_name_encoding (q->name),
+		   i386_pe_drectve_name (q->name),
 		   (q->is_data ? ",data" : ""));
 	}
     }
