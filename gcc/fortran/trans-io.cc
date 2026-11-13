@@ -136,6 +136,8 @@ enum iocall
   IOCALL_X_COMPLEX128_WRITE,
   IOCALL_X_ARRAY,
   IOCALL_X_ARRAY_WRITE,
+  IOCALL_X_ARRAY_SPAN,
+  IOCALL_X_ARRAY_SPAN_WRITE,
   IOCALL_X_DERIVED,
   IOCALL_OPEN,
   IOCALL_CLOSE,
@@ -413,6 +415,17 @@ gfc_build_io_library_fndecls (void)
 
   iocall[IOCALL_X_ARRAY_WRITE] = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("transfer_array_write")), ". w r . . ",
+	void_type_node, 4, dt_parm_type, pvoid_type_node,
+	integer_type_node, gfc_charlen_type_node);
+
+  iocall[IOCALL_X_ARRAY_SPAN] = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_array_span")), ". w w . . ",
+	void_type_node, 4, dt_parm_type, pvoid_type_node,
+	integer_type_node, gfc_charlen_type_node);
+
+  iocall[IOCALL_X_ARRAY_SPAN_WRITE]
+    = gfc_build_library_function_decl_with_spec (
+	get_identifier (PREFIX("transfer_array_span_write")), ". w r . . ",
 	void_type_node, 4, dt_parm_type, pvoid_type_node,
 	integer_type_node, gfc_charlen_type_node);
 
@@ -2574,7 +2587,8 @@ transfer_expr (gfc_se * se, gfc_typespec * ts, tree addr_expr,
    array should be of one of the intrinsic types.  */
 
 static void
-transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
+transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr,
+		     bool span)
 {
   tree tmp, charlen_arg, kind_arg, io_call;
 
@@ -2587,9 +2601,9 @@ transfer_array_desc (gfc_se * se, gfc_typespec * ts, tree addr_expr)
 
   tmp = gfc_build_addr_expr (NULL_TREE, dt_parm);
   if (last_dt == READ)
-    io_call = iocall[IOCALL_X_ARRAY];
+    io_call = iocall[span ? IOCALL_X_ARRAY_SPAN : IOCALL_X_ARRAY];
   else
-    io_call = iocall[IOCALL_X_ARRAY_WRITE];
+    io_call = iocall[span ? IOCALL_X_ARRAY_SPAN_WRITE : IOCALL_X_ARRAY_WRITE];
 
   tmp = build_call_expr_loc (UNKNOWN_LOCATION,
 			 io_call, 4,
@@ -2613,6 +2627,7 @@ gfc_trans_transfer (gfc_code * code)
   tree tmp;
   tree vptr;
   int n;
+  bool span_array = false;
 
   gfc_start_block (&block);
   gfc_init_block (&body);
@@ -2650,15 +2665,23 @@ gfc_trans_transfer (gfc_code * code)
 	}
 
       /* These expressions don't always have the dtype element length set
-	 correctly, rendering them useless for array transfer.  */
+	 correctly, rendering them useless for array transfer.  Numeric and
+	 logical pointer arrays are passed to the transfer functions that
+	 use the descriptor span.  */
+      span_array = (expr->ts.type != BT_CLASS
+		    && expr->expr_type == EXPR_VARIABLE
+		    && (gfc_expr_attr (expr).pointer
+			|| (expr->symtree->n.sym->attr.pointer
+			    && gfc_expr_attr (expr).target)));
+      if (span_array
+	  && !gfc_numeric_ts (&expr->ts)
+	  && expr->ts.type != BT_LOGICAL)
+	goto scalarize;
       if (expr->ts.type != BT_CLASS
 	 && expr->expr_type == EXPR_VARIABLE
 	 && ((expr->symtree->n.sym->ts.type == BT_DERIVED && expr->ts.deferred)
 	     || (expr->symtree->n.sym->assoc
-		 && expr->symtree->n.sym->assoc->variable)
-	     || gfc_expr_attr (expr).pointer
-	     || (expr->symtree->n.sym->attr.pointer
-		 && gfc_expr_attr (expr).target)))
+		 && expr->symtree->n.sym->assoc->variable)))
 	goto scalarize;
 
       if (gfc_expr_attr (expr).pdt_string)
@@ -2716,7 +2739,7 @@ gfc_trans_transfer (gfc_code * code)
 	      tmp = gfc_build_addr_expr (NULL_TREE, se.expr);
 	    }
 
-	  transfer_array_desc (&se, &expr->ts, tmp);
+	  transfer_array_desc (&se, &expr->ts, tmp, span_array);
 	  goto finish_block_label;
 	}
 
