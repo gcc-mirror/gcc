@@ -1252,15 +1252,18 @@ gnat_signed_type_for (tree type_node)
   return gnat_signed_or_unsigned_type_for (0, type_node);
 }
 
-/* Like TYPE_QUALS, but doesn't return qualifiers that GNAT doesn't use.  */
+/* Like TYPE_QUALS, but do not return qualifiers that GNAT doesn't use.  */
+
 static inline cv_qualifier
 ada_type_quals (const_tree type)
 {
   addr_space_t as;
   cv_qualifier cv;
   std::tie (cv, as) = TYPE_QUALS (type).split ();
+
   /* Ada does not support address spaces (at the moment).  */
   gcc_assert (ADDR_SPACE_GENERIC_P (as));
+
   return cv;
 }
 
