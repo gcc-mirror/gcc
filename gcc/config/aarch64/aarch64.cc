@@ -34650,6 +34650,41 @@ aarch64_test_sve_folding ()
 
 extern void aarch64_json_tunings_tests ();
 
+/* Masked register counts must not turn a left rotate into a right rotate.  */
+
+static void
+aarch64_test_masked_rotate ()
+{
+  for (auto mode : { SImode, DImode })
+    for (auto count_mode : { SImode, DImode })
+      {
+	if (mode == SImode && count_mode == DImode)
+	  continue;
+	rtx dest = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 1);
+	rtx value = gen_rtx_REG (mode, LAST_VIRTUAL_REGISTER + 2);
+	rtx count = gen_rtx_REG (count_mode, LAST_VIRTUAL_REGISTER + 3);
+	count = gen_rtx_AND (count_mode, count,
+			     GEN_INT (GET_MODE_BITSIZE (mode) - 1));
+	for (bool negate : { false, true })
+	  {
+	    if (negate && count_mode != SImode)
+	      continue;
+	    rtx masked_count = negate ? gen_rtx_NEG (count_mode, count) : count;
+	    masked_count = gen_rtx_SUBREG
+	      (QImode, masked_count, subreg_lowpart_offset (QImode, count_mode));
+	    for (auto code : { ASHIFT, ASHIFTRT, LSHIFTRT, ROTATERT, ROTATE })
+	      {
+		rtx op = gen_rtx_fmt_ee (code, mode, value, masked_count);
+		int icode = recog (gen_rtx_SET (dest, op), nullptr, nullptr);
+		if (code == ROTATE)
+		  ASSERT_EQ (icode, -1);
+		else
+		  ASSERT_TRUE (icode >= 0);
+	      }
+	  }
+      }
+}
+
 /* Run all target-specific selftests.  */
 
 static void
@@ -34660,6 +34695,7 @@ aarch64_run_selftests (void)
   aarch64_test_sysreg_encoding_clashes ();
   aarch64_test_sve_folding ();
   aarch64_json_tunings_tests ();
+  aarch64_test_masked_rotate ();
 }
 
 } // namespace selftest

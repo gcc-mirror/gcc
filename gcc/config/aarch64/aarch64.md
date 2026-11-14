@@ -6178,7 +6178,8 @@
 	  (match_operator 4 "subreg_lowpart_operator"
 	   [(and:GPI (match_operand:GPI 2 "register_operand" "r")
 		     (match_operand 3 "const_int_operand" "n"))])))]
-  "(~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0"
+  "!<is_rotl>
+   && (~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0"
   "<shift>\t%<w>0, %<w>1, %<w>2"
   [(set_attr "type" "shift_reg")]
 )
@@ -6190,7 +6191,8 @@
 	  (match_operator 4 "subreg_lowpart_operator"
 	  [(neg:SI (and:SI (match_operand:SI 2 "register_operand" "r")
 			   (match_operand 3 "const_int_operand" "n")))])))]
-  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0)"
+  "!<is_rotl>
+   && ((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (<MODE>mode) - 1)) == 0)"
   "#"
   "&& true"
   [(const_int 0)]
@@ -6242,7 +6244,8 @@
 	  (match_operator 4 "subreg_lowpart_operator"
 	   [(and:SI (match_operand:SI 2 "register_operand" "r")
 		    (match_operand 3 "const_int_operand" "n"))])))]
-  "((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode) - 1)) == 0)"
+  "!<is_rotl>
+   && ((~INTVAL (operands[3]) & (GET_MODE_BITSIZE (DImode) - 1)) == 0)"
 {
   rtx xop[3];
   xop[0] = operands[0];
