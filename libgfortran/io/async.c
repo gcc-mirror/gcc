@@ -426,7 +426,7 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
     }
 
   LOCK (&au->lock);
-  if (i > au->id.high)
+  if (i < 0 || i >= au->id.high)
     {
       generate_error_common (cmp, LIBERROR_BAD_WAIT_ID, NULL);
       UNLOCK (&au->lock);
@@ -437,8 +437,9 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
   if (au->id.waiting < i)
     au->id.waiting = i;
   SIGNAL (&(au->work));
+  REVOKE_SIGNAL (&(au->id.done));
   WAIT_SIGNAL_MUTEX (&(au->id.done),
-		     (au->id.low >= au->id.waiting || au->empty), &au->lock);
+		     (au->id.low > au->id.waiting || au->empty), &au->lock);
   LOCK (&au->lock);
   ret = collect_async_errors (cmp, au);
   UNLOCK (&au->lock);
