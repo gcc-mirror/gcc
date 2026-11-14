@@ -5,7 +5,7 @@ extern "C" {
     fn printf(s: *const i8, ...);
 }
 
-#[rustc_builtin_macro] //{ dg-error "internal implementation detail. " "" { target *-*-* }  }
+#[rustc_builtin_macro] //{ dg-error "internal implementation detail" }
 macro_rules! line {
     () => {{}};
 }

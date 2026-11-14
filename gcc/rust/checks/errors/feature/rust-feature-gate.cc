@@ -83,25 +83,17 @@ FeatureGate::gate (Feature::Name name, location_t loc,
   if (!features.valid_lang_features.count (name))
     {
       auto &feature = Feature::lookup (name);
+
+      rust_error_at (loc, ErrorCode::E0658, "%s", error_msg.c_str ());
+
+      // Mention the issue, if it is defined
       if (auto issue = feature.issue ())
-	{
-	  auto issue_number = issue.value ();
-	  const char *fmt_str
-	    = "%s. see issue %u "
-	      "<https://github.com/rust-lang/rust/issues/%u> for more "
-	      "information. add `#![feature(%s)]` to the crate attributes to "
-	      "enable.";
-	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
-			 issue_number, issue_number,
-			 feature.as_string ().c_str ());
-	}
-      else
-	{
-	  const char *fmt_str
-	    = "%s. add `#![feature(%s)]` to the crate attributes to enable.";
-	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
-			 feature.as_string ().c_str ());
-	}
+	rust_inform (loc, "see issue #%u <%s%u> for more information", *issue,
+		     "https://github.com/rust-lang/rust/issues/", *issue);
+
+      rust_inform (loc,
+		   "add %<#![feature(%s)]%> to the crate attributes to enable",
+		   feature.as_string ().c_str ());
 
       return GateResult::Gated;
     }
