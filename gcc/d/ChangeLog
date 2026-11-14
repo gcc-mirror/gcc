@@ -1,3 +1,12 @@
+2026-11-13  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* d-attribs.cc (handle_noreturn_attribute, handle_malloc_attribute)
+	(handle_nonnull_attribute, handle_transaction_pure_attribute)
+	(handle_omp_declare_simd_attribute, d_handle_noreturn_attribute)
+	(d_handle_malloc_attribute, d_handle_nonnull_attribute)
+	(d_handle_transaction_pure_attribute)
+	(d_handle_omp_declare_simd_attribute): Prepend functions with `d_`
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* d-codegen.cc (build_vthis_function): Update to use new

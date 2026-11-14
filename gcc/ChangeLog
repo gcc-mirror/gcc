@@ -1,3 +1,531 @@
+2026-11-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/127142
+	* config/pa/pa.cc (pa_preferred_reload_class): New function.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+	(hppa_register_move_cost): Set cost to 2 for moves between
+	R1_REGS and GENERAL_REGS, and 8 for moves between
+	GENERAL_REGS/R1_REGS and FP_REGS.
+	(pa_secondary_reload): Remove redundant sri->icode assignment.
+	(pa_spill_class): Return GENERAL_REGS when spilling R1_REGS.
+	* config/pa/pa.md: Merge 32-bit and 64-bit PIC label address
+	patterns into a single Pmode define_insn, fix %r1 operand in
+	addil sequences, and add a disparaged 'r' alternative.
+	Add disparaged 'r' alternatives to 32-bit and 64-bit PIC HIGH
+	patterns.  Split 32-bit non-PIC HIGH pattern into
+	TARGET_LONG_LOAD_STORE and !TARGET_LONG_LOAD_STORE patterns with
+	disparaged 'r' alternatives.  Add define_peephole2 patterns to
+	use %r1 for HIGH and PIC label loads when %r1 is dead.
+	(call_symref, call_symref_pic, call_symref_pic_post_reload)
+	(call_symref_64bit, call_symref_64bit_post_reload, call_reg)
+	(call_reg_pic, call_reg_pic_post_reload, call_value_symref)
+	(call_value_symref_pic, call_value_symref_pic_post_reload)
+	(call_value_symref_64bit, call_value_symref_64bit_post_reload)
+	(call_value_reg, call_value_reg_pic, call_value_reg_pic_post_reload)
+	(sibcall_internal_symref, sibcall_internal_symref_64bit)
+	(sibcall_value_internal_symref, sibcall_value_internal_symref_64bit):
+	Remove (clobber (reg 1)) and update corresponding define_splits.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/initializers.o,
+	analyzer/string-scan.o, analyzer/symbolic-bit-contents.o,
+	analyzer/symbolic-bit-vectors.o,
+	analyzer/symbolic-memory-ranges.o, analyzer/symbolic-pointers.o,
+	analyzer/symbolic-ranges.o, and analyzer/symbolic-scalars.o.
+	Remove analyzer/ranges.o.
+	* custom-sarif-properties/state-graphs.cc (node::num_bits):
+	Convert from json::string_property to json::json_property.
+	* custom-sarif-properties/state-graphs.h (node::num_bits):
+	Likewise.
+	* diagnostics/color.cc (gcc_color_defaults): Add entries for
+	debugging the analyzer.
+	* doc/analyzer.texi: Update for new store implementation.
+	(__analyzer_hexdump): New.
+	* selftest-run-tests.cc: Add #define INCLUDE_VECTOR.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Replace analyzer/symbol.o with
+	analyzer/symbolic-nodes.o.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/concrete-ranges.o.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/integer-with-unit.o.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/integer.o.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add diagnostics/markup.o.
+	* diagnostics/diagnostics-selftests.cc
+	(diagnostics::selftest::run_diagnostics_selftests): Call
+	markup_cc_tests.
+	* diagnostics/diagnostics-selftests.h
+	(diagnostics::selftest::markup_cc_tests): New decl.
+	* diagnostics/markup.cc: New file.
+	* diagnostics/markup.h: New file.
+
+2026-11-13  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arm/arm.h (thumb_call_via_label): Move inside the
+	!GENERATOR_FILE && !USED_FOR_TARGET block.
+
+2026-11-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* range-op-ptr.cc (class operator_pointer_diff): Add
+	op1_op2_relation.
+	(operator_pointer_diff::op1_op2_relation): New method.
+
+2026-11-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges): Use
+	the range of the rhs1/rsh2 on that edge rather than varry.
+	* range-op.cc (operator_minus::op1_op2_relation): Add
+	case for signed types.
+
+2026-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128662
+	* config/i386/i386.h (TARGET_AVOID_FALSE_DEP_FOR_BSR): New.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BSR):
+	New tuning.
+	* config/i386/i386.md (bsr_rex64): Convert to
+	define_insn_and_split.  Split to *bsr_rex64_falsedep when
+	TARGET_AVOID_FALSE_DEP_FOR_BSR is set and the destination is not
+	mentioned in the source.
+	(bsr_rex64_1): Ditto.  Split to *bsr_rex64_1_falsedep.
+	(bsr_rex64_1_zext): Ditto.  Split to *bsr_rex64_1_zext_falsedep.
+	(bsr): Ditto.  Split to *bsr_falsedep.
+	(bsr_1): Ditto.  Split to *bsr_1_falsedep.
+	(bsr_zext_1): Ditto.  Split to *bsr_zext_1_falsedep.
+	(*bsr_rex64_falsedep, *bsr_rex64_1_falsedep)
+	(*bsr_rex64_1_zext_falsedep, *bsr_falsedep, *bsr_1_falsedep)
+	(*bsr_zext_1_falsedep): New insns.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_types_unsigned_shift_qualifiers, TYPES_USHIFTIMM): Delete.
+	* config/aarch64/aarch64-neon-builtins-base.cc (vshll_n, vshll_high_n):
+	New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the sshll_n,
+	ushll_n, sshll2_n and ushll2_n builtins, which no longer have any
+	caller.
+	* config/aarch64/arm_neon.h (vshll_high_n_s16, vshll_high_n_s32,
+	vshll_high_n_s8, vshll_high_n_u16, vshll_high_n_u32, vshll_high_n_u8,
+	vshll_n_s16, vshll_n_s32, vshll_n_s8, vshll_n_u16, vshll_n_u32,
+	vshll_n_u8): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_types_ternopu_imm_qualifiers,
+	aarch64_types_shift2_to_unsigned_qualifiers,
+	aarch64_types_ternop_s_imm_qualifiers, TYPES_TERNOPUI, TYPES_USHIFT2IMM,
+	TYPES_SHIFT2IMM_UUSS, TYPES_SETREG, TYPES_SHIFTINSERT, TYPES_SHIFTACC,
+	TYPES_SHIFT2IMM): Delete.
+	* config/aarch64/aarch64-neon-builtins-base.cc (code_for_shrn2_n): New
+	function.
+	(vshrn_n, vqshrn_n, vqshrnh_n, vqshrns_n, vqshrnd_n, vshrn_high_n,
+	vqshrn_high_n, vrshrn_n, vqrshrn_n, vqrshrnh_n, vqrshrns_n,
+	vqrshrnd_n, vrshrn_high_n, vqrshrn_high_n, vqshrun_n, vqshrunh_n,
+	vqshruns_n, vqshrund_n, vqrshrun_n, vqrshrunh_n, vqrshruns_n,
+	vqrshrund_n, vqshrun_high_n, vqrshrun_high_n): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the narrowing shift
+	builtins, which no longer have any caller.
+	* config/aarch64/arm_neon.h (vqrshrn_high_n_s16, vqrshrn_high_n_s32,
+	vqrshrn_high_n_s64, vqrshrn_high_n_u16, vqrshrn_high_n_u32,
+	vqrshrn_high_n_u64, vqrshrn_n_s16, vqrshrn_n_s32, vqrshrn_n_s64,
+	vqrshrn_n_u16, vqrshrn_n_u32, vqrshrn_n_u64, vqrshrnd_n_s64,
+	vqrshrnd_n_u64, vqrshrnh_n_s16, vqrshrnh_n_u16, vqrshrns_n_s32,
+	vqrshrns_n_u32, vqrshrun_high_n_s16, vqrshrun_high_n_s32,
+	vqrshrun_high_n_s64, vqrshrun_n_s16, vqrshrun_n_s32, vqrshrun_n_s64,
+	vqrshrund_n_s64, vqrshrunh_n_s16, vqrshruns_n_s32, vqshrn_high_n_s16,
+	vqshrn_high_n_s32, vqshrn_high_n_s64, vqshrn_high_n_u16,
+	vqshrn_high_n_u32, vqshrn_high_n_u64, vqshrn_n_s16, vqshrn_n_s32,
+	vqshrn_n_s64, vqshrn_n_u16, vqshrn_n_u32, vqshrn_n_u64, vqshrnd_n_s64,
+	vqshrnd_n_u64, vqshrnh_n_s16, vqshrnh_n_u16, vqshrns_n_s32,
+	vqshrns_n_u32, vqshrun_high_n_s16, vqshrun_high_n_s32,
+	vqshrun_high_n_s64, vqshrun_n_s16, vqshrun_n_s32, vqshrun_n_s64,
+	vqshrund_n_s64, vqshrunh_n_s16, vqshruns_n_s32, vrshrn_high_n_s16,
+	vrshrn_high_n_s32, vrshrn_high_n_s64, vrshrn_high_n_u16,
+	vrshrn_high_n_u32, vrshrn_high_n_u64, vrshrn_n_s16, vrshrn_n_s32,
+	vrshrn_n_s64, vrshrn_n_u16, vrshrn_n_u32, vrshrn_n_u64,
+	vshrn_high_n_s16, vshrn_high_n_s32, vshrn_high_n_s64, vshrn_high_n_u16,
+	vshrn_high_n_u32, vshrn_high_n_u64, vshrn_n_s16, vshrn_n_s32,
+	vshrn_n_s64, vshrn_n_u16, vshrn_n_u32, vshrn_n_u64): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_types_ternop_p_imm_qualifiers,
+	aarch64_types_unsigned_shiftacc_qualifiers, TYPES_SHIFTINSERTP,
+	TYPES_USHIFTACC): Delete.
+	* config/aarch64/aarch64-neon-builtins-base.cc (code_for_si_n): New
+	function.
+	(vsli_n, vsliq_n, vslid_n, vsri_n, vsriq_n, vsrid_n): New function
+	bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the ssli_n, usli_n,
+	ssri_n and usri_n builtins, which no longer have any caller.
+	* config/aarch64/arm_neon.h (vsli_n_p16, vsli_n_p64, vsli_n_p8,
+	vsli_n_s16, vsli_n_s32, vsli_n_s64, vsli_n_s8, vsli_n_u16, vsli_n_u32,
+	vsli_n_u64, vsli_n_u8, vslid_n_s64, vslid_n_u64, vsliq_n_p16,
+	vsliq_n_p64, vsliq_n_p8, vsliq_n_s16, vsliq_n_s32, vsliq_n_s64,
+	vsliq_n_s8, vsliq_n_u16, vsliq_n_u32, vsliq_n_u64, vsliq_n_u8,
+	vsri_n_p16, vsri_n_p64, vsri_n_p8, vsri_n_s16, vsri_n_s32, vsri_n_s64,
+	vsri_n_s8, vsri_n_u16, vsri_n_u32, vsri_n_u64, vsri_n_u8, vsrid_n_s64,
+	vsrid_n_u64, vsriq_n_p16, vsriq_n_p64, vsriq_n_p8, vsriq_n_s16,
+	vsriq_n_s32, vsriq_n_s64, vsriq_n_s8, vsriq_n_u16, vsriq_n_u32,
+	vsriq_n_u64, vsriq_n_u8): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (code_for_qshl_n): New
+	function.
+	(vqshl_n, vqshlq_n, vqshlb_n, vqshlh_n, vqshls_n, vqshld_n, vqshlu_n,
+	vqshluq_n, vqshlub_n, vqshluh_n, vqshlus_n, vqshlud_n): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the sqshl_n,
+	uqshl_n and sqshlu_n builtins, which no longer have any caller.
+	* config/aarch64/arm_neon.h (vqshl_n_s16, vqshl_n_s32, vqshl_n_s64,
+	vqshl_n_s8, vqshl_n_u16, vqshl_n_u32, vqshl_n_u64, vqshl_n_u8,
+	vqshlb_n_s8, vqshlb_n_u8, vqshld_n_s64, vqshld_n_u64, vqshlh_n_s16,
+	vqshlh_n_u16, vqshlq_n_s16, vqshlq_n_s32, vqshlq_n_s64, vqshlq_n_s8,
+	vqshlq_n_u16, vqshlq_n_u32, vqshlq_n_u64, vqshlq_n_u8, vqshls_n_s32,
+	vqshls_n_u32, vqshlu_n_s16, vqshlu_n_s32, vqshlu_n_s64, vqshlu_n_s8,
+	vqshlub_n_s8, vqshlud_n_s64, vqshluh_n_s16, vqshluq_n_s16,
+	vqshluq_n_s32, vqshluq_n_s64, vqshluq_n_s8, vqshlus_n_s32): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (vrshr_n, vrshrq_n,
+	vrshrd_n, vrsra_n, vrsraq_n, vrsrad_n): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the srshr_n,
+	urshr_n, srsra_n and ursra_n builtins, which no longer have any
+	caller.
+	* config/aarch64/arm_neon.h (vrshr_n_s16, vrshr_n_s32, vrshr_n_s64,
+	vrshr_n_s8, vrshr_n_u16, vrshr_n_u32, vrshr_n_u64, vrshr_n_u8,
+	vrshrd_n_s64, vrshrd_n_u64, vrshrq_n_s16, vrshrq_n_s32, vrshrq_n_s64,
+	vrshrq_n_s8, vrshrq_n_u16, vrshrq_n_u32, vrshrq_n_u64, vrshrq_n_u8,
+	vrsra_n_s16, vrsra_n_s32, vrsra_n_s64, vrsra_n_s8, vrsra_n_u16,
+	vrsra_n_u32, vrsra_n_u64, vrsra_n_u8, vrsrad_n_s64, vrsrad_n_u64,
+	vrsraq_n_s16, vrsraq_n_s32, vrsraq_n_s64, vrsraq_n_s8, vrsraq_n_u16,
+	vrsraq_n_u32, vrsraq_n_u64, vrsraq_n_u8): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Remove the sshl and ushl cases,
+	which the framework now handles.
+	* config/aarch64/aarch64-neon-builtins-base.cc (code_for_qshl): New
+	function.
+	(vshl, vshlq, vshld, vrshl, vrshlq, vrshld, vqshl, vqshlq, vqshlb,
+	vqshlh, vqshls, vqshld, vqrshl, vqrshlq, vqrshlb, vqrshlh, vqrshls,
+	vqrshld): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the sshl, ushl,
+	srshl, urshl, sqshl, uqshl, sqrshl and uqrshl builtins, which no
+	longer have any caller.
+	* config/aarch64/arm_neon.h (vqrshl_s16, vqrshl_s32, vqrshl_s64,
+	vqrshl_s8, vqrshl_u16, vqrshl_u32, vqrshl_u64, vqrshl_u8, vqrshlb_s8,
+	vqrshlb_u8, vqrshld_s64, vqrshld_u64, vqrshlh_s16, vqrshlh_u16,
+	vqrshlq_s16, vqrshlq_s32, vqrshlq_s64, vqrshlq_s8, vqrshlq_u16,
+	vqrshlq_u32, vqrshlq_u64, vqrshlq_u8, vqrshls_s32, vqrshls_u32,
+	vqshl_s16, vqshl_s32, vqshl_s64, vqshl_s8, vqshl_u16, vqshl_u32,
+	vqshl_u64, vqshl_u8, vqshlb_s8, vqshlb_u8, vqshld_s64, vqshld_u64,
+	vqshlh_s16, vqshlh_u16, vqshlq_s16, vqshlq_s32, vqshlq_s64, vqshlq_s8,
+	vqshlq_u16, vqshlq_u32, vqshlq_u64, vqshlq_u8, vqshls_s32, vqshls_u32,
+	vrshl_s16, vrshl_s32, vrshl_s64, vrshl_s8, vrshl_u16, vrshl_u32,
+	vrshl_u64, vrshl_u8, vrshld_s64, vrshld_u64, vrshlq_s16, vrshlq_s32,
+	vrshlq_s64, vrshlq_s8, vrshlq_u16, vrshlq_u32, vrshlq_u64, vrshlq_u8,
+	vshl_s16, vshl_s32, vshl_s64, vshl_s8, vshl_u16, vshl_u32, vshl_u64,
+	vshl_u8, vshld_s64, vshld_u64, vshlq_s16, vshlq_s32, vshlq_s64,
+	vshlq_s8, vshlq_u16, vshlq_u32, vshlq_u64, vshlq_u8): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Remove the ashl, ashr,
+	ashr_simd, lshr and lshr_simd cases which the framework now handles.
+	* config/aarch64/aarch64-neon-builtins-base.cc (vshl_n, vshlq_n,
+	vshld_n, vshr_n, vshrq_n, vshrd_n, vsra_n, vsraq_n, vsrad_n): New
+	function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def: Add the corresponding
+	function group.
+	* config/aarch64/aarch64-simd-builtins.def: Delete the ashl, ashr,
+	ashr_simd, lshr, lshr_simd, ssra_n and usra_n builtins, which no
+	longer have any caller.
+	* config/aarch64/aarch64-simd.md (aarch64_<sra_op>sra_n<mode>,
+	aarch64_<sur>sra_ndi, aarch64_ashr_simddi, aarch64_lshr_simddi): Delete.
+	(aarch64_<sra_op>sra_n<mode>_insn): Rename to ...
+	(*aarch64_<sra_op>sra_n<mode>): ... this, since the expander that
+	called it is gone and combine reaches it by matching.
+	* config/aarch64/aarch64.md (*aarch64_<sra_op>sra_ndi): New pattern.
+	* config/aarch64/iterators.md (UNSPEC_SSRA, UNSPEC_USRA, VSRA): Delete,
+	now that the last pattern using them is gone.
+	(sur): Drop the UNSPEC_SSRA and UNSPEC_USRA entries.
+	* config/aarch64/predicates.md (aarch64_shift_imm64_di): Delete.
+	* config/aarch64/arm_neon.h (vshl_n_s16, vshl_n_s32, vshl_n_s64,
+	vshl_n_s8, vshl_n_u16, vshl_n_u32, vshl_n_u64, vshl_n_u8, vshld_n_s64,
+	vshld_n_u64, vshlq_n_s16, vshlq_n_s32, vshlq_n_s64, vshlq_n_s8,
+	vshlq_n_u16, vshlq_n_u32, vshlq_n_u64, vshlq_n_u8, vshr_n_s16,
+	vshr_n_s32, vshr_n_s64, vshr_n_s8, vshr_n_u16, vshr_n_u32, vshr_n_u64,
+	vshr_n_u8, vshrd_n_s64, vshrd_n_u64, vshrq_n_s16, vshrq_n_s32,
+	vshrq_n_s64, vshrq_n_s8, vshrq_n_u16, vshrq_n_u32, vshrq_n_u64,
+	vshrq_n_u8, vsra_n_s16, vsra_n_s32, vsra_n_s64, vsra_n_s8, vsra_n_u16,
+	vsra_n_u32, vsra_n_u64, vsra_n_u8, vsrad_n_s64, vsrad_n_u64,
+	vsraq_n_s16, vsraq_n_s32, vsraq_n_s64, vsraq_n_s8, vsraq_n_u16,
+	vsraq_n_u32, vsraq_n_u64, vsraq_n_u8): Delete.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_b_signed,
+	TYPES_h_signed): New macros.
+	(b_signed, h_signed): New type arrays.
+	(TYPES_b_integer, TYPES_h_integer, TYPES_d_integer): Compose from the
+	corresponding signed list, as TYPES_s_integer already does.
+	* config/aarch64/aarch64-neon-builtins-base.cc (build_shift_right): New
+	function.
+	(gimple_insn_based_function): New class.
+	(gimple_exact_insn): Derive from it.
+	(gimple_code_for_mode_function, gimple_iterator_function,
+	gimple_shift_imm, gimple_shift_reg): New classes.
+	(gimple_rtx_code_function, gimple_unspec_based_function): New typedefs.
+	* config/aarch64/aarch64-neon-builtins-shapes.cc (shift_right,
+	shift_right_narrow, shift_left_long): New checkers.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_element_type):
+	Handle `d<elt>`.
+	* config/aarch64/aarch64-simd.md (aarch64_<sra_op>rsra_n<mode>): Rename
+	to ...
+	(@aarch64_<sra_op>rsra_n<mode>): ... this.
+	(aarch64_<sur>shl<mode>): Rename to ...
+	(@aarch64_<sur>shl<mode>): ... this.
+	(aarch64_<sur>q<r>shl<mode>): Rename to ...
+	(@aarch64_<sur>q<r>shl<mode>): ... this.
+	(aarch64_<sur>shll_n<mode>): Rename to ...
+	(@aarch64_<sur>shll_n<mode>): ... this.
+	(aarch64_<sur>shll2_n<mode>): Rename to ...
+	(@aarch64_<sur>shll2_n<mode>): ... this.
+	(aarch64_<sra_op>rshr_n<mode>): Rename to ...
+	(@aarch64_<sra_op>rshr_n<mode>): ... this.
+	(aarch64_<sur>s<lr>i_n<mode>): Rename to ...
+	(@aarch64_<sur>s<lr>i_n<mode>): ... this.
+	(aarch64_<sur>qshl<u>_n<mode>): Rename to ...
+	(@aarch64_<sur>qshl<u>_n<mode>): ... this.
+	(aarch64_<shrn_op>shrn_n<mode>): Rename to ...
+	(@aarch64_<shrn_op>shrn_n<mode>): ... this.
+	(aarch64_<shrn_op>rshrn_n<mode>): Rename to ...
+	(@aarch64_<shrn_op>rshrn_n<mode>): ... this.
+	(aarch64_sqshrun_n<mode>): Rename to ...
+	(@aarch64_sqshrun_n<mode>): ... this.
+	(aarch64_sqrshrun_n<mode>): Rename to ...
+	(@aarch64_sqrshrun_n<mode>): ... this.
+	(aarch64_<shrn_op><sra_op>shrn2_n<mode>): Rename to ...
+	(@aarch64_<shrn_op><sra_op>shrn2_n<mode>): ... this.
+	(aarch64_<shrn_op>rshrn2_n<mode>): Rename to ...
+	(@aarch64_<shrn_op>rshrn2_n<mode>): ... this.
+	(aarch64_sqshrun2_n<mode>): Rename to ...
+	(@aarch64_sqshrun2_n<mode>): ... this.
+	(aarch64_sqrshrun2_n<mode>): Rename to ...
+	(@aarch64_sqrshrun2_n<mode>): ... this.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Delete cases for handling
+	`reduc_{u,s}{min,max}_scal_`.
+	* config/aarch64/aarch64-neon-builtins-base.cc (struct
+	gimple_reduce_minmax): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def (vminv, vminvq,
+	vmaxv, vmaxvq): New intrinsic function declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete
+	`reduc_{us}{min,max}{,_nan}_scal_` builtin functions.
+	* config/aarch64/aarch64-simd.md (reduc_<optab>_scal_<mode>):
+	Rename to ...
+	(@reduc_<optab>_scal_<mode>): ...this, so that it is callable
+	from `gimple_reduce_minmax::expand ()`.
+	* config/aarch64/arm_neon.h
+	(vpmaxqd_f64, vpmaxs_f32, vpmaxnmqd_f64, vpmaxnms_f32,
+	vpminqd_f64, vpmins_f32, vpminnmqd_f64): Call the intrinsic
+	(v{min,max}{,nm}v) functions rather than the now-deleted
+	`__builtin_aarch64_reduc_s{min,max}_scal` functions.
+	(vmaxv_f32, vmaxvq_f32, vmaxvq_f64, vminv_f32, vminvq_f32,
+	vminvq_f64, vmaxv_f16, vmaxvq_f16, vminv_f16, vminvq_f16):
+	Delete intrinsic function definitions.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (struct
+	gimple_minmax): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def (vmax, vmaxq,
+	vmin, vminq): New intrinsic function definitions.
+	* config/aarch64/aarch64-simd-builtins.def (smax, smin, umax,
+	umin, fmax, fmin): Delete now-unused builtin function declarations.
+	(fmax_nan, fmin_nan): Only define for float16_t, as they are
+	only now called from `arm_fp16.h`.
+	* config/aarch64/arm_fp16.h (vmaxh_f16, vminh_f16): Call the
+	correct `_nan` variant of the `__aarch64_builtin` functions.
+	(vmaxnmh_f16, vminnmh_f16): Use the platform-agnostic
+	`__builtin_f{min,max}f16` functions rather than the now-deleted
+	aarch64-specific builtins.
+	* config/aarch64/arm_neon.h (vmax_f32, vmax_f64, vmaxq_f32,
+	vmaxq_f64, vmin_f32, vmin_f64, vminq_f32, vminq_f64, vmax_f16,
+	vmaxq_f16, vmin_f16, vminq_f16): Delete intrinsic function
+	definitions.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(build_ifn_call): New function.
+	(build_var): New function.
+	(gimple_ifn::fold): Call `build_ifn_call`.
+	(struct gimple_fused_mla): New struct.
+	* config/aarch64/aarch64-acle-builtins.cc
+	(gimple_folder::force_val): Call `make_ssa_name` if necessary.
+	* config/aarch64/aarch64-neon-builtins-base.def
+	(vfma, vfmaq, vfma_n, vfmaq_n, vfma_lane, vfma_laneq,
+	vfmaq_lane, vfmaq_laneq, vfmas_lane, vfmas_laneq, vfmad_lane,
+	vfmad_laneq, vfms, vfmsq, vfms_n, vfmsq_n, vfms_lane,
+	vfms_laneq, vfmsq_lane, vfmsq_laneq, vfmss_lane, vfmss_laneq,
+	vfmsd_lane, vfmsd_laneq, and the FP16 forms of each): New
+	intrinsic function declarations.
+	* config/aarch64/aarch64-simd-builtins.def
+	(fma, fnma): Delete `__builtin_aarch64` function declarations.
+	* config/aarch64/aarch64-simd.md
+	(fma<mode>4<vczle><vczbe>,
+	*aarch64_fma4_elt<mode><vczle><vczbe>,
+	*aarch64_fma4_elt_<vswap_width_name><mode><vczle><vczbe>,
+	*aarch64_fma4_elt_from_dup<mode><vczle><vczbe>,
+	*aarch64_fma<mode>4_elt_to_scalar): Extend to cover HF vector
+	modes, reformat, add comments.
+	(fnma<mode>4<vczle><vczbe>,
+	*aarch64_fnma4_elt<mode><vczle><vczbe>
+	*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>
+	*aarch64_fnma4_elt_from_dup<mode><vczle><vczbe>
+	*aarch64_fnma<mode>4_elt_from_to_scalar):
+	Likewise.
+	(*aarch64_fma4_elt_to_64v2df, *aarch64_fnma4_elt_to_64v2df):
+	Rename to ...
+	(*aarch64_fma<mode>4_elt_to_scalar,
+	*aarch64_fnma<mode>4_elt_to_scalar): ...these.
+	(*aarch64_fnma4_elt<mode><vczle><vczbe>_alt,
+	*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>_alt,
+	*aarch64_fnma4_elt_from_dup<mode><cvzle><vczbe>_alt,
+	*aarch64_fnma4<mode>4_elt_to_scalar_alt): New insns to match
+	permuted variants.
+	* config/aarch64/arm_neon.h
+	(vfma_f64, vfma_f32, vfmaq_f32, vfmaq_f64, vfma_n_f32,
+	vfma_n_f64, vfmaq_n_f32, vfmaq_n_f64, vfma_lane_f32,
+	vfma_lane_f64, vfma_laneq_f32, vfma_laneq_f64,
+	vfmaq_lane_f32, vfmaq_lane_f64, vfmaq_laneq_f32,
+	vfmaq_laneq_f64, vfms_f64, vfms_f32, vfmsq_f32, vfmsq_f64,
+	vfms_n_f32, vfms_n_f64, vfmsq_n_f32, vfmsq_n_f64,
+	vfms_lane_f32, vfms_lane_f64, vfms_laneq_f32, vfms_laneq_f64,
+	vfmsq_lane_f32, vfmsq_lane_f64, vfmsq_laneq_f32,
+	vfmsq_laneq_f64, vfma_f16, vfmaq_f16, vfms_f16, vfmsq_f16,
+	vfma_lane_f16, vfmaq_lane_f16, vfma_laneq_f16,
+	vfmaq_laneq_f16, vfma_n_f16, vfmaq_n_f16, vfms_lane_f16,
+	vfmsq_lane_f16, vfms_laneq_f16, vfmsq_laneq_f16, vfms_n_f16,
+	vfmsq_n_f16): Delete function definitions.
+	* config/aarch64/iterators.md (VDQHSF): New mode iterator.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_neon_mla,
+	TYPES_neon_mla_lane): New type arrays.
+	* config/aarch64/aarch64-neon-builtins-base.cc (struct
+	multiply_accumulate): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def
+	(vmla, vmlaq, vmla_n, vmlaq_n, vmla_lane, vmla_laneq,
+	vmlaq_lane, vmlaq_laneq, vmls, vmlsq, vmls_n, vmlsq_n,
+	vmls_lane, vmls_laneq, vmlsq_lane, vmlsq_laneq): New function
+	declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete
+	`__builtin_aarch64_*` functions.
+	* config/aarch64/aarch64-simd.md (aarch64_float_mla<mode>,
+	aarch64_float_mls<mode>, aarch64_float_mla_n<mode>,
+	aarch64_float_mls_n<mode>, aarch64_float_mla_lane<mode>,
+	aarch64_float_mls_lane<mode>, aarch64_float_mla_laneq<mode>,
+	aarch64_float_mls_laneq<mode>): Delete now-obsolete insns.
+	* config/aarch64/arm_neon.h: (vmla_n_f32, vmla_n_s16,
+	vmla_n_s32, vmla_n_u16, vmla_n_u32, vmla_s8, vmla_s16,
+	vmla_s32, vmla_u8, vmla_u16, vmla_u32, vmlaq_n_f32,
+	vmlaq_n_s16, vmlaq_n_s32, vmlaq_n_u16, vmlaq_n_u32, vmlaq_s8,
+	vmlaq_s16, vmlaq_s32, vmlaq_u8, vmlaq_u16, vmlaq_u32,
+	vmls_n_f32, vmls_n_s16, vmls_n_s32, vmls_n_u16, vmls_n_u32,
+	vmls_s8, vmls_s16, vmls_s32, vmls_u8, vmls_u16, vmls_u32,
+	vmlsq_n_f32, vmlsq_n_s16, vmlsq_n_s32, vmlsq_n_u16,
+	vmlsq_n_u32, vmlsq_s8, vmlsq_s16, vmlsq_s32, vmlsq_u8,
+	vmlsq_u16, vmlsq_u32, vmla_f32, vmla_f64, vmlaq_f32,
+	vmlaq_f64, vmla_lane_f32, vmla_lane_s16, vmla_lane_s32,
+	vmla_lane_u16, vmla_lane_u32, vmla_laneq_f32, vmla_laneq_s16,
+	vmla_laneq_s32, vmla_laneq_u16, vmla_laneq_u32,
+	vmlaq_lane_f32, vmlaq_lane_s16, vmlaq_lane_s32,
+	vmlaq_lane_u16, vmlaq_lane_u32, vmlaq_laneq_f32,
+	vmlaq_laneq_s16, vmlaq_laneq_s32, vmlaq_laneq_u16,
+	vmlaq_laneq_u32, vmls_f32, vmls_f64, vmlsq_f32, vmlsq_f64,
+	vmls_lane_f32, vmls_lane_s16, vmls_lane_s32, vmls_lane_u16,
+	vmls_lane_u32, vmls_laneq_f32, vmls_laneq_s16, vmls_laneq_s32,
+	vmls_laneq_u16, vmls_laneq_u32, vmlsq_lane_f32,
+	vmlsq_lane_s16, vmlsq_lane_s32, vmlsq_lane_u16,
+	vmlsq_lane_u32, vmlsq_laneq_f32, vmlsq_laneq_s16,
+	vmlsq_laneq_s32, vmlsq_laneq_u16, vmlsq_laneq_u32): Delete
+	function definitions.
+
+2026-11-13  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc (attribute_cache): New
+	variable.
+	(function_builder::get_attributes): Cache the attribute list for each
+	distinct combination of inputs.
+
+2026-11-13  Suganya Thirumurthy  <Suganya.Thirumurthy@amd.com>
+
+	* config/i386/i386.cc (ix86_veclibabi_aocl): Update vector
+	widths for the tan, atan, exp10, asin, acos, tanh and cosh
+	functions. Add the erfc, cbrt and atan2 new functions.
+	* doc/invoke.texi (x86 Options) [-mveclibabi]: Add amd_vrd2_acos,
+	amd_vrd4_acos, amd_vrd8_acos, amd_vrs8_acosf, amd_vrd2_asin,
+	amd_vrd4_asin, amd_vrd4_atan, amd_vrd2_atan2, amd_vrd4_atan2,
+	amd_vrd8_atan2, amd_vrd2_cbrt, amd_vrs4_cbrtf, amd_vrs8_cbrtf,
+	amd_vrd2_cosh, amd_vrd4_cosh, amd_vrd8_cosh, amd_vrs16_coshf,
+	amd_vrd2_erfc, amd_vrd4_erfc, amd_vrd8_erfc, amd_vrs4_erfcf,
+	amd_vrs8_erfcf, amd_vrs16_erfcf, amd_vrd4_exp10, amd_vrd8_exp10,
+	amd_vrs8_exp10f, amd_vrs16_exp10f, amd_vrs4_tanf, amd_vrs8_tanf,
+	amd_vrd2_tanh, amd_vrd4_tanh and amd_vrd8_tanh.
+
+2026-11-13  LIU Hao  <lh_mouse@126.com>
+
+	* ginclude/stddef.h: Exclude `__float128` from `max_align_t` for MinGW
+	targets.
+
+2026-11-13  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md: Add a splitter for masked inverted
+	bit extraction.
+
+2026-11-13  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	PR ipa/128491
+	* trans-mem.cc (pass_ipa_tm::gate): Do not run on invalid code.
+
 2026-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/127915

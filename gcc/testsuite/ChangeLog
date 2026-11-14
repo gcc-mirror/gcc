@@ -1,3 +1,286 @@
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/aliasing-6.c: New test.
+	* c-c++-common/analyzer/attr-const-3.c: Tweak depth param.
+	* c-c++-common/analyzer/call-summaries-malloc.c: Add xfails.
+	* c-c++-common/analyzer/call-summaries-pr107158-2.c: Drop xfails.
+	* c-c++-common/analyzer/call-summaries-pr107158.c: Likewise.
+	* c-c++-common/analyzer/capacity-1.c (test_4): Update expected
+	capacity message.
+	* c-c++-common/analyzer/compound-assignment-5.c: Drop comment.
+	* c-c++-common/analyzer/deref-before-check-3.c: New test.
+	* c-c++-common/analyzer/double-free-2.c: New test.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Drop xfail.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Update
+	expected results.
+	* c-c++-common/analyzer/infinite-loop-doom-d_main-IdentifyVersion.c:
+	Add dg-bogus for leak false positive seen whilst developing patch.
+	* c-c++-common/analyzer/large-constants.c: New test.
+	* c-c++-common/analyzer/leak-multiple-returns.c: New test.
+	* c-c++-common/analyzer/leak-pr108045-with-call-summaries.c: Drop
+	xfails.
+	* c-c++-common/analyzer/leak-pr126831.c: New test.
+	* c-c++-common/analyzer/leak-pr126832.c: New test.
+	* c-c++-common/analyzer/loop-0-up-to-n-by-1-with-iter-obj.c: Add
+	expected "UNKNOWN" in 2nd iteration.
+	* c-c++-common/analyzer/loop-2.c: Likewise.  Update expected
+	constraint after loop.
+	* c-c++-common/analyzer/loop-2a.c: Likewise.
+	* c-c++-common/analyzer/maybe-live-1.c: New test.
+	* c-c++-common/analyzer/maybe-live-2.c: New test.
+	* c-c++-common/analyzer/null-compare.c: New test.
+	* c-c++-common/analyzer/null-terminated-strings-2.c: Drop xfails.
+	* c-c++-common/analyzer/out-of-bounds-bits.c: New test.
+	* c-c++-common/analyzer/out-of-bounds-diagram-11.c: Update
+	expected diagram to show simplication of
+	'(size * 16) - (size * 4)' to 'size * 12'.
+	(test_99): Add expected output now that new implementation is able
+	to create a diagram for this case.
+	* c-c++-common/analyzer/out-of-bounds-diagram-3.c: Update expected
+	diagram.
+	* c-c++-common/analyzer/out-of-bounds-diagram-pr110928.c: Update
+	comment and expected output.  Fix missing "return".
+	* c-c++-common/analyzer/out-of-bounds-pr114472.c: Add expected
+	warnings from analyzer.
+	* c-c++-common/analyzer/paths-5.c: Tweak number of expected
+	exploded nodes.
+	* c-c++-common/analyzer/pointer-comparison-pr125304-eq.c
+	(test_pointer_eq): Drop xfails.
+	(test_string_literals): Likewise.
+	* c-c++-common/analyzer/pointer-comparison-pr125304-ge.c
+	(test_pointer_ge): Likewise.
+	* c-c++-common/analyzer/pointer-comparison-pr125304-gt.c
+	(test_pointer_gt): Likewise.
+	* c-c++-common/analyzer/pointer-comparison-pr125304-le.c
+	(test_pointer_le): Likewise.
+	* c-c++-common/analyzer/pointer-comparison-pr125304-lt.c
+	(test_pointer_lt): Likewise.
+	* c-c++-common/analyzer/strlen-pr113999.c: Include
+	"analyzer-decls.h" and use it to tighten up the expected results.
+	* c-c++-common/analyzer/strncpy-1.c (test_zero_fill): Remove
+	xfails.
+	* c-c++-common/analyzer/symbolic-1.c: Update comment referring to
+	store.h.
+	* c-c++-common/analyzer/symbolic-4.c: Update expected result.
+	* c-c++-common/analyzer/taint-inheritance.c: New test.
+	* c-c++-common/analyzer/uintptr-cast-double-free.c: New test.
+	* c-c++-common/analyzer/use-after-free-4.c: New test.
+	* c-c++-common/analyzer/use-after-free-5.c: New test.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-default.C:
+	Update expected message.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-no.C:
+	Likewise.
+	* g++.dg/analyzer/initializers-with-RANGE_EXPR.C: New test.
+	* g++.dg/analyzer/out-of-bounds-placement-new.C: Add expected
+	warning about allocation size.
+	* g++.dg/analyzer/pr100244.C: Add -fno-sized-deallocation.
+	* g++.dg/analyzer/std-unique_ptr-3.C: New test.
+	* g++.dg/analyzer/torture/std-string-ctor-large-literal.C
+	(test_ctor_large): Remove xfail.
+	* g++.dg/analyzer/torture/std-string-ctor-small-literal.C
+	(test_ctor_small): Likewise.
+	* gcc.dg/analyzer/analyzer-decls.h (__analyzer_hexdump): New decl.
+	* gcc.dg/analyzer/boxed-malloc-1.c: Tweak expected messages.
+	* gcc.dg/analyzer/call-summaries-2.c: Update expected messages to
+	reflect improved precision of analysis; remove and add xfails.
+	* gcc.dg/analyzer/data-model-1.c: Include <stdint.h>.
+	(union u): Convert "i" from "int" to "intptr_t".
+	* gcc.dg/analyzer/doom-d_main-IdentifyVersion.c: Add dg-bogus for
+	leak false positive seen whilst developing patch.  Drop xfails.
+	* gcc.dg/analyzer/ice-pr113496.c: Add warning about uninitialized
+	return value.
+	* gcc.dg/analyzer/leak-expressions-1.c: New test.
+	* gcc.dg/analyzer/leak-pr126832-macro.c: New test.
+	* gcc.dg/analyzer/mkdtemp-1.c (test_errno): Split into...
+	(test_errno_possibly_aliased): ...this and...
+	(test_errno_not_aliased): ...this.
+	* gcc.dg/analyzer/null-deref-pr102671-1.c: Add
+	-Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/null-terminated-strings-1.c: Update expected
+	results.  Rewrite tests to avoid use of __analyzer_describe.
+	* gcc.dg/analyzer/out-of-bounds-diagram-1-debug.c: Update expected
+	diagram for changes in how byte ranges are displayed.
+	* gcc.dg/analyzer/out-of-bounds-diagram-16.c: Update expected
+	diagram to show where write is from.
+	* gcc.dg/analyzer/out-of-bounds-diagram-2.c: Update expected
+	diagram for changes to size allocation.
+	* gcc.dg/analyzer/out-of-bounds-diagram-9.c: Update expected
+	diagram.
+	* gcc.dg/analyzer/pattern-test-2.c: Update expected messages.
+	* gcc.dg/analyzer/pipe-1.c: Drop tests of __analyzer_describe.
+	* gcc.dg/analyzer/pipe2-1.c: Likewise.
+	* gcc.dg/analyzer/pr104417.c (warn_realloc_extern_ptrarr_offset):
+	Add expected -Wanalyzer-free-of-non-heap warning.
+	* gcc.dg/analyzer/pr104434-nonconst.c (exit_level_0:): Drop
+	xfails.
+	* gcc.dg/analyzer/pr93355-localealias.c (read_alias_file): Drop
+	xfail.
+	* gcc.dg/analyzer/pr93382.c: Drop xfail.
+	* gcc.dg/analyzer/single-field.c: Update expected result of
+	__analyzer_describe.
+	* gcc.dg/analyzer/state-diagram-2.c (test_pointer_to_global): Add
+	xfail.
+	* gcc.dg/analyzer/state-diagram-5-sarif.py: Update for changes in
+	JSON output.
+	* gcc.dg/analyzer/stdarg-1-ms_abi.c: Tweak expected messages.
+	* gcc.dg/analyzer/stdarg-1.c: Tweak expected messages for
+	target-specific differences in whether the message reports what
+	leaked.
+	* gcc.dg/analyzer/stdarg-2.c: Likewise.
+	* gcc.dg/analyzer/strcpy-3.c: Drop test of __analyzer_describe.
+	* gcc.dg/analyzer/strlen-1.c (call_strlen_6a): New.
+	(test_memcpy_without_termination): New.
+	(call_strlen_6b): New.
+	(test_memcpy_with_manual_termination): New.
+	* gcc.dg/analyzer/taint-read-offset-1.c: Update expected messages.
+	Add xfail about false positive.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-2.c: Tweak expected number
+	of exploded nodes.
+	* gcc.dg/analyzer/torture/pr59037.c: Add comment and
+	-Wno-analyzer-use-of-uninitialized-value.
+	* gcc.dg/analyzer/unknown-fns-5.c: New test.
+	* gcc.dg/analyzer/unknown-fns-6.c: New test.
+	* gcc.dg/analyzer/vla-1.c (test_1): Mark test as xfailing.
+	(test_vla_ptr): New test.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-1.c: Add
+	-Wno-analyzer-use-of-uninitialized-value.
+	* gcc.dg/plugin/infoleak-uninit-size-1.c (test_uninit_size): Add
+	expected warning.
+	* gcc.dg/plugin/infoleak-vfio_iommu_type1.c: Remove xfail.
+	* gcc.dg/plugin/taint-pr112850-too-complex.c: Tweak depth param.
+
+2026-11-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/pr92080-13.c: Add -no-pie.
+
+2026-11-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/vrp-cmp-sub-ptr-1.c: New test.
+
+2026-11-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/vrp-cmp-sub-4.c: New test.
+	* gcc.dg/tree-ssa/vrp-cmp-sub-5.c: New test.
+
+2026-11-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128662
+	* gcc.target/i386/pr128662.c: New test.
+	* gcc.target/i386/pr78103-1.c (dg-options): Add
+	-mtune-ctrl=^avoid_false_dep_for_bsr.
+	* gcc.target/i386/pr78103-2.c: Ditto.
+	* gcc.target/i386/pr78103-3.c: Ditto.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vshll_n.c: New test.
+	* gcc.target/aarch64/neon/shift_imm_range.c: Likewise.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vshrn_n.c: New test.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vsli_n.c: New test.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vqshl_n.c: New test.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vrshr_n.c: New test.
+	* gcc.target/aarch64/arg-type-diagnostics-1.c: Update the expected
+	message for a non-constant shift amount.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vshl.c: New test.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/vshl_n.c: New test.
+	* gcc.target/aarch64/neon/vshr_n.c: Likewise.
+	* gcc.target/aarch64/neon/vsra_n.c: Likewise.
+	* gcc.target/aarch64/scalar_intrinsics.c: vsrad_n now folds to a
+	shifted add.
+	* gcc.target/aarch64/sshr64_1.c: Drop the shift-by-zero case, which
+	the ACLE does not allow.
+	* gcc.target/aarch64/ushr64_1.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/vshl-opt-3.c: An arithmetic
+	shift right by the element width now folds.
+
+2026-11-13  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/arm_neon_test.h (TEST_UNARY_N,
+	TEST_UNIFORM_UNARY_N, TEST_BINARY_N, TEST_UNIFORM_BINARY_N): New
+	macros.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/fmla_intrinsic_1.c: Rewrite `TEST_VMLA`
+	so the lane choice is always valid and doesn't cause a compiler
+	error when trying to call `vfma`. Also remove excessive
+	backslashes from dejagnu directives.
+	* gcc.target/aarch64/fmls_intrinsic_1.c: Likewise.
+	* gcc.target/aarch64/simd/pr99195_3.c: Add
+	`-fno-trapping-math` to prevent the optimization barrier being
+	introduced and generating unnecessary `fmov`s.
+	* gcc.target/aarch64/neon/vfma.c: New test.
+	* gcc.target/aarch64/neon/vfms.c: New test.
+
+2026-11-13  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vmla.c: New test.
+	* gcc.target/aarch64/neon/vmls.c: New test.
+
+2026-11-13  Christopher Bazley  <chris.bazley@arm.com>
+
+	PR c/128606
+	* gcc.target/aarch64/sve/pr128606_1.c,
+	gcc.target/aarch64/sve/pr128606_10.c,
+	gcc.target/aarch64/sve/pr128606_11.c,
+	gcc.target/aarch64/sve/pr128606_2.c,
+	gcc.target/aarch64/sve/pr128606_3.c,
+	gcc.target/aarch64/sve/pr128606_4.c,
+	gcc.target/aarch64/sve/pr128606_5.c,
+	gcc.target/aarch64/sve/pr128606_6.c,
+	gcc.target/aarch64/sve/pr128606_7.c,
+	gcc.target/aarch64/sve/pr128606_8.c,
+	gcc.target/aarch64/sve/pr128606_9.c: New tests.
+	* gcc.target/aarch64/sve/pr128606_primes.h: Shared test code.
+
+2026-11-13  Suganya Thirumurthy  <Suganya.Thirumurthy@amd.com>
+
+	* gcc.target/i386/vectorize-aocl1.c: Also test amd_vrd2_acos,
+	amd_vrd4_acos, amd_vrd8_acos, amd_vrs8_acosf, amd_vrd2_asin,
+	amd_vrd4_asin, amd_vrd4_atan, amd_vrd2_atan2, amd_vrd4_atan2,
+	amd_vrd8_atan2, amd_vrd2_cbrt, amd_vrs4_cbrtf, amd_vrs8_cbrtf,
+	amd_vrd2_cosh, amd_vrd4_cosh, amd_vrd8_cosh, amd_vrs16_coshf,
+	amd_vrd2_erfc, amd_vrd4_erfc, amd_vrd8_erfc, amd_vrs4_erfcf,
+	amd_vrs8_erfcf, amd_vrs16_erfcf, amd_vrd4_exp10, amd_vrd8_exp10,
+	amd_vrs8_exp10f, amd_vrs16_exp10f, amd_vrs4_tanf, amd_vrs8_tanf,
+	amd_vrd2_tanh, amd_vrd4_tanh and amd_vrd8_tanh. Adjust
+	scan-assembler-times patterns with word boundaries (\m...\M).
+	Without them, names such as amd_vrd4_cos also matched
+	amd_vrd4_cosh, and similar collisions occurred for tan/tanh,
+	atan/atan2 and erf/erfc.
+
+2026-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug26.f90: New test.
+
+2026-11-13  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbs-bext-3.c: New test.
+
+2026-11-13  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	PR ipa/128491
+	* gcc.dg/pr128491.c: New test.
+
 2026-11-12  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/127915

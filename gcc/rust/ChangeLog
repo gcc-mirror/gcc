@@ -1,3 +1,15 @@
+2026-11-13  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* rust-attribs.cc (handle_noreturn_attribute)
+	(rust_handle_noreturn_attribute, handle_malloc_attribute)
+	(rust_handle_malloc_attribute, handle_nonnull_attribute)
+	(rust_handle_nonnull_attribute, handle_transaction_pure_attribute)
+	(rust_handle_transaction_pure_attribute)
+	(handle_omp_declare_simd_attribute)
+	(rust_handle_omp_declare_simd_attribute, handle_cold_attribute)
+	(handle_hot_attribute, rust_handle_cold_attribute)
+	(rust_handle_hot_attribute): Prepend functions with `rust_`
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* backend/rust-tree.cc (rs_type_quals): Update to use and return

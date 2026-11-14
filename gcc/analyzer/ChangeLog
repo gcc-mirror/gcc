@@ -1,3 +1,2200 @@
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* string-scan.cc
+	(named_test_bit_vector::scan_for_first_zero_byte): Wrap definition
+	with #if CHECKING_P
+	* symbolic-bit-contents.cc (class named_test_bit_contents):
+	Likewise.
+	* symbolic-scalars.cc (class named_test_scalar): Likewise.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Add include of "diagnostics/markup.h".
+	Delete access_range, porting throughout to symbolic_bit_range,
+	using folded_symbolic_bit_range to get back some of the old
+	folding behavior that the diagram code relied on.  Port
+	region_offset to const symbolic_bit_offset &.
+	(pp_bit_size_t): Delete.
+	(get_access_size_str): Port to new types.
+	(bit_size_expr::maybe_get_formatted_str): Likewise.
+	(bit_size_expr::maybe_print_for_user): Delete.
+	(bit_size_expr::maybe_get_as_bytes): Delete.
+	(fold_svalue_for_access_diagram): New.
+	(case_fold_scalar_for_access_diagram): New.
+	(fold_scalar_for_access_diagram): New.
+	(fold_range_for_access_diagram): New.
+	(folded_symbolic_bit_range): New.
+	(access_range_contains_p): New.
+	(boundaries::comparator): New.
+	(boundaries::using offset_set): New using decl.
+	(boundaries::boundaries): Add node_mgr param.
+	(boundaries::add): Port to new types.
+	(boundaries::add_all_bytes_in_range): Likewise.
+	(boundaries::log): Likewise.
+	(boundaries::get_kind): Likewise.
+	(boundaries::begin): Likewise.
+	(boundaries::end): Likewise.
+	(boundaries::size): Likewise.
+	(boundaries::get_hard_boundaries_in_range): Likewise.
+	(boundaries::m_node_mgr): New field.
+	(boundaries::m_all_offsets): Convert from std::set<region_offset>
+	to offset_set.
+	(boundaries::m_hard_offsets): Likewise.
+	(bit_to_table_map::bit_to_table_map): Add node_mgr param and
+	initialize m_node_mgr.
+	(bit_to_table_map::populate): Drop "mgr" param.  Convert from
+	region_offset to symbolic_bit_offset.
+	(bit_to_table_map::get_table_rect): Convert to new types.
+	(bit_to_table_map::maybe_get_access_range_for_table_x): Likewise,
+	renaming to...
+	(bit_to_table_map::maybe_get_symbolic_bit_range_for_table_x):
+	...this.
+	(bit_to_table_map::log): Convert to new types.
+	(bit_to_table_map::get_table_x_for_offset): Likewise.
+	(bit_to_table_map::get_table_x_for_prev_offset): Likewise.
+	(bit_to_table_map::m_node_mgr): New field.
+	(bit_to_table_map::m_table_x_for_offset): Convert key from
+	region_offset to const symbolic_bit_offset *.
+	(bit_to_table_map::m_range_for_table_x): Convert value from
+	access_range to symbolic_bit_range.
+	(bit_to_table_map::m_table_x_for_prev_offset): New field.
+	(class svalue_spatial_item): Convert from access_range to
+	symbolic_bit_range throughout.
+	(class valid_region_spatial_item): Port to new types.
+	(class string_literal_spatial_item): Likewise.
+	(make_written_svalue_spatial_item): Likewise.
+	(make_existing_svalue_spatial_item): Likewise.
+	(class access_diagram_impl): Pass around node_manager.  Port to
+	new types.
+	(selftest::assert_eq_typeless_integer): Delete.
+	(ASSERT_EQ_TYPELESS_INTEGER): Delete.
+	(selftest::test_bit_size_expr_to_bytes): Delete.
+	(selftest::analyzer_access_diagram_cc_tests): Remove call to test.
+	* access-diagram.h (class bit_size_expr): Port from svalue to
+	symbolic_bit_size.
+	(struct access_operation): Port to new types.
+	* ana-state-to-diagnostic-state.cc: Port to new state
+	implementation.
+	* ana-state-to-diagnostic-state.h: Update from bit_range to
+	concrete_bit_range.
+	(analyzer_state_graph::m_node_mgr): New field.
+	* analyzer-logging.cc: Define INCLUDE_VECTOR.  Add include of
+	"text-art/theme.h".
+	(logger::logger): Initializem_text_art_theme.
+	* analyzer-logging.h (logger::get_text_art_theme): New.
+	(logger::m_text_art_theme): New.
+	* analyzer-selftests.cc: Add include of "stor-layout.h".
+	(make_string_constant): New.
+	(make_test_compound_type): Move here from region-model.cc.
+	(coord_test::coord_test): Likewise.
+	(run_analyzer_selftests): Drop call to analyzer_ranges_cc_tests.
+	Add calls to analyzer_region_model_manager_cc_tests,
+	analyzer_string_scan_cc_tests,
+	analyzer_symbolic_bit_contents_cc_tests,
+	analyzer_symbolic_bit_vectors_cc_tests,
+	analyzer_symbolic_memory_ranges_cc_tests,
+	analyzer_symbolic_nodes_cc_tests,
+	analyzer_symbolic_pointers_cc_tests,
+	analyzer_symbolic_ranges_cc_tests, and
+	analyzer_symbolic_scalars_cc_tests.
+	* analyzer-selftests.h (make_string_constant): New decl.
+	(make_test_compound_type): New decl.
+	(struct coord_test): New decl, moved from region-model.cc.
+	(analyzer_ranges_cc_tests): Delete decl.
+	(analyzer_region_model_manager_cc_tests): New decl.
+	(analyzer_string_scan_cc_tests): New decl.
+	(analyzer_symbolic_bit_contents_cc_tests): New decl.
+	(analyzer_symbolic_bit_vectors_cc_tests): New decl.
+	(analyzer_symbolic_memory_ranges_cc_tests): New decl.
+	(analyzer_symbolic_nodes_cc_tests): New decl.
+	(analyzer_symbolic_pointers_cc_tests): New decl.
+	(analyzer_symbolic_ranges_cc_tests): New decl.
+	(analyzer_symbolic_scalars_cc_tests): New decl.
+	* bounds-checking.cc (class out_of_bounds): Port from region to
+	symbolic::memory_range throughout.
+	(class concrete_out_of_bounds): Likewise, porting to new types.
+	(class concrete_past_the_end): Likewise.
+	(class concrete_buffer_overflow): Likewise.
+	(class concrete_buffer_over_read): Likewise.
+	(class concrete_buffer_underwrite): Likewise.
+	(class concrete_buffer_under_read): Likewise.
+	(class symbolic_past_the_end): Likewise.
+	(class symbolic_buffer_over_read): Likewise.
+	(strip_types): Delete.
+	(region_model::check_symbolic_bounds): Port to new types.
+	(maybe_get_integer_cst_tree): Delete.
+	(region_model::check_memory_range_bounds): New, based on
+	region_model::check_region_bounds, porting to new types.
+	(region_model::check_region_bounds): Reimplement in terms of
+	check_memory_range_bounds.
+	* call-details.cc: Drop include of deleted "analyzer/ranges.h".
+	(call_details::get_arg_as_sym_ptr): New.
+	(call_details::get_arg_as_num_bytes): New.
+	(call_details::get_arg_string_literal): Port from region_svalue
+	to symbolic::pointer.
+	(call_details::dump_to_pp): Drop.
+	(call_details::dump): Reimplement in terms of dump widget.
+	(call_details::make_dump_widget): Update type of param from "dwi"
+	to "nds".
+	(call_details::check_for_null_terminated_string_arg): Port
+	from svalue to symbolic::bit_vector.
+	(call_details::complain_about_overlap): Port to new
+	symbolic_byte_range implementation.
+	* call-details.h: Include "symbolic-pointers.h".
+	(call_details::get_arg_as_sym_ptr): New decl.
+	(call_details::get_arg_as_num_bytes): New decl.
+	(call_details::dump_to_pp): Drop.
+	(call_details::make_dump_widget): Update type of param from "dwi"
+	to "nds".
+	(call_details::check_for_null_terminated_string_arg): Port
+	from svalue to symbolic::bit_vector.
+	* call-string.cc: Include "analyzer/symbolic-nodes.h".
+	(call_string::element_t::make_dump_widget): New.
+	* call-string.h: Include "text-art/widget.h" and
+	"text-art/tree-widget.h".
+	(call_string::element_t::make_dump_widget): New decl.
+	(call_string::make_dump_widget): New decl.
+	* call-summary.cc (call_summary::get_user_facing_desc): Replace
+	SK_REGION case with SK_POINTER.
+	(call_summary::dump_to_pp): Delete.
+	(call_summary::dump_to_logger): New.
+	(call_summary::make_dump_widget): New.
+	(call_summary::dump): Reimplement in terms of dump widget.
+	(call_summary_replay::convert_svalue_from_summary_1):  Port to
+	new types.
+	(call_summary_replay::convert_bit_contents_from_summary): New.
+	(call_summary_replay::convert_key_from_summary): Delete.
+	(call_summary_replay::convert_bit_vector_from_summary): New.
+	(call_summary_replay::impl_bits_from_bytes): New.
+	(call_summary_replay::convert_scalar_from_summary): New.
+	(call_summary_replay::dump_to_pp): Delete.
+	(call_summary_replay::make_dump_widget): New.
+	(call_summary_replay::dump): Reimplement in terms of dump widget.
+	(call_summary_replay::dump_to_logger): New.
+	* call-summary.h (call_summary::dump_to_pp): Delete.
+	(call_summary::make_dump_widget): New.
+	(call_summary::dump): Reimplement in terms of dump widget.
+	(call_summary::dump_to_logger): New.
+	(call_summary::get_store_manager): Drop.
+	(call_summary_replay::get_ext_state): New accessor.
+	(call_summary_replay::convert_key_from_summary): Delete.
+	(call_summary_replay::convert_bit_contents_from_summary): New.
+	(call_summary_replay::convert_bit_vector_from_summary): New.
+	(call_summary_replay::convert_scalar_from_summary): New.
+	(call_summary_replay::dump_to_pp): Delete.
+	(call_summary_replay::make_dump_widget): New.
+	(call_summary_replay::dump): Reimplement in terms of dump widget.
+	(call_summary_replay::dump_to_logger): New.
+	(call_summary_replay::get_store_manager): Drop.
+	(call_summary_replay::impl_bits_from_bytes): New.
+	* checker-event.cc
+	(checker_event::maybe_make_diagnostic_state_graph): Update to
+	new way of dumping program_state instances.
+	* common.h (diagnostics::markup::node): New forward decl.
+	(diagnostics::markup::lowering_options): New forward decl.
+	(class integer_with_unit<U>): New forward decl.
+	(struct units::bit): New forward decl.
+	(struct units::byte): New forward decl.
+	(class symbolic::range<CVT>): New forward decl.
+	(class symbolic::node_dump_state): New forward decl.
+	(class symbolic::node_set<NC>): New forward decl.
+	(class symbolic::node_visitor): New forward decl.
+	(class symbolic::liveness_context): New forward decl.
+	(struct symbolic::markup_context): New forward decl.
+	(class symbolic::bit_contents): New forward decl.
+	(class symbolic::unfoldable_bit_contents): New forward decl.
+	(class symbolic::baseline_bit_contents): New forward decl.
+	(class symbolic::conjured_bit_contents): New forward decl.
+	(class symbolic::offset_bit_contents): New forward decl.
+	(class symbolic::uniform_bit_contents): New forward decl.
+	(class symbolic::bit_overlay): New forward decl.
+	(class symbolic::concrete_bit_overlay): New forward decl.
+	(class symbolic::symbolic_bit_overlay): New forward decl.
+	(class symbolic::scalar<CVT>): New forward decl.
+	(class symbolic::value_node): New forward decl.
+	(class symbolic::bit_vector): New forward decl.
+	(class symbolic::concat_bit_vector): New forward decl.
+	(class symbolic::conjured_bit_vector): New forward decl.
+	(class symbolic::constant_bit_vector): New forward decl.
+	(class symbolic::cropped_bit_vector): New forward decl.
+	(class symbolic::repeated_bit_vector): New forward decl.
+	(class symbolic::bit_vector_from_svalue): New forward decl.
+	(class symbolic::bit_vector_from_ubc): New forward decl.
+	(class symbolic::uniform_bit_vector): New forward decl.
+	(class symbolic::empty_bit_vector): New forward decl.
+	(class symbolic::poisoned_bit_vector): New forward decl.
+	(class symbolic::tristate_bit_vector): New forward decl.
+	(class symbolic::bit_contents_manager): New forward decl.
+	(class symbolic::bit_vector_manager): New forward decl.
+	(class symbolic::scalar_managers): New forward decl.
+	(class symbolic::scalar_manager<CVT>): New forward decl.
+	(symbolic_bit_range): New "using" decl.
+	(symbolic_byte_range): New "using" decl.
+	(class region_svalue): Replace forward decl with...
+	(class pointer_svalue): ...this.
+	(class sub_svalue): Drop forward decl of eliminated class.
+	(class repeated_svalue): Likewise.
+	(class bits_within_svalue): Likewise.
+	(class compound_svalue): Likewise.
+	(class conjured_svalue): Likewise.
+	(class svalue_from_bit_vector): New forward decl.
+	(svalue_set): Drop typedef.
+	(class store_manager): Drop forward decl of eliminated class.
+	(class setjmp_record): New forward decl.
+	(get_field_at_bit_offset): Drop decl.
+	(class region_offset): Delete.
+	(eval_region_offset_comparison): Drop decl.
+	(cmp_csts_and_types): New decl.
+	(strip_types): Delete decl of region_offset overload.
+	(enum class poison_kind): Move here from svalue.h.  Add "other".
+	(poison_kind_to_str): Move here from svalue.h.
+	(enum class baseline_state): New.
+	(baseline_state_to_str): New decl.
+	(enum class iter_result): New.
+	(append_pathvar_with_type): New decl.
+	* constraint-manager.cc: Add include of
+	"analyzer/liveness-context.h".
+	(class sval_finder): Update for changes to svalue subclasses.
+	(class dead_svalue_purger): Update to use
+	symbolic::liveness_context.
+	(constraint_manager::on_liveness_change): Likewise.
+	(class svalue_purger): Rename to...
+	(class node_purger): ...this and generalize from svalue to
+	symbolic::node.
+	(constraint_manager::purge_state_involving): Generalize from
+	svalue to symbolic::node.
+	(selftest::test_purging): Update for
+	region_model::purge_state_involving taking a reference rather than
+	a pointer.
+	* constraint-manager.h (constraint_manager::on_liveness_change):
+	Update decl to use symbolic::liveness_context.
+	(constraint_manager::purge_state_involving): Generalize from
+	svalue to symbolic::node.
+	* diagnostic-manager.cc (saved_diagnostic::dump_as_dot_node):
+	Update for dump changes.
+	(dump_to_logger): Update for changes to make_dump_widget.
+	(make_raw_dst_region_model): Set cfun and input_location.
+	(diagnostic_manager::prune_for_sm_diagnostic): Canonicalize the
+	input svalue and update throughout to make it clear whether we're
+	dealing with uncanonicalized or canonicalized svalue.
+	* engine.cc (impl_region_model_context::on_svalue_leak):
+	Canonicalize sval.
+	(impl_region_model_context::on_liveness_change): Update for
+	signature change.
+	(impl_region_model_context::on_unknown_change): Likewise.
+	(impl_region_model_context::purge_state_involving): Likewise.
+	(impl_region_model_context::on_state_leak): Use value_set rather
+	than svalue_set.
+	(exploded_node::dump_dot): Use monospace font.  Use
+	dump_node_tree_to_pp for dumping state.
+	(exploded_node::dump): Reimplement in terms of dump widget.
+	(exploded_node::dump_to_pp): Reimplement in terms of dump widget.
+	(exploded_node::dump_to_logger): New.
+	(exploded_node::make_dump_widget): New.
+	(exploded_graph::get_or_create_node): Use dump_to_logger.
+	(exploded_graph::process_node): Likewise.
+	(exploded_graph::process_node): Likewise.
+	(feasibility_problem::make_dump_widget): New.
+	(feasibility_problem::dump): New.
+	(feasibility_problem::dump_to_pp): Reimplement in terms of
+	dump widget.
+	(feasibility_problem::dump_to_logger): New.
+	(feasibility_state::maybe_update_for_edge): Use dump_to_logger.
+	(feasibility_state::make_dump_widget): New.
+	(feasibility_state::dump_to_pp): Reimplment in terms of dump
+	widget.
+	(enode_label::get_text): Drop state from label.
+	(exploded_graph::dump_exploded_nodes): Use
+	symbolic::dump_node_tree_to_file<program_state>.  Update for
+	simplified signature of program_state::dump.
+	* exploded-graph.h (impl_region_model_context::on_liveness_change):
+	Update signature.
+	(impl_region_model_context::on_unknown_change): Likewise.
+	(impl_region_model_context::purge_state_involving): Likewise.
+	(exploded_node::make_dump_widget): New decl.
+	(exploded_node::dump): Drop ext_state param.  Drop FILE *
+	overload.
+	(exploded_node::dump_to_pp): Drop ext_state param.
+	(exploded_node::dump_to_logger): New.
+	(feasibility_problem::make_dump_widget): New.
+	(feasibility_problem::dump): New.
+	(feasibility_problem::dump_to_logger): New.
+	(feasibility_state::dump_to_pp): Drop "simple" and "multiline"
+	params.
+	(feasibility_state::make_dump_widget): New.
+	* exploded-path.cc (exploded_path::feasible_p): Use
+	dump_to_logger.
+	(exploded_path::dump_to_pp): Update for change to
+	program_state::dump_to_pp.
+	* feasible-graph.cc (feasible_node::dump_dot): Update for change
+	to region_model::dump_to_pp.
+	(feasible_graph::dump_feasible_path): Likewise for change to
+	feasible_state::dump_to_pp.
+	* infinite-recursion.cc (class infinite_recursion_diagnostic):
+	Rename "uses_conjured_svalue_p" to "uses_conjured_value_p"
+	throughout.  Reimplement to work on conjured bit_vectors.
+	(contains_unknown_p): Generalize from svalue to symbolic::node.
+	(sufficiently_different_region_binding_p): Port to new
+	implementation, working on bit_contents.
+	* initializers.cc: New file.
+	* kf-analyzer.cc: Drop param to region_model::dump.
+	(class kf_analyzer_hexdump): New.
+	(register_known_analyzer_functions): Register it as
+	"__analyzer_hexdump".
+	* kf-lang-cp.cc (kf_dynamic_cast::impl_call_post): Port to new
+	implementation.
+	(kf_operator_delete::impl_call_post): Likewise.
+	* kf.cc: (kf_atomic_exchange::impl_call_pre): Likewise.
+	(kf_atomic_load::impl_call_pre): Likewise.
+	(kf_atomic_store::impl_call_pre): Likewise.
+	(kf_free::impl_call_post): Likewise.
+	(kf_memcpy_memmove::impl_call_pre): Likewise.
+	(kf_memset::impl_call_pre): Likewise.
+	(kf_mktemp_family::check_placeholder): Likewise.
+	(kf_putenv::impl_call_pre): Likewise.
+	(kf_realloc::impl_call_post): Likewise.
+	(kf_strdup::impl_call_pre): Likewise.
+	(kf_strcpy::impl_call_pre): Likewise.
+	(kf_strcat::impl_call_pre): Likewise.
+	(kf_strncpy::impl_call_post): Likewise.
+	* liveness-context.h: New file.
+	* ops.cc (operation_context::dump): Update for dump changes.
+	(call_and_return_op::replay_call_summary): Likewise.
+	(dump_op::execute): Likewise.
+	(phis_for_edge_op::update_state): Update for change to
+	purge_state_involving signature.
+	* poisoned-value-diagnostic.cc (poison_finder::visit_svalue): New.
+	(poison_finder::visit_bit_vector): New.
+	(poisoned_value_diagnostic::check_valid_fpath_p): Use
+	poison_finder rather than dyn_cast_poisoned_svalue.
+	* program-point.cc (program_point::dump): Reimplement in terms
+	of...
+	(program_point::make_dump_widget): New.
+	* program-point.h (program_point::make_dump_widget): New decl.
+	* program-state.cc: Include "analyzer/liveness-context.h".
+	(extrinsic_state::make_dump_widget): New.
+	(extrinsic_state::dump_to_pp): Delete.
+	(extrinsic_state::dump_to_file): Delete.
+	(extrinsic_state::dump): Delete.
+	(sm_state_map::make_dump_widget): Update for signature change.
+	Rework how states are dumped.  Add dumping of m_map_ubc_to_state.
+	(sm_state_map::is_empty_p): Add check on m_map_ubc_to_state.
+	(sm_state_map::operator==): Add comparison of m_map_ubc_to_state.
+	(sm_state_map::get_any_inherited_state_of_bit_vector): New.
+	(sm_state_map::get_state): Drop handling of sub_svalue.
+	Add handling of svalue_from_bit_vector.
+	(sm_state_map::impl_set_state): Reimplement handling of inherited
+	state in terms of m_map_ubc_to_state.
+	(sm_state_map::clear_all_per_svalue_state): Clear
+	m_map_ubc_to_state.
+	(sm_state_map::on_liveness_change): Port to
+	symbolic::liveness_context.
+	(sm_state_map::on_unknown_change): Generalize from svalue to
+	symbolic::value_node, adding support for bit_vector.
+	(sm_state_map::purge_state_involving): Likewise.
+	(sm_state_map::canonicalize_svalue): Handle nullptr.  Strip types
+	from symbolic pointers and from svalue_from_bit_vector.
+	(sm_state_map::validate): New.
+	(sm_state_map::replay_call_summary): Canonicalize svalues.
+	(program_state::print): Delete.
+	(program_state::dump_to_pp): Delete.
+	(program_state::dump_to_file): Delete.
+	(program_state::dump): Reimplement in terms of dump widget.
+	(program_state::dump_to_logger): New.
+	(program_state::make_dump_widget): Update for signature change.
+	Support passing in a label.
+	(program_state::can_purge_base_region_p): Reimplement.
+	(program_state::validate): Validate the sm_state_maps in
+	m_checker_states.
+	(log_set_of_svalues): Port from svalue_set to value_set.  Use
+	dump_to_logger.
+	(liveness_context::liveness_context): New.
+	(liveness_context::node_live_p): New.
+	(liveness_context::bits_live_p): New.
+	(liveness_context::known_live_ptr_to_base_region_p): New.
+	(liveness_context::set_known_liveness_for_node): New.
+	(liveness_context::dump_to_pp): New.
+	(liveness_context::make_dump_widget): New.
+	(program_state::detect_leaks): Reimplement, generalizing from
+	svalue to symbolic::value_node.
+	* program-state.h (extrinsic_state::dump_to_pp): Delete.
+	(extrinsic_state::dump_to_file): Delete.
+	(extrinsic_state::dump_to_logger): New.
+	(extrinsic_state::make_dump_widget): New.
+	(sm_state_map::make_dump_widget): Update signature.
+	(sm_state_map::dump): New.
+	(sm_state_map::on_liveness_change): Update signature.
+	(sm_state_map::on_unknown_change): Likewise.
+	(sm_state_map::purge_state_involving): Likewise.
+	(sm_state_map::validate): New.
+	(sm_state_map::get_any_inherited_state_of_bit_vector): New.
+	(sm_state_map::m_map_ubc_to_state): New field.
+	(program_state::dump_to_pp): Delete.
+	(program_state::dump_to_file): Delete.
+	(program_state::dump_to_logger): New.
+	(program_state::dump): Simplify signature.
+	(program_state::make_dump_widget): Update signature.
+	* ranges.cc: Deleted file; partially used when reimplementing
+	symbolic-ranges.cc.
+	* ranges.h: Deleted file; partially used when reimplementing
+	symbolic-ranges.h.
+	* record-layout.cc (record_layout::record_layout): Port from
+	bit_range to concrete_bit_range, and from bit_offset_t to
+	concrete_bit_offset.
+	(record_layout::get_item_at): Likewise.
+	(record_layout::maybe_pad_to): Likewise.
+	* record-layout.h (get_bit_position): New decl.
+	(get_field_at_bit_offset): New decl.
+	(class record_layout): Port from bit_range to concrete_bit_range,
+	and from bit_offset_t to concrete_bit_offset.
+	* region-model-asm.cc (region_model::on_asm_stmt): Update for
+	change to reachable_regs.  Drop store manager.  Pass baseline
+	state to get_or_create_cluster.
+	* region-model-manager.cc: Include "analyzer/symbolic-scalars.h",
+	"analyzer/record-layout.h", and "analyzer/analyzer-selftests.h".
+	(region_model_manager::region_model_manager): Drop m_store_mgr.
+	(region_model_manager::~region_model_manager): Drop cleanup of
+	dropped fields m_sub_values_map, m_repeated_values_map,
+	m_bits_within_values_map, m_compound_values_map, and
+	m_conjured_values_map.  Add cleanup of m_bit_vector_to_svalue_map.
+	(region_model_manager::get_or_create_initial_value): Handle
+	subregions as a cropping of the baseline contents of the base
+	region.
+	(region_model_manager::get_ptr_svalue): Port from region_svalue to
+	pointer_svalue.
+	(region_model_manager::maybe_fold_unaryop): Avoid creating
+	symbolic regions for pointer casts by simplifying (T*)(&REGION) to
+	((T*)&REGION).  Fold svalue_from_bit_vector.
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	Delete.
+	(region_model_manager::maybe_fold_binop): Handle
+	POINTER_PLUS_EXPR and LSHIFT_EXPR.  Fold pointer arithmetic within
+	a base region.  Drop handling of compound_svalue.
+	(region_model_manager::maybe_fold_sub_svalue): Delete.
+	(region_model_manager::get_or_create_sub_svalue): Delete.
+	(region_model_manager::maybe_fold_repeated_svalue): Delete.
+	(region_model_manager::get_or_create_repeated_svalue): Delete.
+	(region_model_manager::maybe_fold_svalue_from_bit_vector): New.
+	(canonicalize_ptr_type_for_bit_vector): New.
+	(get_bit_range_for_field): Delete.
+	(get_byte_range_for_field): Delete.
+	(get_field_at_byte_range): Delete.
+	(region_model_manager::maybe_fold_bits_within_svalue): Delete.
+	(region_model_manager::get_or_create_bits_within): Delete.
+	(region_model_manager::get_or_create_compound_svalue): Delete.
+	(region_model_manager::get_svalue_from_bit_vector): New.
+	(region_model_manager::get_svalue_from_scalar): New.
+	(conjured_purge::purge): Reimplement in symbolic-bit-vectors.cc.
+	(region_model_manager::get_or_create_conjured_svalue): Reimplement
+	in terms of svalue_from_bit_vector(conjured_bit_vector).
+	(region_model_manager::maybe_fold_sized_region_to_initial_field):
+	New.
+	(region_model_manager::get_sized_region): Call it.
+	(region_model_manager::get_cast_region):  Fold casts of symbolic
+	regions.
+	(region_model_manager::maybe_fold_symbolic_region): New.
+	(region_model_manager::get_symbolic_region): Add call to
+	maybe_fold_symbolic_region.
+	(region_model_manager::get_bit_range): Use concrete_bit_range
+	rather than bit_range.
+	(region_model_manager::log_stats): Update logging of
+	m_pointer_values_map.  Drop logging of deleted fields
+	m_sub_values_map, m_repeated_values_map, m_bits_within_values_map,
+	m_compound_values_map, m_conjured_values_map, and m_store_mgr. Add
+	logging of m_bit_vector_to_svalue_map.
+	(store_manager::log_stats): Delete.
+	(selftest::test_svalue_from_bit_vector): New.
+	(selftests::analyzer_region_model_manager_cc_tests): New.
+	* region-model-manager.h: Add includes of "svalue.h", "region.h",
+	and "known-function-manager.h".
+	(region_model_manager::get_ptr_svalue): Update param to
+	symbolic::pointer.
+	(region_model_manager::get_or_create_sub_svalue): Delete.
+	(region_model_manager::get_or_create_repeated_svalue): Delete.
+	(region_model_manager::get_or_create_bits_within): Delete.
+	(region_model_manager::get_or_create_compound_svalue): Delete.
+	(region_model_manager::get_svalue_from_bit_vector): New.
+	(region_model_manager::get_svalue_from_scalar): New.
+	(region_model_manager::get_bit_range): Convert from bit_range to
+	concrete_bit_range.
+	(region_model_manager::get_store_manager): Delete.
+	(region_model_manager::maybe_fold_sub_svalue): Delete.
+	(region_model_manager::maybe_fold_repeated_svalue): Delete.
+	(region_model_manager::maybe_fold_bits_within_svalue): Delete.
+	(region_model_manager::maybe_undo_optimize_bit_field_compare):
+	Delete.
+	(region_model_manager::maybe_fold_svalue_from_bit_vector): New.
+	(region_model_manager::maybe_fold_sized_region_to_initial_field):
+	New.
+	(region_model_manager::maybe_fold_symbolic_region): New.
+	(region_model_manager::pointer_values_map_t): Convert from
+	region_svalue to pointer_svalue.
+	(region_model_manager::bit_vector_to_svalue_map_t): New typedef.
+	(region_model_manager::m_bit_vector_to_svalue_map): New field.
+	(region_model_manager::sub_values_map_t): Drop.
+	(region_model_manager::m_sub_values_map): Drop.
+	(region_model_manager::repeated_values_map_t): Drop.
+	(region_model_manager::m_repeated_values_map): Drop.
+	(region_model_manager::bits_within_values_map_t): Drop.
+	(region_model_manager::m_bits_within_values_map): Drop.
+	(region_model_manager::compound_values_map_t): Drop.
+	(region_model_manager::m_compound_values_map): Drop.
+	(region_model_manager::conjured_values_map_t): Drop.
+	(region_model_manager::m_conjured_values_map): Drop.
+	(region_model_manager::m_store_mgr): Drop.
+	* region-model-reachability.cc: Add include of
+	"analyzer/liveness-context.h".
+	(recurse_into_children_p): New.
+	(reachable_regions::init_cluster): Port to
+	symbolic::liveness_context.
+	(reachable_regions::add): Port to new implementation of
+	binding_cluster contents.
+	(reachable_regions::handle_sval_cb): Update for generalization
+	to symbolic::value_node.
+	(reachable_regions::handle_sval): Rename to...
+	(reachable_regions::handle_value): ...this, generalizing from
+	svalue to symbolic::value_node.
+	(reachable_regions::handle_parm): Port to new implementation.
+	(reachable_regions::mark_escaped_clusters): Likewise.
+	(reachable_regions::dump_to_pp): Likewise.
+	* region-model-reachability.h (class reachable_regions): Use
+	value_set rather than svalue_set throughout.
+	(reachable_regions::handle_sval): Rename to...
+	(reachable_regions::handle_value): ...this, generalizing from
+	svalue to symbolic::value_node.
+	* region-model.cc: Drop include of "stor-layout.h".  Include
+	"diagnostics/markup.h".
+	(region_to_value_map::dump_to_pp): Drop.
+	(region_to_value_map::dump): Drop.
+	(region_to_value_map::make_dump_widget): Update for new signature.
+	(region_to_value_map::purge_state_involving): Generalize from
+	svalue to symbolic::node.
+	(exception_node::dump_to_pp): Drop.
+	(exception_node::dump): Drop overload and reimplement in terms
+	of dump widget.
+	(exception_node::dump_to_logger): New.
+	(exception_node::make_dump_widget): Update for signature change.
+	(exception_node::add_to_reachable_regions): Update for change
+	to reachable_regions.
+	(region_model::region_model): Pass node_mgr to store ctor.
+	(region_model::dump_to_pp): Reimplement in terms of dump_widget.
+	(region_model::dump): Likewise, simplifying.
+	(region_model::debug): Drop.
+	(region_model::dump_to_logger): New.
+	(region_model::make_dump_widget): Update for signature change.
+	(region_model::canonicalize): Drop store manager.
+	(region_model::loop_replay_fixup): Pass baseline state to store.
+	(region_model::get_gassign_result): Update infinite loop detection
+	before eval_condition does any folding.
+	(region_model::complain_about_poison): New.
+	(region_model::check_bytes_for_poison): New.
+	(region_model::on_assignment): Call region_model::set_value rather
+	than going to store for STRING_CST.
+	(exception_thrown_from_unrecognized_call::update_model): Port
+	to bit_contents.
+	(region_model::purge_state_involving): Pass a symbolic::node
+	rather than an svalue, dropping rejection of
+	can_have_associated_state_p.
+	(check_one_function_attr_null_terminated_string_arg): Port to new
+	types.
+	(region_model::handle_unrecognized_call): Likewise.
+	(region_model::get_reachable_svalues): Likewise.
+	(region_model::get_lvalue_1): Likewise.
+	(region_model::get_baseline_state): New.
+	(region_model::get_store_value): Move poison-checking.
+	Reimplement in terms of get_store_bits and
+	get_svalue_from_bit_vector.
+	(region_model::get_store_bits): New.
+	(region_model::get_bit_contents): New.
+	(region_model::set_bit_contents_raw): New.
+	(region_model::deref_rvalue): Assert that type is non-null.
+	Drop case for SK_REGION.
+	(region_model::get_rvalue_for_bits): Reimplement in terms of
+	get_store_bits, get_cropped_bits, and get_svalue_from_bit_vector.
+	(region_model::check_for_writable_region): Rename "dest_reg" to
+	"base_reg" and assume it is a base region.
+	(region_model::get_capacity_as_scalar): New.
+	(region_model::check_region_access): Reimplement as...
+	(region_model::check_memory_range_access): ...this.
+	(region_model::check_region_for_read): Delete.
+	(size_visitor::visit_conjured_svalue): Replace with...
+	(size_visitor::visit_svalue_from_bit_vector): ...this.
+	(region_model::write_to_memory_offset): New.
+	(region_model::set_value): Port to new types, reimplementing
+	in terms of write_to_memory_offset.
+	(struct fragment): Delete.
+	(string_cst_has_null_terminator): Delete.
+	(svalue_byte_range_has_null_terminator): Delete.
+	(svalue_byte_range_has_null_terminator_1): Delete.
+	(get_tree_for_byte_offset): Convert from byte_offset_t to
+	concrete_byte_offset.
+	(class iterable_cluster): Delete.
+	(region_model::get_store_bytes): Delete.
+	(region_model::scan_for_null_terminator_1): Reimplement in terms
+	of string_scan.
+	(region_model::scan_for_null_terminator): Use symbolic::bit_vector
+	for output of scanned bytes, rather than svalue.
+	(region_model::check_for_null_terminated_string_arg): Likewise.
+	(region_model::clobber_region): Drop store manager.  Pass baseline
+	state.
+	(region_model::purge_region): Reimplement.
+	(region_model::fill_region): Delete.
+	(region_model::zero_fill_region): Reimplement in terms of
+	write_to_memory_offset.
+	(region_model::write_bytes): Reimplement in terms of
+	symbolic::pointer, symbolic::bit_vector, and
+	write_to_memory_offset.
+	(region_model::read_bytes): Reimplement in terms of
+	symbolic::pointer, symbolic_byte_size, and symbolic::bit_vector.
+	(region_model::copy_bytes): Reimplement in terms of
+	symbolic::pointers and symbolic_byte_size.
+	(region_model::mark_region_as_unknown): Reimplement.
+	(region_model::mark_region_as_conjured): New.
+	(equal_bit_vectors_p): New.
+	(region_model::canonicalize_svalue_for_constraint): New.
+	(region_model::can_recurse_eval_condition_p): New.
+	(region_model::eval_condition): Canonicalize lhs and rhs.  Treat
+	equal bit vectors as equal (after float rejection for NaN).  Port
+	from region_svalue to symbolic::pointer.  Reject recursion purely
+	due to canonicalization, to avoid infinite recursion.
+	(region_model::compare_initial_and_pointer): Port from
+	region_svalue to symbolic::pointer.
+	(is_positive_svalue): Add positive * positive handler.
+	(region_model::add_constraint): Canonicalize lhs and rhs.  Port
+	from region_svalue to symbolic::pointer.
+	(convert_to_type): New.
+	(region_model::get_representative_path_var_1): Update from
+	svalue_set to value_set.  Convert various early returns into
+	appends to "pvs", so that we consider other canidates by
+	readability.  Port from region_svalue to symbolic::pointer and
+	handle other new types.
+	(region_model::get_representative_path_var): Use value_set rather
+	than svalue_set.  Only require types_compatible_p, rather than
+	exact type matches.
+	(region_model::get_representative_tree): Use value_set rather
+	than svalue_set.  Strip top-level casts repeatedly, rather than
+	just one.
+	(region_model::get_representative_tree): Update from svalue_set to
+	value_set.
+	(region_model::maybe_get_region_for_mem_range): New.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range): New.
+	(region_model::maybe_get_subregion_for_concrete_bit_range): New.
+	(get_underlying_index_type): New.
+	(struct quotient_and_residual): New.
+	(try_split_exact_multiple): New.
+	(quotient_and_residual::handle_bits_from_bytes): New.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range_in_array):
+	New.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range_in_record):
+	New.
+	(region_model::get_representative_path_var_1): Update from
+	svalue_set to value_set.
+	(region_model::get_representative_path_var): Likewise.
+	(region_model::replay_call_summary): Support failure from
+	store::replay_call_summary.
+	(region_model::on_top_level_param): Drop store manager; pass
+	baseline state.
+	(region_model::push_frame): Try to preserve the type of arg_sval
+	in the store, by wrapping it in an "unmergeable" decorator.
+	(region_model::poison_any_pointers_to_descendents): Delegate to
+	the cluster.
+	(region_model::can_merge_with_p): Drop store manager and update
+	for change to purge_state_involving.
+	(region_model::get_vtable_from_obj): Port to symbolic::pointer.
+	(region_model::get_fndecl_for_call): Port from region_svalue to
+	symbolic::pointer.
+	(contains_floating_point_visitor::visit_conjured_svalue): Delete.
+	(struct uninit_bit_counter): New.
+	(class exposure_through_uninit_copy): Reimplement using
+	uninit_bit_counter and new symbolic represenation.
+	(contains_uninit_p): Reimplement using poison_finder.
+	(region_model::maybe_complain_about_infoleak): Pass node_mgr to
+	exposure_through_uninit_copy ctor.
+	(model_merger::dump_to_pp): Drop.
+	(model_merger::dump): Drop.
+	(model_merger::dump): Drop.
+	(model_merger::mergeable_bit_vector_p): New.
+	(debug): Drop.
+	(selftest::assert_dump_eq): Drop.
+	(ASSERT_DUMP_EQ): Drop.
+	(selftesttest_dump): Reimplement using
+	symbolic::dump_node_tree_to_pp.
+	(selftest::make_test_compound_type): Move to analyzer-selftest.cc.
+	(struct selftest::coord_test): Likewise.
+	(selftest::test_struct): Add ASSERT_SYMBOLIC_NODE_MARKUP_TEXT_EQ
+	in various places.  Use ASSERT_SAME_SYMBOLIC_NODE rather than
+	ASSERT_EQ to get better error messages.  Verify memory ranges.
+	Port from region_offset to symbolic::memory_offset.  Drop
+	binding_cluster code.
+	(selftest::test_array_1): Verify markup output.
+	(selftest::test_get_representative_tree): Likewise.  Add test
+	of a single field within a struct.
+	(selftest::test_unique_constants): Verify markup output.
+	(selftest::test_unique_unknowns): Likewise.
+	(selftest::test_initial_svalue_folding): Replace ASSERT_EQ
+	with ASSERT_SAME_SYMBOLIC_NODE and verify markup output.
+	(selftest::test_unaryop_svalue_folding): Likewise.
+	(selftest::test_binop_svalue_folding): Likewise.
+	(selftest::test_sub_svalue_folding): Drop.
+	(selftest::get_bit): Drop.
+	(selftest::test_bits_within_svalue_folding): Drop.
+	(selftest::test_bit_range_regions): Port from bit_range
+	to concrete_bit_range.  Verify markup.
+	(selftest::test_stack_frames): Update "popped_stack" poison test.
+	Use ASSERT_SAME_SYMBOLIC_NODE.
+	(selftest::test_get_representative_path_var): Port from svalue_set
+	to value_set.
+	(selftest::assert_region_models_merge): Fix indentation.
+	(selftest::test_state_merging): Port from region_svalue to
+	pointer_svalue.  Use ASSERT_SAME_SYMBOLIC_NODE rather than
+	ASSERT_EQ.  Update test to use "p" rather than "x", since p is a
+	pointer.
+	(selftest::test_var): Update from region_offset to
+	symbolic::memory_range.  Use ASSERT_SAME_SYMBOLIC_NODE rather than
+	ASSERT_EQ
+	(selftest::test_array_2):  Likewise.
+	(selftest::test_alloca): Update "popped_stack" poison test.
+	(selftest::test_involves_p): Update for change in signature of
+	involves_p.
+	(selftest::test_array_in_struct): New test.
+	(selftest::test_maybe_get_region_for_mem_range): New test.
+	(selftest::analyzer_region_model_cc_tests): Drop calls to
+	test_sub_svalue_folding and test_bits_within_svalue_folding.
+	Add calls to test_array_in_struct and
+	test_maybe_get_region_for_mem_range.
+	* region-model.h (region_to_value_map::dump_to_pp): Drop.
+	(region_to_value_map::dump): Drop.
+	(region_to_value_map::dump_to_logger): New.
+	(region_to_value_map::make_dump_widget): Update signature.
+	(region_to_value_map::void purge_state_involving): Use
+	symbolic::node rather than svalue.
+	(visitor::visit_region_svalue): Replace with...
+	(visitor::visit_pointer_svalue): ...this.
+	(visitor::visit_sub_svalue): Delete.
+	(visitor::visit_repeated_svalue): Delete.
+	(visitor::visit_bits_within_svalue): Delete.
+	(visitor::visit_compound_svalue): Delete.
+	(visitor::visit_conjured_svalue): Delete.
+	(visitor::visit_svalue_from_bit_vector): New.
+	(exception_node::dump_to_pp): Drop.
+	(exception_node::dump): Drop overloads.
+	(exception_node::dump_to_logger): New.
+	(exception_node::make_dump_widget): Update signature.
+	(region_model::dump_to_pp): Simplify signature.
+	(region_model::dump): Drop overloads.
+	(region_model::dump_to_logger): New.
+	(region_model::debug): Drop.
+	(region_model::make_dump_widget): Update signature.
+	(region_model::purge_state_involving): Pass a symbolic::node
+	rather than an svalue.
+	(region_model::purge_state_involving): Use a value_set rather
+	than an svalue_set.
+	(region_model::fill_region): Drop.
+	(region_model::write_bytes): Port from svalue to symbolic::pointer
+	and symbolic::bit_vector.
+	(region_model::read_bytes): Likewise.
+	(region_model::copy_bytes): Port from region and svalue to
+	symbolic::pointer and symbolic_byte_size.
+	(region_model::mark_region_as_conjured): New.
+	(region_model::compare_initial_and_pointer): Port from
+	region_svalue to symbolic::pointer.
+	(region_model::get_representative_path_var): Use a value_set
+	rather than an svalue_set.
+	(region_model::maybe_get_region_for_mem_range): New.
+	(region_model::get_store_bytes): Replace with...
+	(region_model::get_store_bit): ...this.
+	(region_model::get_bit_contents): New.
+	(region_model::set_bit_contents_raw): New.
+	(region_model::scan_for_null_terminator): Use symbolic::bit_vector
+	rather than svalue.
+	(region_model::scan_for_null_terminator_1): Likewise.
+	(region_model::check_for_null_terminated_string_arg): Likewise.
+	(region_model::write_to_memory_offset): New.
+	(region_model::get_capacity_as_scalar): New.
+	(region_model::check_bytes_for_poison): New.
+	(region_model::get_baseline_state): New.
+	(region_model::bits_live_p): New.
+	(region_model::get_representative_path_var_1): Use a value_set
+	rather than an svalue_set.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range): New.
+	(region_model::maybe_get_subregion_for_concrete_bit_range): New.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range_in_array):
+	New.
+	(region_model::maybe_get_subregion_for_symbolic_bit_range_in_record):
+	New.
+	(region_model::complain_about_poison): New.
+	(region_model::check_memory_range_for_taint): New.
+	(region_model::check_memory_range_access): New.
+	(region_model::check_region_for_read): Drop.
+	(region_model::check_symbolic_bounds): Update from region
+	to symbolic::memory_range.
+	(region_model::check_memory_range_bounds): New.
+	(region_model::canonicalize_svalue_for_constraint): New.
+	(region_model::can_recurse_eval_condition_p): New.
+	(region_model_context::on_liveness_change): Update signature.
+	(region_model_context::on_unknown_change): Likewise.
+	(region_model_context::purge_state_involving): Likewise.
+	(class noop_region_model_context): Update for above changes.
+	(class region_model_context_decorator): Likewise.
+	(model_merger::dump_to_pp): Drop.
+	(model_merger::dump_to_logger): New.
+	(model_merger::dump): Simplify, dropping overloads.
+	(model_merger::mergeable_bit_vector_p): New.
+	(struct poison_finder): New.
+	* region.cc: Include "diagnostics/markup.h" and
+	"analyzer/symbolic-pointers.h".
+	(compare_bit_offsets_p): Delete.
+	(region_offset::make_byte_offset): Delete.
+	(region_offset::calc_symbolic_bit_offset): Delete.
+	(region_offset::calc_symbolic_byte_offset): Delete.
+	(region_offset::dump_to_pp): Delete.
+	(region_offset::dump): Delete.
+	(struct linear_op): Delete.
+	(strip_types): Delete.
+	(eval_byte_offset_comparison): Delete.
+	(eval_region_offset_comparison): Delete.
+	(region::print_dump_widget_label): New.
+	(region::~region): Drop manual deletion of m_cached_offset.
+	(region::add_dump_widget_children): New.
+	(region::get_memory_space): Handle RK_SYMBOLIC.
+	(region::calc_initial_value_at_main): Port to new implementation.
+	(region::get_offset): Replace with...
+	(region::get_memory_offset): ...this.
+	(region::get_next_offset): Delete.
+	(region::get_memory_range): New.
+	(region::get_pointer): New.
+	(region::get_byte_size): Replace with...
+	(region::maybe_get_byte_size): ...this.
+	(region::get_byte_size_sval): Reimplement.
+	(region::get_bit_size_sval): New.
+	(get_type_size): New.
+	(get_bit_position): New.
+	(region::get_bit_size): Replace with...
+	(region::maybe_get_bit_size): ...this.
+	(get_field_at_bit_offset): Port to new types.
+	(region::get_subregions_for_binding): Convert to...
+	(region::get_subregions_for_bit_range): ...this.
+	(region::calc_offset): Replace with...
+	(region::calc_memory_offset): ...this.
+	(region::get_relative_concrete_offset): Delete.
+	(region::get_relative_symbolic_offset): Delete.
+	(region::get_relative_concrete_byte_range): Delete.
+	(region::calc_memory_range): New.
+	(region::calc_pointer): New.
+	(region::dump): Delete.
+	(region::maybe_get_bit_offset_relative_to_parent): New.
+	(region::maybe_get_byte_offset_relative_to_parent): New.
+	(region::to_json): Delete in favor of node::to_json.
+	(region::dump): Reimplement using dump widget.
+	(region::make_dump_widget): Delete in favor of
+	node::make_dump_widget.
+	(region::add_dump_widget_children): Update signature.
+	(region::make_json_obj): New.
+	(region::empty_p): Add "rmm" param and port to new implementation.
+	(region::region): Update for replacement of m_cached_offset with
+	m_cached_memory_range.
+	(region::involves_p): Delete in favor of node::involves_p.
+	(frame_region::print_dump_widget_label): Rename to...
+	(frame_region::print_region_for_dump_widget_label): ...this.
+	(frame_region::accept_node_visitor): New.
+	(frame_region::to_json): New.
+	(frame_region::make_markup_node): New.
+	(globals_region::print_dump_widget_label): Rename to...
+	(globals_region::print_region_for_dump_widget_label): ...this.
+	(globals_region::accept_node_visitor) New.
+	(globals_region::to_json): New.
+	(globals_region::make_markup_node): New.
+	(code_region::print_dump_widget_label): Rename to...
+	(code_region::print_region_for_dump_widget_label): ...this.
+	(code_region::accept_node_visitor) New.
+	(code_region::to_json): New.
+	(code_region::make_markup_node): New.
+	(function_region::print_dump_widget_label): Rename to...
+	(function_region::print_region_for_dump_widget_label): ...this.
+	(function_region::accept_node_visitor) New.
+	(function_region::to_json): New.
+	(function_region::make_markup_node): New.
+	(label_region::print_dump_widget_label): Rename to...
+	(label_region::print_region_for_dump_widget_label): ...this.
+	(label_region::accept_node_visitor) New.
+	(label_region::to_json): New.
+	(label_region::make_markup_node): New.
+	(stack_region::print_dump_widget_label): Rename to...
+	(stack_region::print_region_for_dump_widget_label): ...this.
+	(stack_region::accept_node_visitor) New.
+	(stack_region::to_json): New.
+	(stack_region::make_markup_node): New.
+	(heap_region::print_dump_widget_label): Rename to...
+	(heap_region::print_region_for_dump_widget_label): ...this.
+	(heap_region::accept_node_visitor) New.
+	(heap_region::to_json): New.
+	(heap_region::make_markup_node): New.
+	(root_region::print_dump_widget_label): Rename to...
+	(root_region::print_region_for_dump_widget_label): ...this.
+	(root_region::accept_node_visitor) New.
+	(root_region::to_json): New.
+	(root_region::make_markup_node): New.
+	(thread_local_region::print_dump_widget_label): Rename to...
+	(thread_local_region::print_region_for_dump_widget_label):
+	...this.
+	(thread_local_region::accept_node_visitor) New.
+	(thread_local_region::to_json): New.
+	(thread_local_region::make_markup_node): New.
+	(symbolic_region::print_dump_widget_label): Rename to...
+	(symbolic_region::print_region_for_dump_widget_label): ...this.
+	(symbolic_region::add_dump_widget_children): Update signature.
+	Dump m_sval_ptr.
+	(symbolic_region::accept_node_visitor) New.
+	(symbolic_region::to_json): New.
+	(symbolic_region::make_markup_node): New.
+	(decl_region::print_dump_widget_label): Rename to...
+	(decl_region::print_region_for_dump_widget_label): ...this.
+	(decl_region::accept_node_visitor) New.
+	(decl_region::to_json): New.
+	(decl_region::make_markup_node): New.
+	(decl_region::calc_svalue_for_constructor): Delete.
+	(decl_region::get_svalue_for_constructor): Reimplement.
+	(decl_region::get_bit_contents_for_constructor): New.
+	(decl_region::get_svalue_for_initializer): Reimplement.
+	(decl_region::maybe_get_bit_contents_for_initializer): New.
+	(field_region::print_dump_widget_label): Rename to...
+	(field_region::print_region_for_dump_widget_label): ...this.
+	(field_region::accept_node_visitor) New.
+	(field_region::to_json): New.
+	(field_region::make_markup_node): New.
+	(field_region::get_relative_concrete_offset): Drop.
+	(field_region::maybe_get_bit_offset_relative_to_parent): New.
+	(field_region::maybe_get_byte_offset_relative_to_parent): New.
+	(field_region::get_relative_symbolic_offset): Drop.
+	(element_region::print_dump_widget_label): Rename to...
+	(element_region::print_region_for_dump_widget_label): ...this.
+	(element_region::add_dump_widget_children): Update signature.
+	Dump m_index.
+	(element_region::accept_node_visitor) New.
+	(element_region::to_json): New.
+	(element_region::make_markup_node): New.
+	(element_region::maybe_get_bit_offset_relative_to_parent): New.
+	(element_region::maybe_get_byte_offset_relative_to_parent): New.
+	(element_region::get_relative_concrete_offset): Delete.
+	(element_region::get_relative_symbolic_offset): Delete.
+	(offset_region::print_dump_widget_label): Rename to...
+	(offset_region::print_region_for_dump_widget_label): ...this.
+	(offset_region::add_dump_widget_children): Update signature.
+	Dump m_byte_offset.
+	(offset_region::accept_node_visitor) New.
+	(offset_region::to_json): New.
+	(offset_region::make_markup_node): New.
+	(offset_region::get_relative_concrete_offset): Delete.
+	(offset_region::maybe_get_bit_offset_relative_to_parent): New.
+	(offset_region::get_relative_symbolic_offset): Delete.
+	(offset_region::maybe_get_byte_offset_relative_to_parent): New.
+	(sized_region::print_dump_widget_label): Rename to...
+	(sized_region::print_region_for_dump_widget_label): ...this.
+	(sized_region::add_dump_widget_children): Update signature.
+	(sized_region::accept_node_visitor) New.
+	(sized_region::to_json): New.
+	(sized_region::make_markup_node): New.
+	(sized_region::get_byte_size): Replace with...
+	(sized_region::maybe_get_byte_size): ...this.
+	(sized_region::get_bit_size): Replace with...
+	(sized_region::maybe_get_bit_size): ...this.
+	(sized_region::get_bit_size_sval): Drop.
+	(cast_region::print_dump_widget_label): Rename to...
+	(cast_region::print_region_for_dump_widget_label): ...this.
+	(cast_region::accept_node_visitor) New.
+	(cast_region::to_json): New.
+	(cast_region::make_markup_node): New.
+	(cast_region::get_relative_concrete_offset): Drop.
+	(cast_region::maybe_get_bit_offset_relative_to_parent): New.
+	(cast_region::maybe_get_byte_offset_relative_to_parent): New.
+	(heap_allocated_region::print_dump_widget_label): Rename to...
+	(heap_allocated_region::print_region_for_dump_widget_label): ...this.
+	(heap_allocated_region::accept_node_visitor) New.
+	(heap_allocated_region::to_json): New.
+	(heap_allocated_region::make_markup_node): New.
+	(alloca_region::print_dump_widget_label): Rename to...
+	(alloca_region::print_region_for_dump_widget_label): ...this.
+	(alloca_region::accept_node_visitor) New.
+	(alloca_region::to_json): New.
+	(alloca_region::make_markup_node): New.
+	(string_region::print_dump_widget_label): Rename to...
+	(string_region::print_region_for_dump_widget_label): ...this.
+	(string_region::accept_node_visitor) New.
+	(string_region::to_json): New.
+	(string_region::make_markup_node): New.
+	(bit_range_region::print_dump_widget_label): Rename to...
+	(bit_range_region::print_region_for_dump_widget_label): ..this.
+	(bit_range_region::accept_node_visitor): New.
+	(bit_range_region::to_json): New.
+	(bit_range_region::make_markup_node): New.
+	(bit_range_region::get_byte_size): Delete.
+	(bit_range_region::maybe_get_byte_size): New.
+	(bit_range_region::get_bit_size): Delete.
+	(bit_range_region::get_byte_size_sval): Delete.
+	(bit_range_region::get_bit_size_sval): Delete.
+	(bit_range_region::maybe_get_bit_size): New.
+	(bit_range_region::get_relative_concrete_offset): Delete.
+	(bit_range_region::maybe_get_bit_offset_relative_to_parent): New.
+	(bit_range_region::get_relative_symbolic_offset): Delete.
+	(bit_range_region::maybe_get_byte_offset_relative_to_parent): New.
+	(var_arg_region::print_dump_widget_label): Rename to...
+	(var_arg_region::print_region_for_dump_widget_label): ...this.
+	(var_arg_region::accept_node_visitor): New.
+	(var_arg_region::to_json): New.
+	(var_arg_region::make_markup_node): New.
+	(errno_region::print_dump_widget_label): Rename to...
+	(errno_region::print_region_for_dump_widget_label): ...this.
+	(errno_region::accept_node_visitor): New.
+	(errno_region::to_json): New.
+	(errno_region::make_markup_node): New.
+	(private_region::print_dump_widget_label): Rename to...
+	(private_region::print_region_for_dump_widget_label): ...this.
+	(private_region::accept_node_visitor): New.
+	(private_region::to_json): New.
+	(private_region::make_markup_node): New.
+	(unknown_region::print_dump_widget_label): Rename to...
+	(unknown_region::print_region_for_dump_widget_label): ...this.
+	(unknown_region::accept_node_visitor): New.
+	(unknown_region::to_json): New.
+	(unknown_region::make_markup_node): New.
+	* region.h: Drop include of "text-art/tree-widget.h".  Add
+	includes of "analyzer/concrete-ranges.h",
+	"analyzer/symbolic-memory-offsets.h",
+	"analyzer/symbolic-memory-ranges.h", and
+	"analyzer/symbolic-pointers.h".
+	(region::symbolic_bit_count): New using decl.
+	(region::symbolic_byte_count): New using decl.
+	(region::print_dump_widget_label): New.
+	(region::print_region_for_dump_widget_label): New.
+	(region::add_dump_widget_children): New.
+	(region::get_any_dump_color): New.
+	(region::to_json): Delete in favor of node::to_json.
+	(region::make_dump_widget): Delete in favor of
+	node::make_dump_widget.
+	(region::involves_p): Delete in favor of node::involves_p.
+	(region::get_memory_offset): New.
+	(region::get_memory_range): New.
+	(region::get_offset): Delete.
+	(region::get_next_offset): Delete.
+	(region::get_byte_size): Delete.
+	(region::get_pointer): New.
+	(region::get_bit_size): Replace with...
+	(region::maybe_get_bit_size): ...this.
+	(region::maybe_get_byte_size): New.
+	(region::get_bit_size_sval): Delete.
+	(region::get_byte_size_sval): New.
+	(region::get_relative_concrete_offset): Replace with...
+	(region::maybe_get_bit_offset_relative_to_parent): ...this.
+	(region::get_relative_symbolic_offset): Delete.
+	(region::get_relative_concrete_byte_range): Delete.
+	(region::maybe_get_byte_offset_relative_to_parent): New.
+	(region::get_subregions_for_binding): Replace with...
+	(region::get_subregions_for_bit_range): ...this.
+	(region::empty_p): Add region_model_manager param.
+	(region::make_json_obj): New.
+	(region::calc_offset): Drop.
+	(region::calc_memory_offset): New.
+	(region::calc_memory_range): New.
+	(region::calc_pointer): New.
+	(region::print_dump_widget_label): Drop.
+	(region::add_dump_widget_children): Drop.
+	(region::add_dump_widget_children_for_region): Drop.
+	(region::m_cached_offset): Replace with...
+	(region::m_cached_memory_offset): ...this,
+	(region::m_cached_memory_range): ...this,
+	(region::m_cached_pointer): ...and this.
+	(frame_region::print_dump_widget_label): Rename to...
+	(frame_region::print_region_for_dump_widget_label): ...this.
+	(frame_region::accept_node_visitor): New.
+	(frame_region::to_json): New.
+	(frame_region::make_markup_node): New.
+	(globals_region::print_dump_widget_label): Rename to...
+	(globals_region::print_region_for_dump_widget_label): ...this.
+	(globals_region::accept_node_visitor): New.
+	(globals_region::to_json): New.
+	(globals_region::make_markup_node): New.
+	(code_region::print_dump_widget_label): Rename to...
+	(code_region::print_region_for_dump_widget_label): ...this.
+	(code_region::accept_node_visitor): New.
+	(code_region::to_json): New.
+	(code_region::make_markup_node): New.
+	(function_region::print_dump_widget_label): Rename to...
+	(function_region::print_region_for_dump_widget_label): ...this.
+	(function_region::accept_node_visitor): New.
+	(function_region::to_json): New.
+	(function_region::make_markup_node): New.
+	(label_region::print_dump_widget_label): Rename to...
+	(label_region::print_region_for_dump_widget_label): ...this.
+	(label_region::accept_node_visitor): New.
+	(label_region::to_json): New.
+	(label_region::make_markup_node): New.
+	(stack_region::print_dump_widget_label): Rename to...
+	(stack_region::print_region_for_dump_widget_label): ...this.
+	(stack_region::accept_node_visitor): New.
+	(stack_region::to_json): New.
+	(stack_region::make_markup_node): New.
+	(heap_region::print_dump_widget_label): Rename to...
+	(heap_region::print_region_for_dump_widget_label): ...this.
+	(heap_region::accept_node_visitor): New.
+	(heap_region::to_json): New.
+	(heap_region::make_markup_node): New.
+	(thread_local_region::print_dump_widget_label): Rename to...
+	(thread_local_region::print_region_for_dump_widget_label): ...this.
+	(thread_local_region::accept_node_visitor): New.
+	(thread_local_region::to_json): New.
+	(thread_local_region::make_markup_node): New.
+	(root_region::print_dump_widget_label): Rename to...
+	(root_region::print_region_for_dump_widget_label): ...this.
+	(root_region::accept_node_visitor): New.
+	(root_region::to_json): New.
+	(root_region::make_markup_node): New.
+	(symbolic_region::print_dump_widget_label): Rename to...
+	(symbolic_region::print_region_for_dump_widget_label): ...this.
+	(symbolic_region::accept_node_visitor): New.
+	(symbolic_region::to_json): New.
+	(symbolic_region::make_markup_node): New.
+	(symbolic_region::add_dump_widget_children): Update signature.
+	(decl_region::decl_region): Replace m_ctor with
+	m_ctor_bit_contents.
+	(decl_region::print_dump_widget_label): Rename to...
+	(decl_region::print_region_for_dump_widget_label): ...this.
+	(decl_region::accept_node_visitor): New.
+	(decl_region::to_json): New.
+	(decl_region::make_markup_node): New.
+	(decl_region::maybe_get_bit_contents_for_initializer): New.
+	(decl_region::get_bit_contents_for_constructor): New.
+	(decl_region::maybe_get_bit_vector_for_initializer): New.
+	(decl_region::calc_svalue_for_constructor): Drop.
+	(decl_region::m_ctor_svalue): Replace with...
+	(decl_region::m_ctor_bit_contents): ...this.
+	(field_region::print_dump_widget_label): Rename to...
+	(field_region::print_region_for_dump_widget_label): ...this.
+	(field_region::accept_node_visitor): New.
+	(field_region::to_json): New.
+	(field_region::make_markup_node): New.
+	(field_region::get_relative_concrete_offset): Drop.
+	(field_region::get_relative_symbolic_offset): Drop.
+	(field_region::maybe_get_bit_offset_relative_to_parent): New.
+	(field_region::maybe_get_byte_offset_relative_to_parent): New.
+	(element_region::print_dump_widget_label): Rename to...
+	(element_region::print_region_for_dump_widget_label): ...this.
+	(element_region::accept_node_visitor): New.
+	(element_region::to_json): New.
+	(element_region::make_markup_node): New.
+	(element_region::get_relative_concrete_offset): Drop.
+	(element_region::get_relative_symbolic_offset): Drop.
+	(element_region::maybe_get_bit_offset_relative_to_parent): New.
+	(element_region::maybe_get_byte_offset_relative_to_parent): New.
+	(offset_region::print_dump_widget_label): Rename to...
+	(offset_region::print_region_for_dump_widget_label): ...this.
+	(offset_region::add_dump_widget_children): Update signature.
+	(offset_region::accept_node_visitor): New.
+	(offset_region::to_json): New.
+	(offset_region::make_markup_node): New.
+	(offset_region::get_relative_concrete_offset): Drop.
+	(offset_region::get_relative_symbolic_offset): Drop.
+	(offset_region::maybe_get_bit_offset_relative_to_parent): New.
+	(offset_region::maybe_get_byte_offset_relative_to_parent): New.
+	(sized_region::print_dump_widget_label): Rename to...
+	(sized_region::print_region_for_dump_widget_label): ...this.
+	(sized_region::add_dump_widget_children): Update signature.
+	(sized_region::accept_node_visitor): New.
+	(sized_region::to_json): New.
+	(sized_region::make_markup_node): New.
+	(sized_region::get_byte_size): Drop.
+	(sized_region::get_bit_size): Drop.
+	(sized_region::get_byte_size_sval): Drop.
+	(sized_region::get_bit_size_sval): Drop.
+	(sized_region::maybe_get_byte_size): New.
+	(sized_region::maybe_get_bit_size): New.
+	(cast_region::print_dump_widget_label): Rename to...
+	(cast_region::print_region_for_dump_widget_label): ...this.
+	(cast_region::accept_node_visitor): New.
+	(cast_region::to_json): New.
+	(cast_region::make_markup_node): New.
+	(cast_region::maybe_get_bit_offset_relative_to_parent): New.
+	(cast_region::get_relative_concrete_offset): Drop.
+	(cast_region::maybe_get_byte_offset_relative_to_parent): New.
+	(heap_allocated_region::print_dump_widget_label): Rename to...
+	(heap_allocated_region::print_region_for_dump_widget_label):
+	...this.
+	(heap_allocated_region::accept_node_visitor): New.
+	(heap_allocated_region::to_json): New.
+	(heap_allocated_region::make_markup_node): New.
+	(alloca_region::print_dump_widget_label): Rename to...
+	(alloca_region::print_region_for_dump_widget_label): ...this.
+	(alloca_region::accept_node_visitor): New.
+	(alloca_region::to_json): New.
+	(alloca_region::make_markup_node): New.
+	(string_region::print_dump_widget_label): Rename to...
+	(string_region::print_region_for_dump_widget_label): ...this.
+	(string_region::accept_node_visitor): New.
+	(string_region::to_json): New.
+	(string_region::make_markup_node): New.
+	(bit_range_region::key_t::key_t): Convert from bit_range to
+	concrete_bit_range.
+	(bit_range_region::key_t::hash): Likewise.
+	(bit_range_region::key_t::m_bits): Convert from bit_range to
+	concrete_bit_range.
+	(bit_range_region::bit_range_region): Likewise.
+	(bit_range_region::print_dump_widget_label): Rename to...
+	(bit_range_region::print_region_for_dump_widget_label): ...this.
+	(bit_range_region::accept_node_visitor): New.
+	(bit_range_region::to_json): New.
+	(bit_range_region::make_markup_node): New.
+	(bit_range_region::get_bits): New.
+	(bit_range_region::maybe_get_byte_size): New.
+	(bit_range_region::maybe_get_bit_size): New.
+	(bit_range_region::maybe_get_bit_offset_relative_to_parent): New.
+	(bit_range_region::maybe_get_byte_offset_relative_to_parent): New.
+	(bit_range_region::get_byte_size): Delete.
+	(bit_range_region::get_bit_size): Delete.
+	(bit_range_region::get_byte_size_sval): Delete.
+	(bit_range_region::get_bit_size_sval): Delete.
+	(bit_range_region::get_relative_concrete_offset): Delete.
+	(bit_range_region::get_relative_symbolic_offset): Delete.
+	(bit_range_region::m_bits): Convert from bit_range to
+	concrete_bit_range.
+	(var_arg_region::print_dump_widget_label): Rename to...
+	(var_arg_region::print_region_for_dump_widget_label): ...this.
+	(var_arg_region::accept_node_visitor): New.
+	(var_arg_region::to_json): New.
+	(var_arg_region::make_markup_node): New.
+	(errno_region::print_dump_widget_label): Rename to...
+	(errno_region::print_region_for_dump_widget_label): ...this.
+	(errno_region::accept_node_visitor): New.
+	(errno_region::to_json): New.
+	(errno_region::make_markup_node): New.
+	(private_region::print_dump_widget_label): Rename to...
+	(private_region::print_region_for_dump_widget_label): ...this.
+	(private_region::accept_node_visitor): New.
+	(private_region::to_json): New.
+	(private_region::make_markup_node): New.
+	(unknown_region::print_dump_widget_label): Rename to...
+	(unknown_region::print_region_for_dump_widget_label): ...this.
+	(unknown_region::accept_node_visitor): New.
+	(unknown_region::to_json): New.
+	(unknown_region::make_markup_node): New.
+	* setjmp-longjmp.cc: Include "diagnostics/markup.h".
+	(setjmp_svalue::print_dump_widget_label): Rename to...
+	(setjmp_svalue::print_svalue_for_dump_widget_label): ...this.
+	(setjmp_svalue::add_dump_widget_children): Update for param
+	change.
+	(setjmp_svalue::accept_node_visitor): New.
+	(setjmp_svalue::to_json): New.
+	(setjmp_svalue::make_markup_node): New.
+	* sm-fd.cc: Port from region_svalue to symbolic::pointer. Use
+	mark_region_as_unknown rather than trying to create a conjured
+	value.
+	* sm-file.cc: Port from region_svalue to symbolic::pointer. Use
+	mark_region_as_conjured rather than trying to create a conjured
+	value.
+	* sm-malloc.cc (malloc_state_machine::get_default_state): Handle
+	all zeros.  Port from region_svalue to symbolic::pointer.
+	(add_state_to_state_graph): Port from region_svalue to
+	symbolic::pointer.
+	* sm-taint.cc (taint_diagnostic::describe_state_change):
+	Bulletproof against null change.m_expr.
+	(region_model::check_memory_range_for_taint): New.
+	(region_model::check_region_for_taint): Drop casts in RK_OFFSET
+	case.
+	* state-purge.cc (same_binding_p): Replace store_manager param
+	with region_model_manager.  Reimplement from binding_key to
+	symbolic::memory_range.
+	(fully_overwrites_p): Update for above change.
+	* store.cc (dump_svalue_set): Delete.
+	(uncertainty_t::on_maybe_bound_value): New.
+	(uncertainty_t::dump_to_pp): Delete.
+	(uncertainty_t::on_mutable_value_at_unknown_call): New.
+	(uncertainty_t::unknown_sm_state_p): New.
+	(uncertainty_t::add_bit_contents): New.
+	(uncertainty_t::dump): Reimplement using dump widget.
+	(uncertainty_t::dump_to_logger): New.
+	(binding_key::make): Delete.
+	(binding_key::dump): Delete.
+	(binding_key::get_desc): Delete.
+	(binding_key::cmp_ptrs): Delete.
+	(binding_key::cmp): Delete.
+	(bit_range::from_mask): Delete.
+	(concrete_binding::dump_to_pp): Delete.
+	(concrete_binding::overlaps_p): Delete.
+	(concrete_binding::get_byte_range): Delete.
+	(concrete_binding::cmp_ptr_ptr): Delete.
+	(symbolic_binding::dump_to_pp): Delete.
+	(symbolic_binding::cmp_ptr_ptr): Delete.
+	(concrete_binding_map::dump_to_pp): Delete.
+	(concrete_binding_map::dump): Delete.
+	(concrete_binding_map::add_to_tree_widget): Delete.
+	(concrete_binding_map::validate): Delete.
+	(concrete_binding_map::cmp): Delete.
+	(concrete_binding_map::get_any_exact_binding): Delete.
+	(concrete_binding_map::calc_complexity): Delete.
+	(concrete_binding_map::remove_overlapping_binding): Delete.
+	(concrete_binding_map::remove_overlapping_bindings): Delete.
+	(concrete_binding_map::get_overlapping_bindings): Delete.
+	(binding_map::const_iterator::operator==): Delete.
+	(binding_map::const_iterator::operator++): Delete.
+	(binding_map::const_iterator::operator*): Delete.
+	(binding_map::const_iterator::get_svalue): Delete.
+	(binding_map::iterator::operator==): Delete.
+	(binding_map::iterator::operator++): Delete.
+	(binding_map::iterator::operator*): Delete.
+	(binding_map::binding_map): Delete.
+	(binding_map::binding_map): Delete.
+	(binding_map::operator=): Delete.
+	(binding_map::operator==): Delete.
+	(binding_map::hash): Delete.
+	(binding_map::get): Delete.
+	(binding_map::put): Delete.
+	(binding_map::overwrite): Delete.
+	(binding_map::remove): Delete.
+	(binding_map::begin): Delete.
+	(binding_map::end): Delete.
+	(binding_map::begin): Delete.
+	(binding_map::end): Delete.
+	(binding_map::elements): Delete.
+	(binding_map::dump_to_pp): Delete.
+	(binding_map::dump): Delete.
+	(binding_map::validate): Delete.
+	(binding_map::to_json): Delete.
+	(add_binding_to_tree_widget): Delete.
+	(binding_map::add_to_tree_widget): Delete.
+	(get_subregion_within_ctor): Move to initializers.cc.
+	(get_subregion_within_ctor_for_ctor_pair): Likewise.
+	(get_svalue_for_ctor_val): Delete, reusing in implementation of
+	initializers.cc.
+	(concrete_binding_map::apply_ctor_to_region): Likewise.
+	(concrete_binding_map::apply_ctor_val_to_range): Likewise.
+	(concrete_binding_map::apply_ctor_pair_to_child_region): Likewise.
+	(binding_map::get_overlapping_bindings): Delete.
+	(binding_map::remove_overlapping_bindings): Delete.
+	(binding_cluster::binding_cluster): Reimplement, adding
+	assertions.
+	(binding_cluster::to_json): New.
+	(binding_cluster::make_dump_widget): New.
+	(binding_cluster::get_bits): New.
+	(binding_cluster::set_bits): New.
+	(binding_cluster::mark_as_untracked): New.
+	(binding_cluster::operator=): Reimplement.
+	(binding_cluster::operator==): Reimplement.
+	(binding_cluster::hash): Reimplement.
+	(binding_cluster::dump_to_pp): Delete.
+	(binding_cluster::dump): Reimplement.
+	(binding_cluster::validate): Convert to nop-op
+	(binding_cluster::bind): Delete.
+	(binding_cluster::bind_key): Delete.
+	(binding_cluster::bind_compound_sval): Delete.
+	(binding_cluster::clobber_region): Delete.
+	(binding_cluster::purge_region): Delete.
+	(binding_cluster::fill_region): Delete.
+	(binding_cluster::zero_fill_region): Delete.
+	(binding_cluster::mark_region_as_unknown): Delete.
+	(binding_cluster::purge_state_involving): Delete.
+	(binding_cluster::get_binding): Delete.
+	(binding_cluster::get_binding_recursive): Delete.
+	(binding_cluster::get_any_binding): Delete.
+	(binding_cluster::maybe_get_compound_binding): Delete.
+	(binding_cluster::mark_as_untracked): New.
+	(binding_cluster::remove_overlapping_bindings): Delete.
+	(binding_cluster::purge_state_involving): New.
+	(binding_cluster::can_merge_p): Reimplement.
+	(class possibly_overwritten_values_visitor): New.
+	(binding_cluster::make_unknown_relative_to): Reimplement.
+	(binding_cluster::for_each_value): New.
+	(binding_cluster::on_unknown_fncall): Drop store_manager.
+	Delegate to...
+	(binding_cluster::mark_region_as_conjured): ...this new function.
+	(binding_cluster::on_unknown_fncall): Likewise.
+	(binding_cluster::on_asm): Reimplement.
+	(binding_cluster::escaped_p): Treat symbolic regions arising from
+	dereferencing a conjured pointer as having escaped.
+	(binding_cluster::redundant_p): Add store and baseline_state
+	params, and use them to compare against the implicit contents.
+	(append_pathvar_with_type): Make non-static.  Handle type being
+	null.
+	(binding_cluster::get_representative_path_vars): Reimplement,
+	delegating to m_contents.
+	(binding_cluster::get_any_value): Delete.
+	(binding_cluster::maybe_get_simple_value): Delete.
+	(binding_cluster::poison_any_pointers_to_descendents): New.
+	(binding_cluster::bits_live_p): New.
+	(store_manager::get_logger): Delete.
+	(store_manager::get_concrete_binding): Delete.
+	(store_manager::get_symbolic_binding): Delete.
+	(store::store): Initialize m_node_mgr.
+	(store::dump_to_pp): Delete.
+	(store::dump): Reimplement using dump widget.
+	(get_string_for_baseline_state): New.
+	(store::make_dump_widget): Update for new signature.
+	(store::get_bits): New.
+	(store::get_any_binding): Delete.
+	(store::get_bit_contents): New.
+	(store::set_bits): New.
+	(store::set_value): Delete.
+	(store::set_bit_contents_raw): New.
+	(store::eval_alias_1): Use derived_from_initial_value_p rather
+	than comparing against SK_INITIAL.
+	(store::get_baseline_contents): New.
+	(store::get_implicit_contents): New.
+	(store::on_maybe_live_values): Drop store_manager.  Add
+	baseline_state.
+	(store::bits_live_p): New.
+	(store::fill_region): Delete.
+	(store::zero_fill_region): Delete.
+	(store::clobber_region): Reimplement.
+	(store::purge_region): Reimplement.
+	(store::mark_region_as_unknown): Reimplement.
+	(store::purge_state_involving): Generalize from svalue
+	to symbolic::node.
+	(store::get_or_create_cluster): Drop store_manager param.
+	Add baseline_state param and use it to get the implicit contents
+	of the cluster and pass it to the binding_cluster ctor.
+	(store::can_merge_p): Drop store_manager param.  Update for
+	changes to get_or_create_cluster and binding_cluster::can_merge_p.
+	(store::mark_as_escaped): Drop store_manager param.  Add
+	baseline_state param and pass it to get_or_create_cluster.
+	(store::on_unknown_fncall): Drop store_manager param.
+	(store::mark_region_as_conjured): New.
+	(store::get_representative_path_vars): Use value_set rather
+	than svalue_set.
+	(store::remove_overlapping_bindings): Delete.
+	(struct region_finder): Delete.
+	(store::canonicalize): Convert to no-op.
+	(needs_loop_replay_fixup_p): Generalize from svalue to
+	symbolic::node.
+	(store::loop_replay_fixup): Add baseline_state.  Port to new
+	implementation.
+	(store::replay_call_summary): Drop store_manager.  Convert return
+	type to bool and support failure.
+	(store::replay_call_summary_cluster): Likewise.  Port to new
+	implementation.
+	(store::replay_call_summary_bit_contents): New.
+	(selftest::assert_bit_range_from_mask_eq): Delete.
+	(ASSERT_BIT_RANGE_FROM_MASK_EQ): Delete.
+	(selftest::assert_no_bit_range_from_mask_eq): Delete.
+	(ASSERT_NO_BIT_RANGE_FROM_MASK): Delete.
+	(selftest::test_bit_range_from_mask): Delete.
+	(selftest::assert_overlap): Delete.
+	(selftest::assert_disjoint): Delete.
+	(ASSERT_OVERLAP): Delete.
+	(ASSERT_DISJOINT): Delete.
+	(selftest::test_binding_key_overlap): Delete.
+	(selftest::test_binding_map_ops): Delete.
+	(selftest::analyzer_store_cc_tests): Drop calls to deleted tests.
+	* store.h: Add includes of "analyzer/concrete-ranges.h",
+	"analyzer/symbolic-ranges.h", "analyzer/symbolic-bit-contents.h",
+	and "analyzer/symbolic-memory-ranges.h".  Rewrite the introductory
+	comment.
+	(class uncertainty_t): Convert from svalue to symbolic::value_node
+	throughout.
+	(class binding_key): Delete.
+	(bit_range::from_mask): Delete.
+	(convert_from_bit_range): New.
+	(convert_to_bit_range): New.
+	(class concrete_binding): Delete.
+	(is_a_helper <const ana::concrete_binding *>::test): Delete.
+	(struct default_hash_traits<ana::concrete_binding>): Delete.
+	(class symbolic_binding): Delete.
+	(struct default_hash_traits<ana::symbolic_binding>): Delete.
+	(class concrete_binding_map): Delete.
+	(class binding_map): Delete.
+	(class binding_cluster): Flesh out leading comment.
+	(binding_cluster::const_iterator_t): Delete.
+	(binding_cluster::iterator_t): Delete.
+	(binding_cluster::binding_cluster): Drop store_manager, add
+	node_manager and bit_contents.
+	(binding_cluster::dump_to_pp): Delete.
+	(binding_cluster::dump): Drop param.
+	(binding_cluster::make_dump_widget): Update signature.
+	(binding_cluster::bind): Delete.
+	(binding_cluster::clobber_region): Delete.
+	(binding_cluster::purge_region): Delete.
+	(binding_cluster::fill_region): Delete.
+	(binding_cluster::zero_fill_region): Delete.
+	(binding_cluster::mark_region_as_unknown): Delete.
+	(binding_cluster::purge_state_involving): Update signature.
+	(binding_cluster::get_binding): Delete.
+	(binding_cluster::get_binding_recursive): Delete.
+	(binding_cluster::get_any_binding): Delete.
+	(binding_cluster::maybe_get_compound_binding): Delete.
+	(binding_cluster::remove_overlapping_bindings): Delete.
+	(binding_cluster::for_each_value): Update signature.
+	(binding_cluster::get_bits): New.
+	(binding_cluster::set_bits): New.
+	(binding_cluster::get_bit_contents): New.
+	(binding_cluster::set_bit_contents): New.
+	(binding_cluster::mark_as_untracked): New.
+	(binding_cluster::can_merge_p): Drop store_manager.
+	(binding_cluster::make_unknown_relative_to): Likewise. Add
+	baseline_state.
+	(binding_cluster::on_unknown_fncall): Drop store_manager.
+	(binding_cluster::mark_region_as_conjured): New.
+	(binding_cluster::on_asm): Drop store_manager.
+	(binding_cluster::redundant_p): Add store and baseline_state
+	params.
+	(binding_cluster::empty_p): Delete.
+	(binding_cluster::get_representative_path_vars): Update from
+	svalue_set to value_set.
+	(binding_cluster::maybe_get_simple_value): Delete.
+	(binding_cluster::begin): Delete.
+	(binding_cluster::end): Delete.
+	(binding_cluster::poison_any_pointers_to_descendents): New.
+	(binding_cluster::get_map): Delete.
+	(binding_cluster::bits_live_p): New.
+	(binding_cluster::get_any_value): Delete.
+	(binding_cluster::bind_compound_sval): Delete.
+	(binding_cluster::bind_key): Delete.
+	(binding_cluster::m_node_mgr): New field.
+	(binding_cluster::m_map): Replace with..
+	(binding_cluster::m_contents): ...this.
+	(store::store): Add node_mgr param.
+	(store::dump_to_pp): Delete.
+	(store::dump): Drop param.
+	(store::make_dump_widget): Update signature.
+	(store::get_any_binding): Delete.
+	(store::get_bits): New.
+	(store::get_bit_contents): New.
+	(store::set_value): Delete.
+	(store::clobber_region): Drop store_manager.  Add baseline_state
+	and region_model_manager.
+	(store::purge_region): Drop store_manager.
+	(store::fill_region): Drop.
+	(store::zero_fill_region): Drop.
+	(store::void mark_region_as_unknown): Drop store_manager.  Add
+	baseline_state.  Drop maybe_live_values.
+	(store::set_bits): New.
+	(store::set_bit_contents_raw): New.
+	(store::purge_state_involving): Generalize to symbolic::node.
+	(store::get_or_create_cluster): Drop store manager.  Add
+	baseline_state.
+	(store::can_merge_p): Drop store_manager.
+	(store::mark_as_escaped): Drop store_manager.  Add baseline_state.
+	(store::on_unknown_fncall): Drop store_manager.
+	(store::mark_region_as_conjured): New.
+	(store::get_representative_path_vars): Use value_set.
+	(store::canonicalize): Drop store_manager.
+	(store::loop_replay_fixup): Add baseline_state.
+	(store::on_maybe_live_values): Drop store_manager.  Add
+	baseline_state.
+	(store::replay_call_summary): Convert return type to bool.
+	(store::replay_call_summary_cluster): Likewise.
+	(store::replay_call_summary_bit_contents): New.
+	(store::bits_live_p): New.
+	(store::remove_overlapping_bindings): Delete.
+	(store::get_implicit_contents): New.
+	(store::get_baseline_contents): New.
+	(store::m_node_mgr): New field.
+	(store::m_called_unknown_fn): Update comment.
+	(class store_manager): Delete.
+	* string-scan.cc: New file.
+	* string-scan.h: New file.
+	* svalue.cc: Add includes of "diagnostics/markup.h" and
+	"analyzer/liveness-context.h".
+	(svalue::print_dump_widget_label): New.
+	(svalue::add_dump_widget_children): New.
+	(svalue::dump): Reimplement.
+	(svalue::to_json): Delete.
+	(svalue::make_json_obj): New.
+	(svalue::maybe_print_for_user): Handle SK_BIT_VECTOR.
+	(svalue::make_dump_widget): Delete in favor of
+	node::make_dump_widget.
+	(svalue::for_each_svalue): New.
+	(svalue::has_concrete_size_p): New.
+	(svalue::maybe_get_region): Replace with...
+	(svalue::maybe_get_symbolic_pointer): ...this.
+	(svalue::can_merge_p): Add early accept for equal svalues.
+	Port from region_svalue to symbolic::pointer.
+	(svalue::live_p): Drop.
+	(svalue::implicitly_live_p): Drop.
+	(cmp_csts_and_types): Make non-static.
+	(svalue::cmp_ptr): Reimplement in terms of ID comparison.
+	(class involvement_visitor): Reimplement in symbolic-nodes.cc.
+	(svalue::involves_p): Delete in favor of node::involves_p.
+	(svalue::extract_bit_range): Delete.
+	(svalue::maybe_fold_bits_within): Delete.
+	(svalue::maybe_get_deref_base_region): Port SK_REGION case
+	to SK_POINTER.
+	(svalue::maybe_get_type_from_typeinfo): Port to symbolic::pointer.
+	(svalue::conjured_p): New.
+	(svalue::derived_from_initial_value_p): New.
+	(region_svalue::key_t::operator<): Replace with...
+	(pointer_svalue::key_t::operator<): ...this.
+	(pointer_svalue::key_t::get_complexity): New.
+	(region_svalue::dump_to_pp): Replace with...
+	(pointer_svalue::dump_to_pp): ...this.
+	(region_svalue::print_dump_widget_label): Replace with...
+	(pointer_svalue::print_svalue_for_dump_widget_label): ...this.
+	(region_svalue::add_dump_widget_children): Replace with...
+	(pointer_svalue::add_dump_widget_children): ...this.
+	(region_svalue::accept): Replace with...
+	(pointer_svalue::accept): ...this.
+	(pointer_svalue::accept_node_visitor): New.
+	(pointer_svalue::to_json): New.
+	(region_svalue::implicitly_live_p): Replace with...
+	(pointer_svalue::implicitly_live_p): ...this.
+	(pointer_svalue::make_markup_node): New.
+	(region_svalue::eval_condition): Delete in favor of
+	symbolic::pointer::eval_condition.
+	(constant_svalue::print_dump_widget_label): Rename to...
+	(constant_svalue::print_svalue_for_dump_widget_label): ...this.
+	(constant_svalue::add_dump_widget_children): Delete.
+	(constant_svalue::accept_node_visitor): New.
+	(constant_svalue::to_json): New.
+	(constant_svalue::make_markup_node): New.
+	(constant_svalue::implicitly_live_p): Update signature.
+	(constant_svalue::maybe_fold_bits_within): Delete.
+	(unknown_svalue::print_dump_widget_label): Convert to...
+	(unknown_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unknown_svalue::add_dump_widget_children): Delete.
+	(unknown_svalue::accept_node_visitor): New.
+	(unknown_svalue::make_markup_node): New.
+	(unknown_svalue::maybe_fold_bits_within): Delete.
+	(poisoned_svalue::print_dump_widget_label): Rename to...
+	(poisoned_svalue::print_svalue_for_dump_widget_label): ...this.
+	(poisoned_svalue::add_dump_widget_children): Update signature.
+	(poisoned_svalue::accept_node_visitor): New.
+	(poisoned_svalue::to_json): New.
+	(poisoned_svalue::make_markup_node): New.
+	(poisoned_svalue::maybe_fold_bits_within): Delete.
+	(initial_svalue::initial_svalue): Move here from svalue.h.
+	Add assertions that m_reg is non-null and a base region.
+	(initial_svalue::print_dump_widget_label): Convert to...
+	(initial_svalue::print_svalue_for_dump_widget_label): ...this.
+	(initial_svalue::add_dump_widget_children): Update signature.
+	Chain up to base class.
+	(initial_svalue::accept_node_visitor): New.
+	(initial_svalue::to_json): New.
+	(initial_svalue::implicitly_live_p): Update for signature change.
+	(unaryop_svalue::print_dump_widget_label): Convert to...
+	(unaryop_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unaryop_svalue::add_dump_widget_children): Update signature.
+	Chain up to base class.
+	(unaryop_svalue::accept_node_visitor): New.
+	(unaryop_svalue::to_json): New.
+	(unaryop_svalue::make_markup_node): New.
+	(unaryop_svalue::implicitly_live_p): Update for signature change.
+	(unaryop_svalue::maybe_fold_bits_within): Delete.
+	(binop_svalue::print_dump_widget_label): Convert to...
+	(binop_svalue::print_svalue_for_dump_widget_label): ...this.
+	(binop_svalue::add_dump_widget_children): Update signature.
+	Chain up to base class.
+	(binop_svalue::accept_node_visitor): New.
+	(binop_svalue::to_json): New.
+	(binop_svalue::make_markup_node): New.
+	(binop_svalue::implicitly_live_p): Update for signature change.
+	(sub_svalue::key_t::operator<): Delete.
+	(sub_svalue::sub_svalue): Delete.
+	(sub_svalue::dump_to_pp): Delete.
+	(sub_svalue::print_dump_widget_label): Delete.
+	(sub_svalue::add_dump_widget_children): Delete.
+	(sub_svalue::accept): Delete.
+	(sub_svalue::implicitly_live_p): Delete.
+	(repeated_svalue::key_t::operator<): Delete.
+	(repeated_svalue::repeated_svalue): Delete.
+	(repeated_svalue::dump_to_pp): Delete.
+	(repeated_svalue::print_dump_widget_label): Delete.
+	(repeated_svalue::add_dump_widget_children): Delete.
+	(repeated_svalue::accept): Delete.
+	(repeated_svalue::all_zeroes_p): Delete.
+	(repeated_svalue::maybe_fold_bits_within): Delete.
+	(bits_within_svalue::key_t::operator<): Delete.
+	(bits_within_svalue::bits_within_svalue): Delete.
+	(bits_within_svalue::dump_to_pp): Delete.
+	(bits_within_svalue::print_dump_widget_label): Delete.
+	(bits_within_svalue::add_dump_widget_children): Delete.
+	(bits_within_svalue::maybe_fold_bits_within): Delete.
+	(bits_within_svalue::accept): Delete.
+	(bits_within_svalue::implicitly_live_p): Delete.
+	(svalue_from_bit_vector::key_t::operator<): New.
+	(svalue_from_bit_vector::svalue_from_bit_vector): New.
+	(svalue_from_bit_vector::dump_to_pp): New.
+	(svalue_from_bit_vector::print_svalue_for_dump_widget_label): New.
+	(svalue_from_bit_vector::add_dump_widget_children): New.
+	(svalue_from_bit_vector::accept_node_visitor): New.
+	(svalue_from_bit_vector::to_json): New.
+	(svalue_from_bit_vector::make_markup_node): New.
+	(svalue_from_bit_vector::accept): New.
+	(svalue_from_bit_vector::implicitly_live_p): New.
+	(svalue_from_bit_vector::all_zeroes_p): New.
+	(svalue_from_bit_vector::maybe_get_value_range_1): New.
+	(svalue_from_bit_vector::conjured_p): New.
+	(widening_svalue::print_dump_widget_label): Rename to...
+	(widening_svalue::print_svalue_for_dump_widget_label): ...this.
+	(widening_svalue::add_dump_widget_children): Update for signature
+	change.  Chain up to svalue implementation.
+	(widening_svalue::accept_node_visitor): New.
+	(widening_svalue::to_json): New.
+	(widening_svalue::make_markup_node): New.
+	(placeholder_svalue::print_dump_widget_label): Rename to...
+	(placeholder_svalue::print_svalue_for_dump_widget_label): ...this.
+	(placeholder_svalue::add_dump_widget_children): Delete.
+	(placeholder_svalue::accept_node_visitor): New.
+	(placeholder_svalue::to_json): New.
+	(placeholder_svalue::make_markup_node): New.
+	(unmergeable_svalue::print_dump_widget_label): Rename to...
+	(unmergeable_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unmergeable_svalue::add_dump_widget_children): Update for
+	signature change  Chain up to svalue implementation.
+	(unmergeable_svalue::implicitly_live_p): Update for signature
+	change.
+	(unmergeable_svalue::accept_node_visitor): New.
+	(unmergeable_svalue::to_json): New.
+	(unmergeable_svalue::make_markup_node): New.
+	(compound_svalue::key_t::operator<): Delete.
+	(compound_svalue::compound_svalue): Delete.
+	(compound_svalue::dump_to_pp): Delete.
+	(compound_svalue::print_dump_widget_label): Delete.
+	(compound_svalue::add_dump_widget_children): Delete.
+	(compound_svalue::accept): Delete.
+	(compound_svalue::maybe_fold_bits_within): Delete.
+	(conjured_svalue::key_t::operator<): Delete.
+	(conjured_svalue::dump_to_pp): Delete.
+	(conjured_svalue::print_dump_widget_label): Delete.
+	(conjured_svalue::add_dump_widget_children): Delete.
+	(conjured_svalue::accept): Delete.
+	(conjured_svalue::lhs_value_p): Delete.
+	(asm_output_svalue::print_dump_widget_label): Rename to...
+	(asm_output_svalue::print_svalue_for_dump_widget_label): ...this.
+	(asm_output_svalue::add_dump_widget_children): Update for
+	signature change.  Chain up to svalue implementation.
+	(asm_output_svalue::accept_node_visitor): New.
+	(asm_output_svalue::to_json): New.
+	(make_markup_node): New.
+	(const_fn_result_svalue::dump_to_pp): Likewise.
+	(const_fn_result_svalue::print_dump_widget_label): Rename to...
+	(const_fn_result_svalue::print_svalue_for_dump_widget_label):
+	...this.
+	(const_fn_result_svalue::add_dump_widget_children): Update for
+	signature change.  Chain up to svalue implementation.
+	(const_fn_result_svalue::accept_node_visitor): New.
+	(const_fn_result_svalue::to_json): New.
+	(const_fn_result_svalue::make_markup_node): New.
+	* svalue.h: Drop include of "text-art/widget.h".  Add include of
+	"analyzer/symbolic-pointers.h.  Drop
+	"using text_art::dump_widget_info;"
+	(enum svalue_kind): Replace SK_REGION with SK_POINTER.
+	Drop SK_SUB, SK_REPEATED, SK_BITS_WITHIN, SK_COMPOUND, and
+	SK_CONJURED.  Add SK_BIT_VECTOR.
+	(class svalue): Update leading comment to show changes to subclass
+	hierarchy.  Inherit from symbolic::value_node rather than directly
+	from symbolic::node.
+	(svalue::dyn_cast_svalue): New.
+	(svalue::to_json): Delete in favor of node::to_json.
+	(svalue::make_dump_widget): Delete in favor of
+	node::make_dump_widget.
+	(svalue::print_dump_widget_label): New.
+	(svalue::print_svalue_for_dump_widget_label): New.
+	(svalue::add_dump_widget_children): New.
+	(svalue::get_any_dump_color): New vfunc implementation.
+	(svalue::dyn_cast_region_svalue): Delete in favor of...
+	(svalue::dyn_cast_pointer_svalue): ...this.
+	(svalue::dyn_cast_sub_svalue): Delete vfunc.
+	(svalue::dyn_cast_repeated_svalue): Delete vfunc.
+	(svalue::dyn_cast_bits_within_svalue): Delete vfunc.
+	(svalue::dyn_cast_compound_svalue): Delete vfunc.
+	(svalue::dyn_cast_conjured_svalue): Delete vfunc.
+	(svalue::dyn_cast_svalue_from_bit_vector): New vfunc.
+	(svalue::for_each_svalue): New decl.
+	(svalue::has_concrete_size_p): New decl.
+	(svalue::maybe_get_region): Replace with...
+	(svalue::maybe_get_symbolic_pointer): ...this.
+	(svalue::live_p): Drop.
+	(svalue::implicitly_live_p): New.
+	(svalue::involves_p): Drop in favor of node::involves_p.
+	(svalue::extract_bit_range): Drop.
+	(svalue::maybe_fold_bits_within): Drop.
+	(svalue::conjured_p): New vfunc decl.
+	(svalue::derived_from_initial_value_p): New decl.
+	(svalue::svalue): Update for inheriting from value_node.
+	(svalue::make_json_obj): New decl.
+	(svalue::print_dump_widget_label): Drop in favor of
+	node::print_dump_widget_label.
+	(svalue::add_dump_widget_children): Drop in favor of
+	node::add_dump_widget_children.
+	(class region_svalue): Replace with...
+	(class pointer_svalue): ...this.
+	(is_a_helper <const region_svalue *>::test): Replace with...
+	(is_a_helper <const pointer_svalue *>::test): ...this.
+	(constant_svalue::key_t): Fix copy&paste error in leading comment.
+	(constant_svalue::print_dump_widget_label): Rename to...
+	(constant_svalue::print_svalue_for_dump_widget_label): ...this.
+	(constant_svalue::add_dump_widget_children): Update signature.
+	(constant_svalue::accept_node_visitor): New decl.
+	(constant_svalue::to_json): New decl.
+	(constant_svalue::make_markup_node): New decl.
+	(constant_svalue::implicitly_live_p): Update signature.
+	(constant_svalue::maybe_fold_bits_within): Delete.
+	(unknown_svalue::print_dump_widget_label): Rename to...
+	(unknown_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unknown_svalue::add_dump_widget_children): Update signature.
+	(unknown_svalue::accept_node_visitor): New decl.
+	(unknown_svalue::to_json): New decl.
+	(unknown_svalue::make_markup_node): New decl.
+	(unknown_svalue::maybe_fold_bits_within): Delete.
+	(enum class poison_kind): Move to common.h.
+	(poison_kind_to_str): Likewise.
+	(poisoned_svalue::print_dump_widget_label): Rename to...
+	(poisoned_svalue::print_svalue_for_dump_widget_label): ...this.
+	(poisoned_svalue::add_dump_widget_children): Update signature.
+	(poisoned_svalue::accept_node_visitor): New decl.
+	(poisoned_svalue::to_json): New decl.
+	(poisoned_svalue::make_markup_node): New decl.
+	(poisoned_svalue::maybe_fold_bits_within): Delete.
+	(setjmp_svalue::print_dump_widget_label): Rename to...
+	(setjmp_svalue::print_svalue_for_dump_widget_label): ...this.
+	(setjmp_svalue::add_dump_widget_children): Update signature.
+	(setjmp_svalue::accept_node_visitor): New decl.
+	(setjmp_svalue::to_json): New decl.
+	(setjmp_svalue::make_markup_node): New decl.
+	(class initial_svalue): Flesh out leading comment.
+	(initial_svalue::initial_svalue): Move ctor implementation to
+	svalue.cc.
+	(initial_svalue::print_dump_widget_label): Rename to...
+	(initial_svalue::print_svalue_for_dump_widget_label): ...this.
+	(initial_svalue::add_dump_widget_children): Update signature.
+	(initial_svalue::accept_node_visitor): New decl.
+	(initial_svalue::to_json): New decl.
+	(initial_svalue::make_markup_node): New decl.
+	(initial_svalue::implicitly_live_p): Update signature.
+	(class unaryop_svalue): Flesh out leading comment.
+	(unaryop_svalue::print_dump_widget_label): Rename to...
+	(unaryop_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unaryop_svalue::add_dump_widget_children): Update signature.
+	(unaryop_svalue::accept_node_visitor): New decl.
+	(unaryop_svalue::to_json): New decl.
+	(unaryop_svalue::make_markup_node): New decl.
+	(unaryop_svalue::implicitly_live_p): Update signature.
+	(unaryop_svalue::maybe_fold_bits_within): Delete.
+	(class binop_svalue): Flesh out leading comment.
+	(binop_svalue::print_dump_widget_label): Rename to...
+	(binop_svalue::print_svalue_for_dump_widget_label): ...this.
+	(binop_svalue::add_dump_widget_children): Update signature.
+	(binop_svalue::accept_node_visitor): New decl.
+	(binop_svalue::to_json): New decl.
+	(binop_svalue::make_markup_node): New decl.
+	(binop_svalue::implicitly_live_p): Update signature.
+	(class sub_svalue): Delete.
+	(is_a_helper <const sub_svalue *>::test): Delete.
+	(class repeated_svalue): Delete.
+	(is_a_helper <const repeated_svalue *>::test): Delete.
+	(class bits_within_svalue): Delete.
+	(is_a_helper <const bits_within_svalue *>::test): Delete.
+	(class svalue_from_bit_vector): New.
+	(is_a_helper <const svalue_from_bit_vector *>::test): New.
+	(class unmergeable_svalue): Flesh out leading comment.
+	(unmergeable_svalue::print_dump_widget_label): Rename to...
+	(unmergeable_svalue::print_svalue_for_dump_widget_label): ...this.
+	(unmergeable_svalue::add_dump_widget_children): Update signature.
+	(unmergeable_svalue::accept_node_visitor): New decl.
+	(unmergeable_svalue::to_json): New decl.
+	(unmergeable_svalue::make_markup_node): New decl.
+	(unmergeable_svalue::implicitly_live_p): Update signature.
+	(placeholder_svalue::print_dump_widget_label): Rename to...
+	(placeholder_svalue::print_svalue_for_dump_widget_label): ...this.
+	(placeholder_svalue::add_dump_widget_children): Update signature.
+	(placeholder_svalue::accept_node_visitor): New decl.
+	(placeholder_svalue::to_json): New decl.
+	(placeholder_svalue::make_markup_node): New decl.
+	(class widening_svalue): Flesh out leading comment.
+	(widening_svalue::print_dump_widget_label): Rename to...
+	(widening_svalue::print_svalue_for_dump_widget_label): ...this.
+	(widening_svalue::add_dump_widget_children): Update signature.
+	(widening_svalue::accept_node_visitor): New decl.
+	(widening_svalue::to_json): New decl.
+	(widening_svalue::make_markup_node): New decl.
+	(class compound_svalue): Delete.
+	(is_a_helper <const compound_svalue *>::test): Delete.
+	(class conjured_purge): Move to symbolic-nodes.h.
+	(class conjured_svalue): Delete.
+	(is_a_helper <const conjured_svalue *>::test): Delete.
+	(class asm_output_svalue): Flesh out leading comment.
+	(asm_output_svalue::print_dump_widget_label): Rename to...
+	(asm_output_svalue::print_svalue_for_dump_widget_label): ...this.
+	(asm_output_svalue::add_dump_widget_children): Update signature.
+	(asm_output_svalue::accept_node_visitor): New decl.
+	(asm_output_svalue::to_json): New decl.
+	(asm_output_svalue::make_markup_node): New decl.
+	(const_fn_result_svalue::print_dump_widget_label): Rename to...
+	(const_fn_result_svalue::print_svalue_for_dump_widget_label): ...this.
+	(const_fn_result_svalue::add_dump_widget_children): Update signature.
+	(const_fn_result_svalue::accept_node_visitor): New decl.
+	(const_fn_result_svalue::to_json): New decl.
+	(const_fn_result_svalue::make_markup_node): New decl.
+	* symbolic-bit-contents.cc: New file.
+	* symbolic-bit-contents.h: New file.
+	* symbolic-bit-vectors.cc: New file.
+	* symbolic-bit-vectors.h: New file.
+	* symbolic-memory-offsets.h: New file.
+	* symbolic-memory-ranges.cc: New file.
+	* symbolic-memory-ranges.h: New file.
+	* symbolic-nodes.cc: Include "selftest.h", "diagnostics/markup.h",
+	"analyzer/symbolic-scalars.h", "analyzer/symbolic-bit-vectors.h",
+	and "analyzer/analyzer-selftests.h".
+	(symbolic::node::cmp_ids): Cast to int rarther than long.
+	(symbolic::node::cmp_ptr_ptr): New.
+	(symbolic::node::dump_to_pp): New.
+	(symbolic::node::dump): New.
+	(symbolic::node::dump_to_logger): New.
+	(symbolic::node::make_dump_widget): New.
+	(symbolic::node::make_json_obj): New.
+	(symbolic::node::start_any_dump_color): New.
+	(symbolic::node::end_any_dump_color): New.
+	(symbolic::node::get_text_art_tree_style): New.
+	(symbolic::node::involves_p): New.
+	(symbolic::value_node::implicitly_live_p): New.
+	(symbolic::pp_element_for_node::add_to_phase_2): New.
+	(symbolic::node_set<NodeClass>::contains): New.
+	(symbolic::node_set<NodeClass>::make_dump_widget): New.
+	(symbolic::node_set<NodeClass>::dump_to_pp): New.
+	(symbolic::node_set<NodeClass>::dump): New.
+	(symbolic::node_manager::node_manager): Create m_scalar_managers,
+	m_bit_contents_manager, and m_bit_vector_manager.
+	(symbolic::node_manager::log_stats): Add comment.
+	(symbolic::node_visitor::visit_bit_contents): New.
+	(symbolic::node_visitor::visit_bit_vector): New.
+	(symbolic::node_visitor::visit_region): New.
+	(symbolic::node_visitor::visit_scalar_unitless): New.
+	(symbolic::node_visitor::visit_scalar_bit): New.
+	(symbolic::node_visitor::visit_scalar_byte): New.
+	(symbolic::node_visitor::visit_svalue): New.
+	(symbolic::value_node_visitor::visit_bit_vector): New.
+	(symbolic::value_node_visitor::visit_svalue): New.
+	(selftest::assert_symbolic_node_dump_eq): New.
+	(selftest::assert_same_symbolic_node): New.
+	(selftest::assert_different_symbolic_node): New.
+	(selftest::assert_symbolic_node_markup_text_eq): New.
+	(selftest::test_node_visitor): New.
+	(selftest::analyzer_symbolic_nodes_cc_tests): New.
+	* symbolic-nodes.h: Include "pretty-print-markup.h",
+	"analyzer/analyzer-logging.h", "analyzer/units.h",
+	"analyzer/integer-with-unit.h", "text-art/tree-widget.h", and
+	"text-art/dump.h".
+	(node_manager::get_bit_contents_manager): New accessor.
+	(node_manager::get_bit_vector_manager): New accessor.
+	(node_manager::get_scalars): New accessor.
+	(node_manager::m_scalar_managers): New field.
+	(node_manager::m_bit_contents_manager): New field.
+	(node_manager::m_bit_vector_manager): New field.
+	(struct markup_context): New.
+	(class node): Expand leading comment.  Delete copy/move
+	constructors/assignment operators.
+	(node::cmp): New.
+	(node::cmp_ptr_ptr): New decl.
+	(node::dump_to_pp): New decl.
+	(node::dump_to_logger): New decl.
+	(node::dump): New decl.
+	(node::make_dump_widget): New decl.
+	(node::get_any_dump_color): New vfunc decl.
+	(node::accept_node_visitor): New vfunc decl.
+	(node::to_json): New vfunc decl.
+	(node::make_markup_node): New vfunc decl.
+	(node::involves_p): New decl.
+	(node::start_any_dump_color): New decl.
+	(node::end_any_dump_color): New decl.
+	(node::get_text_art_tree_style): New decl.
+	(node::make_json_obj): New decl.
+	(node::print_dump_widget_label): New decl.
+	(node::add_dump_widget_children): New decl.
+	(struct CompareNodeIds): New.
+	(class pp_element_for_node): New.
+	(class node_set): New.
+	(node_set<NodeClass>::union_): New.
+	(node_set<NodeClass>::operator<): New.
+	(struct node_dump_state): New.
+	(dump_node_tree_to_pp): New.
+	(dump_node_tree_to_file): New.
+	(dump_node_tree_to_stderr): New.
+	(dump_node_tree_to_logger): New.
+	(value_set): New.
+	(class value_node): New.
+	(class node_visitor): New.
+	(class value_node_visitor): New.
+	(struct baseline_key): New.
+	(class conjured_purge): New.
+	(selftest::assert_symbolic_node_dump_eq): New decl.
+	(ASSERT_SYMBOLIC_NODE_DUMP_EQ): New.
+	(selftest::assert_same_symbolic_node): New.
+	(ASSERT_SAME_SYMBOLIC_NODE): New.
+	(ASSERT_SAME_SYMBOLIC_NODE_AT): New.
+	(selftest::assert_different_symbolic_node): New.
+	(ASSERT_DIFFERENT_SYMBOLIC_NODE): New.
+	(selftest::assert_symbolic_node_markup_text_eq): New.
+	(ASSERT_SYMBOLIC_NODE_MARKUP_TEXT_EQ): New.
+	* symbolic-pointers.cc: New file.
+	* symbolic-pointers.h: New file.
+	* symbolic-ranges.cc: New file, partly adapted from ranges.cc.
+	* symbolic-ranges.h: New file.
+	* symbolic-scalars.cc: New file.
+	* symbolic-scalars.h: New file.
+	* type.h: New file.
+	* varargs.cc: (get_va_copy_arg): Update leading comment to reflect
+	that this is just a pointer extracted from va_list, not the
+	va_list itself.  Port to new implementation.  Drop get_store_value
+	call in favor of get_rvalue.  Unify some logic between the two
+	branches.
+	(get_stateful_arg): Add cast to ptr_type_node.
+	(kf_va_start::impl_call_pre): Use ptr_type_node.  Port to new
+	implementation when marking region as unknown.
+	(kf_va_copy::impl_call_pre): Use ptr_type_node.  Rename
+	"in_va_list" to "in_impl_ptr" as it's not necessarily a va_list.
+	Port from maybe_get_region to deref_rvalue.
+	(maybe_get_var_arg_region):  Port from maybe_get_region to
+	deref_rvalue.
+	(maybe_get_var_arg_svalue): New.
+	(kf_va_arg::impl_call_pre): Port from maybe_get_region to
+	deref_rvalue, and use maybe_get_var_arg_svalue.
+	* write-to-const-diagnostics.cc: Rename "reg" to base_reg" throughout.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Update for introduction of
+	symbolic::node_manager, creating node_manager and
+	accessing its region_model_manager rather than creating
+	the latter directly.
+	* common.h (class symbolic::node_manager): New forward decl.
+	(class call_string): Likewise.
+	* constraint-manager.cc: Update for introduction of
+	symbolic::node_manager, creating node_manager instances and
+	accessing their region_model_manager rather than creating
+	instances of the latter directly.  Update for region_model ctor
+	taking a node_manager & rather than a region_model_manager *.
+	* diagnostic-manager.cc: Likewise.
+	* engine.cc: Likewise.
+	* program-point.cc: Likewise.
+	* program-state.cc: Likewise.
+	* program-state.h: Likewise.
+	* ranges.cc: Likewise.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Add "node_mgr" param
+	and use it to initialize m_node_mgr.  Update for move of
+	m_next_node_id into node_manager.
+	(region_model_manager::log_stats): Drop logging of m_next_node_id.
+	* region-model-manager.h
+	(region_model_manager::region_model_manager): Add "node_mgr"
+	param.
+	(region_model_manager::get_num_nodes): Move to node_manager.
+	(region_model_manager::alloc_node_id): Delegate to m_node_mgr.
+	(region_model_manager::get_node_manager): New accessor.
+	(region_model_manager::m_node_mgr): New field.
+	(region_model_manager::m_next_node_id): Move to node_manager.
+	* region-model.cc (region_model::region_model): Update param from
+	region_model_manager * to symbolic::node_manager &.
+	(engine::engine): Update for introduction of node_manager.
+	(engine::log_stats): Likewise.
+	(selftest) Update selftests for introduction of
+	symbolic::node_manager, creating node_manager instances and
+	accessing their region_model_manager rather than creating
+	instances of the latter directly.  Update for region_model ctor
+	taking a node_manager & rather than a region_model_manager *.
+	* region-model.h (region_model::region_model): Change param from
+	region_model_manager * to symbolic::node_manager &.
+	(region_model::get_node_manager): New accessor.
+	(region_model::m_node_mgr): New field.
+	(engine::engine): Change param from region_model_manager & to
+	symbolic::node_manager &.
+	(engine::get_node_manager): New.
+	(engine::get_model_manager): New.
+	(engine::get_known_function_manager): Update.
+	(engine::m_mgr): Replace field with...
+	(engine::m_node_mgr): ...this.
+	* region.cc: Update for region_model ctor taking a node_manager &
+	rather than a region_model_manager *.
+	* sm-signal.cc (update_model_for_signal_handler): Likewise.
+	* state-purge.cc (state_purge_per_decl::process_worklists):
+	Likewise.
+	* store.cc (get_svalue_for_ctor_val): Likewise.
+	(selftest::test_binding_key_overlap): Update for introduction of
+	symbolic::node_manager
+	* symbolic-nodes.cc: Include "analyzer/analyzer-logging.h",
+	"analyzer/region-model.h", and "analyzer/region-model-manager.h".
+	(symbolic::node_manager::node_manager): New.
+	(ymbolic::node_manager::~node_manager): New.
+	(symbolic::node_manager::log_stats): New.
+	* symbolic-nodes.h (class node_manager): New.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (run_analyzer_selftests): Call
+	analyzer_complexity_cc_tests.
+	* analyzer-selftests.h (analyzer_complexity_cc_tests): New decl.
+	* complexity.cc: Include "selftest.h".
+	(complexity::complexity): New ctor.
+	(complexity::from_child_complexities): New.
+	(complexity::operator+): New.
+	(complexity::operator+=): New.
+	(selftest::analyzer_complexity_cc_tests): New.
+	* complexity.h (complexity::complexity): New ctor decl.
+	(complexity::from_child_complexities): New decl.
+	(complexity::operator+): New decl.
+	(complexity::operator+=): New decl.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.h (class symbolic::node): New forward decl.
+	* complexity.cc: Update comment.
+	* complexity.h: Likewise.
+	* kf.cc: Update for renaming of
+	region_model_manager::alloc_symbol_id to
+	region_model_manager::alloc_node_id.
+	* region-model-manager.cc: Update for renaming of
+	region_model_manager::alloc_symbol_id to
+	region_model_manager::alloc_node_id, and m_next_symbol_id to
+	m_next_node_id.
+	* region-model-manager.h (region_model_manager::get_num_symbols):
+	Rename to...
+	(region_model_manager::get_num_nodes): ...this.
+	(region_model_manager::alloc_symbol_id): Rename to...
+	(region_model_manager::alloc_node_id): ...this.
+	(region_model_manager::m_next_symbol_id): Rename to...
+	(region_model_manager::m_next_node_id): ...this.
+	* region-model.cc: Update for renaming of
+	region_model_manager::alloc_symbol_id to
+	region_model_manager::alloc_node_id.
+	* region.cc: Likewise.  Rename "symbol" to "symbolic::node"
+	throughout.
+	* region.h: Likewise.  Replace include of "analyzer/symbol.h" with
+	"analyzer/symbolic-nodes.h".
+	* svalue.cc: Likewise.
+	* svalue.h: Likewise.
+	* symbol.cc: Rename to...
+	* symbolic-nodes.cc: .. .this.  Replace include of
+	"analyzer/symbol.h" with "analyzer/symbolic-nodes.h".  Rename
+	"symbol" to "symbolic::node" throughout.
+	* symbol.h: Rename to...
+	* symbolic-nodes.h: ...this, updating include guards.
+	(class symbol): Rename to...
+	(symbolic::node): ...this.  Flesh out leading comment somewhat.
+	Modernize "id_t" to Use "using" rather than "typedef".  Add
+	virtual dtor.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (run_analyzer_selftests): Call
+	analyzer_concrete_ranges_cc_tests.
+	* analyzer-selftests.h (analyzer_concrete_ranges_cc_tests): New
+	decl.
+	* concrete-ranges.cc: New file, based in parts on material from
+	ranges.cc
+	* concrete-ranges.h: New file.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (run_analyzer_selftests): Call
+	analyzer_integer_with_unit_cc_tests.
+	* analyzer-selftests.h (analyzer_integer_with_unit_cc_tests): New
+	decl.
+	* integer-with-unit.cc: New file.
+	* integer-with-unit.h: New file.
+	* units.h: New file.
+
+2026-11-13  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-selftests.cc (run_analyzer_selftests): Call
+	analyzer_integer_cc_tests.
+	* analyzer-selftests.h (analyzer_integer_cc_tests): New decl.
+	* integer.cc: New file.
+	* integer.h: New file.
+
 2026-10-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* common.h (cmp_types): New decl.

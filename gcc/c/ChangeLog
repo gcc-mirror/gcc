@@ -1,3 +1,10 @@
+2026-11-13  Christopher Bazley  <chris.bazley@arm.com>
+
+	PR c/128606
+	* gimple-parser.cc (c_parser_gimple_postfix_expression):
+	Substitute a call to constant_lower_bound () in place of
+	to_constant ().
+
 2026-11-11  Matt Turner  <mattst88@gmail.com>
 
 	PR c/125418

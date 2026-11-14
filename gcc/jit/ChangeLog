@@ -1,3 +1,16 @@
+2026-11-13  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* dummy-frontend.cc (handle_cold_attribute, handle_format_arg_attribute)
+	(handle_format_attribute, handle_nonnull_attribute)
+	(handle_noreturn_attribute, handle_patchable_function_entry_attribute)
+	(handle_sentinel_attribute, handle_transaction_pure_attribute)
+	(jit_handle_cold_attribute, jit_handle_format_arg_attribute)
+	(jit_handle_format_attribute, jit_handle_nonnull_attribute)
+	(jit_handle_noreturn_attribute)
+	(jit_handle_patchable_function_entry_attribute)
+	(jit_handle_sentinel_attribute, jit_handle_transaction_pure_attribute):
+	Prepend functions with `jit_`
+
 2026-11-10  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* dummy-frontend.cc (tree_type_to_jit_type):Update to use new

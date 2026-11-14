@@ -1,3 +1,7 @@
+2026-11-13  LIU Hao  <lh_mouse@126.com>
+
+	* config/i386/cygwin.S: Fix a typo in `___chkstk`.
+
 2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* configure: Regenerate.

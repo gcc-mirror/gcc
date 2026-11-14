@@ -1,3 +1,86 @@
+2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/algorithm: Add comment to #endif.
+	* include/std/numeric: Use __cpp_lib_parallel_algorithm feature
+	test macro instead of __cplusplus and _GLIBCXX_HOSTED.
+
+2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.h (basic_regex::assign(I, I, * flag_type)):
+	Tweak comment to use T instead of _T.
+
+2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/specialized_algorithms/pstl/uninitialized_copy_move.cc:
+	Replace references to namespace __pstl with std.
+	* testsuite/25_algorithms/pstl/alg_merge/inplace_merge.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_if.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/copy_move.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/is_partitioned.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/partition_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/remove.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/rotate_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_modifying_operations/unique_copy_equal.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_end.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_first_of.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/find_if.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/nth_element.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/reverse_copy.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_nonmodifying/search_n.cc:
+	Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/is_heap.cc: Likewise.
+	* testsuite/25_algorithms/pstl/alg_sorting/partial_sort_copy.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/adjacent_difference.cc:
+	Likewise.
+	* testsuite/26_numerics/pstl/numeric_ops/reduce.cc: Likewise.
+	* testsuite/util/pstl/test_utils.h: Likewise.
+
+2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/128548
+	* src/c++11/thread.cc (thread::join): Check for self-join.
+	* testsuite/30_threads/thread/members/128548.cc: New test.
+
+2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_GLIBCXX_HAS_NESTED_TYPE): Remove
+	macro.
+	* testsuite/20_util/reference_wrapper/typedefs-3.cc: Define
+	test traits without using _GLIBCXX_HAS_NESTED_TYPE.
+
+2026-11-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/stl_pair.h (std::get(const tuple<...>&)): Moved
+	from...
+	* include/std/tuple (std::get<_Int>): Move deleted overload for out
+	of bounds index to bits/stl_pair.h. Qualify remaining definitions.
+	* include/std/array (std::get<_Int>): Qualify definitions.
+	* include/std/complex (std::get<_Int>): Qualify definitions.
+
 2026-11-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/charconv (__to_chars_unsigned_type): Remove.

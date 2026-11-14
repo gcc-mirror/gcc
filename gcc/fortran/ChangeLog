@@ -1,3 +1,20 @@
+2026-11-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* expr.cc (gfc_pdt_requires_hidden_arg): Change attr.pointer to
+	attr->class_pointer to obtain intended result.
+	* trans-expr.cc (gfc_conv_procedure_call): Extend result copying
+	for array transformational functions to include parameterized as
+	well as allocatable components. For function calls that are not
+	direct_byref, deallocate the temporary paramterized components
+	to prevent double frees of the argument components on leaving
+	scope.
+	(gfc_trans_arrayfunc_assign): For array transformational like-
+	wise deallocate paramterized components.
+	* trans-intrinsic.cc (copy_pdt_components): New function to
+	copy the result paramterized componts for the same reason.
+	(gfc_conv_intrinsic_merge, gfc_conv_intrinsic_transfer): Use it.
+
 2026-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/128656
