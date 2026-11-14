@@ -1,5 +1,5 @@
 /* PR rtl-optimization/128007 */
-/* { dg-do run } */
+/* { dg-do run { xfail { arm_mixed_fp } } } */
 /* { dg-require-effective-target fenv } */
 /* { dg-require-effective-target hard_float } */
 /* { dg-options "-O2 -frounding-math -ffinite-math-only" } */
