@@ -4628,7 +4628,7 @@ gfc_build_compare_string (tree len1, tree str1, tree len2, tree str2, int kind,
 	return integer_one_node;
     }
 
-  /* We can compare via memcpy if the strings are known to be equal
+  /* We can compare via memcmp if the strings are known to be equal
      in length and they are
      - kind=1
      - kind=4 and the comparison is for (in)equality.  */
@@ -13111,9 +13111,11 @@ gfc_trans_zero_assign (gfc_expr * expr)
    that constructs the call to __builtin_memcpy.  */
 
 tree
-gfc_build_memcpy_call (tree dst, tree src, tree len)
+gfc_build_memcpy_call (tree dst, tree src, tree len, bool use_memmove)
 {
   tree tmp;
+
+  enum built_in_function func = use_memmove ? BUILT_IN_MEMMOVE : BUILT_IN_MEMCPY;
 
   /* Convert arguments to the correct types.  */
   if (!POINTER_TYPE_P (TREE_TYPE (dst)))
@@ -13130,58 +13132,103 @@ gfc_build_memcpy_call (tree dst, tree src, tree len)
 
   /* Construct call to __builtin_memcpy.  */
   tmp = build_call_expr_loc (input_location,
-			     builtin_decl_explicit (BUILT_IN_MEMCPY),
+			     builtin_decl_explicit (func),
 			     3, dst, src, len);
   return fold_convert (void_type_node, tmp);
 }
 
-
-/* Try to efficiently translate dst(:) = src(:).  Return NULL if this
-   can't be done.  EXPR1 is the destination/lhs and EXPR2 is the
-   source/rhs, both are gfc_full_array_ref_p which have been checked for
-   dependencies.  */
+/* Try to efficiently translate array or slice copies.  EXPR1 is the
+   destination/lhs and EXPR2 is the source/rhs, both are contiguous slices or
+   full arrays which have been checked for dependencies.  If there is a
+   dependency, invoke memmove instad of memcpy.  */
 
 static tree
 gfc_trans_array_copy (gfc_expr * expr1, gfc_expr * expr2)
 {
-  tree dst, dlen, dtype;
-  tree src, slen, stype;
-  tree tmp;
+  gfc_se dst_se, src_se;
+  stmtblock_t block;
+  tree dst, src, dlen;
+  tree call;
 
-  dst = gfc_get_symbol_decl (expr1->symtree->n.sym);
-  src = gfc_get_symbol_decl (expr2->symtree->n.sym);
+  gfc_init_block (&block);
 
-  dtype = TREE_TYPE (dst);
+  gfc_init_se (&dst_se, NULL);
+  gfc_init_se (&src_se, NULL);
+
+  gfc_conv_expr_descriptor (&dst_se, expr1);
+  gfc_conv_expr_descriptor (&src_se, expr2);
+
+  gfc_add_block_to_block (&block, &dst_se.pre);
+  gfc_add_block_to_block (&block, &src_se.pre);
+
+  dlen = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (dst_se.expr)));
+  dlen = fold_convert (gfc_array_index_type, dlen);
+
+  for (int dim = 0; dim < expr1->rank; dim++)
+    {
+      tree lb_src, ub_src, ex_src, lb_dst, ub_dst, ex_dst;
+
+      lb_src = gfc_conv_array_lbound (src_se.expr, dim);
+      ub_src = gfc_conv_array_ubound (src_se.expr, dim);
+      ex_src = gfc_conv_array_extent_dim (lb_src, ub_src, NULL);
+
+      lb_dst = gfc_conv_array_lbound (dst_se.expr, dim);
+      ub_dst = gfc_conv_array_ubound (dst_se.expr, dim);
+      ex_dst = gfc_conv_array_extent_dim (lb_dst, ub_dst, NULL);
+
+      dlen = fold_build2_loc (input_location, MULT_EXPR,
+			      gfc_array_index_type, dlen,
+			      fold_convert (gfc_array_index_type, ex_dst));
+
+      if ((gfc_option.rtcheck & GFC_RTCHECK_BOUNDS) != 0)
+	{
+	  tree cond;
+	  char *msg;
+
+	  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+				  ex_dst, ex_src);
+	  msg = xasprintf ("Array bound mismatch for dimension %d "
+			   "of array '%s' (%%ld/%%ld)", dim + 1,
+			   expr1->symtree->name);
+	  gfc_trans_runtime_check (true, false, cond, &block, &expr1->where, msg,
+				   fold_convert (long_integer_type_node, ex_src),
+				   fold_convert (long_integer_type_node, ex_dst));
+	}
+    }
+
+  /* It is easier on the optimizers to pass a pointer to the full array if
+     possible than the data pointer from the descriptors.  Otherwise,
+     pr56049.f90 would regress.  */
+
+  tree dst_decl = gfc_get_symbol_decl (expr1->symtree->n.sym);
+  tree src_decl = gfc_get_symbol_decl (expr2->symtree->n.sym);
+
+  tree dtype = TREE_TYPE (dst_decl);
   if (POINTER_TYPE_P (dtype))
     dtype = TREE_TYPE (dtype);
-  stype = TREE_TYPE (src);
+
+  tree stype = TREE_TYPE (src_decl);
   if (POINTER_TYPE_P (stype))
     stype = TREE_TYPE (stype);
 
-  if (!GFC_ARRAY_TYPE_P (dtype) || !GFC_ARRAY_TYPE_P (stype))
-    return NULL_TREE;
+  if (gfc_full_array_ref_p (expr1->ref, NULL) && GFC_ARRAY_TYPE_P (dtype))
+    dst = dst_decl;
+  else
+    dst = gfc_conv_descriptor_data_get (dst_se.expr);
 
-  /* Determine the lengths of the arrays.  */
-  dlen = GFC_TYPE_ARRAY_SIZE (dtype);
-  if (!dlen || TREE_CODE (dlen) != INTEGER_CST)
-    return NULL_TREE;
-  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (dtype));
-  dlen = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			  dlen, fold_convert (gfc_array_index_type, tmp));
+  if (gfc_full_array_ref_p (expr2->ref, NULL) && GFC_ARRAY_TYPE_P (stype))
+    src = src_decl;
+  else
+    src = gfc_conv_descriptor_data_get (src_se.expr);
 
-  slen = GFC_TYPE_ARRAY_SIZE (stype);
-  if (!slen || TREE_CODE (slen) != INTEGER_CST)
-    return NULL_TREE;
-  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (stype));
-  slen = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
-			  slen, fold_convert (gfc_array_index_type, tmp));
+  bool use_memmove = gfc_check_dependency (expr1, expr2, 0);
+  call = gfc_build_memcpy_call (dst, src, dlen, use_memmove);
 
-  /* Sanity check that they are the same.  This should always be
-     the case, as we should already have checked for conformance.  */
-  if (!tree_int_cst_equal (slen, dlen))
-    return NULL_TREE;
+  gfc_add_expr_to_block (&block, call);
+  gfc_add_block_to_block (&block, &dst_se.post);
+  gfc_add_block_to_block (&block, &src_se.post);
 
-  return gfc_build_memcpy_call (dst, src, dlen);
+  return gfc_finish_block (&block);
 }
 
 
@@ -14420,6 +14467,54 @@ copyable_array_p (gfc_expr * expr)
   return false;
 }
 
+/* Check whether EXPR is a copyable slice.  */
+
+static bool
+copyable_slice_p (gfc_expr * expr)
+{
+  if (expr->expr_type != EXPR_VARIABLE)
+    return false;
+
+  /* First check it's a slice.  */
+  if (expr->rank < 1 || !expr->ref || expr->ref->next)
+    return false;
+
+  /* Don't touch anything with coarrays.  */
+  if (gfc_is_coindexed (expr) || expr->symtree->n.sym->attr.codimension)
+    return false;
+
+  if (!gfc_is_simply_contiguous (expr, false, false))
+    return false;
+
+  if (gfc_is_reallocatable_lhs (expr))
+    return false;
+
+  if (gfc_may_be_finalized (expr->ts))
+    return false;
+
+  /* Next check that it's of a simple enough type.  */
+  switch (expr->ts.type)
+    {
+    case BT_INTEGER:
+    case BT_REAL:
+    case BT_COMPLEX:
+    case BT_LOGICAL:
+      return true;
+
+    case BT_CHARACTER:
+      return false;
+
+    case_bt_struct:
+      return (!expr->ts.u.derived->attr.alloc_comp
+	      && !expr->ts.u.derived->attr.pdt_type);
+
+    default:
+      break;
+    }
+
+  return false;
+}
+
 /* Translate an assignment.  */
 
 tree
@@ -14445,11 +14540,11 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	return tmp;
     }
 
-  /* Special case copying one array to another.  */
-  if (copyable_array_p (expr1)
-      && copyable_array_p (expr2)
-      && gfc_compare_types (&expr1->ts, &expr2->ts)
-      && !gfc_check_dependency (expr1, expr2, 0))
+  /* Special case copying or moving one array slice to another.  */
+  if (copyable_slice_p (expr1)
+      && !gfc_is_reallocatable_lhs (expr1)
+      && copyable_slice_p (expr2)
+      && gfc_compare_types (&expr1->ts, &expr2->ts))
     {
       tmp = gfc_trans_array_copy (expr1, expr2);
       if (tmp)

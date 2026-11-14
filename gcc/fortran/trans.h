@@ -759,7 +759,7 @@ tree gfc_call_free (tree);
 tree gfc_call_malloc (stmtblock_t *, tree, tree);
 
 /* Build a memcpy call.  */
-tree gfc_build_memcpy_call (tree, tree, tree);
+tree gfc_build_memcpy_call (tree, tree, tree, bool use_memmove = false);
 
 /* Register memory with the coarray library.  */
 void gfc_allocate_using_caf_lib (stmtblock_t *, tree, tree, tree, tree, tree,

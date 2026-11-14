@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-Warray-temporaries" }
+! { dg-options "-Warray-temporaries -fdump-tree-original" }
 module foobar
   type baz
      integer :: i
@@ -13,8 +13,10 @@ contains
     type(baz) :: c
     integer, dimension(10) :: i
     a(i(1):i(2)) = a(i(1):i(2)) + b(i(1):i(2))
-    a(i(1):i(2)) = a(i(3):i(5)) ! { dg-warning "Creating array temporary" }
+    a(i(1):i(2)) = a(i(3):i(5)) ! No temporary, handled by memmove
     a(c%i:c%j) = a(c%i:c%j) + b(c%k:c%m)
     a(c%k:c%m) = a(c%i:c%j) + b(c%k:c%m) ! { dg-warning "Creating array temporary" }
   end subroutine foo
 end module foobar
+! { dg-final { scan-tree-dump-times "__builtin_memmove" 1 "original" } }
+
