@@ -284,22 +284,13 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #undef vec_free
 
 /* If we don't have an overriding definition, set SUCCESS_EXIT_CODE and
-   FATAL_EXIT_CODE to EXIT_SUCCESS and EXIT_FAILURE respectively,
-   or 0 and 1 if those macros are not defined.  */
+   FATAL_EXIT_CODE to EXIT_SUCCESS and EXIT_FAILURE respectively.  */
 #ifndef SUCCESS_EXIT_CODE
-# ifdef EXIT_SUCCESS
-#  define SUCCESS_EXIT_CODE EXIT_SUCCESS
-# else
-#  define SUCCESS_EXIT_CODE 0
-# endif
+# define SUCCESS_EXIT_CODE EXIT_SUCCESS
 #endif
 
 #ifndef FATAL_EXIT_CODE
-# ifdef EXIT_FAILURE
-#  define FATAL_EXIT_CODE EXIT_FAILURE
-# else
-#  define FATAL_EXIT_CODE 1
-# endif
+# define FATAL_EXIT_CODE EXIT_FAILURE
 #endif
 
 #define ICE_EXIT_CODE 4
