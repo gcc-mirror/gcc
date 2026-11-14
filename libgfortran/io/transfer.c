@@ -2976,6 +2976,14 @@ transfer_array_write (st_parameter_dt *dtp, gfc_array_char *desc, int kind,
 void
 transfer_derived (st_parameter_dt *parent, void *dtio_source, void *dtio_proc)
 {
+  if (parent->u.p.current_unit && parent->u.p.current_unit->au
+      && parent->u.p.async)
+    {
+      generate_error (&parent->common, LIBERROR_OPTION_CONFLICT,
+		      "Derived type with defined I/O in asynchronous "
+		      "data transfer statement");
+      return;
+    }
   if (parent->u.p.current_unit)
     {
       if (parent->u.p.current_unit->flags.form == FORM_UNFORMATTED)
@@ -3296,6 +3304,8 @@ data_transfer_init (st_parameter_dt *dtp, int read_flag)
     }
 
   au = dtp->u.p.current_unit->au;
+  if (au && dtp->u.p.async && (cf & IOPARM_DT_HAS_UDTIO))
+    dtp->u.p.async = 0;
   if (au)
     {
       if (dtp->u.p.async)
@@ -4727,19 +4737,21 @@ st_read_done (st_parameter_dt *dtp)
 {
   if (dtp->u.p.current_unit)
     {
-      if (dtp->u.p.current_unit->au)
+      if (dtp->u.p.current_unit->au && dtp->u.p.async)
 	{
 	  if (dtp->common.flags & IOPARM_DT_HAS_ID)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	  else
-	    {
-	      if (dtp->u.p.async)
-		enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
-	    }
+	    enqueue_done (dtp->u.p.current_unit->au, AIO_READ_DONE);
 	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_read_done_worker (dtp, true);  /* Calls unlock_unit.  */
+	{
+	  if (dtp->u.p.current_unit->au
+	      && (dtp->common.flags & IOPARM_DT_HAS_ID))
+	    *dtp->id = async_complete_id (dtp->u.p.current_unit->au);
+	  st_read_done_worker (dtp, true);  /* Calls unlock_unit.  */
+	}
     }
 
   library_end ();
@@ -4832,16 +4844,16 @@ st_write_done (st_parameter_dt *dtp)
 	    *dtp->id = enqueue_done_id (dtp->u.p.current_unit->au,
 					AIO_WRITE_DONE);
 	  else
-	    {
-	      /* We perform synchronous I/O on an asynchronous unit, so no need
-		 to enqueue AIO_READ_DONE.  */
-	      if (dtp->u.p.async)
-		enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
-	    }
+	    enqueue_done (dtp->u.p.current_unit->au, AIO_WRITE_DONE);
 	  unlock_unit (dtp->u.p.current_unit);
 	}
       else
-	st_write_done_worker (dtp, true);  /* Calls unlock_unit.  */
+	{
+	  if (dtp->u.p.current_unit->au
+	      && (dtp->common.flags & IOPARM_DT_HAS_ID))
+	    *dtp->id = async_complete_id (dtp->u.p.current_unit->au);
+	  st_write_done_worker (dtp, true);  /* Calls unlock_unit.  */
+	}
     }
 
   library_end ();
