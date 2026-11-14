@@ -151,7 +151,7 @@ ipa_predicate::add_clause (conditions conditions, clause_t new_clause)
 		  && cc2->by_ref == cc1->by_ref
 		  && (!cc1->agg_contents
 		      || (cc1->unknown_offset == cc2->unknown_offset
-			  && (!cc1->unknown_offset || cc2->offset == cc1->offset)
+			  && (cc1->unknown_offset || cc2->offset == cc1->offset)
 			  && cc2->maybe_modified == cc1->maybe_modified))
 		  && types_compatible_p (cc2->type, cc1->type)
 		  && cc1->code == invert_tree_comparison (cc2->code,

@@ -2088,14 +2088,20 @@ set_cond_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 }
 
 
-/* If BB ends by a switch we can turn into predicates, attach corresponding
-   predicates to the CFG edges.   */
+/* Compute predicates for outgoing edges of switch statement SWTCH in BB.
+   When FOR_EXECUTION_P is true, bypass computing predicates for edges whose
+   destination post-dominates BB (since BB's execution predicate already implies
+   execution of its post-dominators).  Populate *EDGE_PREDS with one predicate
+   per edge in BB->succs and return true on success.  */
 
-static void
-set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
-				     class ipa_fn_summary *summary,
-				     class ipa_node_params *params_summary,
-				     basic_block bb)
+static bool
+compute_switch_edge_predicates (struct ipa_func_body_info *fbi,
+				class ipa_fn_summary *summary,
+				class ipa_node_params *params_summary,
+				basic_block bb,
+				gswitch *swtch,
+				bool for_execution_p,
+				vec<ipa_predicate> *edge_preds)
 {
   tree op;
   int index;
@@ -2107,13 +2113,10 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   tree param_type;
   expr_eval_ops param_ops;
 
-  gswitch *last = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb));
-  if (!last)
-    return;
-  op = gimple_switch_index (last);
-  if (!decompose_param_expr (fbi, last, op, &index, &param_type, &aggpos,
+  op = gimple_switch_index (swtch);
+  if (!decompose_param_expr (fbi, swtch, op, &index, &param_type, &aggpos,
 			     &param_ops))
-    return;
+    return false;
 
   auto_vec<std::pair<tree, tree> > ranges;
   tree type = TREE_TYPE (op);
@@ -2135,29 +2138,34 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
   wide_int vr_wmin = wi::to_wide (vr_min);
   wide_int vr_wmax = wi::to_wide (vr_max);
 
+  hash_map<edge, unsigned> edge_map;
+  unsigned edge_idx = 0;
   FOR_EACH_EDGE (e, ei, bb->succs)
     {
-      e->aux = edge_predicate_pool.allocate ();
-      *(ipa_predicate *) e->aux = false;
+      edge_map.put (e, edge_idx++);
+      edge_preds->safe_push (false);
     }
 
-  e = gimple_switch_edge (cfun, last, 0);
+  edge default_edge = gimple_switch_edge (cfun, swtch, 0);
   /* Set BOUND_COUNT to maximum count to bypass computing predicate for
      default case if its target basic block is in convergence point of all
      switch cases, which can be determined by checking whether it
      post-dominates the switch statement.  */
-  if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
+  if (for_execution_p
+      && dominated_by_p (CDI_POST_DOMINATORS, bb, default_edge->dest))
     bound_count = INT_MAX;
 
-  n = gimple_switch_num_labels (last);
+  n = gimple_switch_num_labels (swtch);
   for (case_idx = 1; case_idx < n; ++case_idx)
     {
-      tree cl = gimple_switch_label (last, case_idx);
+      tree cl = gimple_switch_label (swtch, case_idx);
       tree min = CASE_LOW (cl);
       tree max = CASE_HIGH (cl);
       ipa_predicate p;
 
-      e = gimple_switch_edge (cfun, last, case_idx);
+      e = gimple_switch_edge (cfun, swtch, case_idx);
+      if (!for_execution_p && e == default_edge)
+	continue;
 
       /* The case value might not have same type as switch expression,
 	 extend the value based on the expression type.  */
@@ -2172,22 +2180,24 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       /* The case's target basic block is in convergence point of all switch
 	 cases, its predicate should be at least as that of the switch
 	 statement.  */
-      if (dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
+      if (for_execution_p && dominated_by_p (CDI_POST_DOMINATORS, bb, e->dest))
 	p = true;
       else if (min == max)
 	p = add_condition (summary, params_summary, index, param_type,
-		           &aggpos, EQ_EXPR, min, param_ops);
+			   &aggpos, EQ_EXPR, min, param_ops);
       else
 	{
 	  ipa_predicate p1, p2;
 	  p1 = add_condition (summary, params_summary, index, param_type,
 			      &aggpos, GE_EXPR, min, param_ops);
-	  p2 = add_condition (summary,  params_summary,index, param_type,
+	  p2 = add_condition (summary, params_summary, index, param_type,
 			      &aggpos, LE_EXPR, max, param_ops);
 	  p = p1 & p2;
 	}
-      *(ipa_predicate *) e->aux
-	= p.or_with (summary->conds, *(ipa_predicate *) e->aux);
+      unsigned *slot = edge_map.get (e);
+      gcc_checking_assert (slot);
+      (*edge_preds)[*slot]
+	= p.or_with (summary->conds, (*edge_preds)[*slot]);
 
       /* If there are too many disjoint case ranges, predicate for default
 	 case might become too complicated.  So add a limit here.  */
@@ -2230,74 +2240,106 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
 	}
     }
 
-  e = gimple_switch_edge (cfun, last, 0);
+  unsigned default_slot = *edge_map.get (default_edge);
   if (bound_count > bound_limit)
+    (*edge_preds)[default_slot] = true;
+  else
     {
-      *(ipa_predicate *) e->aux = true;
-      vec_free (param_ops);
-      return;
-    }
+      ipa_predicate p_seg = true;
+      ipa_predicate p_all = false;
 
-  ipa_predicate p_seg = true;
-  ipa_predicate p_all = false;
-
-  if (vr_type != VR_RANGE)
-    {
-      vr_wmin = wi::to_wide (TYPE_MIN_VALUE (type));
-      vr_wmax = wi::to_wide (TYPE_MAX_VALUE (type));
-    }
-
-  /* Construct predicate to represent default range set that is negation of
-     all case ranges.  Case range is classified as containing single/non-single
-     values.  Suppose a piece of case ranges in the following.
-
-                [D1...D2]  [S1] ... [Sn]  [D3...D4]
-
-     To represent default case's range sets between two non-single value
-     case ranges (From D2 to D3), we construct predicate as:
-
-              D2 < x < D3 && x != S1 && ... && x != Sn
-   */
-  for (size_t i = 0; i < ranges.length (); i++)
-    {
-      tree min = ranges[i].first;
-      tree max = ranges[i].second;
-
-      if (min == max)
-	p_seg &= add_condition (summary, params_summary, index,
-		       		param_type, &aggpos, NE_EXPR,
-				min, param_ops);
-      else
+      if (vr_type != VR_RANGE)
 	{
-	  /* Do not create sub-predicate for range that is beyond low bound
-	     of switch index.  */
-	  if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
-	    {
-	      p_seg &= add_condition (summary, params_summary, index,
-			     	      param_type, &aggpos,
-				      LT_EXPR, min, param_ops);
-	      p_all = p_all.or_with (summary->conds, p_seg);
-	    }
-
-	  /* Do not create sub-predicate for range that is beyond up bound
-	     of switch index.  */
-	  if (wi::le_p (vr_wmax, wi::to_wide (max), TYPE_SIGN (type)))
-	    {
-	      p_seg = false;
-	      break;
-	    }
-
-	  p_seg = add_condition (summary, params_summary, index,
-				 param_type, &aggpos, GT_EXPR,
-				 max, param_ops);
+	  vr_wmin = wi::to_wide (TYPE_MIN_VALUE (type));
+	  vr_wmax = wi::to_wide (TYPE_MAX_VALUE (type));
 	}
+
+      /* Construct predicate to represent default range set that is negation of
+	 all case ranges.  Case range is classified as containing
+	 single/non-single values.  Suppose a piece of case ranges in the
+	 following.
+
+		    [D1...D2]  [S1] ... [Sn]  [D3...D4]
+
+	 To represent default case's range sets between two non-single value
+	 case ranges (From D2 to D3), we construct predicate as:
+
+		  D2 < x < D3 && x != S1 && ... && x != Sn
+       */
+      for (size_t i = 0; i < ranges.length (); i++)
+	{
+	  tree min = ranges[i].first;
+	  tree max = ranges[i].second;
+
+	  if (min == max)
+	    p_seg &= add_condition (summary, params_summary, index,
+				    param_type, &aggpos, NE_EXPR,
+				    min, param_ops);
+	  else
+	    {
+	      /* Do not create sub-predicate for range that is beyond low
+		 bound of switch index.  */
+	      if (wi::lt_p (vr_wmin, wi::to_wide (min), TYPE_SIGN (type)))
+		{
+		  p_seg &= add_condition (summary, params_summary, index,
+					  param_type, &aggpos,
+					  LT_EXPR, min, param_ops);
+		  p_all = p_all.or_with (summary->conds, p_seg);
+		}
+
+	      /* Do not create sub-predicate for range that is beyond up bound
+		 of switch index.  */
+	      if (wi::le_p (vr_wmax, wi::to_wide (max), TYPE_SIGN (type)))
+		{
+		  p_seg = false;
+		  break;
+		}
+
+	      p_seg = add_condition (summary, params_summary, index,
+				     param_type, &aggpos, GT_EXPR,
+				     max, param_ops);
+	    }
+	}
+
+      p_all = p_all.or_with (summary->conds, p_seg);
+      (*edge_preds)[default_slot]
+	= p_all.or_with (summary->conds, (*edge_preds)[default_slot]);
     }
 
-  p_all = p_all.or_with (summary->conds, p_seg);
-  *(ipa_predicate *) e->aux
-    = p_all.or_with (summary->conds, *(ipa_predicate *) e->aux);
+  if (!for_execution_p && default_slot != 0)
+    std::swap ((*edge_preds)[0], (*edge_preds)[default_slot]);
 
   vec_free (param_ops);
+  return true;
+}
+
+
+/* If BB ends by a switch we can turn into predicates, attach corresponding
+   predicates to the CFG edges.  */
+
+static void
+set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
+				     class ipa_fn_summary *summary,
+				     class ipa_node_params *params_summary,
+				     basic_block bb)
+{
+  gswitch *last = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb));
+  if (!last)
+    return;
+
+  auto_vec<ipa_predicate, 8> edge_preds;
+  if (!compute_switch_edge_predicates (fbi, summary, params_summary,
+				       bb, last, true, &edge_preds))
+    return;
+
+  edge e;
+  edge_iterator ei;
+  unsigned edge_idx = 0;
+  FOR_EACH_EDGE (e, ei, bb->succs)
+    {
+      e->aux = edge_predicate_pool.allocate ();
+      *(ipa_predicate *) e->aux = edge_preds[edge_idx++];
+    }
 }
 
 
@@ -2514,7 +2556,10 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
   is_load = gimple_assign_load_p (stmt);
 
-  /* Loads can be optimized when the value is known.  */
+  /* Loads can be optimized when the value is known.  An unknown-offset load
+     itself can still read different values across offsets or iterations, so
+     leave nonconstant_names true for it; comparisons of it against an
+     invariant are handled below.  */
   if (is_load)
     {
       tree op = gimple_assign_rhs1 (stmt);
@@ -2528,6 +2573,7 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
 
   /* See if we understand all operands before we start
      adding conditionals.  */
+  bool understood = true;
   FOR_EACH_SSA_TREE_OPERAND (use, stmt, iter, SSA_OP_USE)
     {
       tree parm = unmodified_parm (fbi, stmt, use, NULL);
@@ -2535,12 +2581,114 @@ will_be_nonconstant_predicate (struct ipa_func_body_info *fbi,
       if (parm && ipa_get_param_decl_index (fbi->info, parm) >= 0)
 	continue;
       if (TREE_CODE (use) != SSA_NAME)
-	return p;
+	{
+	  understood = false;
+	  break;
+	}
       /* If we know when operand is constant,
 	 we still can say something useful.  */
       if (nonconstant_names[SSA_NAME_VERSION (use)] != true)
 	continue;
-      return p;
+      understood = false;
+      break;
+    }
+
+  /* Even if an operand itself is non-constant (such as a load at an unknown
+     or maybe-modified offset), a comparison against an IP-invariant or a
+     switch is constant whenever at most one outcome is possible.  */
+  if (!understood)
+    {
+      if (gswitch *swtch = dyn_cast <gswitch *> (stmt))
+	{
+	  auto_vec<ipa_predicate, 8> edge_preds;
+	  if (!compute_switch_edge_predicates (fbi, summary, params_summary,
+					       gimple_bb (swtch), swtch,
+					       false, &edge_preds))
+	    return p;
+
+	  unsigned n_edges = edge_preds.length ();
+	  if (n_edges < 2)
+	    return false;
+
+	  unsigned n_true = 0;
+	  for (unsigned i = 0; i < n_edges; i++)
+	    if (edge_preds[i] == true && ++n_true >= 2)
+	      return p;
+
+	  /* Switch is non-constant when at least two distinct outgoing edges
+	     may be taken, i.e. for each edge m some edge j != m is not
+	     excluded.  */
+	  auto_vec<ipa_predicate, 8> suffix_or;
+	  suffix_or.safe_grow_cleared (n_edges + 1, true);
+	  suffix_or[n_edges] = false;
+	  for (unsigned i = n_edges; i-- > 0;)
+	    suffix_or[i]
+	      = suffix_or[i + 1].or_with (summary->conds, edge_preds[i]);
+
+	  ipa_predicate prefix_or = false;
+	  op_non_const = true;
+	  for (unsigned m = 0; m < n_edges; m++)
+	    {
+	      ipa_predicate others
+		= prefix_or.or_with (summary->conds, suffix_or[m + 1]);
+	      op_non_const &= others;
+	      prefix_or = prefix_or.or_with (summary->conds, edge_preds[m]);
+	    }
+	  return op_non_const;
+	}
+
+      tree lhs, rhs;
+      enum tree_code code;
+      if (gcond *cond = dyn_cast <gcond *> (stmt))
+	{
+	  code = gimple_cond_code (cond);
+	  lhs = gimple_cond_lhs (cond);
+	  rhs = gimple_cond_rhs (cond);
+	}
+      else if (gimple_code (stmt) == GIMPLE_ASSIGN
+	       && TREE_CODE_CLASS (gimple_assign_rhs_code (stmt))
+		  == tcc_comparison)
+	{
+	  code = gimple_assign_rhs_code (stmt);
+	  lhs = gimple_assign_rhs1 (stmt);
+	  rhs = gimple_assign_rhs2 (stmt);
+	}
+      else
+	return p;
+
+      if (!is_gimple_ip_invariant (rhs) && is_gimple_ip_invariant (lhs))
+	{
+	  std::swap (lhs, rhs);
+	  code = swap_tree_comparison (code);
+	}
+
+      expr_eval_ops param_ops = NULL;
+      if (!is_gimple_ip_invariant (rhs)
+	  || !decompose_param_expr (fbi, stmt, lhs, &base_index, &param_type,
+				    &aggpos, &param_ops))
+	return p;
+
+      enum tree_code inverted_code
+	= invert_tree_comparison (code, HONOR_NANS (lhs));
+      if (inverted_code == ERROR_MARK)
+	{
+	  vec_free (param_ops);
+	  return p;
+	}
+
+      ipa_predicate p1
+	= add_condition (summary, params_summary, base_index, param_type,
+			 &aggpos, code, rhs, param_ops);
+      ipa_predicate p2
+	= add_condition (summary, params_summary, base_index, param_type,
+			 &aggpos, inverted_code, rhs, param_ops);
+      op_non_const = p1 & p2;
+      vec_free (param_ops);
+      if (gimple_code (stmt) == GIMPLE_ASSIGN
+	  && TREE_CODE (gimple_assign_lhs (stmt)) == SSA_NAME)
+	nonconstant_names[SSA_NAME_VERSION (gimple_assign_lhs (stmt))]
+	  = op_non_const;
+      return op_non_const;
     }
 
   if (is_load)
@@ -2745,9 +2893,9 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
     }
 }
 
-/* Find whether a basic block BB is the final block of a (half) diamond CFG
-   sub-graph and if the predicate the condition depends on is known.  If so,
-   return true and store the pointer the predicate in *P.  */
+/* Find whether a basic block BB is the final block of a (half) diamond or
+   switch CFG sub-graph and if the predicate the condition depends on is known.
+   If so, return true and store the predicate in *P.  */
 
 static bool
 phi_result_unknown_predicate (ipa_func_body_info *fbi,
@@ -2790,14 +2938,14 @@ phi_result_unknown_predicate (ipa_func_body_info *fbi,
   if (!first_bb)
     return false;
 
-  gcond *stmt = safe_dyn_cast <gcond *> (*gsi_last_bb (first_bb));
+  gimple *stmt = *gsi_last_bb (first_bb);
   if (!stmt
-      || !is_gimple_ip_invariant (gimple_cond_rhs (stmt)))
+      || (gimple_code (stmt) != GIMPLE_COND
+	  && gimple_code (stmt) != GIMPLE_SWITCH))
     return false;
 
-  *p = will_be_nonconstant_expr_predicate (fbi, summary, params_summary,
-					   gimple_cond_lhs (stmt),
-					   nonconstant_names);
+  *p = will_be_nonconstant_predicate (fbi, summary, params_summary,
+				      stmt, nonconstant_names);
   if (*p == true)
     return false;
   else

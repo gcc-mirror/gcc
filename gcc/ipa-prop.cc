@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "backend.h"
+#include "target.h"
 #include "rtl.h"
 #include "tree.h"
 #include "gimple.h"
@@ -1313,9 +1314,20 @@ ipa_load_from_parm_agg_unknown_offset (struct ipa_func_body_info *fbi,
   if (TREE_CODE (start_ptr) != SSA_NAME)
     return false;
 
+  bool null_invalid_p
+    = ((fbi && fbi->node
+	? opt_for_fn (fbi->node->decl, flag_delete_null_pointer_checks)
+	: flag_delete_null_pointer_checks)
+       && !targetm.addr_space.zero_address_valid
+	     (TYPE_ADDR_SPACE (TREE_TYPE (base))));
+
   /* Walk backwards through pointer adjustments, copies, conversions and PHIs,
      verifying that all reachable definitions originate from the same function
-     parameter.  */
+     parameter.  Since BASE is dereferenced at STMT and POINTER_PLUS_EXPR,
+     same-address-space conversions and PHIs preserve null provenance,
+     integer_zerop operands cannot reach a valid dereference when
+     NULL_INVALID_P holds and can be skipped (FOUND_INDEX < 0 still ensures
+     at least one parameter path exists).  */
   auto_vec<tree, 8> worklist;
   hash_set<int_hash<unsigned, 0>> visited;
   visited.add (SSA_NAME_VERSION (start_ptr));
@@ -1354,6 +1366,8 @@ ipa_load_from_parm_agg_unknown_offset (struct ipa_func_body_info *fbi,
 	  for (unsigned int i = 0; i < n; i++)
 	    {
 	      tree arg = gimple_phi_arg_def (phi, i);
+	      if (null_invalid_p && integer_zerop (arg))
+		continue;
 	      if (TREE_CODE (arg) != SSA_NAME)
 		return false;
 	      if (!visited.add (SSA_NAME_VERSION (arg)))
@@ -1370,6 +1384,8 @@ ipa_load_from_parm_agg_unknown_offset (struct ipa_func_body_info *fbi,
 		  && POINTER_TYPE_P (TREE_TYPE (ptr))
 		  && POINTER_TYPE_P (TREE_TYPE (rhs1))))
 	    {
+	      if (null_invalid_p && integer_zerop (rhs1))
+		continue;
 	      if (TREE_CODE (rhs1) != SSA_NAME)
 		return false;
 	      if (!visited.add (SSA_NAME_VERSION (rhs1)))
@@ -1378,11 +1394,13 @@ ipa_load_from_parm_agg_unknown_offset (struct ipa_func_body_info *fbi,
 	  else if (rhs_code == ADDR_EXPR)
 	    {
 	      tree inner = get_base_address (TREE_OPERAND (rhs1, 0));
-	      if (!inner
-		  || TREE_CODE (inner) != MEM_REF
-		  || TREE_CODE (TREE_OPERAND (inner, 0)) != SSA_NAME)
+	      if (!inner || TREE_CODE (inner) != MEM_REF)
 		return false;
 	      tree next = TREE_OPERAND (inner, 0);
+	      if (null_invalid_p && integer_zerop (next))
+		continue;
+	      if (TREE_CODE (next) != SSA_NAME)
+		return false;
 	      if (!visited.add (SSA_NAME_VERSION (next)))
 		worklist.safe_push (next);
 	    }
