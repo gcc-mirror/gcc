@@ -1,3 +1,11 @@
+2026-11-13  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-11-02  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.dg/modules/modules.exp: Reset module_do between ungrouped
+	tests.
+
 2026-11-12  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
