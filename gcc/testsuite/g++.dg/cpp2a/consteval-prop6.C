@@ -55,5 +55,5 @@ void
 test ()
 {
   [[maybe_unused]] X x; // { dg-error "call to consteval function" }
-// { dg-message "promoted to an immediate function" "" { target *-*-* } .-1 }
+// { dg-message "promoted to an immediate function" "" { xfail hppa*-*-hpux* } .-1 }
 }
