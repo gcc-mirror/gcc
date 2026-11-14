@@ -4849,6 +4849,44 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
     case ROTATE:
       if (trueop1 == CONST0_RTX (mode))
 	return op0;
+
+      /* Reversing the direction removes a negated count modulo the
+	 precision.  Keep the mask so that the new count is in range even
+	 on targets that do not truncate rotate counts.  */
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && exact_log2 (GET_MODE_PRECISION (int_mode)) >= 0)
+	{
+	  rtx count = op1;
+	  if ((SUBREG_P (count)
+	       && subreg_lowpart_p (count)
+	       && !paradoxical_subreg_p (count))
+	      || GET_CODE (count) == TRUNCATE)
+	    count = XEXP (count, 0);
+
+	  scalar_int_mode count_mode;
+	  if (GET_CODE (count) == AND
+	      && GET_CODE (XEXP (count, 0)) == NEG
+	      && CONST_INT_P (XEXP (count, 1))
+	      && INTVAL (XEXP (count, 1))
+		 == GET_MODE_PRECISION (int_mode) - 1
+	      && is_a <scalar_int_mode> (GET_MODE (count), &inner_mode)
+	      && is_a <scalar_int_mode> (GET_MODE (op1), &count_mode)
+	      && GET_MODE_PRECISION (count_mode)
+		 > exact_log2 (GET_MODE_PRECISION (int_mode))
+	      && GET_MODE_PRECISION (inner_mode)
+		 >= GET_MODE_PRECISION (count_mode))
+	    {
+	      tem = simplify_gen_binary (AND, inner_mode,
+					 XEXP (XEXP (count, 0), 0),
+					 XEXP (count, 1));
+	      if (count != op1)
+		tem = simplify_gen_unary (TRUNCATE, count_mode, tem,
+					  inner_mode);
+	      return simplify_gen_binary (code == ROTATE ? ROTATERT : ROTATE,
+					  mode, op0, tem);
+	    }
+	}
+
       /* Canonicalize rotates by constant amount.  If the condition of
 	 reversing direction is met, then reverse the direction. */
 #if defined(HAVE_rotate) && defined(HAVE_rotatert)
@@ -9341,6 +9379,65 @@ make_test_reg (machine_mode mode)
   return gen_rtx_REG (mode, test_reg_num++);
 }
 
+/* Test reversing rotations with a masked negative count.  */
+
+static void
+test_masked_negative_rotate (machine_mode mode)
+{
+  rtx value = make_test_reg (mode);
+  unsigned int precision = GET_MODE_PRECISION (mode).to_constant ();
+  int count_bits = exact_log2 (precision);
+  static const machine_mode count_modes[] = { QImode, SImode, DImode };
+  static const rtx_code codes[] = { ROTATE, ROTATERT };
+
+  for (auto count_mode : count_modes)
+    {
+      rtx reg = make_test_reg (count_mode);
+      rtx neg = gen_rtx_NEG (count_mode, reg);
+      rtx mask = gen_int_mode (precision - 1, count_mode);
+      rtx count = gen_rtx_AND (count_mode, neg, mask);
+      rtx positive = simplify_gen_binary (AND, count_mode, reg, mask);
+
+      for (auto code : codes)
+	{
+	  rtx_code reverse = code == ROTATE ? ROTATERT : ROTATE;
+	  rtx expected = NULL_RTX;
+	  if (count_bits >= 0
+	      && GET_MODE_PRECISION (count_mode).to_constant () > count_bits)
+	    expected = simplify_gen_binary (reverse, mode, value, positive);
+	  ASSERT_RTX_EQ (expected,
+			 simplify_binary_operation (code, mode, value, count));
+
+	  /* A bare negative count or a narrower mask must not be folded.  */
+	  ASSERT_FALSE (simplify_binary_operation (code, mode, value, neg));
+	  rtx narrow = gen_rtx_AND (count_mode, neg,
+				   gen_int_mode (precision / 2 - 1, count_mode));
+	  ASSERT_FALSE (simplify_binary_operation (code, mode, value, narrow));
+
+	  if (count_mode == QImode)
+	    continue;
+	  expected = NULL_RTX;
+	  if (count_bits >= 0 && GET_MODE_PRECISION (QImode) > count_bits)
+	    expected = simplify_gen_binary
+	      (reverse, mode, value,
+	       simplify_gen_unary (TRUNCATE, QImode, positive, count_mode));
+	  rtx low = gen_rtx_SUBREG (QImode, count,
+				   subreg_lowpart_offset (QImode, count_mode));
+	  ASSERT_RTX_EQ (expected,
+			 simplify_binary_operation (code, mode, value, low));
+	  rtx trunc = gen_rtx_TRUNCATE (QImode, count);
+	  ASSERT_RTX_EQ (expected,
+			 simplify_binary_operation (code, mode, value, trunc));
+	  poly_uint64 offset = subreg_highpart_offset (QImode, count_mode);
+	  if (validate_subreg (QImode, count_mode, count, offset))
+	    {
+	      rtx high = gen_rtx_SUBREG (QImode, count, offset);
+	      ASSERT_FALSE (simplify_binary_operation (code, mode, value, high));
+	    }
+	}
+    }
+}
+
 static void
 test_scalar_int_ops (machine_mode mode)
 {
@@ -9407,6 +9504,8 @@ test_scalar_int_ops (machine_mode mode)
   ASSERT_RTX_EQ (op0, simplify_gen_unary (ZERO_EXTEND, mode, op0, mode));
   ASSERT_RTX_EQ (op0, simplify_gen_unary (SIGN_EXTEND, mode, op0, mode));
   ASSERT_RTX_EQ (op0, lowpart_subreg (mode, op0, mode));
+
+  test_masked_negative_rotate (mode);
 }
 
 /* Verify some simplifications of integer extension/truncation.
