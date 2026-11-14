@@ -179,6 +179,13 @@ async_io (void *arg)
 		  NOTE ("Received AIO_CLOSE during error condition");
 		  goto finish_thread;
 		}
+	      else if (ctq->type == AIO_DATA_TRANSFER_INIT)
+		{
+		  LOCK (&au->io_lock);
+		  free (ctq->new_pdt);
+		}
+	      else if (ctq->type == AIO_TRANSFER_ARRAY)
+		free (ctq->arg.array.desc);
 	    }
 
   	  NOTE ("Next ctq, current id: %d", au->id.low);
