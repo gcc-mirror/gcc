@@ -2076,6 +2076,14 @@ users:
   account: guihaoc
   inactive: true
 - sn: Guo
+  cn: Jie Guo
+  email:
+  - guojie@loongson.cn
+  - guojie@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: guojie
+- sn: Guo
   cn: Jiufu Guo
   email:
   - guojiufu@linux.ibm.com
