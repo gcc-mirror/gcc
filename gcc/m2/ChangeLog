@@ -1,3 +1,199 @@
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127991
+	* gm2-gcc/m2decl.cc (m2decl_DeclareKnownConstant): Build the
+	anonymous constant declaration without a name.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-10-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in: Do not make m2.pod as .INTERMEDIATE but delete it
+	explicitly in clean targets.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127657
+	* gm2-compiler/M2Quads.mod (BuildValFunction): Add filtering
+	spell check for unknown symbols.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127622
+	* gm2-compiler/M2Base.mod (CheckCompatible): Rename t1 to left.
+	Rename t2 to right.
+	Add spellcheck hint format specifiers to unknown types.
+	* gm2-compiler/M2MetaError.mod (ConfigureFilter): New procedure.
+	(errorBlock): filterVar new field.
+	filterType new field.
+	filterConst new field.
+	(continuation): Add T V C filter modifiers.
+	(FilterOnType): New procedure.
+	(FilterOnVariable): Ditto.
+	(FilrerOnConst): Ditto.
+	(SpellHint): Call ConfigureFilter.
+	* gm2-compiler/M2StackSpell.def (FilterType): New procedure.
+	(FilterVariable): Ditto.
+	(FilrerConst): Ditto.
+	* gm2-compiler/M2StackSpell.mod (FilterKind): New type.
+	(FilterSet): Ditto.
+	(CurrentFilter): New variable.
+	(PushNameFilter): New procedure.
+	(PushCandidates): Pass PushNameFilter as callback.
+	(GetSpellHintFilter): New procedure.
+	(GetSpellHint): Reimplement.
+	(FilterType): New procedure.
+	(FilterVariable): Ditto.
+	(FilterConst): Ditto.
+	(Init): Initialize CurrentFilter.
+	* gm2-compiler/P3SymBuild.mod (P3StartBuildDefModule): Push base
+	module.
+	(P3EndBuildDefModule): Pop base module.
+	(P3StartBuildImpModule): Push base module.
+	(P3EndBuildImpModule): Pop base module.
+	(P3StartBuildProgModule): Push base module.
+	(P3EndBuildProgModule): Pop base module.
+	(StartBuildInnerModule): Push base module.
+	(EndBuildInnerModule): Pop base module.
+	* gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): Pop
+	base module.
+	(PCStartBuildImpModule): Push base module.
+	(PCEndBuildImpModule): Pop base module.
+	(PCStartBuildProgModule): Push base module.
+	(PCEndBuildProgModule): Pop base module.
+	(StartBuildInnerModule): Push base module.
+	(EndBuildInnerModule): Pop base module.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127567
+	* gm2-compiler/P1SymBuild.mod (BuildImportInnerModule): Call
+	PutImported if sym is a defimp or module.
+	* gm2-compiler/SymbolConversion.def (Gcc2Mod): Correct parameter
+	name.
+	* gm2-compiler/SymbolConversion.mod (Gcc2Mod): Ditto.
+	* gm2-compiler/SymbolTable.mod (IsExternalModule): New procedure
+	function.
+	(AddSymToModuleScope): Only generate an error if the symbol is
+	not an external module.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127554
+	* gm2-compiler/M2MetaError.mod (SpellHint): Allow error symbols to
+	be spell checked.
+	* gm2-compiler/M2Quads.mod (BuildConstructor): Generate a spelling
+	hint error message if the name is set and an error is seen.
+	(PopTntok): New procedure.
+	* gm2-compiler/PCBuild.bnf (CreateQualident): New procedure.
+	(PushQualident): Reimplement.
+	* gm2-compiler/PCSymBuild.mod (PCStartBuildDefModule): Push
+	module to spelling stack.
+	(PCStartBuildImpModule): Ditto.
+	(PCStartBuildInnerModule): Ditto.
+	(PCEndBuildDefModule): Pop top of spell stack.
+	(PCEndBuildImpModule): Ditto.
+	(PCEndBuildProgModule): Ditto.
+	(PCEndBuildInnerModule): Ditto.
+	(PCEndBuildProcedure): Ditto.
+	(PCBuildProcedureHeading): Ditto.
+	(PCEndBuildForward): Reimplement.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127469
+	* gm2-compiler/M2Quads.mod (BuildConstructor): Check for
+	tok UnknownTokenNo and if not equal generate an error message
+	at tok stating the type is unknown.
+	* gm2-compiler/PCSymBuild.mod (WalkConvert): Check totype for
+	NulSym and if so return FALSE.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126847
+	* Make-lang.in (TEXILIBSRC): New define.
+	(m2/stage1/cc1gm2$(exeext)): Rewrite.
+	(m2/gm2-gcc/$(SRC_PREFIX)%.h): Add order-only dependancy.
+	(m2/gm2-libs-boot/M2RTS.o): Ditto.
+	(m2/gm2-libs-boot/%.o): Ditto.
+	(m2/gm2-libs-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-libs-boot/RTintdummy.o): Ditto.
+	(m2/gm2-libs-boot/wrapc.o): Ditto.
+	(m2/gm2-libs-boot/UnixArgs.o): Ditto.
+	(m2/gm2-libs-boot/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/errno.o): Ditto.
+	(m2/gm2-libs-boot/dtoa.o): Ditto.
+	(m2/gm2-libs-boot/ldtoa.o): Ditto.
+	(m2/gm2-libs-boot/termios.o): Ditto.
+	(m2/gm2-libs-boot/SysExceptions.o): Ditto.
+	(m2/gm2-libs-boot/SysStorage.o): Ditto.
+	(m2/gm2-libs-boot/Selective.o): Ditto.
+	(m2/gm2-compiler-boot/M2GCCDeclare.o): Ditto.
+	(m2/gm2-compiler-boot/M2Error.o): Ditto.
+	(m2/gm2-compiler-boot/%.o): Ditto.
+	(m2/gm2-compiler-boot/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler-boot/P0SyntaxCheck.c): Ditto.
+	(m2/gm2-compiler-boot/P0SyntaxCheck.o): Ditto.
+	(m2/gm2-compiler-boot/P1Build.c): Ditto.
+	(m2/gm2-compiler-boot/P1Build.o): Ditto.
+	(m2/gm2-compiler-boot/P2Build.c): Ditto.
+	(m2/gm2-compiler-boot/P2Build.o): Ditto.
+	(m2/gm2-compiler-boot/P3Build.c): Ditto.
+	(m2/gm2-compiler-boot/P3Build.o): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PCBuild.o): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.c): Ditto.
+	(m2/gm2-compiler-boot/PHBuild.o): Ditto.
+	(m2/gm2-compiler-boot/m2flex.o): Ditto.
+	(m2/gm2-libiberty/$(SRC_PREFIX)%.h): Ditto.
+	(m2/gm2-compiler/%.o): Ditto.
+	(m2/gm2-compiler/m2flex.o): Ditto.
+	(m2/gm2-libs/choosetemp.o): Ditto.
+	(m2/gm2-libs-boot/libgm2.a): Ditto.
+	(m2/gm2-compiler-boot/gm2.a): Ditto.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126174
+	* Make-lang.in (m2/gm2-libs.texi): Add test for
+	m2/gm2-libs-pim-common and create if necessary.
+	Add test for m2/gm2-libs-iso-common and create if necessary.
+	Add test for m2/gm2-libs-cor-common and create if necessary.
+	* tools-src/def2doc.py (Base_Libs): Change section heading name.
+	(library_classifications): Add PIM_Common, ISO_Common and
+	COR_Common.
+	(PIM_Common): New list.
+	(ISO_Common): New list.
+	(COR_Common): New list.
+	* gm2-libs-cor-common/README.texi: New file.
+	* gm2-libs-iso-common/README.texi: New file.
+	* gm2-libs-pim-common/README.texi: New file.
+
 2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/126911

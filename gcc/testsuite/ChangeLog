@@ -1,3 +1,65 @@
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127991
+	* gm2.dg/dump/pim/pass/anonymousconst.mod: New test.
+	* gm2.dg/dump/pim/pass/dg-dump-pim-pass.exp: New test.
+	Authored-by: Yongqiang Tian <yqtian668@gmail.com>
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127657
+	* gm2.dg/spell/iso/fail/valspell.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell2.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell3.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127622
+	* gm2.dg/spell/iso/fail/badspelltype.mod: New test.
+	* gm2.dg/spell/iso/fail/badspelltype2.mod: New test.
+
+2026-11-13  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-11-02  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.dg/modules/modules.exp: Reset module_do between ungrouped
+	tests.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127567
+	* gm2/imports/fail/tinybadimport.mod: New test.
+	* gm2/imports/run/pass/tinygoodimport.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127554
+	* gm2.dg/spell/iso/fail/constaggregate.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/run/pass/testclock2.mod: Remove ability to
+	change the system clock.
+
 2026-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

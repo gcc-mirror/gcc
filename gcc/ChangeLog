@@ -1,3 +1,21 @@
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-11-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/128293
+	* doc/install.texi (GM2-prerequisite): Add paragraph
+	explaining m2rte.so is dependent upon stdc++.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126174
+	* doc/gm2.texi (Using GNU Modula-2): Move Unbounded by reference after
+	Exception handling in the menu.
+
 2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/125129
