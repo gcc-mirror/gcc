@@ -12235,6 +12235,9 @@ gfc_alloc_allocatable_for_assignment (gfc_loopinfo *loop,
       else
 	tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&CLASS_DATA (expr2)->ts));
     }
+  else if (expr2->ts.type == BT_CLASS)
+    /* A variable that is not polymorphic has the declared type of expr2.  */
+    tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&CLASS_DATA (expr2)->ts));
   else
     tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&expr2->ts));
   elemsize2 = fold_convert (gfc_array_index_type, tmp);
