@@ -330,11 +330,6 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 			    ? (t) 1 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
 #define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
 
-/* Use that infrastructure to provide a few constants.  */
-#ifndef UCHAR_MAX
-# define UCHAR_MAX INTTYPE_MAXIMUM (unsigned char)
-#endif
-
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>
 # include <time.h>
