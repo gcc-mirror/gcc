@@ -992,24 +992,30 @@ package body Exp_Util is
          --  Step 1: Construct all the actuals for the call to library routine
          --  Allocate_Any_Controlled / Deallocate_Any_Controlled.
 
+         Actuals := New_List;
+
          --  a) Storage pool
 
-         Actuals := New_List (New_Occurrence_Of (Pool_Id, Loc));
+         if not Use_Secondary_Stack_Pool then
+            Append_To (Actuals, New_Occurrence_Of (Pool_Id, Loc));
+         end if;
 
          if Is_Allocate then
 
             --  b) Subpool
 
-            Subpool := Subpool_Handle_Name (Expr);
+            if not Use_Secondary_Stack_Pool then
+               Subpool := Subpool_Handle_Name (Expr);
 
-            --  If a subpool is present it can be an arbitrary name, so make
-            --  the actual by copying the tree.
+               --  If a subpool is present it can be an arbitrary name, so make
+               --  the actual by copying the tree.
 
-            if Present (Subpool) then
-               Append_To
-                 (Actuals, New_Copy_Tree (Subpool, New_Scope => Proc_Id));
-            else
-               Append_To (Actuals, Make_Null (Loc));
+               if Present (Subpool) then
+                  Append_To
+                   (Actuals, New_Copy_Tree (Subpool, New_Scope => Proc_Id));
+               else
+                  Append_To (Actuals, Make_Null (Loc));
+               end if;
             end if;
 
             --  c) Finalization collection
@@ -1043,7 +1049,9 @@ package body Exp_Util is
                             New_Occurrence_Of (Ptr_Coll_Id, Loc),
                           Attribute_Name => Name_Unrestricted_Access))));
 
-            Append_To (Actuals, New_Occurrence_Of (Fin_Coll_Id, Loc));
+            if not Use_Secondary_Stack_Pool then
+               Append_To (Actuals, New_Occurrence_Of (Fin_Coll_Id, Loc));
+            end if;
          end if;
 
          --  d) Address
@@ -1326,7 +1334,7 @@ package body Exp_Util is
 
          --  h) On_Subpool
 
-         if Is_Allocate then
+         if Is_Allocate and then not Use_Secondary_Stack_Pool then
             Append_To (Actuals,
               New_Occurrence_Of (Boolean_Literals (Present (Subpool)), Loc));
          end if;
@@ -1336,7 +1344,9 @@ package body Exp_Util is
 
          --  Select the proper routine to call
 
-         if Is_Allocate then
+         if Use_Secondary_Stack_Pool then
+            Proc_To_Call := RTE (RE_SS_Allocate_Any_Controlled);
+         elsif Is_Allocate then
             Proc_To_Call := RTE (RE_Allocate_Any_Controlled);
          else
             Proc_To_Call := RTE (RE_Deallocate_Any_Controlled);

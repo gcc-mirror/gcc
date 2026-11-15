@@ -280,6 +280,16 @@ private
    --    name is present at the point of allocation. This is used for error
    --    diagnostics.
 
+   procedure SS_Allocate_Any_Controlled
+     (Addr          : out Address;
+      Storage_Size  : System.Storage_Elements.Storage_Count;
+      Alignment     : System.Storage_Elements.Storage_Count;
+      Is_Controlled : Boolean);
+   --  Likewise, but the allocation is done on the secondary stack instead of
+   --  on a pool. This routine belongs in the System.Secondary_Stack unit, but
+   --  it would introduce additional dependencies for it that are problematic
+   --  for the compiler bootstrap.
+
    procedure Deallocate_Any_Controlled
      (Pool          : in out Root_Storage_Pool'Class;
       Addr          : System.Address;
