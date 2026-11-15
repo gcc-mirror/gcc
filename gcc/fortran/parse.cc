@@ -3273,21 +3273,16 @@ accept_statement (gfc_statement st)
     case ST_END_SUBROUTINE:
       if (gfc_statement_label != NULL)
 	{
-	  /* After a contains section, a new namespace is started together with
-	     a new state_stack. The statement label must be attached to the
-	     previous state after finding the label in its namespace.  */
-	  if (gfc_state_stack->head == NULL
-	      && gfc_state_stack->previous
-	      && gfc_state_stack->previous->sym
-	      && gfc_state_stack->previous->sym->ns
-	      && gfc_state_stack->previous->sym->ns->parent == NULL)
+	  /* After a contains section, the label was defined in a scratch
+	     namespace.  Define it in the host and add the statement there.  */
+	  if (gfc_state_stack->state == COMP_CONTAINS)
 	    {
-	      int value = gfc_current_ns->st_labels->value;
 	      gfc_state_data *previous_state = gfc_state_stack;
 	      gfc_namespace *old_ns = gfc_current_ns;
-	      gfc_current_ns = gfc_state_stack->previous->sym->ns;
-	      new_st.here = gfc_get_st_label (value);
-	      new_st.here->defined = ST_LABEL_TARGET;
+	      gfc_current_ns = old_ns->parent;
+	      new_st.here = gfc_get_st_label (gfc_statement_label->value);
+	      gfc_define_st_label (new_st.here, ST_LABEL_TARGET,
+				   &gfc_statement_label->where);
 	      new_st.op = EXEC_RETURN;
 	      gfc_state_stack = gfc_state_stack->previous;
 	      add_statement ();
@@ -3306,6 +3301,22 @@ accept_statement (gfc_statement st)
 	  add_statement ();
 	}
 
+      break;
+
+    case ST_END_MODULE:
+    case ST_END_SUBMODULE:
+      /* After a contains section, the label was defined in a scratch
+	 namespace.  Define it in the module.  */
+      if (gfc_statement_label != NULL
+	  && gfc_state_stack->state == COMP_CONTAINS)
+	{
+	  gfc_namespace *old_ns = gfc_current_ns;
+	  gfc_current_ns = old_ns->parent;
+	  gfc_define_st_label (gfc_get_st_label (gfc_statement_label->value),
+			       ST_LABEL_BAD_TARGET,
+			       &gfc_statement_label->where);
+	  gfc_current_ns = old_ns;
+	}
       break;
 
     case ST_ENTRY:
