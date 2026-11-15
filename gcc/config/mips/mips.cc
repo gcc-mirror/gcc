@@ -4258,37 +4258,6 @@ mips_set_reg_reg_cost (machine_mode mode)
     }
 }
 
-/* Implement TARGET_INSN_COST.  */
-
-static int
-mips_insn_cost (rtx_insn *x, bool speed)
-{
-  int cost;
-  int count;
-  int ratio;
-
-  if (recog_memoized (x) < 0
-      && GET_CODE (PATTERN (x)) != ASM_INPUT
-      && asm_noperands (PATTERN (x)) < 0)
-    goto pattern_cost;
-
-  /* FIXME: return get_attr_length?  More tests may be needed.  */
-  if (!speed)
-    goto pattern_cost;
-
-  count = get_attr_insn_count (x);
-  ratio = get_attr_perf_ratio (x);
-  cost = COSTS_N_INSNS (count) * ratio;
-  if (cost > 0)
-    return cost;
-
-pattern_cost:
-  cost = pattern_cost (PATTERN (x), speed);
-  /* If the cost is zero, then it's likely a complex insn.
-     FIXME: Return COSTS_N_INSNS (2)?  More tests are needed.  */
-  return cost;
-}
-
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -4810,6 +4779,37 @@ mips_address_cost (rtx addr, machine_mode mode,
 		   bool speed ATTRIBUTE_UNUSED)
 {
   return mips_address_insns (addr, mode, false);
+}
+
+/* Implement TARGET_INSN_COST.  */
+
+static int
+mips_insn_cost (rtx_insn *x, bool speed)
+{
+  int cost;
+  int count;
+  int ratio;
+
+  if (recog_memoized (x) < 0
+      && GET_CODE (PATTERN (x)) != ASM_INPUT
+      && asm_noperands (PATTERN (x)) < 0)
+    goto pattern_cost;
+
+  /* FIXME: return get_attr_length?  More tests may be needed.  */
+  if (!speed)
+    goto pattern_cost;
+
+  count = get_attr_insn_count (x);
+  ratio = get_attr_perf_ratio (x);
+  cost = COSTS_N_INSNS (count) * ratio;
+  if (cost > 0)
+    return cost;
+
+pattern_cost:
+  cost = pattern_cost (PATTERN (x), speed);
+  /* If the cost is zero, then it's likely a complex insn.
+     FIXME: Return COSTS_N_INSNS (2)?  More tests are needed.  */
+  return cost;
 }
 
 /* Implement TARGET_NO_SPECULATION_IN_DELAY_SLOTS_P.  */
