@@ -4258,7 +4258,7 @@ mips_set_reg_reg_cost (machine_mode mode)
     }
 }
 
-/* Implement TARGET_INSN_COSTS.  */
+/* Implement TARGET_INSN_COST.  */
 
 static int
 mips_insn_cost (rtx_insn *x, bool speed)
