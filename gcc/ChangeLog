@@ -1,3 +1,17 @@
+2026-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-11-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128640
+	* config/i386/i386.cc (classify_argument): In the wrapper,
+	assert that more than 2 classes means SSE followed by all SSEUP.
+	(function_arg_advance_64): Use classify_argument instead of an
+	explicit vector mode check to pass unnamed 256-bit and 512-bit
+	vector arguments on stack.
+	(function_arg_64): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+
 2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:
