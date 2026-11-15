@@ -2059,13 +2059,18 @@ package body Sem_Aggr is
             --  verify legality. We use a copy because the expression will be
             --  analyzed anew when the enclosing aggregate is expanded and the
             --  construct is rewritten as a loop with a new iteration variable.
+            --  However, we need to preanalyze the expression itself inside a
+            --  generic to be able to capture global references present in it.
             --  This does not apply to SPARK mode, where expansion is skipped.
 
             --  If the parent is a component association, we also temporarily
             --  point its Expression field to the copy, because analysis may
             --  expect this invariant to hold.
 
-            if Iterated_Expr and then not GNATprove_Mode then
+            if Iterated_Expr
+              and then not Inside_A_Generic
+              and then not GNATprove_Mode
+            then
                declare
                   In_Assoc : constant Boolean :=
                     Nkind (Parent (Expr)) in N_Component_Association
@@ -4537,12 +4542,18 @@ package body Sem_Aggr is
 
                Enter_Name (Id);
 
-               --  Analyze a copy of the expression, to verify legality. We use
-               --  a copy because the expression will be analyzed anew when the
-               --  enclosing aggregate is expanded, and the construct is
-               --  rewritten as a loop with a new index variable.
+               --  Preanalyze a copy of the expression to verify legality. We
+               --  use a copy because the expression will be analyzed anew when
+               --  the enclosing aggregate is expanded and the construct is
+               --  rewritten as a loop with a new iteration variable. However,
+               --  we need to preanalyze the expression itself inside a generic
+               --  to be able to capture global references present in it.
 
-               Expr := Copy_Separate_Tree (Expression (Assoc));
+               if Inside_A_Generic then
+                  Expr := Expression (Assoc);
+               else
+                  Expr := Copy_Separate_Tree (Expression (Assoc));
+               end if;
                Set_Parent (Expr, Assoc);
                Preanalyze_And_Resolve (Expr, Component_Type (Typ));
                End_Scope;
