@@ -5426,7 +5426,7 @@ $as_echo "#define STRING_WITH_STRINGS 1" >>confdefs.h
 fi
 
 
-for ac_header in locale.h fcntl.h limits.h strings.h string.h sys/file.h unistd.h
+for ac_header in locale.h fcntl.h strings.h string.h sys/file.h unistd.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"

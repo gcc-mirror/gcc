@@ -214,9 +214,7 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 # include <unistd.h>
 #endif
 
-#if HAVE_LIMITS_H
-# include <limits.h>
-#endif
+#include <limits.h>
 
 /* Infrastructure for defining missing _MAX and _MIN macros.  Note that
    macros defined with these cannot be used in #if.  */
@@ -228,11 +226,6 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #define INTTYPE_MINIMUM(t) ((t) (INTTYPE_SIGNED (t) \
 			    ? (t) 1 << (sizeof (t) * CHAR_BIT - 1) : (t) 0))
 #define INTTYPE_MAXIMUM(t) ((t) (~ (t) 0 - INTTYPE_MINIMUM (t)))
-
-/* Use that infrastructure to provide a few constants.  */
-#ifndef UCHAR_MAX
-# define UCHAR_MAX INTTYPE_MAXIMUM (unsigned char)
-#endif
 
 #ifdef TIME_WITH_SYS_TIME
 # include <sys/time.h>

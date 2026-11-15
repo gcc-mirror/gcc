@@ -56,7 +56,7 @@ ZW_PROG_COMPILER_DEPENDENCIES([CXX])
 AC_HEADER_TIME
 ACX_HEADER_STRING
 
-AC_CHECK_HEADERS(locale.h fcntl.h limits.h strings.h string.h sys/file.h unistd.h)
+AC_CHECK_HEADERS(locale.h fcntl.h strings.h string.h sys/file.h unistd.h)
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_C_BIGENDIAN
