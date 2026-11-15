@@ -10,8 +10,8 @@ program p
   type(t)               :: x, y(1)
   integer               :: i
   allocate (a,b(1))
-  print *, [a]            ! { dg-error "Data transfer element at .1. cannot be polymorphic" }
-  print *, [(b(i),i=1,1)] ! { dg-error "Data transfer element at .1. cannot be polymorphic" }
+  print *, [a]
+  print *, [(b(i),i=1,1)]
   print *, [x]
   print *, [(y(i),i=1,1)]
 end

@@ -1516,23 +1516,33 @@ cons_state;
 static int
 check_element_type (gfc_expr *expr, bool convert)
 {
+  gfc_typespec ts;
+
   if (cons_state == CONS_BAD)
     return 0;			/* Suppress further errors */
 
+  /* Without a type-spec, the values have the same declared type, which is
+     the type of the array constructor (F2023:C7120, 7.8 p2, p4).  */
+  ts = expr->ts;
+  if (!convert && ts.type == BT_CLASS && ts.u.derived
+      && ts.u.derived->attr.is_class && ts.u.derived->components
+      && !UNLIMITED_POLY (expr))
+    ts = ts.u.derived->components->ts;
+
   if (cons_state == CONS_START)
     {
-      if (expr->ts.type == BT_UNKNOWN)
+      if (ts.type == BT_UNKNOWN)
 	cons_state = CONS_BAD;
       else
 	{
 	  cons_state = CONS_GOOD;
-	  constructor_ts = expr->ts;
+	  constructor_ts = ts;
 	}
 
       return 0;
     }
 
-  if (gfc_compare_types (&constructor_ts, &expr->ts))
+  if (gfc_compare_types (&constructor_ts, &ts))
     return 0;
 
   if (convert)
