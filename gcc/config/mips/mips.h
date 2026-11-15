@@ -1034,7 +1034,7 @@ struct mips_cpu_info {
 				      && mips_isa_rev <= 5))		\
 				 && !TARGET_MIPS16)
 
-/* ISA has a three-operand multiplication instruction.  */
+/* ISA has a three-operand 64-bit multiplication instruction.  */
 #define ISA_HAS_DMUL3		(TARGET_64BIT				\
 				 && TARGET_OCTEON			\
 				 && !TARGET_MIPS16)
