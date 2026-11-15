@@ -13807,6 +13807,37 @@ is_assoc_assign (gfc_expr *lhs, gfc_expr *rhs)
 	 && lhs->symtree->n.sym->assoc->target == rhs;
 }
 
+/* Return true if RHS is a function reference with an actual argument that
+   overlaps LHS and whose dummy may be redefined.  */
+
+static bool
+rhs_may_redefine_lhs (gfc_expr *lhs, gfc_expr *rhs)
+{
+  if (rhs->expr_type != EXPR_FUNCTION || rhs->value.function.isym)
+    return false;
+
+  gfc_symbol *esym = rhs->value.function.esym;
+  gfc_formal_arglist *f = esym ? esym->formal : NULL;
+
+  for (gfc_actual_arglist *a = rhs->value.function.actual; a; a = a->next)
+    {
+      gfc_symbol *dummy = f ? f->sym : NULL;
+
+      /* Without a dummy to inspect, assume the worst.  */
+      if ((!dummy
+	   || (dummy->attr.intent != INTENT_IN && !dummy->attr.value))
+	  && a->expr && a->expr->expr_type == EXPR_VARIABLE
+	  && gfc_check_dependency (lhs, a->expr, false))
+	return true;
+
+      if (f)
+	f = f->next;
+    }
+
+  return false;
+}
+
+
 /* Subroutine of gfc_trans_assignment that actually scalarizes the
    assignment.  EXPR1 is the destination/LHS and EXPR2 is the source/RHS.
    init_flag indicates initialization expressions and dealloc that no
@@ -14040,6 +14071,12 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       rse.expr = gfc_class_data_get (rse.expr);
       rse.expr = build_fold_indirect_ref_loc (input_location, rse.expr);
     }
+
+  /* The lhs components to free are read after the rhs call.  */
+  if (gfc_bt_struct (expr1->ts.type)
+      && rhs_may_redefine_lhs (expr1, expr2)
+      && !TREE_CONSTANT (rse.expr) && !VAR_P (rse.expr))
+    rse.expr = gfc_evaluate_now (rse.expr, &rse.pre);
 
   /* Stabilize a string length for temporaries.  */
   if (expr2->ts.type == BT_CHARACTER && !expr1->ts.deferred
