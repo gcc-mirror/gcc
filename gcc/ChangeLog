@@ -1,3 +1,103 @@
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/127171
+	* ipa-fnsummary.cc (compute_switch_edge_predicates): Break out out from
+	set_switch_stmt_execution_predicate; support computing per-edge
+	predicates for nonconstant evaluation.
+	(set_switch_stmt_execution_predicate): Use
+	compute_switch_edge_predicates.
+	(will_be_nonconstant_predicate): Handle comparisons and switches on
+	aggregate loads with unknown_offset or maybe_modified.
+	(phi_result_unknown_predicate): Handle GIMPLE_SWITCH and use
+	will_be_nonconstant_predicate.
+	* ipa-predicate.cc (ipa_predicate::add_clause): Fix inverted
+	unknown_offset check when matching complementary conditions.
+	* ipa-prop.cc (ipa_load_from_parm_agg_unknown_offset): Skip null
+	pointer operands when null pointer dereferences are invalid and
+	require matching address spaces on pointer conversions.
+	* params.opt (-param=ipa-jump-function-lookups=): Increase default
+	from 8 to 64.
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/127171
+	* ipa-prop.cc (ipa_load_from_parm_agg_unknown_offset): Walk PHIs.
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/127171
+	* ipa-fnsummary.cc (struct string_char_set_hashmap_traits): New.
+	(get_string_char_set): New function.
+	(char_set_any_in_range_p): New function.
+	(fold_string_char_compare): New function.
+	(evaluate_unknown_offset_condition): Evaluate unknown offsets.
+	(evaluate_conditions_for_known_args): Handle unknown_offset.
+	(unmodified_parm_or_parm_agg_item): Compute unknown_offset.
+	(set_cond_stmt_execution_predicate):  Update.
+	(will_be_nonconstant_predicate): Update.
+	(inline_read_section): Update.
+	(ipa_fn_summary_write): Stream uknonwn_offset.
+	(ipa_fnsummary_cc_finalize): Stream uknonwn_offset.
+	* ipa-fnsummary.h (struct agg_position_info): Add unknown_offset.
+	* ipa-predicate.cc (ipa_predicate::add_clause): Handle unknown_offset.
+	(ipa_predicate::probability): Handle unknown_offset conservatively.
+	(dump_condition): Dump unkonwn_offset.
+	(ipa_predicate::remap_after_inlining): Update unknown_offset.
+	(add_condition): Handle unkonwn_offset.
+	* ipa-predicate.h (struct condition): Add unknown_offset.
+	* ipa-prop.cc (ipa_load_from_parm_agg_unknown_offset): New function.
+	(parm_ref_data_pass_through_p): Use it.
+	(ipa_load_from_parm_agg): Handle unknown_offset.
+	* ipa-prop.h (ipa_load_from_parm_agg): Likewise.
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (ipa_argagg_value_list::get_value): Add
+	MAYBE_MODEIFIED parameter; document other params.
+	(ipa_get_indirect_edge_target_1): Pass aroundguaranteed_unmodified.
+	(ipcp_discover_new_direct_edges): Update construction of avx.
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Pass type
+	of access.
+	(unmodified_parm_or_parm_agg_item): Set maybe_modified.
+	(refs_local_or_readonly_memory_p): Accept constants.
+	(remap_edge_summaries): Pass arround agg_preserved_map.
+	(remap_freqcounting_predicate): Likewise.
+	(ipa_merge_fn_summary_after_inlining): Likewise.
+	(inline_read_section): Read maybe_modified flag.
+	(ipa_fn_summary_write): Write maybe_modified flag.
+	* ipa-fnsummary.h (struct agg_position_info): Add maybe_modified.
+	* ipa-predicate.cc (ipa_predicate::add_clause): Handle
+	maybe_modified flag.
+	(ipa_predicate::probability): Handle maybe_modified flag.
+	(dump_condition): Handle maybe_modified flag.
+	(ipa_predicate::remap_after_duplication): Handle maybe_modified flag.
+	(ipa_predicate::remap_after_inlining): Handle maybe_modified flag.
+	(add_condition): Handle maybe_modified flag.
+	* ipa-predicate.h (struct condition): Add maybe_modified flag.
+	* ipa-prop.cc (ipa_find_agg_cst_from_init): Handle STRING_CST, ctors
+	and scalars.
+	(try_make_edge_direct_simple_call): Update.
+	* ipa-prop.h (ipa_find_agg_cst_from_init): Update declarations
+	* ipa-utils.cc (ipa_points_to_readonly_memory_p): Add known_vals.
+	* ipa-utils.h (ipa_points_to_readonly_memory_p): Declare.
+
+2026-11-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Reverse rotations with masked negative counts.
+	(selftest::test_masked_negative_rotate): New function.
+	(selftest::test_scalar_int_ops): Call it.
+
+2026-11-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/aarch64/aarch64.md
+	(*aarch64_<optab>_reg_<mode>3_mask1): Exclude left rotations.
+	(*aarch64_<optab>_reg_<mode>3_neg_mask2): Ditto.
+	(*aarch64_<optab>_reg_di3_mask2): Ditto.
+	* config/aarch64/aarch64.cc
+	(selftest::aarch64_test_masked_rotate): New function.
+	(selftest::aarch64_run_selftests): Call it.
+
 2026-11-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/127142

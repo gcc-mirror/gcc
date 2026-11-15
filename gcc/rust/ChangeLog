@@ -1,3 +1,249 @@
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* checks/errors/rust-hir-pattern-analysis.cc (lower_pattern): Lower
+	path patterns that name an enum variant.
+
+2026-11-14  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Register new handler.
+	* backend/rust-intrinsic-handlers.cc (ptr_offset_from): New function.
+	* backend/rust-intrinsic-handlers.h (ptr_offset_from): Likewise.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Register new entry for
+	ptr_offset_from.
+	* util/rust-intrinsic-values.h: Likewise.
+
+2026-11-14  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-builtins-include.cc
+	(MacroBuiltin::include_handler): Remove include_extra_file
+	usage.
+	* lex/rust-lex.cc (Lexer::Lexer): Copy and leak filename
+	parameter.
+	* rust-session-manager.h (Session::extra_files): Remove member
+	variable.
+	(Session::include_extra_file): Remove member function.
+
+2026-11-14  Ata Borla  <chessy.gnu.org@gmail.com>
+
+	* rust-linemap.cc (instance_): Changed ... nullptr.
+	(Linemap::start_file): Likewise.
+	(Linemap::location_to_string): Likewise.
+
+2026-11-14  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-intrinsic-handlers.h (Compile::handlers): Remove forward declaration
+	for inner namespace since it is no longer needed.
+	* backend/rust-intrinsic-handlers.cc (Compile::handlers::inner::unchecked_op):
+	Declare as static.
+	(Compile::handlers::inner::expect): Likewise.
+	(Compile::handlers::inner::try_handler): Likewise.
+	(Compile::handlers::inner::wrapping_op): Likewise.
+	(Compile::handlers::inner::op_with_overflow): Likewise.
+	(Compile::handlers::inner::copy): Likewise.
+	(Compile::handlers::inner::atomic_store): Likewise.
+	(Compile::handlers::inner::atomic_load): Likewise.
+	(Compile::handlers::inner::atomic_binary_op): Likewise.
+	(Compile::handlers::inner::atomic_compare_exchange): Likewise.
+	(Compile::handlers::inner::atomic_minmax): Likewise.
+	(Compile::handlers::inner::prefetch): Likewise.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-hir-type-check-item.cc
+	(TypeCheckItem::ResolveImplBlockSelf): Return the self type from the
+	context when it is already there.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-tyty.h (TypeBoundPredicateItem): Hold the parent by
+	pointer, drop the copy constructor and assignment.
+	* typecheck/rust-tyty-bounds.cc
+	(TypeBoundPredicate::lookup_associated_item): Pass this.
+	(TypeBoundPredicateItem::TypeBoundPredicateItem): Take a pointer.
+	(TypeBoundPredicateItem::error): Use a null parent.
+	(TypeBoundPredicateItem::is_error): Check for it.
+	(TypeBoundPredicateItem::get_parent): Return the pointer.
+	(TypeBoundPredicateItem::get_tyty_for_receiver): Go through it.
+	(TypeBoundPredicate::get_associated_type_items): Pass this.
+	* typecheck/rust-hir-path-probe-expr.cc
+	(PathProbeExpr::process_associated_trait_for_candidates): Pass the
+	address.
+	* typecheck/rust-hir-dot-operator.h (MethodResolver): Add
+	predicate_bounds.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::try_hook): Keep
+	the bounds the items point into.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* expand/rust-macro-builtins-asm.cc (is_output_operand): New.
+	(gcc_operand_numbers): New.
+	(expand_inline_asm_strings): Renumber the placeholders and reject
+	one past the last operand.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc
+	(AssociatedImplTrait::bind_impl_for_projection): Fix the ref of
+	bound args.
+	* typecheck/rust-hir-type-check-type.cc
+	(TypeCheckType::visit (QualifiedPathInType)): Give the result its
+	own ref.
+	* typecheck/rust-type-util.cc (normalize_projection): Check the
+	impl first if it hasn't been yet.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::Resolve):
+	Keep the error type in the context.
+	(TypeCheckExpr::visit (AssignmentExpr)): Bail out on an error
+	operand.
+	(TypeCheckExpr::visit (CompoundAssignmentExpr)): Likewise.
+	(TypeCheckExpr::visit (ArithmeticOrLogicalExpr)): Likewise.
+	(TypeCheckExpr::visit (ComparisonExpr)): Likewise.
+	(TypeCheckExpr::visit (LazyBooleanExpr)): Likewise.
+	(TypeCheckExpr::visit (NegationExpr)): Likewise.
+	(TypeCheckExpr::visit (ArrayExpr)): Bail out on an error element.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit
+	(StaticItem)): Keep the declared type when the initializer failed.
+	(TypeCheckItem::visit (ConstantItem)): Likewise.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-raw-path.h: Move to...
+	* util/rust-raw-path.h: ...here.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-forever-stack.h: Use RawPath as ResolutionPath input.
+	* resolve/rust-name-resolution-context.h: Change call site.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Use RawPath
+	within constructor.
+	* hir/rust-hir-dump.cc (Dump::visit): Use new getter.
+	* hir/tree/rust-hir-path.cc (GenericArgs::GenericArgs): Reformat.
+	(TypePathFunction::TypePathFunction): Likewise.
+	(TypePath::TypePath): Use RawPath instead of separate opening scope
+	flag.
+	(TypePath::operator=): Use flags.
+	* hir/tree/rust-hir-path.h (class GenericArgs): Reformat.
+	(class TypePathFunction): Likewise.
+	(class TypePath): Likewise and use RawPath. Remove duplicated function.
+	(class QualifiedPathInType): Reformat.
+	* hir/tree/rust-hir.cc (TypePath::to_string): Use getter.
+	(TypePath::as_simple_path): Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeResolveGenericParam::apply_trait_bounds):
+	Update ctor call.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* backend/rust-compile-struct-field-expr.cc (CompileStructExprField::visit):
+	Update call site.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowerPathInExpression::visit): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* hir/tree/rust-hir-path.cc (PathInExpression::PathInExpression): Use
+	RawPath for constructor.
+	* hir/tree/rust-hir-path.h: Use RawPath within PathPattern.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::visit):
+	Update call site.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Remove opening
+	scope resolution flag.
+	* hir/rust-ast-lower.cc (ASTLowerPathInExpression::visit): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit): Change function call name.
+	* hir/tree/rust-hir-path.cc (PathInExpression::PathInExpression):
+	Remove opening scope resolution flag initialization. Move it to
+	PathPattern.
+	* hir/tree/rust-hir-path.h (class PathPattern): Make PathPattern
+	inherit from RawPath.
+	(class PathInExpression): Remove opening scope resolution flag.
+	* hir/tree/rust-hir.cc (PathInExpression::to_string): Adapt function
+	name.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-ast.h: Remove header inclusion.
+	* resolve/rust-name-resolution-context.h: Likewise.
+	* util/rust-util-path.h: Removed.
+
+2026-11-14  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-ast-builder.cc: Update function name to use parent.
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Likewise.
+	* ast/rust-path.cc (TypePath::as_string): Likewise.
+	(PathInExpression::as_string): Likewise.
+	(TypePath::as_simple_path): Likewise.
+	(TypePath::make_debug_string): Likewise.
+	(Path::as_string): Use getters instead.
+	* hir/rust-ast-lower.cc (ASTLowerPathInExpression::visit):
+	Likewise.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_enum_identifier):
+	Likewise.
+	(DeriveClone::clone_enum_tuple): Likewise.
+	(DeriveClone::clone_enum_struct): Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Likewise.
+	* ast/rust-ast.h: Remove fields and use a parent raw path class.
+	* ast/rust-path.h: Likewise. Remove util path conversion function.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::resolve_glob_import):
+	Remove utilpath construct.
+	* resolve/rust-early-name-resolver-2.0.h: Likewise.
+	* resolve/rust-forever-stack.h (class ResolutionPath): Move and rename
+	Segment class from here...
+	(struct ResolutionPathSegment): ... to here.
+	* resolve/rust-forever-stack.hxx: Accept new segment class name.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Remove
+	UtilPath.
+	* resolve/rust-name-resolution-context.h: Use RawPath in set_path
+	instead of UtilPath. Remove path specific resolve_path functions.
+	* resolve/rust-name-resolution-context.hxx: Remove UtilPath.
+	* ast/rust-raw-path.h: New file.
+
+2026-11-14  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Add new handler for nontemporal_store.
+	* backend/rust-intrinsic-handlers.cc (move_val_init): Add soundness comment.
+	(nontemporal_store): New function.
+	* backend/rust-intrinsic-handlers.h (nontemporal_store): Likewise.
+	* typecheck/rust-hir-type-check-intrinsic.cc: New entry for nontemporal_store.
+	* util/rust-intrinsic-values.h: Likewise.
+
+2026-11-14  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* ast/rust-item.h: New `get_field_count` virtual method for AST::Struct and implementation
+	in AST::{StructStruct, TupleStruct}.
+	* expand/rust-derive-coerce-pointee.cc (DeriveCoercePointee::validate_number_of_fields): Use
+	said new method.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* expand/rust-derive-coerce-pointee.cc
+	(DeriveCoercePointee::validate_non_generic_pointee): New.
+	(DeriveCoercePointee::go): Call validate_non_generic_pointee.
+	* expand/rust-derive-coerce-pointee.h
+	(DeriveCoercePointee::validate_non_generic_pointee): Declare.
+	* util/rust-attribute-values.h: Added POINTEE.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* expand/rust-derive-coerce-pointee.cc
+	(DeriveCoercePointee::validate_number_of_fields): New.
+	(DeriveCoercePointee::go): Call validate_number_of_fields.
+	* expand/rust-derive-coerce-pointee.h
+	(DeriveCoercePointee::validate_number_of_fields): Declare.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust-error-codes.def (ERROR): Add E0802.
+	* expand/rust-derive-coerce-pointee.cc
+	(DeriveCoercePointee::validate_repr_transparent): New
+	(DeriveCoercePointee::go): Call validate_repr_transparent.
+	* expand/rust-derive-coerce-pointee.h
+	(DeriveCoercePointee::validate_repr_transparent): Declare.
+
 2026-11-13  Guillaume Gomez  <contact@guillaume-gomez.fr>
 
 	* rust-attribs.cc (handle_noreturn_attribute)

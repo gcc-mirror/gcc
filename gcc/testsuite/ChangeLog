@@ -1,3 +1,97 @@
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR ipa/127171
+	* gcc.dg/ipa/fnsummary-11.c: New test.
+	* gcc.dg/ipa/fnsummary-12.c: New test.
+	* gcc.dg/ipa/fnsummary-13.c: New test.
+	Assisted-by: Google Carbon
+
+2026-11-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR c++/113381
+	* g++.dg/cpp2a/consteval-prop6.C: XFAIL warning check on
+	line 58 for hppa*-*-hpux*.
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/fnsummary-10.c: Add PHI walking test.
+	* gcc.dg/ipa/fnsummary-9.c: Add PHI walking test.
+	Assisted by Google Carbon
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/fnsummary-10.c: New test.
+	* gcc.dg/ipa/fnsummary-7.c: New test.
+	* gcc.dg/ipa/fnsummary-8.c: New test.
+	* gcc.dg/ipa/fnsummary-9.c: New test.
+	Assisted by Gemini Carbon
+
+2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/fnsummary-2.c: New test.
+	* gcc.dg/ipa/fnsummary-3.c: New test.
+	* gcc.dg/ipa/fnsummary-4.c: New test.
+	* gcc.dg/ipa/fnsummary-5.c: New test.
+	* gcc.dg/ipa/fnsummary-6.c: New test.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/exhaustiveness9.rs: New test.
+	* rust/compile/exhaustiveness10.rs: New test.
+	* rust/compile/issues/3726.rs: Match both variants.
+	* rust/compile/issues/issue-2311.rs: New test.
+
+2026-11-14  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/execute/torture/ptr_offset_from.rs: New test.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/core/core-diagnostics.exp: New test.
+	* rust/core/core-1.49.expected: New file.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/execute/torture/issue-5057.rs: New test.
+	* rust/compile/issues/issue-5057-2.rs: New test.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/issues/issue-5022.rs: New test.
+	* rust/compile/issues/issue-5022-2.rs: New test.
+	* rust/execute/torture/issue-5022.rs: New test.
+
+2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/issues/4165.rs: Drop the follow-up error.
+	* rust/compile/issues/issue-5039.rs: New test.
+	* rust/compile/issues/issue-5039-2.rs: New test.
+
+2026-11-14  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/nontemporal_store.rs: New test.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust/compile/derive-coerce-pointee6.rs: New test.
+	* rust/compile/derive-coerce-pointee7.rs: New file.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust/compile/derive-coerce-pointee5.rs: New test.
+
+2026-11-14  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust/compile/derive-coerce-pointee4.rs: New test.
+	* rust/compile/derive-coerce-pointee1.rs: Added #[repr(transparent)].
+	* rust/compile/derive-coerce-pointee2.rs: Likewise.
+	* rust/compile/derive-coerce-pointee3.rs: Likewise.
+
+2026-11-14  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbb-rol-ror-10.c: New test.
+	* gcc.target/aarch64/rotate-neg-mask.c: Ditto.
+
 2026-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-c++-common/analyzer/aliasing-6.c: New test.
