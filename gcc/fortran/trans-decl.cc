@@ -5661,6 +5661,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	gfc_fatal_error ("Deferred type parameter not yet supported");
       else if (alloc_comp_or_fini)
 	gfc_trans_deferred_array (sym, block);
+      else if (sym->ts.type == BT_CHARACTER && sym->attr.dummy
+	       && sym->attr.function)
+	{
+	  /* A dummy function's result length is evaluated at each call.  */
+	}
       else if (sym->ts.type == BT_CHARACTER)
 	{
 	  loc = input_location;
