@@ -4489,7 +4489,7 @@ ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset, bool by_ref, tree
 
   if (!CONSTANT_CLASS_P (scalar)
       && TREE_CODE (scalar) != CONST_DECL
-      && !(VAR_P (scalar) || !TREE_READONLY (scalar)))
+      && !(VAR_P (scalar) && TREE_READONLY (scalar)))
     return NULL_TREE;
 
   poly_offset_int bit_off
