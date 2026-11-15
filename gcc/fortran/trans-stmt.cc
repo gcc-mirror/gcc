@@ -2257,8 +2257,14 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	  /* Needed to get/set the _len component below.  */
 	  target_expr = se.expr;
 
+	  /* Only a SELECT RANK name, whose selector is assumed rank, can be
+	     allocated or pointer-assigned (F2023:11.1.3.3, 11.1.10.3), so
+	     only its container is copied back to the selector.  */
+	  bool copyback = e->rank == -1;
+
 	  /* Obtain a temporary class container for the result.  */
-	  gfc_conv_class_to_class (&se, e, sym->ts, false, true, false, false);
+	  gfc_conv_class_to_class (&se, e, sym->ts, false, copyback, false,
+				   false);
 	  se.expr = build_fold_indirect_ref_loc (input_location, se.expr);
 
 	  desc = gfc_class_data_get (se.expr);
@@ -2289,8 +2295,9 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 			      fold_convert (TREE_TYPE (charlen), tmp));
 	      /* and the opposite way at the end of the block, to hand changes
 		 on the string length back.  */
-	      gfc_add_modify (&se.post, tmp,
-			      fold_convert (TREE_TYPE (tmp), charlen));
+	      if (copyback)
+		gfc_add_modify (&se.post, tmp,
+				fold_convert (TREE_TYPE (tmp), charlen));
 	      /* Length assignment done, prevent adding it again below.  */
 	      need_len_assign = false;
 	    }
