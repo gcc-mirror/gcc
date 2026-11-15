@@ -162,7 +162,7 @@ record_loop_dependence (class loop *loop, im_mem_ref *ref,
 			dep_kind kind, dep_state state)
 {
   gcc_assert (state != dep_unknown);
-  unsigned bit = 6 * loop->num + kind * 2 + state == dep_dependent ? 1 : 0;
+  unsigned bit = 6 * loop->num + kind * 2 + (state == dep_dependent);
   bitmap_set_bit (&ref->dep_loop, bit);
 }
 
