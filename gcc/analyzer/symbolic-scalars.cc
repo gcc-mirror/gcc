@@ -86,6 +86,10 @@ scalar<ConcreteValueType>::is_unknown_p () const
   return false;
 }
 
+template
+bool
+scalar<integer_with_unit<units::bit>>::is_unknown_p () const;
+
 template<typename ConcreteValueType>
 void
 scalar<ConcreteValueType>::print_dump_widget_label (pretty_printer *pp) const
