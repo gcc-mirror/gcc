@@ -3953,12 +3953,27 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 	      src = ipa_get_ith_jump_func (top, dst_fid);
 	      if (src->type == IPA_JF_CONST)
 		{
-		  if (item->jftype == IPA_JF_PASS_THROUGH
-		      && item->value.pass_through.operation == NOP_EXPR)
+		  if (item->jftype == IPA_JF_PASS_THROUGH)
 		    {
-		      item->jftype = IPA_JF_CONST;
-		      item->value.constant = src->value.constant.value;
-		      continue;
+		      if (item->value.pass_through.operation == NOP_EXPR)
+			{
+			  item->jftype = IPA_JF_CONST;
+			  item->value.constant = src->value.constant.value;
+			  continue;
+			}
+		      tree cst = ipa_get_jf_arith_result
+				   (item->value.pass_through.operation,
+				    src->value.constant.value,
+				    item->value.pass_through.operand,
+				    item->value.pass_through.op_type);
+		      cst = ipacp_value_safe_for_type (item->type, cst);
+		      if (cst)
+			{
+			  item->jftype = IPA_JF_CONST;
+			  item->value.constant
+			    = unshare_expr_without_location (cst);
+			  continue;
+			}
 		    }
 		}
 	      else if (src->type == IPA_JF_PASS_THROUGH
@@ -4058,8 +4073,25 @@ update_jump_functions_after_inlining (struct cgraph_edge *cs,
 		item->offset -= dst->value.ancestor.offset;
 	    }
 
-	  if (src->type == IPA_JF_PASS_THROUGH
-	      && src->value.pass_through.operation == NOP_EXPR)
+	  if (src->type == IPA_JF_CONST)
+	    {
+	      tree parm_type = ipa_get_callee_param_type (e, i);
+	      tree cst = ipa_get_jf_ancestor_result (dst,
+						     ipa_get_jf_constant (src));
+	      if (cst && parm_type)
+		cst = ipacp_value_safe_for_type (parm_type, cst);
+	      if (cst)
+		{
+		  dst->type = IPA_JF_CONST;
+		  dst->value.constant.value
+		    = unshare_expr_without_location (cst);
+		  ipa_zap_jf_refdesc (dst);
+		}
+	      else
+		ipa_set_jf_unknown (dst);
+	    }
+	  else if (src->type == IPA_JF_PASS_THROUGH
+		   && src->value.pass_through.operation == NOP_EXPR)
 	    {
 	      dst->value.ancestor.formal_id = src->value.pass_through.formal_id;
 	      dst->value.ancestor.agg_preserved &=

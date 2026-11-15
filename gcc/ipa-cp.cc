@@ -1581,7 +1581,7 @@ ipacp_value_safe_for_type (tree param_type, tree value)
    NULL_TREE if that cannot be determined or be considered an interprocedural
    invariant.  */
 
-static tree
+tree
 ipa_get_jf_arith_result (enum tree_code opcode, tree input, tree operand,
 			 tree res_type)
 {
@@ -1614,7 +1614,7 @@ ipa_get_jf_arith_result (enum tree_code opcode, tree input, tree operand,
 /* Return the result of an ancestor jump function JFUNC on the constant value
    INPUT.  Return NULL_TREE if that cannot be determined.  */
 
-static tree
+tree
 ipa_get_jf_ancestor_result (struct ipa_jump_func *jfunc, tree input)
 {
   gcc_checking_assert (TREE_CODE (input) != TREE_BINFO);

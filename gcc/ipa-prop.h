@@ -1292,6 +1292,8 @@ void ipa_cp_cc_finalize (void);
 bool ipa_return_value_range (value_range &range, tree decl);
 void ipa_record_return_value_range (value_range val);
 bool ipa_jump_functions_equivalent_p (ipa_jump_func *jf1, ipa_jump_func *jf2);
+tree ipa_get_jf_arith_result (enum tree_code, tree, tree, tree);
+tree ipa_get_jf_ancestor_result (struct ipa_jump_func *, tree);
 
 
 #endif /* IPA_PROP_H */
