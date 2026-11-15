@@ -1662,6 +1662,11 @@ svalue_from_bit_vector (symbolic::node::id_t id,
 
       // No nesting:
       gcc_assert (!m_bv.dyn_cast_bit_vector_from_svalue ());
+
+      // All-zeros/all-ones of integral type should have been folded to constant
+      if (auto *tristate_bv = m_bv.dyn_cast_tristate_bit_vector ())
+	if (type && INTEGRAL_TYPE_P (type))
+	  gcc_assert (tristate_bv->get_bit_value () == tristate::unknown ());
     }
 }
 

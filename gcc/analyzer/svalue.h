@@ -831,7 +831,10 @@ namespace ana {
    - all qualifiers (except address spaces) are stripped from the type
      of the pointee
    - no nesting: the underlying bit vector can't be a bit_vector_from_svalue
-     (we fold away such cases).  */
+     (we fold away such cases).
+   - for integral types, the underlying bit_vector must not be a
+     tristate_bit_vector of kind "true"  or "false" (but could be "unknown"):
+     all-zeros/all-ones get folded to constant_svalue.  */
 
 class svalue_from_bit_vector : public svalue
 {
