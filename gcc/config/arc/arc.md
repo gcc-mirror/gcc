@@ -1582,11 +1582,11 @@ archs4x, archs4xd"
   ")
 
 (define_insn "*movsicc_insn"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=w,w")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=w,w,w")
   	(if_then_else:SI (match_operator 3 "proper_comparison_operator"
   		       [(match_operand 4 "cc_register" "") (const_int 0)])
-  		      (match_operand:SI 1 "nonmemory_operand" "cL,Cal")
-  		      (match_operand:SI 2 "register_operand" "0,0")))]
+			(match_operand:SI 1 "nonmemory_operand" "cL,Cal,0")
+			(match_operand:SI 2 "register_operand" "0,0,c")))]
   ""
 {
   if (rtx_equal_p (operands[1], const0_rtx) && GET_CODE (operands[3]) == NE
@@ -1597,10 +1597,10 @@ archs4x, archs4xd"
       && rtx_equal_p (operands[1], constm1_rtx)
       && GET_CODE (operands[3]) == LTU)
     return "sbc.cs\\t%0,%0,%0";
-  return "mov.%d3\\t%0,%1";
+  return which_alternative == 2 ? "mov.%D3\\t%0,%2" : "mov.%d3\\t%0,%1";
 }
-  [(set_attr "type" "cmove,cmove")
-   (set_attr "length" "4,8")])
+  [(set_attr "type" "cmove,cmove,cmove")
+   (set_attr "length" "4,8,4")])
 
 ;; When there's a mask of a single bit, and then a compare to 0 or 1,
 ;; if the single bit is the sign bit, then GCC likes to convert this
