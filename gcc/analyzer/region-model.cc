@@ -1500,8 +1500,8 @@ region_model::on_assignment (const gassign *assign, region_model_context *ctxt)
      as externally visible.  */
   if (ctxt)
     {
-      enum memory_space memspace = lhs_reg->get_memory_space ();
-      if (memspace != MEMSPACE_STACK)
+      memory_space memspace = lhs_reg->get_memory_space ();
+      if (memspace != memory_space::stack)
 	ctxt->maybe_did_work ();
     }
 
@@ -6930,7 +6930,7 @@ public:
   {
     /* CWE-200: Exposure of Sensitive Information to an Unauthorized Actor.  */
     ctxt.add_cwe (200);
-    enum memory_space mem_space = get_src_memory_space ();
+    memory_space mem_space = get_src_memory_space ();
     bool warned;
     switch (mem_space)
       {
@@ -6939,12 +6939,12 @@ public:
 			    " by copying uninitialized data"
 			    " across trust boundary");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	warned = ctxt.warn ("potential exposure of sensitive information"
 			    " by copying uninitialized data from stack"
 			    " across trust boundary");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	warned = ctxt.warn ("potential exposure of sensitive information"
 			    " by copying uninitialized data from heap"
 			    " across trust boundary");
@@ -6956,7 +6956,7 @@ public:
 	inform_number_of_uninit_bits (loc);
 	complain_about_uninit_ranges (loc);
 
-	if (mem_space == MEMSPACE_STACK)
+	if (mem_space == memory_space::stack)
 	  maybe_emit_fixit_hint ();
       }
     return warned;
@@ -6966,18 +6966,18 @@ public:
   describe_final_event (pretty_printer &pp,
 			const evdesc::final_event &) final override
   {
-    enum memory_space mem_space = get_src_memory_space ();
+    memory_space mem_space = get_src_memory_space ();
     switch (mem_space)
       {
       default:
 	pp_string (&pp, "uninitialized data copied here");
 	return true;
 
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	pp_string (&pp, "uninitialized data copied from stack here");
 	return true;
 
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	pp_string (&pp, "uninitialized data copied from heap here");
 	return true;
       }
@@ -7002,9 +7002,12 @@ public:
   }
 
 private:
-  enum memory_space get_src_memory_space () const
+  memory_space
+  get_src_memory_space () const
   {
-    return m_src_region ? m_src_region->get_memory_space () : MEMSPACE_UNKNOWN;
+    return (m_src_region
+	    ? m_src_region->get_memory_space ()
+	    : memory_space::unknown);
   }
 
   const symbolic_bit_size &

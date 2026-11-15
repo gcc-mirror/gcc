@@ -730,7 +730,7 @@ private:
 			 region_model_context *ctxt,
 			 enum poison_kind pkind) const;
 
-  void check_dynamic_size_for_taint (enum memory_space mem_space,
+  void check_dynamic_size_for_taint (memory_space mem_space,
 				     const svalue *size_in_bytes,
 				     region_model_context *ctxt) const;
   void check_dynamic_size_for_floats (const svalue *size_in_bytes,

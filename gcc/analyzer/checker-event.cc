@@ -412,10 +412,10 @@ region_creation_event_memory_space::print_desc (pretty_printer &pp) const
     default:
       pp_string (&pp, "region created here");
       return;
-    case MEMSPACE_STACK:
+    case memory_space::stack:
       pp_string (&pp, "region created on stack here");
       return;
-    case MEMSPACE_HEAP:
+    case memory_space::heap:
       pp_string (&pp, "region created on heap here");
       return;
     }

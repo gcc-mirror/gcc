@@ -2024,9 +2024,9 @@ diagnostic_manager::build_emission_path (const path_builder &pb,
 	{
 	default:
 	  continue;
-	case MEMSPACE_CODE:
-	case MEMSPACE_GLOBALS:
-	case MEMSPACE_READONLY_DATA:
+	case memory_space::code:
+	case memory_space::globals:
+	case memory_space::read_only_data:
 	  {
 	    const region *base_reg = reg->get_base_region ();
 	    if (tree decl = base_reg->maybe_get_decl ())

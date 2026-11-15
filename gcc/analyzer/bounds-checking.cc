@@ -125,7 +125,8 @@ public:
   virtual enum access_direction get_dir () const = 0;
 
 protected:
-  enum memory_space get_memory_space () const
+  memory_space
+  get_memory_space () const
   {
     return m_access_range.get_base_region ().get_memory_space ();
   }
@@ -349,11 +350,11 @@ public:
 	ctxt.add_cwe (787);
 	warned = ctxt.warn ("buffer overflow");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	ctxt.add_cwe (121);
 	warned = ctxt.warn ("stack-based buffer overflow");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	ctxt.add_cwe (122);
 	warned = ctxt.warn ("heap-based buffer overflow");
 	break;
@@ -532,10 +533,10 @@ public:
       default:
 	warned = ctxt.warn ("buffer over-read");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	warned = ctxt.warn ("stack-based buffer over-read");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	warned = ctxt.warn ("heap-based buffer over-read");
 	break;
       }
@@ -715,10 +716,10 @@ public:
       default:
 	warned = ctxt.warn ("buffer underwrite");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	warned = ctxt.warn ("stack-based buffer underwrite");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	warned = ctxt.warn ("heap-based buffer underwrite");
 	break;
       }
@@ -841,10 +842,10 @@ public:
       default:
 	warned = ctxt.warn ("buffer under-read");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	warned = ctxt.warn ("stack-based buffer under-read");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	warned = ctxt.warn ("heap-based buffer under-read");
 	break;
       }
@@ -1024,11 +1025,11 @@ public:
 	ctxt.add_cwe (787);
 	warned = ctxt.warn ("buffer overflow");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	ctxt.add_cwe (121);
 	warned = ctxt.warn ("stack-based buffer overflow");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	ctxt.add_cwe (122);
 	warned =  ctxt.warn ("heap-based buffer overflow");
 	break;
@@ -1156,11 +1157,11 @@ public:
 	ctxt.add_cwe (787);
 	warned = ctxt.warn ("buffer over-read");
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	ctxt.add_cwe (121);
 	warned = ctxt.warn ("stack-based buffer over-read");
 	break;
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	ctxt.add_cwe (122);
 	warned = ctxt.warn ("heap-based buffer over-read");
 	break;

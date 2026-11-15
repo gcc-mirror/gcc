@@ -717,7 +717,7 @@ class tainted_allocation_size : public taint_diagnostic
 public:
   tainted_allocation_size (const taint_state_machine &sm, tree arg,
 			   const svalue *size_in_bytes,
-			   enum bounds has_bounds, enum memory_space mem_space)
+			   enum bounds has_bounds, memory_space mem_space)
   : taint_diagnostic (sm, arg, has_bounds),
     m_size_in_bytes (size_in_bytes),
     m_mem_space (mem_space)
@@ -800,10 +800,10 @@ public:
 	  {
 	  default:
 	    break;
-	  case MEMSPACE_STACK:
+	  case memory_space::stack:
 	    inform (loc, "stack-based allocation");
 	    break;
-	  case MEMSPACE_HEAP:
+	  case memory_space::heap:
 	    inform (loc, "heap-based allocation");
 	    break;
 	  }
@@ -875,7 +875,7 @@ public:
 
 private:
   const svalue *m_size_in_bytes;
-  enum memory_space m_mem_space;
+  memory_space m_mem_space;
 };
 
 /* Concrete taint_diagnostic subclass for reporting attacker-controlled
@@ -1805,7 +1805,7 @@ region_model::check_region_for_taint (const region *reg,
    is happening within MEM_SPACE.  */
 
 void
-region_model::check_dynamic_size_for_taint (enum memory_space mem_space,
+region_model::check_dynamic_size_for_taint (memory_space mem_space,
 					    const svalue *size_in_bytes,
 					    region_model_context *ctxt) const
 {

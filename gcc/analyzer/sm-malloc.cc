@@ -373,10 +373,10 @@ public:
 	  {
 	  default:
 	    break;
-	  case MEMSPACE_CODE:
-	  case MEMSPACE_GLOBALS:
-	  case MEMSPACE_STACK:
-	  case MEMSPACE_READONLY_DATA:
+	  case memory_space::code:
+	  case memory_space::globals:
+	  case memory_space::stack:
+	  case memory_space::read_only_data:
 	    return m_non_heap;
 	  }
       }
@@ -1525,17 +1525,17 @@ public:
     switch (get_memory_space ())
       {
       default:
-      case MEMSPACE_HEAP:
+      case memory_space::heap:
 	gcc_unreachable ();
-      case MEMSPACE_UNKNOWN:
-      case MEMSPACE_CODE:
-      case MEMSPACE_GLOBALS:
-      case MEMSPACE_READONLY_DATA:
+      case memory_space::unknown:
+      case memory_space::code:
+      case memory_space::globals:
+      case memory_space::read_only_data:
 	return ctxt.warn ("%qs of %qE which points to memory"
 			  " not on the heap",
 			  m_funcname, m_arg);
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	return ctxt.warn ("%qs of %qE which points to memory"
 			  " on the stack",
 			  m_funcname, m_arg);
@@ -1566,12 +1566,13 @@ public:
   }
 
 private:
-  enum memory_space get_memory_space () const
+  memory_space
+  get_memory_space () const
   {
     if (m_freed_reg)
       return m_freed_reg->get_memory_space ();
     else
-      return MEMSPACE_UNKNOWN;
+      return memory_space::unknown;
   }
 
   const region *m_freed_reg;

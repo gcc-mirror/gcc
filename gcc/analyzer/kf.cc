@@ -1613,18 +1613,18 @@ public:
       = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
     model->get_store ()->mark_as_escaped (reg->get_base_region (),
 					  model->get_baseline_state ());
-    enum memory_space mem_space = reg->get_memory_space ();
+    memory_space mem_space = reg->get_memory_space ();
     switch (mem_space)
       {
       default:
 	gcc_unreachable ();
-      case MEMSPACE_UNKNOWN:
-      case MEMSPACE_CODE:
-      case MEMSPACE_GLOBALS:
-      case MEMSPACE_HEAP:
-      case MEMSPACE_READONLY_DATA:
+      case memory_space::unknown:
+      case memory_space::code:
+      case memory_space::globals:
+      case memory_space::heap:
+      case memory_space::read_only_data:
 	break;
-      case MEMSPACE_STACK:
+      case memory_space::stack:
 	if (ctxt)
 	  ctxt->warn (std::make_unique<putenv_of_auto_var> (fndecl, reg));
 	break;

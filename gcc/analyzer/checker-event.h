@@ -300,7 +300,7 @@ protected:
 class region_creation_event_memory_space : public region_creation_event
 {
 public:
-  region_creation_event_memory_space (enum memory_space mem_space,
+  region_creation_event_memory_space (memory_space mem_space,
 				      const event_loc_info &loc_info)
   : region_creation_event (loc_info),
     m_mem_space (mem_space)
@@ -310,7 +310,7 @@ public:
   void print_desc (pretty_printer &pp) const final override;
 
 private:
-  enum memory_space m_mem_space;
+  memory_space m_mem_space;
 };
 
 /* Concrete subclass of region_creation_event.

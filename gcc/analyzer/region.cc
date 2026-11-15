@@ -159,7 +159,7 @@ region::maybe_get_frame_region () const
 
 /* Get the memory space of this region.  */
 
-enum memory_space
+memory_space
 region::get_memory_space () const
 {
   const region *iter = this;
@@ -170,22 +170,22 @@ region::get_memory_space () const
 	default:
 	  break;
 	case RK_GLOBALS:
-	  return MEMSPACE_GLOBALS;
+	  return memory_space::globals;
 	case RK_CODE:
 	case RK_FUNCTION:
 	case RK_LABEL:
-	  return MEMSPACE_CODE;
+	  return memory_space::code;
 	case RK_FRAME:
 	case RK_STACK:
 	case RK_ALLOCA:
-	  return MEMSPACE_STACK;
+	  return memory_space::stack;
 	case RK_HEAP:
 	case RK_HEAP_ALLOCATED:
-	  return MEMSPACE_HEAP;
+	  return memory_space::heap;
 	case RK_STRING:
-	  return MEMSPACE_READONLY_DATA;
+	  return memory_space::read_only_data;
 	case RK_PRIVATE:
-	  return MEMSPACE_PRIVATE;
+	  return memory_space::private_;
 	case RK_SYMBOLIC:
 	  {
 	    auto *sym_reg = as_a<const symbolic_region *> (iter);
@@ -197,7 +197,7 @@ region::get_memory_space () const
 	}
       iter = iter->get_parent_region ();
     }
-  return MEMSPACE_UNKNOWN;
+  return memory_space::unknown;
 }
 
 /* Subroutine for use by region_model_manager::get_or_create_initial_value.
@@ -211,24 +211,24 @@ region::can_have_initial_svalue_p () const
   const region *base_reg = get_base_region ();
 
   /* Check for memory spaces that are uninitialized by default.  */
-  enum memory_space mem_space = base_reg->get_memory_space ();
+  memory_space mem_space = base_reg->get_memory_space ();
   switch (mem_space)
     {
     default:
       gcc_unreachable ();
-    case MEMSPACE_UNKNOWN:
-    case MEMSPACE_CODE:
-    case MEMSPACE_GLOBALS:
-    case MEMSPACE_READONLY_DATA:
-    case MEMSPACE_PRIVATE:
+    case memory_space::unknown:
+    case memory_space::code:
+    case memory_space::globals:
+    case memory_space::read_only_data:
+    case memory_space::private_:
       /* Such regions have initial_svalues.  */
       return true;
 
-    case MEMSPACE_HEAP:
+    case memory_space::heap:
       /* Heap allocations are uninitialized by default.  */
       return false;
 
-    case MEMSPACE_STACK:
+    case memory_space::stack:
       if (tree decl = base_reg->maybe_get_decl ())
 	{
 	  /* See the assertion in frame_region::get_region_for_local for the
