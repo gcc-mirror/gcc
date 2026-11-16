@@ -1947,7 +1947,7 @@ struct vn_walk_cb_data
       vn_walk_kind (vn_walk_kind_),
       tbaa_p (tbaa_p_), redundant_store_removal_p (redundant_store_removal_p_),
       saved_operands (vNULL), first_range (), first_set (-2),
-      first_base_set (-2)
+      first_base_set (-2), using_dummy_vr (false)
   {
     if (!last_vuse_ptr)
       last_vuse_ptr = &last_vuse;
@@ -1994,7 +1994,7 @@ struct vn_walk_cb_data
       }
   }
   ~vn_walk_cb_data ();
-  void *finish (alias_set_type, alias_set_type, tree);
+  void *finish (alias_set_type, alias_set_type, tree, bool insert = true);
   void *push_partial_def (pd_data pd,
 			  alias_set_type, alias_set_type, HOST_WIDE_INT,
 			  HOST_WIDE_INT);
@@ -2020,6 +2020,9 @@ struct vn_walk_cb_data
   default_splay_tree<pd_range *> known_ranges;
   obstack ranges_obstack;
   static constexpr HOST_WIDE_INT bufsize = 64;
+
+  bool using_dummy_vr;
+  vn_reference_s dummy_vr;
 };
 
 vn_walk_cb_data::~vn_walk_cb_data ()
@@ -2030,7 +2033,8 @@ vn_walk_cb_data::~vn_walk_cb_data ()
 }
 
 void *
-vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
+vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val,
+			 bool insert)
 {
   if (first_set != -2)
     {
@@ -2044,6 +2048,13 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val)
     }
   if (same_val && !operand_equal_p (val, same_val))
     return (void *) -1;
+  if (!insert)
+    {
+      memset (&dummy_vr, 0, sizeof (vn_reference_s));
+      dummy_vr.result = val;
+      using_dummy_vr = true;
+      return &dummy_vr;
+    }
   vec<vn_reference_op_s> &operands
     = saved_operands.exists () ? saved_operands : vr->operands;
   return vn_reference_lookup_or_insert_for_pieces (last_vuse, set, base_set,
@@ -2407,9 +2418,7 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
 		 "Successfully combined %u partial definitions\n", ndefs);
-      /* We are using the alias-set of the first store we encounter which
-	 should be appropriate here.  */
-      return finish (first_set, first_base_set, val);
+      return finish (-2, -2, val, false);
     }
   else
     {
@@ -4289,6 +4298,12 @@ vn_reference_lookup_pieces (tree vuse, alias_set_type set,
 	  *vnresult = NULL;
 	  return NULL_TREE;
 	}
+      if (data.using_dummy_vr)
+	{
+	  tree val = (*vnresult)->result;
+	  *vnresult = NULL;
+	  return val;
+	}
     }
 
   if (*vnresult)
@@ -4432,6 +4447,8 @@ vn_reference_lookup (tree op, tree vuse, vn_lookup_kind kind,
 	      && (!wvnresult->result
 		  || !operand_equal_p (wvnresult->result, data.same_val)))
 	    return NULL_TREE;
+	  if (data.using_dummy_vr)
+	    return wvnresult->result;
 	  if (vnresult)
 	    *vnresult = wvnresult;
 	  return wvnresult->result;
@@ -7630,14 +7647,13 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 		  && tree_nop_conversion_p (TREE_TYPE (rhs), TREE_TYPE (val)))))
 	{
 	  /* We can only remove the later store if the former aliases
-	     at least all accesses the later one does or if the store
-	     was to readonly memory storing the same value.  */
+	     at least all accesses the later one does.  */
 	  ao_ref lhs_ref;
 	  ao_ref_init (&lhs_ref, lhs);
 	  alias_set_type set = ao_ref_alias_set (&lhs_ref);
 	  alias_set_type base_set = ao_ref_base_alias_set (&lhs_ref);
-	  if (! vnresult
-	      || ((vnresult->set == set
+	  if (vnresult
+	      && ((vnresult->set == set
 		   || alias_set_subset_of (set, vnresult->set))
 		  && (vnresult->base_set == base_set
 		      || alias_set_subset_of (base_set, vnresult->base_set))))
