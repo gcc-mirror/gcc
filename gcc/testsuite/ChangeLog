@@ -1,3 +1,7 @@
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr36.adb: New test.
+
 2026-11-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
