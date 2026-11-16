@@ -3141,6 +3141,9 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	    DECL_ABSTRACT_ORIGIN (newdecl)
 	      = DECL_ABSTRACT_ORIGIN (olddecl);
 	}
+
+      /* If a new declaration requires a static chain, the old one must too. */
+      gcc_assert (!DECL_STATIC_CHAIN (newdecl) || DECL_STATIC_CHAIN (olddecl));
     }
 
   /* Merge the USED information.  */
@@ -5816,6 +5819,13 @@ start_decl (struct c_declarator *declarator, struct c_declspecs *declspecs,
   /* Make sure the size expression is evaluated at this point.  */
   if (expr && !current_scope->parm_flag)
     add_stmt (fold_convert (void_type_node, expr));
+
+  /* Mark a forward declaration of a nested function as requiring
+     a static chain (see start_function).  */
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && declspecs->storage_class == csc_auto
+      && current_function_decl != NULL_TREE)
+    DECL_STATIC_CHAIN (decl) = 1;
 
   if (TREE_CODE (decl) != FUNCTION_DECL && MAIN_NAME_P (DECL_NAME (decl))
       && TREE_PUBLIC (decl))
@@ -10799,6 +10809,12 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (expr && !current_scope->parm_flag)
     add_stmt (fold_convert (void_type_node, expr));
 
+  /* Mark nested functions as needing a static chain initially.
+     The flag is cleared at the end of the function if no static
+     chain is needed.  */
+  if (current_function_decl != NULL_TREE)
+    DECL_STATIC_CHAIN (decl1) = 1;
+
   loc = DECL_SOURCE_LOCATION (decl1);
 
   /* A nested function is not global.  */
@@ -11569,6 +11585,10 @@ finish_function (location_t end_loc)
 
   if (c_dialect_objc ())
     objc_finish_function ();
+
+  /* Clear the static chain for nested functions that do not need one.  */
+  if (!C_FUNC_NONLOCAL_CONTEXT (fndecl))
+    DECL_STATIC_CHAIN (fndecl) = 0;
 
   if (DECL_INITIAL (fndecl) && DECL_INITIAL (fndecl) != error_mark_node)
     BLOCK_SUPERCONTEXT (DECL_INITIAL (fndecl)) = fndecl;

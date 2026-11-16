@@ -3376,11 +3376,6 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       if (nested && specs->declspec_il == cdil_none)
 	{
 	  tree decl = current_function_decl;
-	  /* Mark nested functions as needing static-chain initially.
-	     lower_nested_functions will recompute it but the
-	     DECL_STATIC_CHAIN flag is also used before that happens,
-	     by initializer_constant_valid_p.  See gcc.dg/nested-fn-2.c.  */
-	  DECL_STATIC_CHAIN (decl) = 1;
 	  add_stmt (fnbody);
 	  finish_function (endloc);
 	  c_pop_function_context ();

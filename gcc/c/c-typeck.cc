@@ -2380,10 +2380,10 @@ function_to_pointer_conversion (location_t loc, tree exp)
 
   tree exp2 = build_unary_op (loc, ADDR_EXPR, exp, false);
 
-  /* If the function is defined and known to not require a non-local
+  /* If the function is known to not require a non-local
      context, make sure no trampoline is generated.  */
   if (TREE_CODE (exp) == FUNCTION_DECL
-      && DECL_INITIAL (exp) && !C_FUNC_NONLOCAL_CONTEXT (exp))
+      && !DECL_STATIC_CHAIN (exp))
    TREE_NO_TRAMPOLINE (exp2) = 1;
 
   return exp2;
@@ -3844,7 +3844,7 @@ mark_decl_used (tree ref, bool address)
       {
       case FUNCTION_DECL:
 	/* Use of another local function that requires no context is ok.  */
-	if (!C_FUNC_NONLOCAL_CONTEXT (ref) && DECL_INITIAL (ref))
+	if (!DECL_STATIC_CHAIN (ref) || ref == current_function_decl)
 	  return;
 	break;
       case VAR_DECL:

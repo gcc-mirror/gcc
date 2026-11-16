@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O1" } */
-
-int printf(const char *, ...);
+/* { dg-require-effective-target trampolines } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 void call(void (*f)(void)) { f(); }
 
@@ -20,7 +20,6 @@ int main(void)
   void n4(void) { call(n2); }
   n4();
 o1:
-  printf("ok\n");
   return 0;
 }
 
