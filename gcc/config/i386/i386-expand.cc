@@ -2945,9 +2945,11 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
     {
     case IX86_FPCMP_COMI:
       tmp = gen_rtx_COMPARE (CCFPmode, op0, op1);
-      /* VCOMX/VUCOMX only have DF/SF/HF mode instructions.  */
+      /* VCOMX/VUCOMX only have DF/SF/HF mode instructions, and only
+	 help when NaNs are honored.  */
       if (TARGET_AVX10_2
 	  && (code == EQ || code == NE)
+	  && HONOR_NANS (op_mode)
 	  && (op_mode == HFmode || op_mode == SFmode || op_mode == DFmode))
 	tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
       /* We only have vcomisbf16, No vcomubf16 nor vcomxbf16 */
