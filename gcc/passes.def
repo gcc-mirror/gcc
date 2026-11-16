@@ -346,7 +346,6 @@ along with GCC; see the file COPYING3.  If not see
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_simduid_cleanup);
       NEXT_PASS (pass_lower_vector_ssa);
-      NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_cse_sincos);
       NEXT_PASS (pass_cse_reciprocals);
       NEXT_PASS (pass_reassoc, false /* early_p */);
@@ -355,10 +354,13 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_fre, false /* may_iterate */);
       /* After late FRE we rewrite no longer addressed locals into SSA
          form if possible.  */
+      /* Thread the loop with the backward threader before lowering
+	 switches so it still sees the GIMPLE_SWITCH.  */
       NEXT_PASS (pass_thread_jumps, /*first=*/false);
       NEXT_PASS (pass_dominator, false /* may_peel_loop_headers_p */);
       NEXT_PASS (pass_strlen);
       NEXT_PASS (pass_thread_jumps_full, /*first=*/false);
+      NEXT_PASS (pass_lower_switch);
       NEXT_PASS (pass_vrp, true /* final_p */);
       /* Run CCP to compute alignment and nonzero bits.  */
       NEXT_PASS (pass_ccp, true /* nonzero_p */);
