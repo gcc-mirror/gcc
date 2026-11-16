@@ -4655,17 +4655,13 @@ prepare_cmp_insn (rtx x, rtx y, rtx *mask, enum rtx_code comparison, rtx size,
 
       gcc_assert (size);
 
-      /* Try to use a memory block compare insn - either cmpstr
-	 or cmpmem will do.  */
+      /* Try to use a memory block compare insn.  Only cmpmem compares
+	 the whole block.  cmpstr and cmpstrn stop at a null byte.  */
       opt_scalar_int_mode cmp_mode_iter;
       FOR_EACH_MODE_IN_CLASS (cmp_mode_iter, MODE_INT)
 	{
 	  scalar_int_mode cmp_mode = cmp_mode_iter.require ();
 	  cmp_code = direct_optab_handler (cmpmem_optab, cmp_mode);
-	  if (cmp_code == CODE_FOR_nothing)
-	    cmp_code = direct_optab_handler (cmpstr_optab, cmp_mode);
-	  if (cmp_code == CODE_FOR_nothing)
-	    cmp_code = direct_optab_handler (cmpstrn_optab, cmp_mode);
 	  if (cmp_code == CODE_FOR_nothing)
 	    continue;
 
@@ -4679,7 +4675,10 @@ prepare_cmp_insn (rtx x, rtx y, rtx *mask, enum rtx_code comparison, rtx size,
 	  result_mode = insn_data[cmp_code].operand[0].mode;
 	  result = gen_reg_rtx (result_mode);
 	  size = convert_to_mode (cmp_mode, size, 1);
-	  emit_insn (GEN_FCN (cmp_code) (result, x, y, size, opalign));
+	  rtx_insn *insn = GEN_FCN (cmp_code) (result, x, y, size, opalign);
+	  if (!insn)
+	    continue;
+	  emit_insn (insn);
 
           *ptest = gen_rtx_fmt_ee (comparison, VOIDmode, result, const0_rtx);
           *pmode = result_mode;
