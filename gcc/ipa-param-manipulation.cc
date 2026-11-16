@@ -522,7 +522,8 @@ ipa_param_adjustments::build_new_function_type (
 
   /* Check if any params type cares about are modified.  In this case will
      need to drop some type attributes.  */
-  bool modified = false;
+  bool modified = m_adj_params == NULL && TYPE_ARG_TYPES (old_type)
+		  && m_always_copy_start > 0;
   size_t index = 0;
   if (m_adj_params)
     for (tree t = TYPE_ARG_TYPES (old_type);
