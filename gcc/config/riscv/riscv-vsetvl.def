@@ -49,6 +49,28 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 /* Define SEW and LMUL rules.  */
+DEF_SEW_LMUL_RULE (legal_vtype, legal_vtype, legal_vtype, always_true,
+		   always_true, nop)
+DEF_SEW_LMUL_RULE (sew_lmul, legal_vtype, sew_lmul, always_true, always_true,
+		   nop)
+DEF_SEW_LMUL_RULE (legal_vtype, sew_lmul, sew_lmul, always_true, always_false,
+		   use_next_sew_lmul)
+DEF_SEW_LMUL_RULE (ratio_only, legal_vtype, ratio_only, always_true,
+		   always_true, nop)
+DEF_SEW_LMUL_RULE (legal_vtype, ratio_only, ratio_only, always_true,
+		   always_false, use_next_sew_lmul)
+DEF_SEW_LMUL_RULE (sew_only, legal_vtype, sew_only, always_true, always_true,
+		   nop)
+DEF_SEW_LMUL_RULE (legal_vtype, sew_only, sew_only, always_true, always_false,
+		   use_next_sew_lmul)
+DEF_SEW_LMUL_RULE (ge_sew, legal_vtype, ge_sew, always_true, always_true, nop)
+DEF_SEW_LMUL_RULE (legal_vtype, ge_sew, ge_sew, always_true, always_false,
+		   use_next_sew_lmul)
+DEF_SEW_LMUL_RULE (ratio_and_ge_sew, legal_vtype, ratio_and_ge_sew, always_true,
+		   always_true, nop)
+DEF_SEW_LMUL_RULE (legal_vtype, ratio_and_ge_sew, ratio_and_ge_sew, always_true,
+		   always_false, use_next_sew_lmul)
+
 DEF_SEW_LMUL_RULE (sew_lmul, sew_lmul, sew_lmul, sew_lmul_eq_p, sew_lmul_eq_p,
 		   nop)
 DEF_SEW_LMUL_RULE (sew_lmul, ratio_only, sew_lmul, ratio_eq_p, ratio_eq_p, nop)

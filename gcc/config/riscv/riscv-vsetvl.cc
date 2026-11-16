@@ -865,6 +865,7 @@ enum demand_flags : unsigned
 
 enum class sew_lmul_demand_type : unsigned
 {
+  legal_vtype = demand_flags::DEMAND_EMPTY_P,
   sew_lmul = demand_flags::DEMAND_SEW_P | demand_flags::DEMAND_LMUL_P,
   ratio_only = demand_flags::DEMAND_RATIO_P,
   sew_only = demand_flags::DEMAND_SEW_P,
@@ -1088,6 +1089,9 @@ public:
     switch (demand_flags
 	    & (DEMAND_SEW_P | DEMAND_LMUL_P | DEMAND_RATIO_P | DEMAND_GE_SEW_P))
       {
+      case (unsigned) sew_lmul_demand_type::legal_vtype:
+	m_sew_lmul_demand = sew_lmul_demand_type::legal_vtype;
+	break;
       case (unsigned) sew_lmul_demand_type::sew_lmul:
 	m_sew_lmul_demand = sew_lmul_demand_type::sew_lmul;
 	break;
@@ -1246,6 +1250,14 @@ public:
 
     /* Determine the demand info of the RVV insn.  */
     m_max_sew = get_max_int_sew ();
+    /* Whole-register moves need a legal VTYPE, but do not depend on its
+       fields or on VL.  */
+    if (get_attr_type (insn->rtl ()) == TYPE_VMOV && !has_vl_op (insn->rtl ()))
+      {
+	normalize_demand (DEMAND_EMPTY_P);
+	return;
+      }
+
     unsigned dflags = 0;
     if (vector_config_insn_p (insn->rtl ()))
       {
@@ -1440,7 +1452,9 @@ public:
       gcc_unreachable ();
 
     fprintf (file, "%sDemand fields:", indent);
-    if (m_sew_lmul_demand == sew_lmul_demand_type::sew_lmul)
+    if (m_sew_lmul_demand == sew_lmul_demand_type::legal_vtype)
+      fprintf (file, " demand_legal_vtype");
+    else if (m_sew_lmul_demand == sew_lmul_demand_type::sew_lmul)
       fprintf (file, " demand_sew_lmul");
     else if (m_sew_lmul_demand == sew_lmul_demand_type::ratio_only)
       fprintf (file, " demand_ratio_only");
@@ -2649,6 +2663,8 @@ private:
       {
 	const vsetvl_info &prev_info = *m_vsetvl_def_exprs[expr_index];
 	if (!prev_info.valid_p ()
+	    || prev_info.get_sew_lmul_demand ()
+		 == sew_lmul_demand_type::legal_vtype
 	    || !m_dem.avl_available_p (prev_info, curr_info)
 	    || prev_info.get_ratio () != curr_info.get_ratio ())
 	  return false;
@@ -3664,6 +3680,8 @@ pre_vsetvl::pre_global_vsetvl_info ()
       for (auto &curr_info : block_info.local_infos)
 	{
 	  if (prev_info.valid_p () && curr_info.valid_p ()
+	      && prev_info.get_sew_lmul_demand ()
+		   != sew_lmul_demand_type::legal_vtype
 	      && m_dem.avl_available_p (prev_info, curr_info)
 	      && prev_info.get_ratio () == curr_info.get_ratio ())
 	    curr_info.set_change_vtype_only ();
