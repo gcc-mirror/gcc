@@ -138,7 +138,7 @@ class uninit_analysis
 
   /* Construct with the specified EVAL object.  */
   uninit_analysis (func_t &eval)
-    : m_phi_def_preds (false), m_eval (eval) { }
+    : m_phi_def_preds (false), m_phi_def_valid (false), m_eval (eval) { }
 
   /* Copy.  */
   uninit_analysis (const uninit_analysis &rhs) = delete;
@@ -165,6 +165,10 @@ private:
 
   /* Representation of the predicate expression(s).  */
   predicate m_phi_def_preds;
+  /* True once M_PHI_DEF_PREDS has been computed for the current PHI.  A
+     TRUE predicate is empty too, so emptiness cannot double as the
+     "not computed yet" marker.  */
+  bool m_phi_def_valid;
   /* Callback to evaluate an operand.  Return true if it's interesting.  */
   func_t &m_eval;
 };

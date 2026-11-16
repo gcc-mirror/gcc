@@ -62,11 +62,21 @@ pred_neg_p (const pred_info &x1, const pred_info &x2)
       || !operand_equal_p (x1.pred_rhs, x2.pred_rhs, 0))
     return false;
 
-  tree_code c1 = x1.cond_code, c2;
+  tree_code c1 = x1.cond_code, c2 = x2.cond_code;
   if (x1.invert == x2.invert)
-    c2 = invert_tree_comparison (x2.cond_code, false);
-  else
-    c2 = x2.cond_code;
+    {
+      /* Only comparisons have a complement; an "x & mask" conjunct is a
+	 BIT_AND_EXPR pred_info (see normalize()) and is never the negation
+	 of anything, while invert_tree_comparison() would trap on it.
+	 Neither is the inverse comparison the complement of the original
+	 one when either operand can be a NaN: NaNs are neither ordered
+	 nor equal, so !(a < b) is not a >= b.  Asking for the unordered
+	 complement yields a code that cannot match C1.  */
+      if (TREE_CODE_CLASS (c1) != tcc_comparison
+	  || TREE_CODE_CLASS (c2) != tcc_comparison)
+	return false;
+      c2 = invert_tree_comparison (c2, HONOR_NANS (x2.pred_lhs));
+    }
 
   return c1 == c2;
 }
@@ -388,11 +398,6 @@ uninit_analysis::prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
 				  bitmap *visited_flag_phis,
 				  unsigned &max_attempts)
 {
-  /* The Boolean predicate guarding the PHI definition.  Initialized
-     lazily from PHI in the first call to is_use_guarded() and cached
-     for subsequent iterations.  */
-  uninit_analysis def_preds (m_eval);
-
   unsigned n = MIN (m_eval.max_phi_args, gimple_phi_num_args (flag_def));
   for (unsigned i = 0; i < n; i++)
     {
@@ -460,9 +465,13 @@ uninit_analysis::prune_phi_opnds (gphi *phi, unsigned opnds, gphi *flag_def,
 	      if (!MASK_EMPTY (opnds2))
 		{
 		  edge opnd_edge = gimple_phi_arg_edge (phi, i);
-		  if (def_preds.is_use_guarded (phi, opnd_edge->src,
-						opnd_def_phi, opnds2,
-						visited_phis))
+		  /* m_phi_def_preds caches the predicate of one PHI, and
+		     OPND_DEF_PHI is not necessarily the same in the next
+		     iteration, so each query needs its own analysis.  */
+		  uninit_analysis opnd_def_preds (m_eval);
+		  if (!opnd_def_preds.is_use_guarded (phi, opnd_edge->src,
+						      opnd_def_phi, opnds2,
+						      visited_phis))
 		    return false;
 		}
 	    }
@@ -665,7 +674,10 @@ pred_equal_p (const pred_info &pred1, const pred_info &pred2)
   tree_code c1 = pred1.cond_code, c2;
   if (pred1.invert != pred2.invert
       && TREE_CODE_CLASS (pred2.cond_code) == tcc_comparison)
-    c2 = invert_tree_comparison (pred2.cond_code, false);
+    /* As in pred_neg_p, a possibly NaN operand makes the inverted
+       comparison a different predicate than the original one.  */
+    c2 = invert_tree_comparison (pred2.cond_code,
+				 HONOR_NANS (pred2.pred_lhs));
   else
     c2 = pred2.cond_code;
 
@@ -731,6 +743,20 @@ static bool
 subset_of (const pred_info &pred1, const pred_info &pred2)
 {
   if (pred_equal_p (pred1, pred2))
+    return true;
+
+  /* pred_equal_p() does not accept (A >= B) as equivalent to !(A < B)
+     when an operand may be a NaN, because the two are not equivalent
+     then.  The implication from the ordered comparison to the inverted
+     one still holds, however: both are false for a NaN.  Prove that
+     one-way relation here, so tightening the equality test does not
+     lose the subset relation.  */
+  if (!pred1.invert && pred2.invert
+      && TREE_CODE_CLASS (pred1.cond_code) == tcc_comparison
+      && TREE_CODE_CLASS (pred2.cond_code) == tcc_comparison
+      && operand_equal_p (pred1.pred_lhs, pred2.pred_lhs, 0)
+      && operand_equal_p (pred1.pred_rhs, pred2.pred_rhs, 0)
+      && invert_tree_comparison (pred2.cond_code, false) == pred1.cond_code)
     return true;
 
   if ((TREE_CODE (pred1.pred_rhs) != INTEGER_CST)
@@ -828,7 +854,9 @@ predicate::superset_of (const predicate &preds) const
 
 /* Remove from every chain in *THIS any (comparison) conjunct whose domain is
    a superset of every predicate in EDGE_CONDS, i.e. a conjunct implied by all
-   of them.  Returns true if any conjunct was removed.  */
+   of them.  Returns true if any conjunct was removed.  If all the conjuncts
+   of a chain are removed the chain is TRUE, and with it the whole predicate,
+   which is then left empty with M_CVAL set.  */
 
 bool
 predicate::drop_conjuncts_implied_by (const vec<pred_info> &edge_conds)
@@ -857,6 +885,18 @@ predicate::drop_conjuncts_implied_by (const vec<pred_info> &edge_conds)
 	    }
 	  else
 	    j++;
+	}
+
+      /* An empty conjunct is TRUE, and so is the OR of the chains.  Making
+	 that explicit keeps is_true() in sync with superset_of() and spares
+	 the callers from having to deal with empty chains.  */
+      if (chain.is_empty ())
+	{
+	  for (unsigned k = 0; k < m_preds.length (); k++)
+	    m_preds[k].release ();
+	  m_preds.truncate (0);
+	  m_cval = true;
+	  return true;
 	}
     }
   return changed;
@@ -1310,12 +1350,35 @@ simplify_1b (pred_chain &chain)
 		       && CONSTANT_CLASS_P (b_pred.pred_rhs))))
 	    continue;
 
+	  /* Only comparison conjuncts can be combined.  An "x & mask"
+	     conjunct is a BIT_AND_EXPR pred_info (see normalize()), and
+	     inverting it or feeding it to maybe_fold_and_comparisons()
+	     would run into invert_tree_comparison()'s gcc_unreachable().  */
+	  if (TREE_CODE_CLASS (a_pred.cond_code) != tcc_comparison
+	      || TREE_CODE_CLASS (b_pred.cond_code) != tcc_comparison)
+	    continue;
+
+	  /* Inverting an ordered comparison is only exact for operands
+	     that cannot be a NaN; when either operand may be, the code
+	     the inversion returns is stricter than the conjunct and the
+	     fold below, which is itself NaN-aware, would then combine a
+	     predicate that does not hold.  Leave such a pair alone.  */
 	  tree_code a_code = a_pred.cond_code;
 	  if (a_pred.invert)
-	    a_code = invert_tree_comparison (a_code, false);
+	    {
+	      a_code = invert_tree_comparison (a_code,
+					       HONOR_NANS (a_pred.pred_lhs));
+	      if (a_code == ERROR_MARK)
+		continue;
+	    }
 	  tree_code b_code = b_pred.cond_code;
 	  if (b_pred.invert)
-	    b_code = invert_tree_comparison (b_code, false);
+	    {
+	      b_code = invert_tree_comparison (b_code,
+					       HONOR_NANS (b_pred.pred_lhs));
+	      if (b_code == ERROR_MARK)
+		continue;
+	    }
 	  /* Try to combine X a_code Y && X b_code Y'.  */
 	  tree comb = maybe_fold_and_comparisons (boolean_type_node,
 						  TRUTH_ANDIF_EXPR, a_code,
@@ -1403,6 +1466,8 @@ predicate::simplify_2 ()
 		  for (unsigned k = 0; k < m_preds.length (); ++k)
 		    m_preds[k].release ();
 		  m_preds.truncate (0);
+		  /* The whole disjunction has simplified to true.  */
+		  m_cval = true;
 		}
 	      break;
 	    }
@@ -1864,6 +1929,11 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
       const vec<edge> &path = dep_chains[i];
 
       bool has_valid_pred = false;
+      /* True when some edge of this path was accepted as a plain fallthru
+	 only because the guarding statement can throw (see below).  Such a
+	 path is taken only when the statement completes normally, so it is
+	 not unconditional.  */
+      bool threw = false;
       /* The chain of predicates guarding the definition along this path.  */
       pred_chain t_chain{ };
       for (unsigned j = 0; j < path.length (); j++)
@@ -1965,10 +2035,13 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	    }
 	  else if (stmt_can_throw_internal (cfun, cond_stmt)
 		   && !(e->flags & EDGE_EH))
-	    /* Ignore the exceptional control flow and proceed as if
-	       E were a fallthru without a controlling predicate for
-	       both the USE (valid) and DEF (questionable) case.  */
-	    has_valid_pred = true;
+	    {
+	      /* Ignore the exceptional control flow and proceed as if
+		 E were a fallthru without a controlling predicate for
+		 both the USE (valid) and DEF (questionable) case.  */
+	      has_valid_pred = true;
+	      threw = true;
+	    }
 	  else
 	    has_valid_pred = false;
 
@@ -1986,6 +2059,19 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	  continue;
 	}
 
+      /* A definition path that was accepted only because a statement on
+	 it can throw assumes that the statement completes normally: the
+	 exception edge still reaches the use with the value undefined.
+	 Recording just the other guards of the path would claim more than
+	 is known, and a later fold of the disjunction to TRUE would then
+	 hide a real -Wmaybe-uninitialized.  Drop the path instead; the
+	 answer stays "not proven" and the analysis stays conservative.  */
+      if (threw && !is_use)
+	{
+	  t_chain.release ();
+	  continue;
+	}
+
       /* When we add || 1 simply prune the chain and return.  */
       if (t_chain.is_empty ())
 	{
@@ -1993,6 +2079,11 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 	  for (auto chain : m_preds)
 	    chain.release ();
 	  m_preds.truncate (0);
+	  /* This path reaches the definition unconditionally, so the
+	     disjunction is TRUE; say so through m_cval, as simplify_2()
+	     and drop_conjuncts_implied_by() do, or a predicate that was
+	     initialized to FALSE reads as FALSE here.  */
+	  m_cval = true;
 	  break;
 	}
 
@@ -2247,7 +2338,9 @@ uninit_analysis::init_from_phi_def (gphi *phi)
      false.  */
   m_phi_def_preds.init_from_control_deps (dep_chains, num_chains, false);
   delete[] dep_chains;
-  return !m_phi_def_preds.is_empty ();
+  /* A definition predicate that came out TRUE is empty, but it is still a
+     usable answer: the value is defined on every path.  */
+  return !m_phi_def_preds.is_empty () || m_phi_def_preds.is_true ();
 }
 
 /* Compute the predicates that guard the use USE_STMT and check if
@@ -2284,18 +2377,22 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
      into its use.  This will be empty if the PHI is defined and used
      in the same bb.  */
   predicate use_preds (true);
-  if (!init_use_preds (use_preds, def_bb, use_bb))
-    return false;
+  init_use_preds (use_preds, def_bb, use_bb);
+  /* init_use_preds() returns false for an empty (unconditional) use
+     predicate.  That does not make the use unguarded: whether it is
+     guarded then depends solely on the definition predicate, which is
+     computed below.  */
 
   use_preds.simplify (use_stmt, /*is_use=*/true);
   use_preds.normalize (use_stmt, /*is_use=*/true);
   if (use_preds.is_false ())
     return true;
-  if (use_preds.is_true ())
-    return false;
 
-  /* Try to prune the dead incoming phi edges.  */
-  if (!overlap (phi, opnds, visited, use_preds))
+  /* Try to prune the dead incoming phi edges.  This requires a non-trivial
+     use predicate; an unconditional use (USE_PREDS is TRUE) has nothing to
+     check against.  */
+  if (!use_preds.is_true ()
+      && !overlap (phi, opnds, visited, use_preds))
     {
       if (DEBUG_PREDICATE_ANALYZER && dump_file)
 	fputs ("found predicate overlap\n", dump_file);
@@ -2303,24 +2400,30 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
       return true;
     }
 
-  if (m_phi_def_preds.is_empty ())
+  if (!m_phi_def_valid)
     {
       /* Lazily initialize *THIS from PHI.  */
       if (!init_from_phi_def (phi))
 	return false;
 
+      m_phi_def_valid = true;
       m_phi_def_preds.simplify (phi);
       m_phi_def_preds.normalize (phi);
-      if (m_phi_def_preds.is_false ())
-	return false;
-      if (m_phi_def_preds.is_true ())
-	return true;
     }
+
+  if (m_phi_def_preds.is_false ())
+    return false;
+  if (m_phi_def_preds.is_true ())
+    return true;
 
   /* Return true if the predicate guarding the valid definition (i.e.,
      *THIS) is a superset of the predicate guarding the use (i.e.,
-     USE_PREDS).  */
-  if (m_phi_def_preds.superset_of (use_preds))
+     USE_PREDS).  superset_of() is vacuous for an unconditional use
+     (USE_PREDS is TRUE), so it is no evidence of a guard for one: such a
+     use is guarded only when the definition predicate is found to be
+     TRUE, either above or when the relaxation below drops the conjuncts
+     implied by the maybe-undef incoming edges.  */
+  if (!use_preds.is_true () && m_phi_def_preds.superset_of (use_preds))
     return true;
 
   /* The superset test fails when a guard that distinguishes the defined from
@@ -2356,9 +2459,21 @@ uninit_analysis::is_use_guarded (gimple *use_stmt, basic_block use_bb,
   if (!edge_conds.is_empty ())
     {
       predicate relaxed (m_phi_def_preds);
-      if (relaxed.drop_conjuncts_implied_by (edge_conds)
-	  && relaxed.superset_of (use_preds))
-	return true;
+      if (relaxed.drop_conjuncts_implied_by (edge_conds))
+	{
+	  /* Dropping conjuncts can leave a chain with a single conjunct that
+	     normalize() then expands into several disjuncts, so normalize
+	     first and let the simplification run over the result.  */
+	  relaxed.normalize (phi);
+	  relaxed.simplify (phi);
+	  /* A definition predicate that simplifies to TRUE guards any use;
+	     conversely an unconditional use (USE_PREDS is TRUE) is guarded
+	     only by a TRUE definition predicate, for which superset_of()
+	     is vacuous.  */
+	  if (relaxed.is_true ()
+	      || (!use_preds.is_true () && relaxed.superset_of (use_preds)))
+	    return true;
+	}
     }
 
   return false;
