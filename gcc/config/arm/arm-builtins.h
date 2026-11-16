@@ -91,7 +91,7 @@ enum arm_type_qualifiers
   qualifier_predicate = 0x4000
 };
 
-struct arm_simd_type_info
+struct GTY(()) arm_simd_type_info
 {
   enum arm_simd_type type;
 

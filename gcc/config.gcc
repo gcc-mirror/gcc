@@ -412,7 +412,7 @@ arm*-*-*)
 	cxx_target_objs="arm-c.o"
 	d_target_objs="arm-d.o"
 	extra_options="${extra_options} arm/arm-tables.opt"
-	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.cc \$(srcdir)/config/arm/arm-mve-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.cc"
+	target_gtfiles="\$(srcdir)/config/arm/arm-builtins.cc \$(srcdir)/config/arm/arm-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.h \$(srcdir)/config/arm/arm-mve-builtins.cc"
 	;;
 avr-*-*)
 	cpu_type=avr

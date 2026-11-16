@@ -942,12 +942,14 @@ const char *arm_scalar_builtin_types[] = {
    "__simd" #S "_" #T "_t",		\
    #G "__simd" #S "_" #T "_t",		\
    NULL_TREE, NULL_TREE, M##mode, qualifier_##Q},
+extern GTY(()) struct arm_simd_type_info arm_simd_types[];
 struct arm_simd_type_info arm_simd_types [] = {
 #include "arm-simd-builtin-types.def"
 };
 #undef ENTRY
 
 /* The user-visible __fp16 type.  */
+extern GTY(()) tree arm_fp16_type_node;
 tree arm_fp16_type_node = NULL_TREE;
 
 /* Back-end node type for brain float (bfloat) types.  */
