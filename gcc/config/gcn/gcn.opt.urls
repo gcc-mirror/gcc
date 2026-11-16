@@ -14,6 +14,9 @@ UrlSuffix(gcc/AMD-GCN-Options.html#index-mtune-1)
 
 ; skipping UrlSuffix for 'mstack-size=' due to finding no URLs
 
+mmin-waves-per-cu=
+UrlSuffix(gcc/AMD-GCN-Options.html#index-mmin-waves-per-cu)
+
 mgang-private-size=
 UrlSuffix(gcc/AMD-GCN-Options.html#index-mgang-private-size)
 
