@@ -3266,6 +3266,13 @@ function_arg_advance_64 (CUMULATIVE_ARGS *cum, machine_mode mode,
     }
   else
     {
+      /* An argument of empty type takes no space on the stack, even
+	 when classify_argument gives it a register class (e.g. for a
+	 class with an unnamed bit-field).  Don't advance over it,
+	 otherwise ix86_va_start computes a wrong overflow_arg_area.  */
+      if (type && TYPE_EMPTY_P (type))
+	return 0;
+
       int align = ix86_function_arg_boundary (mode, type) / BITS_PER_WORD;
       cum->words = ROUND_UP (cum->words, align);
       cum->words += words;
