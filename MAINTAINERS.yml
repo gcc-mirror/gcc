@@ -6752,6 +6752,14 @@ users:
   - WriteAfter: paul.hua.gm@gmail.com
   account: paulhua
 - sn: Xu
+  cn: Jiahao Xu
+  email:
+  - xujiahao@loongson.cn
+  - xujiahao@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: xujiahao
+- sn: Xu
   cn: Li Xu
   email:
   - xuli1@eswincomputing.com
