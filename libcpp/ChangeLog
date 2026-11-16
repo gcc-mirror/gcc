@@ -1,3 +1,11 @@
+2026-11-15  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/112422
+	* configure.ac: Remove check for limits.h.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* system.h: Remove #ifndef UCHAR_MAX and HAVE_LIMITS_H.
+
 2026-11-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/127940

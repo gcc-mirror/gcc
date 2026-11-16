@@ -1,3 +1,49 @@
+2026-11-15  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	* system.h: Remove #ifndef UCHAR_MAX.
+
+2026-11-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/arc/arc.md (*movsicc_insn): Add an alternative that allows
+	commuting of register operands using %D to swap the condition.
+
+2026-11-15  Jiawei  <jiawei@iscas.ac.cn>
+
+	* tree-ssa-loop-im.cc (record_loop_dependence): Parenthesize the
+	dependence-state comparison.
+
+2026-11-15  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/mips/mips.cc (mips_insn_cost): Reorder.
+
+2026-11-15  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/mips/mips.cc (mips_insn_cost): Fix TARGET_INSN_COST
+	spelling.
+
+2026-11-15  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* config/mips/mips.h (ISA_HAS_DMUL3): Document 64-bit use.
+
+2026-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-cp.cc (ipa_get_jf_arith_result): Make non-static.
+	(ipa_get_jf_ancestor_result): Make non-static.
+	* ipa-prop.h (ipa_get_jf_arith_result): Declare.
+	(ipa_get_jf_ancestor_result): Declare.
+	* ipa-prop.cc (update_jump_functions_after_inlining): Fold
+	IPA_JF_CONST inputs into IPA_JF_ANCESTOR jump functions and arithmetic
+	IPA_JF_PASS_THROUGH aggregate jump-function items.
+
+2026-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-prop.cc (ipa_find_agg_cst_from_init): Require both VAR_P and
+	TREE_READONLY when scalar is neither CONSTANT_CLASS_P nor CONST_DECL.
+
+2026-11-15  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	* system.h: Remove #ifdef EXIT_{SUCCESS,FAILURE}.
+
 2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/127171

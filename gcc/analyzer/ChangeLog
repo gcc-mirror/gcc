@@ -1,3 +1,33 @@
+2026-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* svalue.cc (svalue_from_bit_vector::svalue_from_bit_vector):
+	Assert that all-zeros/all-ones of integral type have been folded
+	to constant.
+	* svalue.h (class svalue_from_bit_vector): Update leading comment.
+
+2026-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	* bounds-checking.cc (enum memory_space): Convert to "enum class
+	memory_space" throughout, renaming values accordingly.
+	* checker-event.cc: Likewise.
+	* checker-event.h: Likewise.
+	* diagnostic-manager.cc: Likewise.
+	* kf.cc: Likewise.
+	* region-model.cc: Likewise.
+	* region-model.h: Likewise.
+	* region.cc: Likewise.
+	* region.h: Likewise.
+	* sm-malloc.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* store.cc: Likewise.
+
+2026-11-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/128712
+	* symbolic-scalars.cc
+	(scalar<integer_with_unit<units::bit>>::is_unknown_p): Explicitly
+	instantiate template for this type.
+
 2026-11-13  David Malcolm  <dmalcolm@redhat.com>
 
 	* string-scan.cc

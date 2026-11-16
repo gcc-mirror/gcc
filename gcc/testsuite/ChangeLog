@@ -1,3 +1,48 @@
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr36.adb: New test.
+
+2026-11-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/arc/ashrdi-1.c: New test case.
+	* gcc.target/arc/lshrdi-1.c: Likewise.
+	* gcc.target/arc/shldi-1.c: Likewise.
+
+2026-11-15  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.dg/tree-ssa/ssa-lim-27.c: New test.
+
+2026-11-15  Maciej W. Rozycki  <macro@orcam.me.uk>
+
+	* gcc.target/mips/mulsize-3.c: Fix white space damage.
+	* gcc.target/mips/mulsize-4.c: Likewise.
+
+2026-11-15  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR ipa/128491
+	* gcc.dg/pr128491.c: Require effective target fgnu_tm.
+
+2026-11-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128542
+	PR fortran/40598
+	* gfortran.dg/array_temporaries_1.f90: One less temporary
+	created. Add check for memmove.
+	* gfortran.dg/dependency_28.f90: Likewise.
+	* gfortran.dg/elemental_dependency_1.f90:  Remove variable
+	names from original dump scan. Add memcpy calls.
+	* gfortran.dg/array_memcpy_6.f90: New test.
+
+2026-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/iinline-cstagg-3.c: New test.
+	* gcc.dg/ipa/iinline-cstagg-4.c: New test.
+	Assisted-by: Google Carbon
+
+2026-11-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* gcc.dg/ipa/fnsummary-14.c: New test.
+
 2026-11-14  Jan Hubicka  <hubicka@ucw.cz>
 
 	PR ipa/127171

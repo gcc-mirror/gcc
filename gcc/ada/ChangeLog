@@ -1,3 +1,25 @@
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/128723
+	* sem_aggr.adb (Resolve_Array_Aggregate.Resolve_Aggr_Expr):
+	Preanalyze the expression directly inside a generic unit.
+	(Resolve_Delta_Array_Aggregate): Likewise.
+
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/128693
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Generate a call to
+	SS_Allocate_Any_Controlled for the secondary stack pool.
+	* rtsfind.ads (RE_Id): Add RE_SS_Allocate_Any_Controlled.
+	(RE_Unit_Table): Add entry for RE_SS_Allocate_Any_Controlled.
+	* libgnat/s-stposu.ads (SS_Allocate_Any_Controlled): Declare.
+	* libgnat/s-stposu.adb: Add clauses for System.Secondary_Stack.
+	(SS_Allocate_Any_Controlled): New procedure.
+
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (ada_type_quals): Tweak.
+
 2026-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch4.adb (Expand_Concatenate): Introduce Rtyp local constant

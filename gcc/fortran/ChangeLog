@@ -1,3 +1,19 @@
+2026-11-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128542
+	PR fortran/40598
+	* trans-expr.cc (gfc_build_compare_string): Correct comment.
+	(gfc_build_memcpy_call): If use_memmove is true, call
+	__builtin_memmove.
+	(gfc_trans_array_copy): Also handle array slices and arrays
+	whose extents are not known at compile-time, including bounds
+	checking.
+	(copyable_slice_p): New function.
+	(gfc_trans_assignment): Use copyable_slice_p and do not check
+	dependency before calling gfc_trans_array_copy.
+	* trans.h (gfc_build_memcpy_call): Add optional argument
+	use_memmove.
+
 2026-11-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173
