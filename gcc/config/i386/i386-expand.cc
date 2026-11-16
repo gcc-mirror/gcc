@@ -2939,7 +2939,10 @@ ix86_expand_fp_compare (enum rtx_code code, rtx op0, rtx op1)
       /* We only have vcomisbf16, No vcomubf16 nor vcomxbf16 */
       if (GET_MODE (op0) != E_BFmode)
 	{
-	  if (TARGET_AVX10_2 && (code == EQ || code == NE))
+	  /* VCOMX/VUCOMX only help when NaNs are honored.  */
+	  if (TARGET_AVX10_2
+	      && (code == EQ || code == NE)
+	      && HONOR_NANS (GET_MODE (op0)))
 	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_OPTCOMX);
 	  if (unordered_compare)
 	    tmp = gen_rtx_UNSPEC (CCFPmode, gen_rtvec (1, tmp), UNSPEC_NOTRAP);
