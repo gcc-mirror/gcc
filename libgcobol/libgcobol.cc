@@ -59,6 +59,7 @@
 
 #include "config.h"
 #include "libgcobol-fp.h"
+#include "perform-stack.h"
 
 #include "ec.h"
 #include "common-defs.h"
@@ -10435,14 +10436,79 @@ __gg__match_exception( cblc_field_t *index )
 static std::vector<void *>proc_signatures;
 static std::vector<size_t>return_addresses;
 static std::vector<size_t>bookmarks;
+static std::vector<std::string>module_name_stack;
+
+/* Saved once per invocation.  Normal entry and exit remain constant-time
+   apart from vector growth.  Debugger unwinding consumes only discarded
+   invocations and the local descriptors owned by them.  */
+struct perform_invocation_cleanup
+  {
+  size_t program_states;
+  size_t module_names;
+  size_t unique_id;
+  };
+static std::vector<perform_invocation_cleanup> perform_cleanups;
+
+
+static_assert(sizeof(uintptr_t) == sizeof(size_t));
+static_assert(offsetof(gg_debug_perform_stack_v1, signatures) == 16);
+static_assert(sizeof(gg_debug_perform_stack_v1) == 16 + 6 * sizeof(uintptr_t));
+
+static struct gg_debug_perform_stack_v1 perform_stack_view =
+  { 1, sizeof(gg_debug_perform_stack_v1), 0, sizeof(uintptr_t),
+    0, 0, 0, 0, 0, 0 };
+
+extern "C" {
+const struct gg_debug_perform_stack_v1 *const __gg__debug_perform_stack
+  = &perform_stack_view;
+}
+
+/* Publication has fixed cost independently of stack depth.  Keep the
+   in-progress marker visible before buffer mutation, and publish the
+   completed view with release ordering.  The guard also publishes a
+   coherent view after an allocation exception.  */
+class perform_stack_update
+  {
+  uint32_t generation;
+public:
+  perform_stack_update()
+    : generation(__atomic_load_n(&perform_stack_view.generation,
+				 __ATOMIC_RELAXED))
+    {
+    __atomic_store_n(&perform_stack_view.generation, generation + 1,
+		     __ATOMIC_RELAXED);
+    __atomic_thread_fence(__ATOMIC_RELEASE);
+    }
+
+  ~perform_stack_update()
+    {
+    auto &view = perform_stack_view;
+    view.signatures = reinterpret_cast<uintptr_t>(proc_signatures.data());
+    view.signature_count = proc_signatures.size();
+    view.indexes = reinterpret_cast<uintptr_t>(return_addresses.data());
+    view.index_count = return_addresses.size();
+    view.bookmarks = reinterpret_cast<uintptr_t>(bookmarks.data());
+    view.bookmark_count = bookmarks.size();
+    __atomic_store_n(&view.generation, generation + 2, __ATOMIC_RELEASE);
+    }
+  };
 
 extern "C"
 void
 __gg__pseudo_return_push( void *proc_signature,
                             size_t index)
   {
+  perform_stack_update update;
   proc_signatures.push_back(proc_signature);
-  return_addresses.push_back(index);
+  try
+    {
+    return_addresses.push_back(index);
+    }
+  catch(...)
+    {
+    proc_signatures.pop_back();
+    throw;
+    }
   __gg__exit_address = proc_signature;
   }
 
@@ -10450,6 +10516,7 @@ extern "C"
 size_t
 __gg__pseudo_return_pop()
   {
+  perform_stack_update update;
   size_t retval = return_addresses.back();
 
   return_addresses.pop_back();
@@ -10472,7 +10539,30 @@ extern "C"
 void
 __gg__pseudo_return_bookmark()
   {
-  bookmarks.push_back(proc_signatures.size());
+  perform_stack_update update;
+  perform_cleanups.push_back({program_states.size(), module_name_stack.size(),
+                             __gg__unique_prog_id});
+  try
+    {
+    bookmarks.push_back(proc_signatures.size());
+    }
+  catch(...)
+    {
+    perform_cleanups.pop_back();
+    throw;
+    }
+  }
+
+/* Debug builds retain this one-based bookmark identity in the native frame.
+   It identifies an active invocation, including one with no PERFORM entries.
+   Identities can be reused after an invocation returns.  Existing callers of
+   the void bookmark entry point retain their ABI and behavior.  */
+extern "C"
+size_t
+__gg__debug_pseudo_return_bookmark()
+  {
+  __gg__pseudo_return_bookmark();
+  return bookmarks.size();
   }
 
 extern "C"
@@ -10483,9 +10573,11 @@ __gg__pseudo_return_flush()
     {
     __gg__abort("__gg__pseudo_return_flush(): bookmarks.size() is zero");
     }
+  perform_stack_update update;
   proc_signatures.resize(bookmarks.back());
   return_addresses.resize(bookmarks.back());
   bookmarks.pop_back();
+  perform_cleanups.pop_back();
 
   if( proc_signatures.size() )
     {
@@ -11028,6 +11120,86 @@ __gg__pop_local_variables()
     lv_variables.back().field->capacity = lv_variables.back().capacity;
     lv_variables.pop_back();
     }
+  }
+
+/* Remove activations bypassed by a debugger's forced return.  NATIVE
+   discards INVOCATION itself, otherwise DEPTH is the retained PERFORM depth
+   within it.  Return 1 for invalid/transient state and 2 for older compiler
+   instrumentation.  Validate the entire request before any mutation.
+   No allocation, inferior callback, or exception is needed after validation.  */
+extern "C"
+int
+__gg__debug_perform_unwind(size_t invocation, size_t depth, int native, ...)
+  {
+  if( invocation == 0 || invocation > bookmarks.size()
+      || perform_cleanups.size() != bookmarks.size()
+      || proc_signatures.size() != return_addresses.size()
+      || (perform_stack_view.generation & 1) )
+    {
+    return 1;
+    }
+  const size_t base = bookmarks[invocation - 1];
+  const size_t end = invocation == bookmarks.size()
+                   ? proc_signatures.size() : bookmarks[invocation];
+  if( base > end || end > proc_signatures.size() || depth > end - base
+      || (native && depth != 0) )
+    {
+    return 1;
+    }
+  const auto saved = perform_cleanups[invocation - 1];
+  const size_t kept = native ? invocation - 1 : invocation;
+  if( saved.unique_id == 0 || saved.program_states == 0
+      || saved.program_states > program_states.size()
+      || saved.module_names + (native ? 0 : 1) > module_name_stack.size()
+      || perform_cleanups.back().unique_id != __gg__unique_prog_id )
+    {
+    return 1;
+    }
+  va_list counters;
+  va_start(counters, native);
+  int status = 0;
+  for( size_t i = perform_cleanups.size(); i > kept; i -= 1 )
+    {
+    const auto &entry = perform_cleanups[i - 1];
+    if( !va_arg(counters, int *) )
+      {
+      status = 2;
+      }
+    if( entry.unique_id != saved.unique_id + i - invocation )
+      {
+      status = 1;
+      }
+    }
+  va_end(counters);
+  if( status )
+    {
+    return status;
+    }
+  perform_stack_update update;
+  va_start(counters, native);
+  for( size_t i = perform_cleanups.size(); i > kept; i -= 1 )
+    {
+    int *called_by_main = va_arg(counters, int *);
+    __gg__pop_local_variables();
+    __gg__unique_prog_id -= 1;
+    if( *called_by_main > 0 )
+      {
+      *called_by_main -= 1;
+      }
+    }
+  va_end(counters);
+  while( program_states.size() > saved.program_states )
+    {
+    __gg__pop_program_state();
+    }
+  module_name_stack.resize(saved.module_names + (native ? 0 : 1));
+  proc_signatures.resize(base + depth);
+  return_addresses.resize(base + depth);
+  bookmarks.resize(kept);
+  perform_cleanups.resize(kept);
+  __gg__exit_address = kept && proc_signatures.size() > bookmarks.back()
+                      ? proc_signatures.back() : nullptr;
+  return 0;
   }
 
 extern "C"
@@ -12060,7 +12232,7 @@ __gg__allocate( cblc_field_t       *first,
     }
   }
 
-static std::vector<std::string>module_name_stack;
+
 
 extern "C"
 void

@@ -32,6 +32,7 @@
 
 #include "coretypes.h"
 #include "tree.h"
+#include "function.h"
 #include "options.h"
 #include "stor-layout.h"
 #include "ggc.h"
@@ -1239,6 +1240,12 @@ parser_statement_begin( const cbl_name_t statement_name,
 
   gcc_assert( gg_trans_unit.function_stack.size() );
 
+  // Implicit performs (for example SORT procedures) retain their initiating
+  // statement location as well as explicit PERFORM statements.
+  current_function->debug_statement_line = cobol_location().first_line;
+  current_function->debug_statement_column = cobol_location().first_column;
+  current_function->debug_statement_file = current_filename.back();
+
   // If a PERFORM is armed, that's the line that the PERFORM is on.  The
   // cobol_location().first_line here is the major statement following the
   // the PERFORM statement.  (We don't use .loc information in GDB because of
@@ -2077,6 +2084,205 @@ paragraph_label(struct cbl_proc_t *procedure)
   gg_append_statement(procedure->no_alter_label);
   }
 
+/* A paragraph's section disambiguates names reused by another section.
+   The compiler's unnamed section has no user-facing qualifier.  */
+static const char *
+debug_perform_section(const cbl_label_t *label)
+  {
+  if( label->type == LblParagraph && label->parent )
+    {
+    const cbl_label_t *section = cbl_label_of(symbol_at(label->parent));
+    if( section->name[0] != '_' )
+      {
+      return section->name;
+      }
+    }
+  return "";
+  }
+
+/* Retain an immutable, function-local list of PERFORM sites.  The key is
+   the pair already stored by the runtime, end_signature and dispatch_index.
+   Version 2 retains continuation entry addresses.  Optimized code uses
+   nonlocal landing points to reload live state for a debugger-forced return.  */
+static void
+save_debug_perform_site(cbl_label_t *start, cbl_proc_t *end, size_t index,
+			tree continuation)
+  {
+  if( debug_info_level == DINFO_LEVEL_NONE )
+    {
+    return;
+    }
+
+  bool generated = start->name[0] == '_';
+  int line = generated ? cobol_location().first_line
+		       : current_function->debug_statement_line;
+  int column = generated ? cobol_location().first_column
+			 : current_function->debug_statement_column;
+  const char *file = generated ? current_filename.back().c_str()
+			       : current_function->debug_statement_file.c_str();
+  tree head = current_function->debug_perform_sites;
+  tree record_type = TREE_TYPE(TREE_TYPE(head));
+  static size_t serial = 0;
+  char name[80];
+  snprintf(name, sizeof(name), "_gdb_perform_site_" HOST_SIZE_T_PRINT_DEC,
+	   (fmt_size_t)++serial);
+  tree site = gg_define_variable(record_type, name, vs_static);
+  TREE_READONLY(site) = 1;
+  TREE_USED(site) = 1;
+  DECL_PRESERVE_P(site) = 1;
+  gg_structure_type_constructor(site,
+    build_int_cst_type(UINT, 2),
+    end->exit.addr,
+    build_int_cst_type(SIZE_T, index),
+    gg_get_address_of(continuation),
+    gg_cast(CONST_CHAR_P, gg_string_literal(current_function->our_unmangled_name)),
+    gg_cast(CONST_CHAR_P, gg_string_literal(file)),
+    gg_cast(CONST_CHAR_P, gg_string_literal(start->name)),
+    gg_cast(CONST_CHAR_P, gg_string_literal(end->label->name)),
+    gg_cast(CONST_CHAR_P, gg_string_literal(debug_perform_section(start))),
+    gg_cast(CONST_CHAR_P, gg_string_literal(debug_perform_section(end->label))),
+    build_int_cst_type(UINT, line),
+    build_int_cst_type(UINT, column),
+    build_int_cst_type(UINT, generated),
+    DECL_INITIAL(head),
+    NULL_TREE);
+  DECL_INITIAL(head) = gg_get_address_of(site);
+  current_function->debug_perform_records.push_back({site, start, end->label});
+  }
+
+/* Forward-referenced paragraphs acquire their section at definition time.
+   Resolve qualifiers after every paragraph in this program has been parsed.  */
+static void
+finish_debug_perform_sites()
+  {
+  for( const auto &record : current_function->debug_perform_records )
+    {
+    tree start_field = gg_find_field_in_struct(record.site, "start_section");
+    tree end_field = gg_find_field_in_struct(record.site, "through_section");
+    tree initializer = DECL_INITIAL(record.site);
+    for( unsigned int i = 0; i < CONSTRUCTOR_NELTS(initializer); i += 1 )
+      {
+      constructor_elt *element = CONSTRUCTOR_ELT(initializer, i);
+      if( element->index == start_field )
+	{
+	element->value = gg_cast(CONST_CHAR_P,
+	  gg_string_literal(debug_perform_section(record.start)));
+	}
+      else if( element->index == end_field )
+	{
+	element->value = gg_cast(CONST_CHAR_P,
+	  gg_string_literal(debug_perform_section(record.end)));
+	}
+      }
+    }
+  }
+
+/* Each native invocation has this list in its lexical scope.  All records
+   and the head are initialized by the compiler, with no runtime stores.  */
+static void
+create_debug_perform_sites()
+  {
+  if( debug_info_level == DINFO_LEVEL_NONE )
+    {
+    return;
+    }
+  tree record_type = make_node(RECORD_TYPE);
+  tree type_decl = build_decl(UNKNOWN_LOCATION, TYPE_DECL,
+			      get_identifier("__gg__debug_perform_site_v2"),
+			      record_type);
+  TYPE_NAME(record_type) = type_decl;
+  TYPE_STUB_DECL(record_type) = type_decl;
+  DECL_ARTIFICIAL(type_decl) = 1;
+  tree pointer_type = build_pointer_type(record_type);
+  tree types[] = {UINT, VOID_P, SIZE_T, VOID_P, CONST_CHAR_P, CONST_CHAR_P,
+		  CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P,
+		  UINT, UINT, UINT, pointer_type};
+  const char *names[] = {"version", "end_signature", "dispatch_index",
+			 "continuation", "program", "file", "start", "through",
+			 "start_section", "through_section", "line", "column",
+			 "generated", "next"};
+  tree *link = &TYPE_FIELDS(record_type);
+  for( size_t i = 0; i < ARRAY_SIZE(types); i += 1 )
+    {
+    tree field = build_decl(UNKNOWN_LOCATION, FIELD_DECL,
+			    get_identifier(names[i]), types[i]);
+    DECL_CONTEXT(field) = record_type;
+    *link = field;
+    link = &DECL_CHAIN(field);
+    }
+  layout_type(record_type);
+  tree head = gg_define_variable(pointer_type, "_gdb_perform_sites", vs_static,
+				 gg_cast(pointer_type, null_pointer_node));
+  TREE_READONLY(head) = 1;
+  TREE_USED(head) = 1;
+  DECL_PRESERVE_P(head) = 1;
+  current_function->debug_perform_sites = head;
+  }
+
+/* File catalogue ABI v1.  Typed constant records preserve program ownership
+   of local, GLOBAL and EXTERNAL connectors without runtime publication code.
+   Flags 1, 2 and 4 denote GLOBAL, EXTERNAL and SD respectively.  */
+static void
+create_debug_file_catalogue()
+  {
+  if( debug_info_level == DINFO_LEVEL_NONE )
+    {
+    return;
+    }
+  tree record_type = make_node(RECORD_TYPE);
+  tree type_decl = build_decl(UNKNOWN_LOCATION, TYPE_DECL,
+                             get_identifier("__gg__debug_file_v1"), record_type);
+  TYPE_NAME(record_type) = type_decl;
+  TYPE_STUB_DECL(record_type) = type_decl;
+  DECL_ARTIFICIAL(type_decl) = 1;
+  tree pointer_type = build_pointer_type(record_type);
+  tree types[] = {UINT, UINT, CONST_CHAR_P, cblc_file_p_type_node, pointer_type};
+  const char *names[] = {"version", "flags", "name", "connector", "next"};
+  tree *link = &TYPE_FIELDS(record_type);
+  for( size_t i = 0; i < ARRAY_SIZE(types); i += 1 )
+    {
+    tree field = build_decl(UNKNOWN_LOCATION, FIELD_DECL,
+                           get_identifier(names[i]), types[i]);
+    DECL_CONTEXT(field) = record_type;
+    *link = field;
+    link = &DECL_CHAIN(field);
+    }
+  layout_type(record_type);
+  tree head = gg_define_variable(pointer_type, "_gdb_file_connectors", vs_static,
+                                gg_cast(pointer_type, null_pointer_node));
+  TREE_READONLY(head) = 1;
+  TREE_USED(head) = 1;
+  DECL_PRESERVE_P(head) = 1;
+  current_function->debug_file_catalogue = head;
+  }
+
+static void
+save_debug_file_connector(const cbl_file_t *file, tree connector)
+  {
+  if( debug_info_level == DINFO_LEVEL_NONE )
+    {
+    return;
+    }
+  tree head = current_function->debug_file_catalogue;
+  tree record_type = TREE_TYPE(TREE_TYPE(head));
+  static size_t serial = 0;
+  char name[80];
+  snprintf(name, sizeof(name), "_gdb_file_connector_" HOST_SIZE_T_PRINT_DEC,
+           (fmt_size_t)++serial);
+  tree record = gg_define_variable(record_type, name, vs_static);
+  TREE_READONLY(record) = 1;
+  TREE_USED(record) = 1;
+  DECL_PRESERVE_P(record) = 1;
+  unsigned int flags = (file->attr & global_e ? 1 : 0)
+                       | (file->attr & external_e ? 2 : 0)
+                       | (file->entry_type == sd_e ? 4 : 0);
+  gg_structure_type_constructor(record,
+    build_int_cst_type(UINT, 1), build_int_cst_type(UINT, flags),
+    gg_cast(CONST_CHAR_P, gg_string_literal(file->name)),
+    gg_get_address_of(connector), DECL_INITIAL(head), NULL_TREE);
+  DECL_INITIAL(head) = gg_get_address_of(record);
+  }
+
 static void
 pseudo_return_push(cbl_proc_t *procedure, size_t index)
   {
@@ -2674,11 +2880,23 @@ internal_perform_through( cbl_label_t *proc_1,
                                           void_type_node);
   DECL_CONTEXT(return_address_decl) = current_function->function_decl;
   TREE_USED(return_address_decl) = 1;
+  if( debug_info_level != DINFO_LEVEL_NONE && optimize )
+    {
+    /* A debugger can transfer control here from any active paragraph.
+       Nonlocal-label semantics make the compiler spill/reload live state
+       across abnormal control transfers and retain a real landing point.
+       GDB restores this invocation's native registers before entering it.  */
+    DECL_NONLOCAL(return_address_decl) = 1;
+    DECL_STRUCT_FUNCTION(current_function->function_decl)->has_nonlocal_label = 1;
+    }
   free(psz);
 
   tree return_label_expr = build1(LABEL_EXPR,
                                   void_type_node,
                                   return_address_decl);
+
+  save_debug_perform_site(proc_1, proc2, dispatch_index,
+			   return_address_decl);
 
   // Put the dispatch_index for this PERFORM onto the stack
   pseudo_return_push(proc2, dispatch_index);
@@ -3027,6 +3245,9 @@ enter_program_common(const char *funcname, const char *funcname_)
                      funcname_,
                      NULL_TREE);
 
+  create_debug_perform_sites();
+  create_debug_file_catalogue();
+
   current_function->first_time_through =
                                   gg_define_variable(INT,
                                                       "_first_time_through",
@@ -3084,6 +3305,17 @@ enter_program_common(const char *funcname, const char *funcname_)
                                                           ach,
                                                           vs_static,
                                                           integer_zero_node);
+  if( debug_info_level != DINFO_LEVEL_NONE )
+    {
+    /* A constant debug pointer adds no instructions to program entry.  The
+       debugger supplies it to runtime cleanup only when forcing a return.  */
+    tree marker = gg_define_variable(build_pointer_type(INT),
+                                     "_gdb_perform_return_counter", vs_static,
+                                     gg_get_address_of(current_function->called_by_main_counter));
+    TREE_READONLY(marker) = 1;
+    TREE_USED(marker) = 1;
+    DECL_PRESERVE_P(marker) = 1;
+    }
   counter += 1;
 
   // Initialize the TRACE logic, which has to be done before the first TRACE1
@@ -3556,6 +3788,8 @@ parser_end_program(const char *prog_name )
     // It's harmless because if it isn't needed, a return was already
     // executed, and this generated code will never be executed
     parser_exit( cbl_refer_t() );
+
+    finish_debug_perform_sites();
 
     // Tell the GCC compiler to do the GIMPLIFY thing.
     gg_finalize_function();
@@ -7222,9 +7456,21 @@ parser_division(cbl_division_t division,
     // length.  We establish those lengths based on the types of the target
     // for each USING.
 
-    gg_call(VOID,
-            "__gg__pseudo_return_bookmark",
-          NULL_TREE);
+    if( debug_info_level != DINFO_LEVEL_NONE )
+      {
+      // One-based active bookmark identity, retained separately in every frame.
+      tree marker_type = build_qualified_type(SIZE_T, TYPE_QUAL_VOLATILE);
+      tree marker = gg_define_variable(marker_type, "_gdb_perform_invocation",
+					vs_stack);
+      TREE_THIS_VOLATILE(marker) = 1;
+      TREE_SIDE_EFFECTS(marker) = 1;
+      gg_assign(marker, gg_cast(marker_type,
+	gg_call_expr(SIZE_T, "__gg__debug_pseudo_return_bookmark", NULL_TREE)));
+      }
+    else
+      {
+      gg_call(VOID, "__gg__pseudo_return_bookmark", NULL_TREE);
+      }
 
     // The MODULE-NAME function requires a stack of program names. We push the
     // name on here.  The first character is a 'T' or an 'N', where 'N' means
@@ -9438,6 +9684,7 @@ parser_file_add(struct cbl_file_t *file)
           build_int_cst_type(INT, (int)file->codeset.alphabet),
           NULL_TREE);
   file->var_decl_node = new_var_decl;
+  save_debug_file_connector(file, new_var_decl);
   }
 
 void

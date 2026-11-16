@@ -246,8 +246,11 @@ cobol_langhook_init (void)
     ftype = build_function_type_list (void_type_node,
                                       integer_type_node,
                                       NULL_TREE);
-    gfc_define_builtin ("__builtin_exit", ftype, BUILT_IN_EXIT,
-            "exit", ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST);
+    /* Restore the cold attribute for STOP RUN once PR rtl-optimization/127011
+       is fixed.  For now, keep the PERFORM continuation that falls through
+       to this call out of the cold partition.  */
+    gfc_define_builtin ("__builtin_exit", ftype, BUILT_IN_EXIT, "exit",
+			ATTR_TMPURE_NORETURN_NOTHROW_LEAF_COLD_LIST & ~ECF_COLD);
 
     ftype = build_function_type_list (integer_type_node,
                                       const_char_pointer_type_node,

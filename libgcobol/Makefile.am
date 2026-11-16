@@ -82,6 +82,18 @@ libgcobol_la_SOURCES =      \
     valconv.cc              \
     xmlparse.cc
 
+# Native runtime ABI regression, including vector relocation and rollback.
+check_PROGRAMS = perform-stack-test
+perform_stack_test_SOURCES = testsuite/perform-stack.cc perform-stack.h
+perform_stack_test_LDADD = libgcobol.la
+
+check-local: perform-stack-test$(EXEEXT)
+	@if test "$(build)" = "$(target)"; then \
+	  $(LIBTOOL) --mode=execute ./perform-stack-test$(EXEEXT); \
+	else \
+	  echo "UNSUPPORTED: PERFORM-stack runtime test requires native execution"; \
+	fi
+
 libgcobol_compat_gnu_la_SOURCES =		\
 	compat/gnu/lib/cobrt-file-status.cbl	\
 	compat/gnu/lib/stored-char-length.cbl	\

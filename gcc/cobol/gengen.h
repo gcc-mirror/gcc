@@ -189,6 +189,18 @@ struct gg_function_t
     tree first_time_through;
     tree saved_currency_state; // Static pointer to this program's immutable table.
     tree saved_currency_view;  // Debugger-readable view for this program.
+    tree debug_perform_sites;  // Immutable PERFORM-site list for this program.
+    tree debug_file_catalogue; // Immutable file connector list for this program.
+    int debug_statement_line = 0;
+    int debug_statement_column = 0;
+    std::string debug_statement_file;
+    struct debug_perform_site_t
+      {
+      tree site;
+      struct cbl_label_t *start;
+      struct cbl_label_t *end;
+      };
+    std::vector<debug_perform_site_t> debug_perform_records;
 
     struct debug_field_binding_t
       {

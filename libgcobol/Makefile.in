@@ -112,6 +112,7 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
+@BUILD_LIBGCOBOL_TRUE@check_PROGRAMS = perform-stack-test$(EXEEXT)
 
 # Handle embedded rpaths for Darwin.
 @BUILD_LIBGCOBOL_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -Wc,-nodefaultrpaths \
@@ -231,6 +232,14 @@ libgcobol_posix_la_LIBADD =
 libgcobol_posix_la_OBJECTS = $(am_libgcobol_posix_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_posix_la_rpath = -rpath \
 @BUILD_LIBGCOBOL_TRUE@	$(toolexeclibdir)
+@BUILD_LIBGCOBOL_TRUE@am_perform_stack_test_OBJECTS =  \
+@BUILD_LIBGCOBOL_TRUE@	testsuite/perform-stack.$(OBJEXT)
+perform_stack_test_OBJECTS = $(am_perform_stack_test_OBJECTS)
+@BUILD_LIBGCOBOL_TRUE@perform_stack_test_DEPENDENCIES = libgcobol.la
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 =
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -249,10 +258,6 @@ am__depfiles_maybe = depfiles
 am__mv = mv -f
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
 LTCXXCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CXX $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=compile $(CXX) $(DEFS) \
 	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
@@ -269,8 +274,26 @@ AM_V_CXXLD = $(am__v_CXXLD_@AM_V@)
 am__v_CXXLD_ = $(am__v_CXXLD_@AM_DEFAULT_V@)
 am__v_CXXLD_0 = @echo "  CXXLD   " $@;
 am__v_CXXLD_1 = 
+COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
+	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
+LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CFLAGS) $(CFLAGS)
+AM_V_CC = $(am__v_CC_@AM_V@)
+am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
+am__v_CC_0 = @echo "  CC      " $@;
+am__v_CC_1 =
+CCLD = $(CC)
+LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+AM_V_CCLD = $(am__v_CCLD_@AM_V@)
+am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
+am__v_CCLD_0 = @echo "  CCLD    " $@;
+am__v_CCLD_1 =
 SOURCES = $(libgcobol_la_SOURCES) $(libgcobol_compat_gnu_la_SOURCES) \
-	$(libgcobol_posix_la_SOURCES)
+	$(libgcobol_posix_la_SOURCES) $(perform_stack_test_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -504,6 +527,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@    valconv.cc              \
 @BUILD_LIBGCOBOL_TRUE@    xmlparse.cc
 
+@BUILD_LIBGCOBOL_TRUE@perform_stack_test_SOURCES = testsuite/perform-stack.cc perform-stack.h
+@BUILD_LIBGCOBOL_TRUE@perform_stack_test_LDADD = libgcobol.la
 @BUILD_LIBGCOBOL_TRUE@libgcobol_compat_gnu_la_SOURCES = \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/cobrt-file-status.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/stored-char-length.cbl	\
@@ -833,6 +858,27 @@ posix/udf/posix-clock-gettime.lo: posix/udf/$(am__dirstamp) \
 libgcobol_posix.la: $(libgcobol_posix_la_OBJECTS) $(libgcobol_posix_la_DEPENDENCIES) $(EXTRA_libgcobol_posix_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgcobol_posix_la_LINK) $(am_libgcobol_posix_la_rpath) $(libgcobol_posix_la_OBJECTS) $(libgcobol_posix_la_LIBADD) $(LIBS)
 
+clean-checkPROGRAMS:
+	@list='$(check_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
+testsuite/$(am__dirstamp):
+	@$(MKDIR_P) testsuite
+	@: > testsuite/$(am__dirstamp)
+testsuite/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) testsuite/$(DEPDIR)
+	@: > testsuite/$(DEPDIR)/$(am__dirstamp)
+testsuite/perform-stack.$(OBJEXT): testsuite/$(am__dirstamp) \
+	testsuite/$(DEPDIR)/$(am__dirstamp)
+
+perform-stack-test$(EXEEXT): $(perform_stack_test_OBJECTS) $(perform_stack_test_DEPENDENCIES) $(EXTRA_perform_stack_test_DEPENDENCIES)
+	@rm -f perform-stack-test$(EXEEXT)
+	$(AM_V_CXXLD)$(CXXLINK) $(perform_stack_test_OBJECTS) $(perform_stack_test_LDADD) $(LIBS)
+
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f compat/gnu/lib/*.$(OBJEXT)
@@ -841,6 +887,7 @@ mostlyclean-compile:
 	-rm -f posix/shim/*.lo
 	-rm -f posix/udf/*.$(OBJEXT)
 	-rm -f posix/udf/*.lo
+	-rm -f testsuite/*.$(OBJEXT)
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -865,6 +912,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/lseek.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/open.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/stat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@testsuite/$(DEPDIR)/perform-stack.Po@am__quote@
 
 .cc.o:
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -1005,7 +1053,10 @@ cscopelist-am: $(am__tagged_files)
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 	-rm -f cscope.out cscope.in.out cscope.po.out cscope.files
+@BUILD_LIBGCOBOL_FALSE@check-local:
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-local
 check: check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) $(HEADERS) config.h
 installdirs:
@@ -1045,18 +1096,20 @@ distclean-generic:
 	-rm -f posix/shim/$(am__dirstamp)
 	-rm -f posix/udf/$(DEPDIR)/$(am__dirstamp)
 	-rm -f posix/udf/$(am__dirstamp)
+	-rm -f testsuite/$(DEPDIR)/$(am__dirstamp)
+	-rm -f testsuite/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
-	mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-toolexeclibLTLIBRARIES mostlyclean-am
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR) testsuite/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1105,7 +1158,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR) testsuite/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 
@@ -1125,24 +1178,25 @@ ps-am:
 uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: all install-am install-strip
+.MAKE: all check-am install-am install-strip
 
-.PHONY: CTAGS GTAGS TAGS all all-am am--refresh check check-am clean \
-	clean-cscope clean-generic clean-libtool \
-	clean-toolexeclibLTLIBRARIES cscope cscopelist-am ctags \
-	ctags-am distclean distclean-compile distclean-generic \
-	distclean-hdr distclean-libtool distclean-tags dvi dvi-am html \
-	html-am info info-am install install-am install-data \
-	install-data-am install-dvi install-dvi-am install-exec \
-	install-exec-am install-html install-html-am install-info \
-	install-info-am install-man \
-	install-nobase_libsubincludeHEADERS install-pdf install-pdf-am \
-	install-ps install-ps-am install-strip install-toolexeclibDATA \
-	install-toolexeclibLTLIBRARIES installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-am uninstall \
-	uninstall-am uninstall-nobase_libsubincludeHEADERS \
+.PHONY: CTAGS GTAGS TAGS all all-am am--refresh check check-am \
+	check-local clean clean-checkPROGRAMS clean-cscope \
+	clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
+	cscope cscopelist-am ctags ctags-am distclean \
+	distclean-compile distclean-generic distclean-hdr \
+	distclean-libtool distclean-tags dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-nobase_libsubincludeHEADERS install-pdf \
+	install-pdf-am install-ps install-ps-am install-strip \
+	install-toolexeclibDATA install-toolexeclibLTLIBRARIES \
+	installcheck installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags tags-am uninstall uninstall-am \
+	uninstall-nobase_libsubincludeHEADERS \
 	uninstall-toolexeclibDATA uninstall-toolexeclibLTLIBRARIES
 
 .PRECIOUS: Makefile
@@ -1155,6 +1209,13 @@ uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 @BUILD_LIBGCOBOL_TRUE@libgcobol.spec: libgcobol.spec.conf Makefile $(srcdir)/mk-rpath-spec.sh
 @BUILD_LIBGCOBOL_TRUE@	$(SHELL) $(srcdir)/mk-rpath-spec.sh "$(toolexeclibdir)" < $< > $@.tmp
 @BUILD_LIBGCOBOL_TRUE@	mv $@.tmp $@
+
+@BUILD_LIBGCOBOL_TRUE@check-local: perform-stack-test$(EXEEXT)
+@BUILD_LIBGCOBOL_TRUE@	@if test "$(build)" = "$(target)"; then \
+@BUILD_LIBGCOBOL_TRUE@	  $(LIBTOOL) --mode=execute ./perform-stack-test$(EXEEXT); \
+@BUILD_LIBGCOBOL_TRUE@	else \
+@BUILD_LIBGCOBOL_TRUE@	  echo "UNSUPPORTED: PERFORM-stack runtime test requires native execution"; \
+@BUILD_LIBGCOBOL_TRUE@	fi
 
 @BUILD_LIBGCOBOL_TRUE@$(LC_COPYDIR_BUILD)/%.cpy: ${srcdir}/compat/gnu/cpy/%.cpy
 @BUILD_LIBGCOBOL_TRUE@	mkdir -p `dirname $@`

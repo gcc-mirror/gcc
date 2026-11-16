@@ -65,6 +65,9 @@ GCOBOL_17.1
     __gg__deallocate;
     __gg__decimal_point_is_comma;
     __gg__debug_currency_signs;
+    __gg__debug_perform_stack;
+    __gg__debug_pseudo_return_bookmark;
+    __gg__debug_perform_unwind;
     __gg__default_compute_error;
     __gg__dialects;
     __gg__display;
