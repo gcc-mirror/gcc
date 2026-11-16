@@ -30,6 +30,9 @@ if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS " -ansi -pedantic-errors"
 }
 
+set saved_DEFAULT_CFLAGS $DEFAULT_CFLAGS
+append DEFAULT_CFLAGS " -save-temps"
+
 # This variable should only apply to tests called in this exp file.
 global dg_runtest_extra_prunes
 set dg_runtest_extra_prunes ""
@@ -57,5 +60,6 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.
+set DEFAULT_CFLAGS $saved_DEFAULT_CFLAGS
 set dg_runtest_extra_prunes ""
 dg-finish

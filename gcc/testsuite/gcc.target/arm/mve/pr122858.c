@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target arm_mve_hw } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -save-temps" } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 

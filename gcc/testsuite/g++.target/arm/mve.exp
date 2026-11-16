@@ -30,6 +30,9 @@ if ![info exists DEFAULT_CXXFLAGS] then {
     set DEFAULT_CXXFLAGS " -pedantic-errors"
 }
 
+set saved_DEFAULT_CXXFLAGS $DEFAULT_CXXFLAGS
+append DEFAULT_CXXFLAGS " -save-temps"
+
 # This variable should only apply to tests called in this exp file.
 global dg_runtest_extra_prunes
 set dg_runtest_extra_prunes ""
@@ -50,6 +53,7 @@ set files [glob -nocomplain \
 dg-runtest [lsort $files] "" $DEFAULT_CXXFLAGS
 
 # All done.
+set DEFAULT_CXXFLAGS $saved_DEFAULT_CXXFLAGS
 set dg-do-what-default ${save-dg-do-what-default}
 set dg_runtest_extra_prunes ""
 dg-finish

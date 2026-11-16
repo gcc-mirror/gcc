@@ -7255,7 +7255,7 @@ proc check_effective_target_arm_v8_1m_mve_fp_ok_nocache { } {
 	    #error "MVE intrinsics are not supported in Big-Endian mode."
 	    #endif
 	} "$flags -mthumb"] } {
-	    set et_arm_v8_1m_mve_fp_flags "$flags -mthumb --save-temps"
+	    set et_arm_v8_1m_mve_fp_flags "$flags -mthumb"
 	    return 1
 	}
     }
@@ -7477,7 +7477,7 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 	    #endif
 	    #include <arm_mve.h>
 	} "$flags -mthumb"] } {
-	    set et_arm_v8_1m_mve_flags "$flags -mthumb --save-temps"
+	    set et_arm_v8_1m_mve_flags "$flags -mthumb"
 	    return 1
 	}
     }
@@ -7548,7 +7548,7 @@ proc check_effective_target_arm_v8_1m_mve_nofp_ok_nocache { } {
 	    #endif
 	    #include <arm_mve.h>
 	} "$flags -mthumb"] } {
-	    set et_arm_v8_1m_mve_nofp_flags "$flags -mthumb --save-temps"
+	    set et_arm_v8_1m_mve_nofp_flags "$flags -mthumb"
 	    return 1
 	}
     }

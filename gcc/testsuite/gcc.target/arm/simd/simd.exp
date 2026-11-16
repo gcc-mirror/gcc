@@ -24,6 +24,15 @@ if ![istarget arm*-*-*] then {
 # Load support procs.
 load_lib gcc-dg.exp
 
+# If a testcase doesn't have special options, use these.
+global DEFAULT_CFLAGS
+if ![info exists DEFAULT_CFLAGS] then {
+    set DEFAULT_CFLAGS " -ansi -pedantic-errors"
+}
+
+set saved_DEFAULT_CFLAGS $DEFAULT_CFLAGS
+append DEFAULT_CFLAGS " -save-temps"
+
 # Initialize `dg'.
 dg-init
 
@@ -44,5 +53,6 @@ dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.\[cCS\]]] \
 	"" ""
 
 # All done.
+set DEFAULT_CFLAGS $saved_DEFAULT_CFLAGS
 set dg-do-what-default ${save-dg-do-what-default}
 dg-finish
