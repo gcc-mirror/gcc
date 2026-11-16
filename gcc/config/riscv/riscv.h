@@ -61,7 +61,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 # define RISCV_NATIVE_SPECS						\
   "%{march=native:%<march=native %:local_cpu_detect(arch)} "		\
   "%{mtune=native:%<mtune=native %:local_cpu_detect(tune)} "		\
-  "%{mcpu=native:%<mcpu=native "					\
+  "%{mcpu=native:%<mcpu=native %:local_cpu_detect(cpu) "		\
     "%{!march=*|march=unset:%<march=* %:local_cpu_detect(arch)} "	\
     "%{!mtune=*:%:local_cpu_detect(tune)}} "
 #else

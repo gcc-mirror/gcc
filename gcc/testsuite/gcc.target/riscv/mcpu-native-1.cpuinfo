@@ -1,0 +1,8 @@
+processor	: 0
+hart		: 0
+isa		: rv64imafdc
+mmu		: sv39
+mvendorid	: 0x489
+marchid		: 0x8000000000000109
+mimpid		: 0x14250606
+

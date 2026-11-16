@@ -31554,9 +31554,10 @@ When @option{-mtune=} is not specified, GCC uses the setting from
 @option{-mtune=native} and @option{-mcpu=native} identify the core the
 compiler is running on, subject to the same restrictions and the same
 caveat about unlike cores as @option{-march=native} above.
-@option{-mcpu=native} additionally selects the detected architecture.  A
-core the compiler has no hardware identification for leaves the tuning at
-its default rather than causing an error.
+@option{-mcpu=native} additionally selects the detected architecture, and
+the detected core as if by @option{-mcpu=}.  A core the compiler has no
+hardware identification for leaves the tuning at its default rather than
+causing an error.
 
 The @samp{size} choice is not intended for use by end-users.  This is used
 when @option{-Os} is specified.  It overrides the instruction cost info

@@ -574,7 +574,8 @@ riscv_native_tune (void)
 #endif /* __linux__ */
 
 /* Implement the local_cpu_detect spec function.  ARGV[0] selects what to
-   report: "arch" for an -march= option, "tune" for an -mtune= one.  */
+   report: "arch" for an -march= option, "tune" for an -mtune= one, "cpu"
+   for an -mcpu= one.  */
 
 const char *
 host_detect_local_cpu (int argc, const char **argv)
@@ -600,6 +601,16 @@ host_detect_local_cpu (int argc, const char **argv)
 	return NULL;
 
       return concat ("-mtune=", core, NULL);
+    }
+
+  if (strcmp (argv[0], "cpu") == 0)
+    {
+      const char *core = riscv_native_tune ();
+
+      if (core == NULL)
+	return NULL;
+
+      return concat ("-mcpu=", core, NULL);
     }
 
   return NULL;
