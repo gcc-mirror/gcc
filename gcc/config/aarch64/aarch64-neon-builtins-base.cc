@@ -1446,6 +1446,9 @@ struct gimple_minmax : public gimple_function_base
 	ret_mode = DFmode;
       }
 
+    for (int i = 0; i < 2; i++)
+      e.args[i] = force_reg (ret_mode, e.args[i]);
+
     auto ret = gen_reg_rtx (ret_mode);
     auto args = gen_rtvec_v (e.args.length (), e.args.address ());
     emit_insn (gen_rtx_SET (ret, gen_rtx_UNSPEC (ret_mode, args, unspec)));
