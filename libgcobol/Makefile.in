@@ -239,7 +239,7 @@ perform_stack_test_OBJECTS = $(am_perform_stack_test_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am__v_lt_1 =
+am__v_lt_1 = 
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
 am__v_P_0 = false
@@ -283,7 +283,7 @@ LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 =
+am__v_CC_1 = 
 CCLD = $(CC)
 LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -291,7 +291,7 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 =
+am__v_CCLD_1 = 
 SOURCES = $(libgcobol_la_SOURCES) $(libgcobol_compat_gnu_la_SOURCES) \
 	$(libgcobol_posix_la_SOURCES) $(perform_stack_test_SOURCES)
 am__can_run_installinfo = \
@@ -875,7 +875,7 @@ testsuite/$(DEPDIR)/$(am__dirstamp):
 testsuite/perform-stack.$(OBJEXT): testsuite/$(am__dirstamp) \
 	testsuite/$(DEPDIR)/$(am__dirstamp)
 
-perform-stack-test$(EXEEXT): $(perform_stack_test_OBJECTS) $(perform_stack_test_DEPENDENCIES) $(EXTRA_perform_stack_test_DEPENDENCIES)
+perform-stack-test$(EXEEXT): $(perform_stack_test_OBJECTS) $(perform_stack_test_DEPENDENCIES) $(EXTRA_perform_stack_test_DEPENDENCIES) 
 	@rm -f perform-stack-test$(EXEEXT)
 	$(AM_V_CXXLD)$(CXXLINK) $(perform_stack_test_OBJECTS) $(perform_stack_test_LDADD) $(LIBS)
 
