@@ -2298,26 +2298,57 @@ classify_argument (machine_mode mode, const_tree type,
 	  break;
 
 	case ARRAY_TYPE:
-	  /* Arrays are handled as small records.  */
+	  /* Arrays are handled as small records.  The psABI classifies each
+	     element, so classify every element at its actual offset and merge
+	     the classes of the elements sharing an eightbyte.  The classes of
+	     the first element don't describe the other elements when the
+	     element size is not a multiple of a word, e.g. when the element
+	     has padding ignored by the classification, such as from a
+	     zero-width bit-field.  */
 	  {
-	    int num;
-	    num = classify_argument (TYPE_MODE (TREE_TYPE (type)),
-				     TREE_TYPE (type), subclasses, bit_offset,
-				     zero_width_bitfields);
-	    if (!num)
+	    tree elt_type = TREE_TYPE (type);
+	    HOST_WIDE_INT elt_bytes = int_size_in_bytes (elt_type);
+
+	    if (elt_bytes < 0)
 	      return 0;
 
-	    /* The partial classes are now full classes.  */
-	    if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
-	      subclasses[0] = X86_64_SSE_CLASS;
-	    if (subclasses[0] == X86_64_SSEHF_CLASS && bytes != 2)
-	      subclasses[0] = X86_64_SSE_CLASS;
-	    if (subclasses[0] == X86_64_INTEGERSI_CLASS
-		&& !((bit_offset % 64) == 0 && bytes == 4))
-	      subclasses[0] = X86_64_INTEGER_CLASS;
+	    /* An array larger than two eightbytes is passed in registers
+	       only if the first eightbyte is SSE and all the others are
+	       SSEUP, which is possible only for a single element.  */
+	    if (words > 2 && elt_bytes != bytes)
+	      return 0;
 
-	    for (i = 0; i < words; i++)
-	      classes[i] = subclasses[i % num];
+	    /* A zero-sized array is classified by classifying one element.  */
+	    HOST_WIDE_INT nelts = bytes > 0 ? bytes / elt_bytes : 1;
+
+	    for (HOST_WIDE_INT k = 0; k < nelts; k++)
+	      {
+		int elt_offset = k * elt_bytes * BITS_PER_UNIT;
+		int pos = (elt_offset + (bit_offset % 64)) / 8 / 8;
+		int num = classify_argument (TYPE_MODE (elt_type), elt_type,
+					     subclasses,
+					     (bit_offset + elt_offset) % 512,
+					     zero_width_bitfields);
+		if (!num)
+		  return 0;
+
+		/* The partial classes are now full classes.  */
+		if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
+		  subclasses[0] = X86_64_SSE_CLASS;
+		if (subclasses[0] == X86_64_SSEHF_CLASS && bytes != 2)
+		  subclasses[0] = X86_64_SSE_CLASS;
+		if (subclasses[0] == X86_64_INTEGERSI_CLASS
+		    && !((bit_offset % 64) == 0 && bytes == 4))
+		  subclasses[0] = X86_64_INTEGER_CLASS;
+
+		for (i = 0; i < num && (i + pos) < words; i++)
+		  {
+		    classes[i + pos]
+		      = merge_classes (subclasses[i], classes[i + pos]);
+		    if (classes[i + pos] == X86_64_MEMORY_CLASS)
+		      return 0;
+		  }
+	      }
 
 	    break;
 	  }
