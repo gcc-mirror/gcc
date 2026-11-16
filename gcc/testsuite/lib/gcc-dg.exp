@@ -1389,7 +1389,9 @@ proc gdb-exists { args } {
 }
 
 # Helper function for scan-symbol and scan-symbol-not. It scans a symbol in
-# the final executable and return 1 if present, otherwise fail.
+# the final executable and return 1 if present, 0 if it doesn't, -1 if
+# scanning fails with the chosen method (suggested translation: "fail" or
+# "unresolved"), and -2 if the test was skipped.
 #
 # Argument 0 is the regexp to match.
 # Argument 1 handles expected failures and the like
@@ -1403,7 +1405,7 @@ proc scan-symbol-common { scan_directive args } {
     if { [llength $args] >= 2 } {
 	switch [dg-process-target [lindex $args 1]] {
 	    "S" { }
-	    "N" { return }
+	    "N" { return -2 }
 	    "F" { setup_xfail "*-*-*" }
 	    "P" { }
 	}
@@ -1426,15 +1428,15 @@ proc scan-symbol-common { scan_directive args } {
 
     set output_file "[glob -nocomplain $output_file]"
     if { $output_file == "" } {
-	fail "$scan_directive $args: output file does not exist"
-	return
+	verbose -log "$scan_directive $args: output file does not exist"
+	return -1
     }
 
     set output [remote_exec host "$nm_cmd" "$output_file"]
     set status [lindex $output 0]
     if { $status != 0 } {
 	verbose -log "$scan_directive $args: $nm_cmd failed"
-	return 0
+	return -1
     }
     set text [lindex $output 1]
 
@@ -1452,10 +1454,13 @@ proc scan-symbol-common { scan_directive args } {
 # Argument 1 handles expected failures and the like
 proc scan-symbol { args } {
     set testcase [testname-for-summary]
-    if { [scan-symbol-common "scan-symbol" $args]} {
-	pass "$testcase   scan-symbol $args"
-    } else {
-	fail "$testcase   scan-symbol $args"
+    set res [eval scan-symbol-common "scan-symbol" $args]
+    if { $res == 1 } {
+	pass "$testcase   scan-symbol [lindex $args 0]"
+    } elseif { $res == 0 || $res == -1 } {
+	fail "$testcase   scan-symbol [lindex $args 0]"
+    } elseif { $res != -2 } {
+	error "Invalid handling of scan-symbol $args in testcase $testcase"
     }
 }
 
@@ -1466,10 +1471,13 @@ proc scan-symbol { args } {
 # Argument 1 handles expected failures and the like
 proc scan-symbol-not { args } {
     set testcase [testname-for-summary]
-    if { [scan-symbol-common "scan-symbol-not" $args]} {
-	fail "$testcase   scan-symbol-not $args"
-    } else {
-	pass "$testcase   scan-symbol-not $args"
+    set res [eval scan-symbol-common "scan-symbol-not" $args]
+    if { $res == 1 || $res == -1 } {
+	fail "$testcase   scan-symbol-not [lindex $args 0]"
+    } elseif { $res == 0 } {
+	pass "$testcase   scan-symbol-not [lindex $args 0]"
+    } elseif { $res != -2 } {
+	error "Invalid handling of scan-symbol-not $args in testcase $testcase"
     }
 }
 
