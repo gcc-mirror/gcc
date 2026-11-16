@@ -1473,7 +1473,11 @@ predicate::simplify_4 ()
   unsigned n = m_preds.length ();
   for (unsigned i = 0; i < n; i++)
     {
-      pred_chain a_chain = m_preds[i];
+      /* pred_chain is a vec<> whose copy constructor is the default one, so
+	 copying the chain copies the pointer to the elements, not the
+	 elements themselves.  Releasing such a copy frees the storage that
+	 m_preds[i] still points to, so refer to the chain in place.  */
+      pred_chain &a_chain = m_preds[i];
       if (a_chain.length () != 1)
 	continue;
 
@@ -1543,15 +1547,37 @@ predicate::simplify (gimple *use_or_def, bool is_use)
       dump (dump_file, use_or_def, is_use ? "[USE]:\n" : "[DEF]:\n");
     }
 
+  bool dropped = false;
   for (unsigned i = 0; i < m_preds.length (); i++)
     {
       ::simplify_1a (m_preds[i]);
-      if (::simplify_1b (m_preds[i]))
+      if (!::simplify_1b (m_preds[i]))
+	continue;
+
+      if (m_preds[i].is_empty ())
 	{
-	  m_preds[i].release ();
-	  m_preds.ordered_remove (i);
-	  i--;
+	  /* The chain is a tautology, and so is the whole disjunction.  */
+	  for (unsigned k = 0; k < m_preds.length (); ++k)
+	    m_preds[k].release ();
+	  m_preds.truncate (0);
+	  m_cval = true;
+	  return;
 	}
+
+      /* The chain is a contradiction, i.e. a false disjunct: drop it.  */
+      m_preds[i].release ();
+      m_preds.ordered_remove (i);
+      dropped = true;
+      i--;
+    }
+
+  /* If every disjunct was a contradiction the predicate is false, even
+     for a predicate whose empty value is true (the use predicate is
+     initialized to true and then filled in by init_use_preds).  */
+  if (dropped && m_preds.is_empty ())
+    {
+      m_cval = false;
+      return;
     }
 
   if (m_preds.length () < 2)
