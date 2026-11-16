@@ -1,3 +1,15 @@
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr36.adb: New test.
+
+2026-11-15  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2026-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128518
+	* gcc.dg/pr128518.c: New test.
+
 2026-11-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
