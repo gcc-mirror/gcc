@@ -10534,6 +10534,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 					se->want_coarray);
       gfc_add_expr_to_block (&se->pre, tmp);
       final_block = NULL;
+
+      /* Did we ask for a pointer to the structure temporary?  */
+      if (se->want_pointer && !POINTER_TYPE_P (TREE_TYPE (se->expr)))
+	se->expr = gfc_build_addr_expr (NULL, se->expr);
+
       return;
     }
 
