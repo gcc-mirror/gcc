@@ -1468,7 +1468,25 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
       edge latch_exit_edge = make_edge (latch, loop_e->dest, exit_flags);
       latch_exit_edge->probability = loop_e->probability;
       latch_exit_edge->count () = loop_e->count ();
-      copy_phi_arg_into_existing_phi (loop_e, latch_exit_edge);
+
+      /* The header exit uses values from before the iteration.  The latch
+	 exit follows the body, so use the backedge values of header PHIs.  The
+	 earlier code in vect_do_peeling corrected the scalar IVs, but the line
+	 below still copies the old reduction values to the new exit.  Correct
+	 these by populating the redirect map with the backedge values before
+	 copying the PHIs.  */
+      for (gphi_iterator gsi = gsi_start_phis (loop->header);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  auto locus = gimple_phi_arg_location_from_edge (phi, latch_e);
+	  redirect_edge_var_map_add (latch_exit_edge, gimple_phi_result (phi),
+				     PHI_ARG_DEF_FROM_EDGE (phi, latch_e),
+				     locus);
+	}
+
+      copy_phi_arg_into_existing_phi (loop_e, latch_exit_edge, true);
+
       if (gphi *vphi = get_virtual_phi (latch_exit_edge->dest))
 	SET_PHI_ARG_DEF_ON_EDGE (vphi, latch_exit_edge,
 				 get_live_virtual_operand_on_edge
@@ -3898,7 +3916,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	}
 
       vect_update_ivs_after_vectorizer (loop_vinfo, vector_iters_vf,
-				       update_e, uncounted_p);
+					update_e, uncounted_p);
 
       /* Recalculate the dominators after adding the guard edge.  */
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
