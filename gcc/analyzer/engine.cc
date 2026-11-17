@@ -328,7 +328,7 @@ public:
 			&& SSA_NAME_VAR (lhs) == SSA_NAME_VAR (m_var))
 		      {
 			if (logger)
-			  logger->log ("using location 0x%wx from gassign",
+			  logger->log ("using location %wx from gassign",
 				       assign->location);
 			ploc.m_event_loc_info.m_loc = assign->location;
 			return;
@@ -386,7 +386,7 @@ public:
 		    if (useful_location_p (stmt->location))
 		      {
 			if (logger)
-			  logger->log ("using location 0x%wx from stmt",
+			  logger->log ("using location %wx from stmt",
 				       stmt->location);
 			ploc.m_event_loc_info.m_loc = stmt->location;
 			return;
@@ -2000,7 +2000,7 @@ private:
 
     auto &cs = point.get_call_string ();
     auto cs_arr = std::make_unique<json::array> ();
-    for (int i = 0; i < cs.length (); ++i)
+    for (unsigned int i = 0; i < cs.length (); ++i)
       {
 	auto e = cs[i];
 	auto obj = std::make_unique<json::object> ();
