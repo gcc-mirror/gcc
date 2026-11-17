@@ -223,8 +223,7 @@ analyzer_state_graph::make_node_id (const region &reg)
 
     case RK_MEMORY_SPACE:
       {
-	auto &memspace_region = *as_a <const memory_space_region *> (&reg);
-	auto memspace = memspace_region.get_concrete_memory_space ();
+	auto memspace = reg.get_memory_space ();
 	switch (memspace)
 	  {
 	  default:
@@ -383,8 +382,7 @@ analyzer_state_graph::create_state_node (const region &reg)
 
     case RK_MEMORY_SPACE:
       {
-	auto &memspace_region = *as_a <const memory_space_region *> (&reg);
-	auto memspace = memspace_region.get_concrete_memory_space ();
+	auto memspace = reg.get_memory_space ();
 	auto kind = get_node_properties_kind_for_memory_space (memspace);
 	node = make_memspace_state_node (reg, kind);
       }

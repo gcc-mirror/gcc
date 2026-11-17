@@ -140,6 +140,7 @@ class svalue;
   class asm_output_svalue;
   class const_fn_result_svalue;
 class region;
+  class cluster_region;
   class frame_region;
   class function_region;
   class label_region;

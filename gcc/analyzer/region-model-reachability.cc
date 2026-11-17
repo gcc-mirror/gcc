@@ -120,7 +120,8 @@ reachable_regions::add (const region *reg, bool is_mutable)
 {
   gcc_assert (reg);
 
-  const region *base_reg = const_cast <region *> (reg->get_base_region ());
+  const cluster_region *base_reg
+    = const_cast <cluster_region *> (reg->get_base_region ());
   gcc_assert (base_reg);
 
   /* Bail out if this cluster is already in the sets at the IS_MUTABLE

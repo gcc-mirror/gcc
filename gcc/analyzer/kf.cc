@@ -2800,7 +2800,7 @@ public:
 
   kf_strtok (region_model_manager &mgr)
   : m_private_reg (mgr.alloc_node_id (),
-		   mgr.get_root_region (),
+		   *mgr.get_root_region (),
 		   get_region_type (),
 		   "strtok buffer")
   {

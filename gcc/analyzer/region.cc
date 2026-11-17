@@ -101,56 +101,6 @@ add_dump_widget_children (text_art::tree_widget &w,
     w.add_child (m_parent->make_dump_widget (nds, "parent"));
 }
 
-/* Determine the base region for this region: when considering bindings
-   for this region, the base region is the ancestor which identifies
-   which cluster they should be partitioned into.
-   Regions within the same struct/union/array are in the same cluster.
-   Different decls are in different clusters.  */
-
-const region *
-region::get_base_region () const
-{
-  const region *iter = this;
-  while (iter)
-    {
-      switch (iter->get_kind ())
-	{
-	case RK_FIELD:
-	case RK_ELEMENT:
-	case RK_OFFSET:
-	case RK_SIZED:
-	case RK_BIT_RANGE:
-	case RK_CAST:
-	  iter = iter->get_parent_region ();
-	  continue;
-	default:
-	  return iter;
-	}
-    }
-  return iter;
-}
-
-/* Return true if get_base_region() == this for this region.  */
-
-bool
-region::base_region_p () const
-{
-  switch (get_kind ())
-    {
-    /* Region kinds representing a descendent of a base region.  */
-    case RK_FIELD:
-    case RK_ELEMENT:
-    case RK_OFFSET:
-    case RK_SIZED:
-    case RK_CAST:
-    case RK_BIT_RANGE:
-      return false;
-
-    default:
-      return true;
-    }
-}
-
 /* Return true if this region is ELDER or one of its descendents.  */
 
 bool
@@ -180,51 +130,6 @@ region::maybe_get_frame_region () const
       iter = iter->get_parent_region ();
     }
   return nullptr;
-}
-
-/* Get the memory space of this region.  */
-
-memory_space
-region::get_memory_space () const
-{
-  const region *iter = this;
-  while (iter)
-    {
-      switch (iter->get_kind ())
-	{
-	default:
-	  break;
-
-	case RK_MEMORY_SPACE:
-	  {
-	    auto &memspace_region = *as_a <const memory_space_region *> (iter);
-	    return memspace_region.get_concrete_memory_space ();
-	  }
-
-	case RK_FUNCTION:
-	case RK_LABEL:
-	  return memory_space::code;
-	case RK_FRAME:
-	case RK_ALLOCA:
-	  return memory_space::stack;
-	case RK_HEAP_ALLOCATED:
-	  return memory_space::heap;
-	case RK_STRING:
-	  return memory_space::read_only_data;
-	case RK_PRIVATE:
-	  return memory_space::private_;
-	case RK_SYMBOLIC:
-	  {
-	    auto *sym_reg = as_a<const symbolic_region *> (iter);
-	    const svalue *sval = sym_reg->get_pointer ();
-	    if (auto *sym_ptr = sval->maybe_get_symbolic_pointer ())
-	      return sym_ptr->get_base_region ().get_memory_space ();
-	  }
-	  break;
-	}
-      iter = iter->get_parent_region ();
-    }
-  return memory_space::unknown;
 }
 
 /* Subroutine for use by region_model_manager::get_or_create_initial_value.
@@ -901,9 +806,17 @@ region::is_named_decl_p (const char *decl_name) const
 
 /* region's ctor.  */
 
-region::region (complexity c, symbolic::node::id_t id, const region *parent, tree type)
+region::region (complexity c,
+		symbolic::node::id_t id,
+		const region *parent,
+		const cluster_region *cluster_reg,
+		memory_space mem_space,
+		tree type)
 : symbolic::node (c, id),
-  m_parent (parent), m_type (type),
+  m_parent (parent),
+  m_cluster_reg (cluster_reg),
+  m_mem_space (mem_space),
+  m_type (type),
   m_cached_memory_range (nullptr),
   m_cached_init_sval_at_main (nullptr)
 {
@@ -1170,7 +1083,7 @@ frame_region::get_region_for_local (region_model_manager *mgr,
   if (decl_region **slot = mutable_locals.get (expr))
     return *slot;
   decl_region *reg
-    = new decl_region (mgr->alloc_node_id (), this, expr);
+    = new decl_region (mgr->alloc_node_id (), *this, expr);
   mutable_locals.put (expr, reg);
   return reg;
 }
@@ -1182,13 +1095,14 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 void
 memory_space_region::dump_to_pp (pretty_printer *pp, bool simple) const
 {
-  pp_string (pp, get_dump_name (m_mem_space));
+  pp_string (pp, get_dump_name (get_memory_space ()));
 }
 
 void
 memory_space_region::print_region_for_dump_widget_label (pretty_printer *pp) const
 {
-  pp_printf (pp, "memory_space_region (%s)", get_dump_name (m_mem_space));
+  pp_printf (pp, "memory_space_region (%s)",
+	     get_dump_name (get_memory_space ()));
 }
 
 void
@@ -1207,10 +1121,11 @@ memory_space_region::to_json () const
 std::unique_ptr<diagnostics::markup::node>
 memory_space_region::make_markup_node (symbolic::markup_context &) const
 {
-  return diagnostics::markup::make_text_node (get_dump_name (m_mem_space));
+  return diagnostics::markup::make_text_node
+    (get_dump_name (get_memory_space ()));
 }
 
-/* class function_region : public region.  */
+/* class function_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for function_region.  */
 
@@ -1311,7 +1226,11 @@ label_region::make_markup_node (symbolic::markup_context &) const
 /* root_region's ctor.  */
 
 root_region::root_region (symbolic::node::id_t id)
-: region (complexity (1, 1), id, nullptr, NULL_TREE)
+: region (complexity (1, 1), id,
+	  nullptr, // the root region has no parent
+	  nullptr, // no cluster
+	  memory_space::unknown,
+	  NULL_TREE)
 {
 }
 
@@ -1350,16 +1269,17 @@ root_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("root_region");
 }
 
-/* class symbolic_region : public map_region.  */
+/* class symbolic_region : public cluster_region.  */
 
 /* symbolic_region's ctor.  */
 
-symbolic_region::symbolic_region (symbolic::node::id_t id, region *parent,
+symbolic_region::symbolic_region (symbolic::node::id_t id,
+				  const region &parent,
 				  const svalue *sval_ptr)
-: region (complexity::from_pair (parent, sval_ptr), id, parent,
-	  (sval_ptr->get_type ()
-	   ? TREE_TYPE (sval_ptr->get_type ())
-	   : NULL_TREE)),
+: cluster_region (complexity::from_pair (&parent, sval_ptr), id, parent,
+		  (sval_ptr->get_type ()
+		   ? TREE_TYPE (sval_ptr->get_type ())
+		   : NULL_TREE)),
   m_sval_ptr (sval_ptr)
 {
 }
@@ -1437,7 +1357,7 @@ symbolic_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("symbolic_region");
 }
 
-/* class decl_region : public region.  */
+/* class decl_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for decl_region.  */
 
@@ -2211,7 +2131,7 @@ maybe_get_byte_offset_relative_to_parent (region_model_manager &) const
   return nullptr;
 }
 
-/* class heap_allocated_region : public region.  */
+/* class heap_allocated_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for heap_allocated_region.  */
 
@@ -2248,7 +2168,7 @@ heap_allocated_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("heap_allocated_region");
 }
 
-/* class alloca_region : public region.  */
+/* class alloca_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for alloca_region.  */
 
@@ -2285,7 +2205,7 @@ alloca_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("alloca_region");
 }
 
-/* class string_region : public region.  */
+/* class string_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for string_region.  */
 
@@ -2428,7 +2348,7 @@ maybe_get_byte_offset_relative_to_parent (region_model_manager &mgr) const
   gcc_unreachable ();
 }
 
-/* class var_arg_region : public region.  */
+/* class var_arg_region : public cluster_region.  */
 
 void
 var_arg_region::dump_to_pp (pretty_printer *pp, bool simple) const
@@ -2483,7 +2403,7 @@ var_arg_region::get_frame_region () const
   return as_a <const frame_region *> (get_parent_region ());
 }
 
-/* class errno_region : public region.  */
+/* class errno_region : public cluster_region.  */
 
 void
 errno_region::dump_to_pp (pretty_printer *pp, bool simple) const
@@ -2519,7 +2439,7 @@ errno_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("errno");
 }
 
-/* class private_region : public region.  */
+/* class private_region : public cluster_region.  */
 
 void
 private_region::dump_to_pp (pretty_printer *pp, bool simple) const
@@ -2557,7 +2477,7 @@ private_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("private_region");
 }
 
-/* class unknown_region : public region.  */
+/* class unknown_region : public cluster_region.  */
 
 /* Implementation of region::dump_to_pp vfunc for unknown_region.  */
 

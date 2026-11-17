@@ -84,11 +84,23 @@ enum region_kind
      memory_space_region (RK_MEMORY_SPACE): a region for a particular
 					    memory_space
      root_region (RK_ROOT): the top-level region
-     function_region (RK_FUNCTION): the code for a particular function
-     label_region (RK_LABEL): a particular label within a function
-     symbolic_region (RK_SYMBOLIC): dereferencing a symbolic pointer
-     decl_region (RK_DECL): the memory occupied by a particular global, local,
-			    or SSA name
+     cluster_region
+       alloca_region (RK_ALLOCA): an untyped region dynamically allocated on the
+				  stack via "alloca"
+       decl_region (RK_DECL): the memory occupied by a particular global, local,
+			      or SSA name
+       errno_region (RK_ERRNO): a region for holding "errno"
+       function_region (RK_FUNCTION): the code for a particular function
+       heap_allocated_region (RK_HEAP_ALLOCATED): an untyped region dynamically
+						  allocated on the heap via
+						  "malloc" or similar
+       label_region (RK_LABEL): a particular label within a function
+       private_region (RK_PRIVATE): a region for internal state of an API
+       string_region (RK_STRING): a region for a STRING_CST
+       symbolic_region (RK_SYMBOLIC): dereferencing a symbolic pointer
+       var_arg_region (RK_VAR_ARG): a region for the N-th vararg within a
+				    frame_region for a variadic call
+       unknown_region (RK_UNKNOWN): for handling unimplemented tree codes.
      field_region (RK_FIELD): the memory occupied by a field within a struct
 			      or union
      element_region (RK_ELEMENT): an element within an array
@@ -98,19 +110,37 @@ enum region_kind
 			      within its parent
      cast_region (RK_CAST): a region that views another region using a
 			    different type
-     heap_allocated_region (RK_HEAP_ALLOCATED): an untyped region dynamically
-						allocated on the heap via
-						"malloc" or similar
-     alloca_region (RK_ALLOCA): an untyped region dynamically allocated on the
-				stack via "alloca"
-     string_region (RK_STRING): a region for a STRING_CST
      bit_range_region (RK_BIT_RANGE): a region for a specific range of bits
-				      within another region
-     var_arg_region (RK_VAR_ARG): a region for the N-th vararg within a
-				  frame_region for a variadic call
-     errno_region (RK_ERRNO): a region for holding "errno"
-     private_region (RK_PRIVATE): a region for internal state of an API
-     unknown_region (RK_UNKNOWN): for handling unimplemented tree codes.  */
+				      within another region.
+
+   For this example code:
+
+   .   extern int arr[10];
+   .   void foo ()
+   .   {
+   .      int .p = (int .)malloc (sizeof (int));
+   .      [...etc...].
+
+   the *object* hierarchy, in terms of the ancestry expressed by the
+   get_parent () pointers of region *instances*, might look something like
+   this:
+
+   .   root (RK_ROOT)
+   .   +- memory_space_region for memory_space::globals (RK_MEMORY_SPACE)
+   .   |  |  (all descendents have m_mem_space == memory_space::globals)
+   .   |  `- [C] decl_region for 'arr[10]'  (RK_DECL)
+   .   |     `- element_region for 'arr[3]' (RK_ELEMENT)
+   .   +- memory_space_region for memory_space::heap (RK_MEMORY_SPACE)
+   .   |  |  (all descendents have m_mem_space == memory_space::heap)
+   .   |  `- [C] heap_allocated_region for '*p'
+   .   +- memory_space_region for memory_space::stack (RK_MEMORY_SPACE)
+   .   |  |  (all descendents have m_mem_space == memory_space::stack)
+   .   |  +- frame_region (RK_FRAME)
+   .   |  +- frame_region (RK_FRAME)
+   .   |  `- frame_region (RK_FRAME)
+   .   |     `- [C] decl_region for 'p'  (RK_DECL)
+
+   where [C] denotes a cluster region.  */
 
 /* Abstract base class for representing ways of accessing chunks of memory.
 
@@ -165,11 +195,12 @@ public:
   virtual void accept (visitor *v) const;
 
   const region *get_parent_region () const { return m_parent; }
-  const region *get_base_region () const;
+  const cluster_region *get_base_region () const { return m_cluster_reg; }
+  const cluster_region *get_cluster_region () const { return m_cluster_reg; }
   bool base_region_p () const;
   bool descendent_of_p (const region *elder) const;
   const frame_region *maybe_get_frame_region () const;
-  memory_space get_memory_space () const;
+  memory_space get_memory_space () const { return m_mem_space; }
   bool can_have_initial_svalue_p () const;
   const svalue *get_initial_value_at_main (region_model_manager *mgr) const;
 
@@ -245,7 +276,12 @@ public:
   bool empty_p (region_model_manager &mgr) const;
 
  protected:
-  region (complexity c, symbolic::node::id_t id, const region *parent, tree type);
+  region (complexity c,
+	  symbolic::node::id_t id,
+	  const region *parent,
+	  const cluster_region *cluster_reg,
+	  memory_space mem_space,
+	  tree type);
 
   std::unique_ptr<json::object>
   make_json_obj (const char *type_name) const;
@@ -266,7 +302,24 @@ public:
   add_dump_widget_children_for_region (text_art::tree_widget &,
 				       symbolic::node_dump_state &nds) const;
 
+  /* The immediate parent (if any) of this node.  */
   const region *m_parent;
+
+  /* The region within the ancestry of this region that identifies which
+     cluster (if any) they should be partitioned into within the store.
+
+     (This is sometimes called the "base region" in existing code, but that
+     term is confusing so I'm deprecating it)
+
+     Regions within the same struct/union/array are in the same cluster.
+     Different decls are in different clusters.
+     Instances of cluster_region have "this" as their m_cluster_reg.
+     Nodes above the level of clusters (e.g. memory_space_region) have
+     nullptr for their m_cluster_reg.  */
+  const cluster_region *m_cluster_reg;
+
+  memory_space m_mem_space;
+
   tree m_type;
 
   mutable std::unique_ptr<symbolic::memory_offset> m_cached_memory_offset;
@@ -291,15 +344,18 @@ is_a_helper <const region *>::test (const region *)
 namespace ana {
 
 /* Concrete subclass of region, for regions that represent an untyped
-   space within memory, such as the stack or the heap.  */
+   space within memory, such as the stack or the heap.
+   Child regions "inherit" its memory_space value.  */
 
 class memory_space_region : public region
 {
 public:
   memory_space_region (symbolic::node::id_t id, const region *parent,
 		       memory_space mem_space)
-  : region (complexity (parent), id, parent, NULL_TREE),
-    m_mem_space (mem_space)
+  : region (complexity (parent), id, parent,
+	    nullptr, // no cluster
+	    mem_space,
+	    NULL_TREE) // no type
   {}
 
   /* region vfuncs.  */
@@ -320,15 +376,6 @@ public:
 
   std::unique_ptr<diagnostics::markup::node>
   make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-
-  memory_space
-  get_concrete_memory_space () const
-  {
-    return m_mem_space;
-  }
-
-private:
-  memory_space m_mem_space;
 };
 
 } // namespace ana
@@ -393,10 +440,17 @@ public:
     const function *m_fun;
   };
 
-  frame_region (symbolic::node::id_t id, const region *parent,
+  frame_region (symbolic::node::id_t id,
+		const region &parent,
 		const frame_region *calling_frame,
-		const function &fun, int index)
-  : region (complexity (parent), id, parent, NULL_TREE),
+		const function &fun,
+		int index)
+  : region (complexity (&parent),
+	    id,
+	    &parent,
+	    nullptr, // no cluster
+	    parent.get_memory_space (),
+	    NULL_TREE),
     m_calling_frame (calling_frame),
     m_fun (fun), m_index (index)
   {}
@@ -468,16 +522,46 @@ template <> struct default_hash_traits<frame_region::key_t>
 
 namespace ana {
 
-/* Concrete region subclass.  A region representing the code for
+/* Abstract subclass of region for those regions that are the "top-level"
+   within the store and thus get their own binding_cluster.
+   All regions within the same struct/union/array are in the same cluster,
+   whereas different decls are in different clusters.
+
+   (This is sometimes called the "base region" in existing code, but that
+   term is confusing so I'm deprecating it)
+
+   A cluster_region and its descendents will all have "this" as the result
+   of their get_cluster_region ().  */
+
+class cluster_region : public region
+{
+protected:
+  cluster_region (complexity c, symbolic::node::id_t id,
+		  const region &parent, tree type)
+  : region (c, id, &parent,
+	    this, // this is its own cluster_region
+	    parent.get_memory_space (),
+	    type)
+  {}
+};
+
+inline bool
+region::base_region_p () const
+{
+  return m_cluster_reg == this;
+}
+
+/* Concrete cluster_region subclass.  A region representing the code for
    a particular function.  */
 
-class function_region : public region
+class function_region : public cluster_region
 {
 public:
   function_region (symbolic::node::id_t id,
-		   const memory_space_region *parent,
+		   const memory_space_region &parent,
 		   tree fndecl)
-  : region (complexity (parent), id, parent, TREE_TYPE (fndecl)),
+  : cluster_region (complexity (&parent), id, parent,
+		    TREE_TYPE (fndecl)),
     m_fndecl (fndecl)
   {
     gcc_assert (FUNC_OR_METHOD_TYPE_P (TREE_TYPE (fndecl)));
@@ -516,14 +600,17 @@ is_a_helper <const function_region *>::test (const region *reg)
 
 namespace ana {
 
-/* Concrete region subclass.  A region representing a particular label
+/* Concrete cluster_region subclass.  A region representing a particular label
    within a function.  */
 
-class label_region : public region
+class label_region : public cluster_region
 {
 public:
-  label_region (symbolic::node::id_t id, const function_region *parent, tree label)
-  : region (complexity (parent), id, parent, NULL_TREE), m_label (label)
+  label_region (symbolic::node::id_t id,
+		const function_region &parent,
+		tree label)
+  : cluster_region (complexity (&parent), id, parent, NULL_TREE),
+    m_label (label)
   {
     gcc_assert (TREE_CODE (label) == LABEL_DECL);
   }
@@ -596,7 +683,7 @@ namespace ana {
 /* Concrete region subclass: a region to use when dereferencing an unknown
    pointer.  */
 
-class symbolic_region : public region
+class symbolic_region : public cluster_region
 {
 public:
   /* A support class for uniquifying instances of symbolic_region.  */
@@ -633,7 +720,9 @@ public:
     const svalue *m_sval_ptr;
   };
 
-  symbolic_region (symbolic::node::id_t id, region *parent, const svalue *sval_ptr);
+  symbolic_region (symbolic::node::id_t id,
+		   const region &parent,
+		   const svalue *sval_ptr);
 
   const symbolic_region *
   dyn_cast_symbolic_region () const final override { return this; }
@@ -683,11 +772,12 @@ namespace ana {
    variable (whether for a global or a local).
    Also used for representing SSA names, as if they were locals.  */
 
-class decl_region : public region
+class decl_region : public cluster_region
 {
 public:
-  decl_region (symbolic::node::id_t id, const region *parent, tree decl)
-  : region (complexity (parent), id, parent, TREE_TYPE (decl)), m_decl (decl),
+  decl_region (symbolic::node::id_t id, const region &parent, tree decl)
+  : cluster_region (complexity (&parent), id, parent, TREE_TYPE (decl)),
+    m_decl (decl),
     m_tracked (calc_tracked_p (decl)),
     m_ctor_bit_contents (nullptr)
   {}
@@ -796,8 +886,11 @@ public:
     tree m_field;
   };
 
-  field_region (symbolic::node::id_t id, const region *parent, tree field)
-  : region (complexity (parent), id, parent, TREE_TYPE (field)),
+  field_region (symbolic::node::id_t id, const region &parent, tree field)
+  : region (complexity (&parent), id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    TREE_TYPE (field)),
     m_field (field)
   {}
 
@@ -893,9 +986,14 @@ public:
     const svalue *m_index;
   };
 
-  element_region (symbolic::node::id_t id, const region *parent, tree element_type,
+  element_region (symbolic::node::id_t id,
+		  const region &parent,
+		  tree element_type,
 		  const svalue *index)
-  : region (complexity::from_pair (parent, index), id, parent, element_type),
+  : region (complexity::from_pair (&parent, index), id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    element_type),
     m_index (index)
   {}
 
@@ -999,9 +1097,12 @@ public:
     const svalue *m_byte_offset;
   };
 
-  offset_region (symbolic::node::id_t id, const region *parent, tree type,
+  offset_region (symbolic::node::id_t id, const region &parent, tree type,
 		 const svalue *byte_offset)
-  : region (complexity::from_pair (parent, byte_offset), id, parent, type),
+  : region (complexity::from_pair (&parent, byte_offset), id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    type),
     m_byte_offset (byte_offset)
   {}
 
@@ -1109,10 +1210,13 @@ public:
     const svalue *m_end_offset;
   };
 
-  sized_region (symbolic::node::id_t id, const region *parent, tree type,
+  sized_region (symbolic::node::id_t id, const region &parent, tree type,
 		const svalue *byte_size_sval)
-  : region (complexity::from_pair (parent, byte_size_sval),
-	    id, parent, type),
+  : region (complexity::from_pair (&parent, byte_size_sval),
+	    id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    type),
     m_byte_size_sval (byte_size_sval)
   {}
 
@@ -1209,9 +1313,11 @@ public:
     tree m_type;
   };
 
-  cast_region (symbolic::node::id_t id, const region *parent, tree type)
-  : region (complexity (parent), id,
-	    parent, type)
+  cast_region (symbolic::node::id_t id, const region &parent, tree type)
+  : region (complexity (&parent), id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    type)
   {}
 
   enum region_kind get_kind () const final override { return RK_CAST; }
@@ -1260,11 +1366,11 @@ namespace ana {
 /* An untyped region dynamically allocated on the heap via "malloc"
    or similar.  */
 
-class heap_allocated_region : public region
+class heap_allocated_region : public cluster_region
 {
 public:
-  heap_allocated_region (symbolic::node::id_t id, const region *parent)
-  : region (complexity (parent), id, parent, NULL_TREE)
+  heap_allocated_region (symbolic::node::id_t id, const region &parent)
+  : cluster_region (complexity (parent), id, parent, NULL_TREE)
   {}
 
   enum region_kind
@@ -1285,11 +1391,11 @@ public:
 
 /* An untyped region dynamically allocated on the stack via "alloca".  */
 
-class alloca_region : public region
+class alloca_region : public cluster_region
 {
 public:
-  alloca_region (symbolic::node::id_t id, const frame_region *parent)
-  : region (complexity (parent), id, parent, NULL_TREE)
+  alloca_region (symbolic::node::id_t id, const frame_region &parent)
+  : cluster_region (complexity (parent), id, parent, NULL_TREE)
   {}
 
   enum region_kind get_kind () const final override { return RK_ALLOCA; }
@@ -1309,11 +1415,11 @@ public:
 
 /* A region for a STRING_CST.  */
 
-class string_region : public region
+class string_region : public cluster_region
 {
 public:
-  string_region (symbolic::node::id_t id, const region *parent, tree string_cst)
-  : region (complexity (parent), id, parent, TREE_TYPE (string_cst)),
+  string_region (symbolic::node::id_t id, const region &parent, tree string_cst)
+  : cluster_region (complexity (&parent), id, parent, TREE_TYPE (string_cst)),
     m_string_cst (string_cst)
   {}
 
@@ -1399,9 +1505,12 @@ public:
     concrete_bit_range m_bits;
   };
 
-  bit_range_region (symbolic::node::id_t id, const region *parent, tree type,
+  bit_range_region (symbolic::node::id_t id, const region &parent, tree type,
 		    const concrete_bit_range &bits)
-  : region (complexity (parent), id, parent, type),
+  : region (complexity (&parent), id, &parent,
+	    parent.get_cluster_region (),
+	    parent.get_memory_space (),
+	    type),
     m_bits (bits)
   {}
 
@@ -1463,7 +1572,7 @@ namespace ana {
 
 /* A region for the N-th vararg within a frame_region for a variadic call.  */
 
-class var_arg_region : public region
+class var_arg_region : public cluster_region
 {
 public:
   /* A support class for uniquifying instances of var_arg_region.  */
@@ -1504,9 +1613,9 @@ public:
     unsigned m_idx;
   };
 
-  var_arg_region (symbolic::node::id_t id, const frame_region *parent,
+  var_arg_region (symbolic::node::id_t id, const frame_region &parent,
 		  unsigned idx)
-  : region (complexity (parent), id, parent, NULL_TREE),
+  : cluster_region (complexity (&parent), id, parent, NULL_TREE),
     m_idx (idx)
   {}
 
@@ -1553,11 +1662,11 @@ namespace ana {
 
 /* A region for errno for the current thread.  */
 
-class errno_region : public region
+class errno_region : public cluster_region
 {
 public:
-  errno_region (symbolic::node::id_t id, const region *parent)
-  : region (complexity (parent), id, parent, integer_type_node)
+  errno_region (symbolic::node::id_t id, const region &parent)
+  : cluster_region (complexity (&parent), id, parent, integer_type_node)
   {}
 
   enum region_kind get_kind () const final override { return RK_ERRNO; }
@@ -1593,12 +1702,12 @@ namespace ana {
    These are owned by known_function instances, rather than the
    region_model_manager.  */
 
-class private_region : public region
+class private_region : public cluster_region
 {
 public:
-  private_region (unsigned id, const region *parent, tree type,
+  private_region (unsigned id, const region &parent, tree type,
 		  const char *desc)
-  : region (complexity (parent), id, parent, type),
+  : cluster_region (complexity (&parent), id, parent, type),
     m_desc (desc)
   {}
 
@@ -1633,11 +1742,11 @@ namespace ana {
 
 /* An unknown region, for handling unimplemented tree codes.  */
 
-class unknown_region : public region
+class unknown_region : public cluster_region
 {
 public:
-  unknown_region (symbolic::node::id_t id, const region *parent, tree type)
-  : region (complexity (parent), id, parent, type)
+  unknown_region (symbolic::node::id_t id, const region &parent, tree type)
+  : cluster_region (complexity (&parent), id, parent, type)
   {}
 
   enum region_kind get_kind () const final override { return RK_UNKNOWN; }

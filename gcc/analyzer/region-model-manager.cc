@@ -62,7 +62,7 @@ region_model_manager::region_model_manager (symbolic::node_manager &node_mgr,
   m_globals_map (),
   m_thread_local_region (alloc_node_id (), &m_root_region,
 			 memory_space::thread_local_),
-  m_errno_region (alloc_node_id (), &m_thread_local_region),
+  m_errno_region (alloc_node_id (), m_thread_local_region),
   m_range_mgr (new bounded_ranges_manager ()),
   m_known_fn_mgr (logger)
 {
@@ -1449,7 +1449,7 @@ region_model_manager::get_region_for_fndecl (tree fndecl)
   if (iter != m_fndecls_map.end ())
     return iter->second;
   function_region *reg
-    = new function_region (alloc_node_id (), &m_code_region, fndecl);
+    = new function_region (alloc_node_id (), m_code_region, fndecl);
   m_fndecls_map.insert ({fndecl, reg});
   return reg;
 }
@@ -1469,8 +1469,9 @@ region_model_manager::get_region_for_label (tree label)
   gcc_assert (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL);
 
   const function_region *func_reg = get_region_for_fndecl (fndecl);
+  gcc_assert (func_reg);
   label_region *reg
-    = new label_region (alloc_node_id (), func_reg, label);
+    = new label_region (alloc_node_id (), *func_reg, label);
   m_labels_map.insert ({label, reg});
   return reg;
 }
@@ -1487,7 +1488,7 @@ region_model_manager::get_region_for_global (tree expr)
     return iter->second;
 
   decl_region *reg
-    = new decl_region (alloc_node_id (), &m_globals_region, expr);
+    = new decl_region (alloc_node_id (), m_globals_region, expr);
   m_globals_map.insert ({expr, reg});
   return reg;
 }
@@ -1524,7 +1525,7 @@ region_model_manager::get_field_region (const region *parent, tree field)
     return reg;
 
   field_region *field_reg
-    = new field_region (alloc_node_id (), parent, field);
+    = new field_region (alloc_node_id (), *parent, field);
   m_field_regions.put (key, field_reg);
   return field_reg;
 }
@@ -1546,7 +1547,7 @@ region_model_manager::get_element_region (const region *parent,
     return reg;
 
   element_region *element_reg
-    = new element_region (alloc_node_id (), parent, element_type, index);
+    = new element_region (alloc_node_id (), *parent, element_type, index);
   m_element_regions.put (key, element_reg);
   return element_reg;
 }
@@ -1586,7 +1587,7 @@ region_model_manager::get_offset_region (const region *parent,
     return reg;
 
   offset_region *offset_reg
-    = new offset_region (alloc_node_id (), parent, type, byte_offset);
+    = new offset_region (alloc_node_id (), *parent, type, byte_offset);
   m_offset_regions.put (key, offset_reg);
   return offset_reg;
 }
@@ -1672,7 +1673,7 @@ region_model_manager::get_sized_region (const region *parent,
     return reg;
 
   sized_region *sized_reg
-    = new sized_region (alloc_node_id (), parent, type, byte_size_sval);
+    = new sized_region (alloc_node_id (), *parent, type, byte_size_sval);
   m_sized_regions.put (key, sized_reg);
   return sized_reg;
 }
@@ -1715,7 +1716,7 @@ region_model_manager::get_cast_region (const region *original_region,
     return reg;
 
   cast_region *cast_reg
-    = new cast_region (alloc_node_id (), original_region, type);
+    = new cast_region (alloc_node_id (), *original_region, type);
   m_cast_regions.put (key, cast_reg);
   return cast_reg;
 }
@@ -1734,8 +1735,8 @@ region_model_manager::get_frame_region (const frame_region *calling_frame,
     return reg;
 
   frame_region *frame_reg
-    = new frame_region (alloc_node_id (), &m_stack_region, calling_frame,
-			 fun, index);
+    = new frame_region (alloc_node_id (), m_stack_region, calling_frame,
+			fun, index);
   m_frame_regions.put (key, frame_reg);
   return frame_reg;
 }
@@ -1792,7 +1793,7 @@ region_model_manager::get_symbolic_region (const svalue *sval)
     return reg;
 
   symbolic_region *symbolic_reg
-    = new symbolic_region (alloc_node_id (), &m_root_region, sval);
+    = new symbolic_region (alloc_node_id (), m_root_region, sval);
   m_symbolic_regions.put (key, symbolic_reg);
   return symbolic_reg;
 }
@@ -1810,7 +1811,7 @@ region_model_manager::get_region_for_string (tree string_cst)
     return iter->second;
 
   string_region *reg
-    = new string_region (alloc_node_id (), &m_root_region, string_cst);
+    = new string_region (alloc_node_id (), m_root_region, string_cst);
   m_string_map.insert ({string_cst, reg});
   return reg;
 }
@@ -1832,7 +1833,7 @@ region_model_manager::get_bit_range (const region *parent, tree type,
     return reg;
 
   bit_range_region *bit_range_reg
-    = new bit_range_region (alloc_node_id (), parent, type, bits);
+    = new bit_range_region (alloc_node_id (), *parent, type, bits);
   m_bit_range_regions.put (key, bit_range_reg);
   return bit_range_reg;
 }
@@ -1851,7 +1852,7 @@ region_model_manager::get_var_arg_region (const frame_region *parent_frame,
     return reg;
 
   var_arg_region *var_arg_reg
-    = new var_arg_region (alloc_node_id (), parent_frame, idx);
+    = new var_arg_region (alloc_node_id (), *parent_frame, idx);
   m_var_arg_regions.put (key, var_arg_reg);
   return var_arg_reg;
 }
@@ -1871,7 +1872,7 @@ get_region_for_unexpected_tree_code (region_model_context *ctxt,
 {
   tree type = TYPE_P (t) ? t : TREE_TYPE (t);
   region *new_reg
-    = new unknown_region (alloc_node_id (), &m_root_region, type);
+    = new unknown_region (alloc_node_id (), m_root_region, type);
   if (ctxt)
     ctxt->on_unexpected_tree_code (t, loc);
   return new_reg;
@@ -1894,7 +1895,7 @@ get_or_create_region_for_heap_alloc (const bitmap &base_regs_in_use)
 
   /* All existing ones (if any) are in use; create a new one.  */
   region *reg
-    = new heap_allocated_region (alloc_node_id (), &m_heap_region);
+    = new heap_allocated_region (alloc_node_id (), m_heap_region);
   m_managed_dynamic_regions.safe_push (reg);
   return reg;
 }
@@ -1905,7 +1906,7 @@ const region *
 region_model_manager::create_region_for_alloca (const frame_region *frame)
 {
   gcc_assert (frame);
-  region *reg = new alloca_region (alloc_node_id (), frame);
+  region *reg = new alloca_region (alloc_node_id (), *frame);
   m_managed_dynamic_regions.safe_push (reg);
   return reg;
 }
