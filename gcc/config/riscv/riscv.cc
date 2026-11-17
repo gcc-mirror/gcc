@@ -4552,6 +4552,46 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   return COSTS_N_INSNS (2);
 }
 
+/* Return true if X can be implemented with a single pack or packh.
+   Both combine disjoint fields, so IOR, XOR and PLUS are equivalent.  */
+
+static bool
+riscv_pack_expr_p (rtx x, machine_mode mode)
+{
+  if (!TARGET_ZBKB || mode != word_mode || GET_MODE (x) != mode
+      || (GET_CODE (x) != IOR && GET_CODE (x) != XOR
+	  && GET_CODE (x) != PLUS))
+    return false;
+
+  rtx high = XEXP (x, 0);
+  rtx low = XEXP (x, 1);
+  if (GET_MODE (high) != mode || GET_CODE (low) != ZERO_EXTEND
+      || GET_MODE (low) != mode)
+    return false;
+
+  low = XEXP (low, 0);
+  machine_mode low_mode = GET_MODE (low);
+  if (!register_operand (low, low_mode))
+    return false;
+
+  int shift = BITS_PER_WORD / 2;
+  if (low_mode == QImode)
+    {
+      if (GET_CODE (high) != AND || !CONST_INT_P (XEXP (high, 1))
+	  || INTVAL (XEXP (high, 1)) != 0xff00)
+	return false;
+      high = XEXP (high, 0);
+      shift = 8;
+    }
+  else if (low_mode != (TARGET_64BIT ? SImode : HImode))
+    return false;
+
+  return GET_CODE (high) == ASHIFT && GET_MODE (high) == mode
+	 && register_operand (XEXP (high, 0), mode)
+	 && CONST_INT_P (XEXP (high, 1))
+	 && INTVAL (XEXP (high, 1)) == shift;
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 #define SINGLE_SHIFT_COST 1
@@ -4815,21 +4855,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       gcc_fallthrough ();
     case IOR:
     case XOR:
-      /* packh for zbkb.  Alternate forms haven't shown up as a
-	 costing problem.  Obviously we can add the additional
-	 variants if needed.  */
-      if (TARGET_ZBKB
-	  && GET_CODE (x) == IOR
-	  && GET_CODE (XEXP (x, 0)) == AND
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
-	  && register_operand (XEXP (XEXP (XEXP (x, 0), 0), 0), word_mode)
-	  && CONST_INT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
-	  && INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)) == 8
-	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-	  && INTVAL (XEXP (XEXP (x, 0), 1)) == 0xff00
-	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
-	  && GET_MODE (XEXP (x, 1)) == word_mode
-	  && GET_MODE (XEXP (XEXP (x, 1), 0)) == QImode)
+      if (riscv_pack_expr_p (x, mode))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
@@ -5113,22 +5139,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  return true;
 	}
 
-      /* packh for zbkb.  Alternate forms haven't shown up as a
-	 costing problem.  Obviously we can add the additional
-	 variants if needed. We tend to canonicalize to this form
-	 after the any-or-plus changes.  */
-      if (TARGET_ZBKB
-	  && GET_CODE (x) == PLUS
-	  && GET_CODE (XEXP (x, 0)) == AND
-	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == ASHIFT
-	  && register_operand (XEXP (XEXP (XEXP (x, 0), 0), 0), word_mode)
-	  && CONST_INT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
-	  && INTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1)) == 8
-	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
-	  && INTVAL (XEXP (XEXP (x, 0), 1)) == 0xff00
-	  && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND
-	  && GET_MODE (XEXP (x, 1)) == word_mode
-	  && GET_MODE (XEXP (XEXP (x, 1), 0)) == QImode)
+      if (riscv_pack_expr_p (x, mode))
 	{
 	  *total = COSTS_N_INSNS (1);
 	  return true;
