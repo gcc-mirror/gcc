@@ -5340,6 +5340,27 @@
   }
 )
 
+;; Expand any-or-plus of bitwise-disjoint operands as ADD when operand 2
+;; is an ADD immediate that is not a logical immediate, otherwise as IOR.
+(define_expand "aop<mode>3"
+  [(set (match_operand:GPI 0 "register_operand")
+	(ior:GPI (match_operand:GPI 1 "register_operand")
+		 (match_operand:GPI 2 "nonmemory_operand")))]
+  ""
+  {
+    if (aarch64_plus_immediate (operands[2], <MODE>mode)
+	&& !aarch64_logical_immediate (operands[2], <MODE>mode))
+      emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
+    else
+      {
+	if (!aarch64_logical_operand (operands[2], <MODE>mode))
+	  operands[2] = force_reg (<MODE>mode, operands[2]);
+	emit_insn (gen_ior<mode>3 (operands[0], operands[1], operands[2]));
+      }
+    DONE;
+  }
+)
+
 ;; zero_extend version of above
 (define_insn "*<optab>si3_uxtw"
   [(set (match_operand:DI 0 "register_operand")
