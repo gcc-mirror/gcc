@@ -8251,7 +8251,9 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       substr = info->ref && info->ref->next
 	       && info->ref->next->type == REF_SUBSTRING;
 
+      /* A vector subscript always needs a temporary.  */
       subref_array_target = (is_subref_array (expr)
+			     && !gfc_has_vector_subscript (expr)
 			     && (se->direct_byref
 				 || se->force_no_tmp
 				 || expr->ts.type == BT_CHARACTER));
