@@ -57,6 +57,34 @@
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
     (set (match_dup 0) (sign_extend:DI (any_div:SI (subreg:SI (match_dup 5) 0) (match_dup 4))))])
 
+;; Shifts by 1, 2 or 3 and addition have the same low word at either
+;; width, even if the widened operands have undefined upper bits.
+;; Form the shift-add at XLEN width and let the word rotation perform
+;; the final sign extension.  Keep its count expression unchanged.
+;; Leave the count predicate empty to accept masked expressions as well
+;; as register and immediate counts for the existing rotate patterns.
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(sign_extend:DI
+	  (bitmanip_rotate:SI
+	    (plus:SI
+	      (ashift:SI (match_operand:SI 1 "register_operand")
+			 (match_operand:QI 2 "imm123_operand"))
+	      (match_operand:SI 3 "register_operand"))
+	    (match_operand 4))))
+   (clobber (match_operand:DI 5 "register_operand"))]
+  "TARGET_64BIT && TARGET_ZBA && (TARGET_ZBB || TARGET_ZBKB)"
+  [(set (match_dup 5)
+	(plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
+   (set (match_dup 0)
+	(sign_extend:DI
+	  (bitmanip_rotate:SI (match_dup 6) (match_dup 4))))]
+{
+  operands[1] = gen_lowpart (DImode, operands[1]);
+  operands[3] = gen_lowpart (DImode, operands[3]);
+  operands[6] = gen_lowpart (SImode, operands[5]);
+})
+
 ; Zba does not provide W-forms of sh[123]add(.uw)?, which leads to an
 ; interesting irregularity: we can generate a signed 32-bit result
 ; using slli(.uw)?+ addw, but an unsigned 32-bit result can be more
