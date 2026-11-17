@@ -718,6 +718,49 @@
   "bset\t%0,x0,%1"
   [(set_attr "type" "bitmanip")])
 
+;; A zero-extended SImode bit mask can also modify a DImode value.
+;; Keep the count masking: bset/binv/bclr use six count bits on RV64.
+(define_insn "*<bit_optab>di_zext_si"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(any_or:DI
+	  (zero_extend:DI
+	    (ashift:SI (const_int 1)
+		       (match_operand:QI 1 "register_operand" "r")))
+	  (match_operand:DI 2 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "<bit_optab>\t%0,%2,%1"
+  [(set_attr "type" "bitmanip")])
+
+(define_insn "*bclrdi_zext_si"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI
+	  (not:DI
+	    (zero_extend:DI
+	      (ashift:SI (const_int 1)
+			 (match_operand:QI 1 "register_operand" "r"))))
+	  (match_operand:DI 2 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bclr\t%0,%2,%1"
+  [(set_attr "type" "bitmanip")])
+
+;; Combine can express a complemented zero-extended word mask using a
+;; paradoxical subreg and ones in the upper word.  Those ones make the
+;; undefined upper bits irrelevant.  Keep the shift in SImode so that
+;; count masking remains visible in RTL.
+(define_insn "*bclrdi_zext_si_canonical"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI
+	  (ior:DI
+	    (not:DI
+	      (subreg:DI
+		(ashift:SI (const_int 1)
+			   (match_operand:QI 1 "register_operand" "r")) 0))
+	    (const_int -4294967296))
+	  (match_operand:DI 2 "register_operand" "r")))]
+  "TARGET_64BIT && TARGET_ZBS"
+  "bclr\t%0,%2,%1"
+  [(set_attr "type" "bitmanip")])
+
 ;; These two splitters take advantage of the limited range of the
 ;; shift constant.  With the limited range we know the SImode sign
 ;; bit is never set, thus we can treat this as zero extending and
