@@ -2033,7 +2033,9 @@ build_invoke (tree fn_type, const_tree arg_types, tsubst_flags_t complain)
 
       /* datum must be a class type or a pointer to a class type.  */
       if (!CLASS_TYPE_P (non_ref_datum_type)
-	  && !(POINTER_TYPE_P (non_ref_datum_type)
+	  && !((POINTER_TYPE_P (non_ref_datum_type)
+		/* Arrays decay to pointers.  */
+		|| TREE_CODE (non_ref_datum_type) == ARRAY_TYPE)
 	       && CLASS_TYPE_P (TREE_TYPE (non_ref_datum_type))))
 	{
 	  if (complain & tf_error)
