@@ -106,7 +106,7 @@ along with GCC; see the file COPYING3.  If not see
 	 |                │  │     ├─ value_range: {[irange] char VARYING}
 	 |                │  │     ╰─ m_reg: (601): ‘char’: decl_region(‘a_48(D)’)
 	 |                │  │        ╰─ parent: (522): frame_region(‘test_1’, index: 0, depth: 1)
-	 |                │  │           ╰─ parent: (1): stack region
+	 |                │  │           ╰─ parent: (1): memory_space_region (stack)
 	 |                │  │              ╰─ parent: (0): root region
 	 |                │  ╰─ [byte 3]: (613): bit_vector_from_svalue[size: 1 byte]
 	 |                │     ╰─ m_sval: (612): ‘char’: initial_svalue
@@ -145,7 +145,7 @@ along with GCC; see the file COPYING3.  If not see
 	 |                │  │     ├─ value_range: {[irange] char VARYING}
 	 |                │  │     ╰─ m_reg: (601): ‘char’: decl_region(‘a_48(D)’)
 	 |                │  │        ╰─ parent: (522): frame_region(‘test_1’, index: 0, depth: 1)
-	 |                │  │           ╰─ parent: (1): stack region
+	 |                │  │           ╰─ parent: (1): memory_space_region (stack)
 	 |                │  │              ╰─ parent: (0): root region
 	 |                │  ╰─ [byte 3]: (645): bit_vector_from_svalue[size: 1 byte]
 	 |                │     ╰─ m_sval: (644): ‘char’: initial_svalue
@@ -179,7 +179,7 @@ along with GCC; see the file COPYING3.  If not see
 	 |                │  │  │        ├─ value_range: {[irange] int VARYING}
 	 |                │  │  │        ╰─ m_reg: (564): ‘int’: decl_region(‘i_61(D)’)
 	 |                │  │  │           ╰─ parent: (522): frame_region(‘test_1’, index: 0, depth: 1)
-	 |                │  │  │              ╰─ parent: (1): stack region
+	 |                │  │  │              ╰─ parent: (1): memory_space_region (stack)
 	 |                │  │  │                 ╰─ parent: (0): root region
 	 |                │  │  ╰─ size: (11): concrete_scalar<bits>: 8
 	 |                │  ╰─ (657): bit_vector_from_svalue[size: 1 byte]
@@ -236,7 +236,7 @@ along with GCC; see the file COPYING3.  If not see
 	 |                │  │  │        ├─ value_range: {[irange] int VARYING}
 	 |                │  │  │        ╰─ m_reg: (583): ‘int’: decl_region(‘j_68(D)’)
 	 |                │  │  │           ╰─ parent: (522): frame_region(‘test_1’, index: 0, depth: 1)
-	 |                │  │  │              ╰─ parent: (1): stack region
+	 |                │  │  │              ╰─ parent: (1): memory_space_region (stack)
 	 |                │  │  │                 ╰─ parent: (0): root region
 	 |                │  │  ╰─ size: (11): concrete_scalar<bits>: 8
 	 |                │  ╰─ (676): bit_vector_from_svalue[size: 1 byte]
@@ -284,7 +284,7 @@ along with GCC; see the file COPYING3.  If not see
 	 |                │        ├─ value_range: {[irange] char VARYING}
 	 |                │        ╰─ m_reg: (686): ‘char’: decl_region(‘f_74(D)’)
 	 |                │           ╰─ parent: (522): frame_region(‘test_1’, index: 0, depth: 1)
-	 |                │              ╰─ parent: (1): stack region
+	 |                │              ╰─ parent: (1): memory_space_region (stack)
 	 |                │                 ╰─ parent: (0): root region
 	 |                ╰─ baseline: (690): untracked_bit_contents
 	 |                   ╰─ maybe live values

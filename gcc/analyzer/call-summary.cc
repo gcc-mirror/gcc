@@ -461,11 +461,7 @@ call_summary_replay::convert_region_from_summary_1 (const region *summary_reg)
       gcc_unreachable ();
       /* Top-level regions.  */
     case RK_FRAME:
-    case RK_GLOBALS:
-    case RK_CODE:
-    case RK_STACK:
-    case RK_HEAP:
-    case RK_THREAD_LOCAL:
+    case RK_MEMORY_SPACE:
     case RK_ROOT:
       /* These should never be pointed to by a pointer_svalue.  */
       gcc_unreachable ();

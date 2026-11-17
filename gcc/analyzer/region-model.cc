@@ -5781,11 +5781,7 @@ region_model::get_representative_path_var_1 (const region *reg,
       gcc_unreachable ();
 
     case RK_FRAME:
-    case RK_GLOBALS:
-    case RK_CODE:
-    case RK_HEAP:
-    case RK_STACK:
-    case RK_THREAD_LOCAL:
+    case RK_MEMORY_SPACE:
     case RK_ROOT:
        /* Regions that represent memory spaces are not expressible as trees.  */
       return path_var (NULL_TREE, 0);

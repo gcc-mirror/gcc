@@ -44,19 +44,18 @@ enum class memory_space
   private_
 };
 
+extern const char *
+get_dump_name (memory_space);
+
 /* An enum for discriminating between the different concrete subclasses
    of region.  */
 
 enum region_kind
 {
   RK_FRAME,
-  RK_GLOBALS,
-  RK_CODE,
+  RK_MEMORY_SPACE,
   RK_FUNCTION,
   RK_LABEL,
-  RK_STACK,
-  RK_HEAP,
-  RK_THREAD_LOCAL,
   RK_ROOT,
   RK_SYMBOLIC,
   RK_DECL,
@@ -81,14 +80,9 @@ enum region_kind
    inheritance, and with region_kinds shown for the concrete subclasses):
 
    region
-     space_region
-       frame_region (RK_FRAME): a function frame on the stack
-       globals_region (RK_GLOBALS): holds globals variables (data and bss)
-       code_region (RK_CODE): represents the code segment, containing functions
-       stack_region (RK_STACK): a stack, containing all stack frames
-       heap_region (RK_HEAP): the heap, containing heap_allocated_regions
-       thread_local_region (RK_THREAD_LOCAL): thread-local data for the thread
-                                              being analyzed
+     frame_region (RK_FRAME): a function frame on the stack
+     memory_space_region (RK_MEMORY_SPACE): a region for a particular
+					    memory_space
      root_region (RK_ROOT): the top-level region
      function_region (RK_FUNCTION): the code for a particular function
      label_region (RK_LABEL): a particular label within a function
@@ -296,18 +290,60 @@ is_a_helper <const region *>::test (const region *)
 
 namespace ana {
 
-/* Abstract subclass of region, for regions that represent an untyped
+/* Concrete subclass of region, for regions that represent an untyped
    space within memory, such as the stack or the heap.  */
 
-class space_region : public region
+class memory_space_region : public region
 {
-protected:
-  space_region (symbolic::node::id_t id, const region *parent)
-  : region (complexity (parent), id, parent, NULL_TREE)
+public:
+  memory_space_region (symbolic::node::id_t id, const region *parent,
+		       memory_space mem_space)
+  : region (complexity (parent), id, parent, NULL_TREE),
+    m_mem_space (mem_space)
   {}
+
+  /* region vfuncs.  */
+  enum region_kind
+  get_kind () const final override { return RK_MEMORY_SPACE; }
+
+  void
+  dump_to_pp (pretty_printer *pp, bool simple) const final override;
+
+  void
+  print_region_for_dump_widget_label (pretty_printer *pp) const final override;
+
+  void
+  accept_node_visitor (symbolic::node_visitor &v) const final override;
+
+  std::unique_ptr<json::object>
+  to_json () const final override;
+
+  std::unique_ptr<diagnostics::markup::node>
+  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
+
+  memory_space
+  get_concrete_memory_space () const
+  {
+    return m_mem_space;
+  }
+
+private:
+  memory_space m_mem_space;
 };
 
-/* Concrete space_region subclass, representing a function frame on the stack,
+} // namespace ana
+
+template <>
+template <>
+inline bool
+is_a_helper <const memory_space_region *>::test (const region *reg)
+{
+  return reg->get_kind () == RK_MEMORY_SPACE;
+}
+
+namespace ana {
+
+/* Concrete region subclass, representing a function frame on the stack,
    to contain the locals.
    The parent is the stack region; there's also a hierarchy of call-stack
    prefixes expressed via m_calling_frame.
@@ -319,7 +355,7 @@ protected:
    where the parent region for each of the frames is the "stack" region.
    The index is the count of frames earlier than this in the stack.  */
 
-class frame_region : public space_region
+class frame_region : public region
 {
 public:
   /* A support class for uniquifying instances of frame_region.  */
@@ -360,7 +396,8 @@ public:
   frame_region (symbolic::node::id_t id, const region *parent,
 		const frame_region *calling_frame,
 		const function &fun, int index)
-  : space_region (id, parent), m_calling_frame (calling_frame),
+  : region (complexity (parent), id, parent, NULL_TREE),
+    m_calling_frame (calling_frame),
     m_fun (fun), m_index (index)
   {}
   ~frame_region ();
@@ -431,84 +468,15 @@ template <> struct default_hash_traits<frame_region::key_t>
 
 namespace ana {
 
-/* Concrete space_region subclass, to hold global variables (data and bss).  */
-
-class globals_region : public space_region
-{
- public:
-  globals_region (symbolic::node::id_t id, const region *parent)
-  : space_region (id, parent)
-  {}
-
-  /* region vfuncs.  */
-  enum region_kind get_kind () const final override { return RK_GLOBALS; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
-  void print_region_for_dump_widget_label (pretty_printer *pp) const final override;
-  void
-  accept_node_visitor (symbolic::node_visitor &v) const final override;
-
-  std::unique_ptr<json::object>
-  to_json () const final override;
-
-  std::unique_ptr<diagnostics::markup::node>
-  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const globals_region *>::test (const region *reg)
-{
-  return reg->get_kind () == RK_GLOBALS;
-}
-
-namespace ana {
-
-/* Concrete space_region subclass, representing the code segment
-   containing functions.  */
-
-class code_region : public space_region
-{
-public:
-  code_region (symbolic::node::id_t id, const region *parent)
-  : space_region (id, parent)
-  {}
-
-  /* region vfuncs.  */
-  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
-  void print_region_for_dump_widget_label (pretty_printer *pp) const final override;
-  void
-  accept_node_visitor (symbolic::node_visitor &v) const final override;
-  std::unique_ptr<json::object>
-  to_json () const final override;
-
-  std::unique_ptr<diagnostics::markup::node>
-  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-
-  enum region_kind get_kind () const final override { return RK_CODE; }
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const code_region *>::test (const region *reg)
-{
-  return reg->get_kind () == RK_CODE;
-}
-
-namespace ana {
-
 /* Concrete region subclass.  A region representing the code for
    a particular function.  */
 
 class function_region : public region
 {
 public:
-  function_region (symbolic::node::id_t id, const code_region *parent, tree fndecl)
+  function_region (symbolic::node::id_t id,
+		   const memory_space_region *parent,
+		   tree fndecl)
   : region (complexity (parent), id, parent, TREE_TYPE (fndecl)),
     m_fndecl (fndecl)
   {
@@ -586,107 +554,6 @@ inline bool
 is_a_helper <const label_region *>::test (const region *reg)
 {
   return reg->get_kind () == RK_LABEL;
-}
-
-namespace ana {
-
-/* Concrete space_region subclass representing a stack, containing all stack
-   frames.  */
-
-class stack_region : public space_region
-{
-public:
-  stack_region (symbolic::node::id_t id, region *parent)
-  : space_region (id, parent)
-  {}
-
-  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
-  void print_region_for_dump_widget_label (pretty_printer *pp) const final override;
-  void
-  accept_node_visitor (symbolic::node_visitor &v) const final override;
-  std::unique_ptr<json::object>
-  to_json () const final override;
-  std::unique_ptr<diagnostics::markup::node>
-  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-
-  enum region_kind get_kind () const final override { return RK_STACK; }
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const stack_region *>::test (const region *reg)
-{
-  return reg->get_kind () == RK_STACK;
-}
-
-namespace ana {
-
-/* Concrete space_region subclass: a region within which regions can be
-   dynamically allocated.  */
-
-class heap_region : public space_region
-{
-public:
-  heap_region (symbolic::node::id_t id, region *parent)
-  : space_region (id, parent)
-  {}
-
-  enum region_kind get_kind () const final override { return RK_HEAP; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
-  void print_region_for_dump_widget_label (pretty_printer *pp) const final override;
-  std::unique_ptr<json::object>
-  to_json () const final override;
-  std::unique_ptr<diagnostics::markup::node>
-  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-
-  void
-  accept_node_visitor (symbolic::node_visitor &v) const final override;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const heap_region *>::test (const region *reg)
-{
-  return reg->get_kind () == RK_HEAP;
-}
-
-namespace ana {
-
-/* Concrete space_region subclass: thread-local data for the thread
-   being analyzed.  */
-
-class thread_local_region : public space_region
-{
-public:
-  thread_local_region (symbolic::node::id_t id, region *parent)
-  : space_region (id, parent)
-  {}
-
-  enum region_kind get_kind () const final override { return RK_THREAD_LOCAL; }
-  void dump_to_pp (pretty_printer *pp, bool simple) const final override;
-  void print_region_for_dump_widget_label (pretty_printer *pp) const final override;
-  void
-  accept_node_visitor (symbolic::node_visitor &v) const final override;
-  std::unique_ptr<json::object>
-  to_json () const final override;
-  std::unique_ptr<diagnostics::markup::node>
-  make_markup_node (symbolic::markup_context &markup_ctxt) const final override;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const thread_local_region *>::test (const region *reg)
-{
-  return reg->get_kind () == RK_THREAD_LOCAL;
 }
 
 namespace ana {
@@ -1689,7 +1556,7 @@ namespace ana {
 class errno_region : public region
 {
 public:
-  errno_region (symbolic::node::id_t id, const thread_local_region *parent)
+  errno_region (symbolic::node::id_t id, const region *parent)
   : region (complexity (parent), id, parent, integer_type_node)
   {}
 

@@ -364,7 +364,7 @@ program_state
 │  │  │        │        │  ├─ value_range: @{[irange] size_t VARYING@}
 │  │  │        │        │  ╰─ m_reg: (527): ‘size_t’: decl_region(‘n_2(D)’)
 │  │  │        │        │     ╰─ parent: (524): frame_region(‘test’, index: 0, depth: 1)
-│  │  │        │        │        ╰─ parent: (1): stack region
+│  │  │        │        │        ╰─ parent: (1): memory_space_region (stack)
 │  │  │        │        │           ╰─ parent: (0): root region
 │  │  │        │        ╰─ (535): ‘size_t’: constant_svalue (‘4’)
 │  │  │        ╰─ baseline: (7): uninitialized contents
@@ -376,7 +376,7 @@ program_state
 │  │     │     │     ╰─ m_sval: (552): ‘void *’: pointer_svalue:
 │  │     │     │        ╰─ Pointer
 │  │     │     │           ├─ base region: (551): heap_allocated_region
-│  │     │     │           │  ╰─ parent: (2): heap_region
+│  │     │     │           │  ╰─ parent: (2): memory_space_region (heap)
 │  │     │     │           │     ╰─ parent: (0): root region
 │  │     │     │           ╰─ byte offset: (541): concrete_scalar<bytes>: 0
 │  │     │     ╰─ baseline: (7): uninitialized contents
@@ -408,7 +408,7 @@ within @code{test} the cluster for @code{_1} has this @code{bit_contents}:
 │        │  ├─ value_range: @{[irange] size_t VARYING@}
 │        │  ╰─ m_reg: (527): ‘size_t’: decl_region(‘n_2(D)’)
 │        │     ╰─ parent: (524): frame_region(‘test’, index: 0, depth: 1)
-│        │        ╰─ parent: (1): stack region
+│        │        ╰─ parent: (1): memory_space_region (stack)
 │        │           ╰─ parent: (0): root region
 │        ╰─ (535): ‘size_t’: constant_svalue (‘4’)
 ╰─ baseline: (7): uninitialized contents
@@ -425,7 +425,7 @@ within @code{calls_malloc} the cluster for @code{result_4} has this @code{bit_co
 │     ╰─ m_sval: (552): ‘void *’: pointer_svalue:
 │        ╰─ Pointer
 │           ├─ base region: (551): heap_allocated_region
-│           │  ╰─ parent: (2): heap_region
+│           │  ╰─ parent: (2): memory_space_region (heap)
 │           │     ╰─ parent: (0): root region
 │           ╰─ byte offset: (541): concrete_scalar<bytes>: 0
 ╰─ baseline: (7): uninitialized contents

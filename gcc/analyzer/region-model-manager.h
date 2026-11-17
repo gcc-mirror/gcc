@@ -105,13 +105,19 @@ public:
 
   /* region consolidation.  */
   const root_region *get_root_region () const { return &m_root_region; }
-  const stack_region * get_stack_region () const { return &m_stack_region; }
-  const heap_region *get_heap_region () const { return &m_heap_region; }
-  const code_region *get_code_region () const { return &m_code_region; }
-  const globals_region *get_globals_region () const
-  {
-    return &m_globals_region;
-  }
+
+  const memory_space_region *
+  get_stack_region () const { return &m_stack_region; }
+
+  const memory_space_region *
+  get_heap_region () const { return &m_heap_region; }
+
+  const memory_space_region *
+  get_code_region () const { return &m_code_region; }
+
+  const memory_space_region *
+  get_globals_region () const { return &m_globals_region; }
+
   const errno_region *get_errno_region () const { return &m_errno_region; }
   const function_region *get_region_for_fndecl (tree fndecl);
   const label_region *get_region_for_label (tree label);
@@ -203,8 +209,8 @@ private:
   const call_string m_empty_call_string;
 
   root_region m_root_region;
-  stack_region m_stack_region;
-  heap_region m_heap_region;
+  memory_space_region m_stack_region;
+  memory_space_region m_heap_region;
 
   /* svalue consolidation.  */
   typedef std::map<constant_svalue::key_t, constant_svalue *> constants_map_t;
@@ -267,7 +273,7 @@ private:
 
   /* region consolidation.  */
 
-  code_region m_code_region;
+  memory_space_region m_code_region;
   typedef std::map<tree, function_region *> fndecls_map_t;
   typedef fndecls_map_t::iterator fndecls_iterator_t;
   fndecls_map_t m_fndecls_map;
@@ -276,12 +282,12 @@ private:
   typedef labels_map_t::iterator labels_iterator_t;
   labels_map_t m_labels_map;
 
-  globals_region m_globals_region;
+  memory_space_region m_globals_region;
   typedef std::map<tree, decl_region *> globals_map_t;
   typedef globals_map_t::iterator globals_iterator_t;
   globals_map_t m_globals_map;
 
-  thread_local_region m_thread_local_region;
+  memory_space_region m_thread_local_region;
   errno_region m_errno_region;
 
   consolidation_map<field_region> m_field_regions;

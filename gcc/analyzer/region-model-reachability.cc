@@ -67,9 +67,7 @@ void
 reachable_regions::init_cluster (const region *base_reg)
 {
   /* Mark any globals as mutable (and traverse what they point to).  */
-  const region *parent = base_reg->get_parent_region ();
-  gcc_assert (parent);
-  if (parent->get_kind () == RK_GLOBALS)
+  if (base_reg->get_memory_space () == memory_space::globals)
     add (base_reg, true);
 
   /* Mark any clusters that already escaped in previous unknown calls

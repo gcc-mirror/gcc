@@ -47,6 +47,31 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
+const char *
+get_dump_name (memory_space mem_space)
+{
+  switch (mem_space)
+    {
+    default: gcc_unreachable ();
+    case memory_space::unknown:
+      return "unknown";
+    case memory_space::code:
+      return "code";
+    case memory_space::globals:
+      return "globals";
+    case memory_space::stack:
+      return "stack";
+    case memory_space::heap:
+      return "heap";
+    case memory_space::read_only_data:
+      return "read-only-data";
+    case memory_space::thread_local_:
+      return "thread-local";
+    case memory_space::private_:
+      return "private";
+    }
+}
+
 /* class region and its various subclasses.  */
 
 /* class region.  */
@@ -169,17 +194,19 @@ region::get_memory_space () const
 	{
 	default:
 	  break;
-	case RK_GLOBALS:
-	  return memory_space::globals;
-	case RK_CODE:
+
+	case RK_MEMORY_SPACE:
+	  {
+	    auto &memspace_region = *as_a <const memory_space_region *> (iter);
+	    return memspace_region.get_concrete_memory_space ();
+	  }
+
 	case RK_FUNCTION:
 	case RK_LABEL:
 	  return memory_space::code;
 	case RK_FRAME:
-	case RK_STACK:
 	case RK_ALLOCA:
 	  return memory_space::stack;
-	case RK_HEAP:
 	case RK_HEAP_ALLOCATED:
 	  return memory_space::heap;
 	case RK_STRING:
@@ -221,6 +248,7 @@ region::can_have_initial_svalue_p () const
     case memory_space::globals:
     case memory_space::read_only_data:
     case memory_space::private_:
+    case memory_space::thread_local_:
       /* Such regions have initial_svalues.  */
       return true;
 
@@ -1027,7 +1055,7 @@ tree_cmp (const void *p1, const void *p2)
   return tree_cmp (t1, t2);
 }
 
-/* class frame_region : public space_region.  */
+/* class frame_region : public region.  */
 
 frame_region::~frame_region ()
 {
@@ -1147,80 +1175,39 @@ frame_region::get_region_for_local (region_model_manager *mgr,
   return reg;
 }
 
-/* class globals_region : public space_region.  */
+/* class memory_space_region : public space_region.  */
 
-/* Implementation of region::dump_to_pp vfunc for globals_region.  */
+/* Implementation of region::dump_to_pp vfunc for memory_space_region.  */
 
 void
-globals_region::dump_to_pp (pretty_printer *pp, bool simple) const
+memory_space_region::dump_to_pp (pretty_printer *pp, bool simple) const
 {
-  if (simple)
-    pp_string (pp, "::");
-  else
-    pp_string (pp, "globals");
+  pp_string (pp, get_dump_name (m_mem_space));
 }
 
 void
-globals_region::print_region_for_dump_widget_label (pretty_printer *pp) const
+memory_space_region::print_region_for_dump_widget_label (pretty_printer *pp) const
 {
-  pp_string (pp, "globals");
+  pp_printf (pp, "memory_space_region (%s)", get_dump_name (m_mem_space));
 }
 
 void
-globals_region::accept_node_visitor (symbolic::node_visitor &v) const
+memory_space_region::accept_node_visitor (symbolic::node_visitor &v) const
 {
   if (v.visit_region (*this))
     get_parent_region ()->accept_node_visitor (v);
 }
 
 std::unique_ptr<json::object>
-globals_region::to_json () const
+memory_space_region::to_json () const
 {
-  return region::make_json_obj ("globals_region");
+  return region::make_json_obj ("memory_space_region");
 }
 
 std::unique_ptr<diagnostics::markup::node>
-globals_region::make_markup_node (symbolic::markup_context &) const
+memory_space_region::make_markup_node (symbolic::markup_context &) const
 {
-  return diagnostics::markup::make_text_node ("globals_region");
-}
-
-/* class code_region : public map_region.  */
-
-/* Implementation of region::dump_to_pp vfunc for code_region.  */
-
-void
-code_region::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  if (simple)
-    pp_string (pp, "code region");
-  else
-    pp_string (pp, "code_region()");
-}
-
-void
-code_region::print_region_for_dump_widget_label (pretty_printer *pp) const
-{
-  pp_string (pp, "code region");
-}
-
-void
-code_region::accept_node_visitor (symbolic::node_visitor &v) const
-{
-  if (v.visit_region (*this))
-    get_parent_region ()->accept_node_visitor (v);
-}
-
-std::unique_ptr<json::object>
-code_region::to_json () const
-{
-  return region::make_json_obj ("code_region");
-}
-
-std::unique_ptr<diagnostics::markup::node>
-code_region::make_markup_node (symbolic::markup_context &) const
-{
-  return diagnostics::markup::make_text_node ("code_region");
+  return diagnostics::markup::make_text_node (get_dump_name (m_mem_space));
 }
 
 /* class function_region : public region.  */
@@ -1319,82 +1306,6 @@ label_region::make_markup_node (symbolic::markup_context &) const
   return diagnostics::markup::make_text_node ("label_region");
 }
 
-/* class stack_region : public region.  */
-
-/* Implementation of region::dump_to_pp vfunc for stack_region.  */
-
-void
-stack_region::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  if (simple)
-    pp_string (pp, "stack region");
-  else
-    pp_string (pp, "stack_region()");
-}
-
-void
-stack_region::print_region_for_dump_widget_label (pretty_printer *pp) const
-{
-  pp_string (pp, "stack region");
-}
-
-void
-stack_region::accept_node_visitor (symbolic::node_visitor &v) const
-{
-  if (v.visit_region (*this))
-    get_parent_region ()->accept_node_visitor (v);
-}
-
-std::unique_ptr<json::object>
-stack_region::to_json () const
-{
-  return region::make_json_obj ("stack_region");
-}
-
-std::unique_ptr<diagnostics::markup::node>
-stack_region::make_markup_node (symbolic::markup_context &) const
-{
-  return diagnostics::markup::make_text_node ("stack_region");
-}
-
-/* class heap_region : public region.  */
-
-/* Implementation of region::dump_to_pp vfunc for heap_region.  */
-
-void
-heap_region::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  if (simple)
-    pp_string (pp, "heap region");
-  else
-    pp_string (pp, "heap_region()");
-}
-
-void
-heap_region::print_region_for_dump_widget_label (pretty_printer *pp) const
-{
-  pp_string (pp, "heap_region");
-}
-
-void
-heap_region::accept_node_visitor (symbolic::node_visitor &v) const
-{
-  if (v.visit_region (*this))
-    get_parent_region ()->accept_node_visitor (v);
-}
-
-std::unique_ptr<json::object>
-heap_region::to_json () const
-{
-  return region::make_json_obj ("heap_region");
-}
-
-std::unique_ptr<diagnostics::markup::node>
-heap_region::make_markup_node (symbolic::markup_context &) const
-{
-  return diagnostics::markup::make_text_node ("heap_region");
-}
-
 /* class root_region : public region.  */
 
 /* root_region's ctor.  */
@@ -1437,42 +1348,6 @@ std::unique_ptr<diagnostics::markup::node>
 root_region::make_markup_node (symbolic::markup_context &) const
 {
   return diagnostics::markup::make_text_node ("root_region");
-}
-
-/* class thread_local_region : public space_region.  */
-
-void
-thread_local_region::dump_to_pp (pretty_printer *pp, bool simple) const
-{
-  if (simple)
-    pp_string (pp, "thread_local_region");
-  else
-    pp_string (pp, "thread_local_region()");
-}
-
-void
-thread_local_region::print_region_for_dump_widget_label (pretty_printer *pp) const
-{
-  pp_string (pp, "thread_local_region");
-}
-
-void
-thread_local_region::accept_node_visitor (symbolic::node_visitor &v) const
-{
-  if (v.visit_region (*this))
-    get_parent_region ()->accept_node_visitor (v);
-}
-
-std::unique_ptr<json::object>
-thread_local_region::to_json () const
-{
-  return region::make_json_obj ("thread_local_region");
-}
-
-std::unique_ptr<diagnostics::markup::node>
-thread_local_region::make_markup_node (symbolic::markup_context &) const
-{
-  return diagnostics::markup::make_text_node ("thread_local_region");
 }
 
 /* class symbolic_region : public map_region.  */

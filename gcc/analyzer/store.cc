@@ -1445,14 +1445,13 @@ store::eval_alias (const region *base_reg_a,
 	default:
 	  gcc_unreachable ();
 
-	case RK_CODE:
 	case RK_ERRNO:
-	case RK_GLOBALS:
-	case RK_HEAP:
+	  /* We expect this to be a singleton.  */
+	  gcc_unreachable ();
+
+	case RK_MEMORY_SPACE:
 	case RK_ROOT:
-	case RK_STACK:
-	case RK_THREAD_LOCAL:
-	  /* We expect these to be singletons.  */
+	  /* We don't expect these to show up as base regions.  */
 	  gcc_unreachable ();
 
 	case RK_BIT_RANGE:
@@ -1559,13 +1558,11 @@ store::eval_alias (const region *base_reg_a,
 	default:
 	  gcc_unreachable ();
 
-	case RK_CODE:
+	case RK_MEMORY_SPACE:
+	  gcc_unreachable ();
+
 	case RK_ERRNO:
-	case RK_GLOBALS:
-	case RK_HEAP:
 	case RK_ROOT:
-	case RK_STACK:
-	case RK_THREAD_LOCAL:
 	  /* We expect these to be singletons.  */
 	  gcc_unreachable ();
 
@@ -1693,7 +1690,7 @@ store::get_implicit_contents (const region &base_reg,
 			      baseline_state bs) const
 {
   if (m_called_unknown_fn
-      && base_reg.get_parent_region ()->get_kind () == RK_GLOBALS)
+      && base_reg.get_memory_space () == memory_space::globals)
     if (tree decl = base_reg.maybe_get_decl ())
       if (TREE_PUBLIC (decl) && !TREE_READONLY (decl))
 	{
@@ -2223,11 +2220,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
     {
     /* Top-level regions.  */
     case RK_FRAME:
-    case RK_GLOBALS:
-    case RK_CODE:
-    case RK_STACK:
-    case RK_HEAP:
-    case RK_THREAD_LOCAL:
+    case RK_MEMORY_SPACE:
     case RK_ROOT:
     /* Child regions.  */
     case RK_FIELD:

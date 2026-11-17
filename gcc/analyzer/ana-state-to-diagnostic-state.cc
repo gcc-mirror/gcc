@@ -221,14 +221,31 @@ analyzer_state_graph::make_node_id (const region &reg)
       gcc_unreachable ();
       break;
 
-    case RK_GLOBALS:
-      return "globals";
-    case RK_CODE:
-      return "code";
-    case RK_STACK:
-      return "stack";
-    case RK_HEAP:
-      return "heap";
+    case RK_MEMORY_SPACE:
+      {
+	auto &memspace_region = *as_a <const memory_space_region *> (&reg);
+	auto memspace = memspace_region.get_concrete_memory_space ();
+	switch (memspace)
+	  {
+	  default:
+	    gcc_unreachable ();
+	  case memory_space::unknown:
+	  case memory_space::code:
+	  case memory_space::globals:
+	  case memory_space::stack:
+	  case memory_space::heap:
+	  case memory_space::read_only_data:
+	    return get_dump_name (memspace);
+
+	  case memory_space::thread_local_:
+	    prefix = "thread-local-region";
+	    break;
+	  case memory_space::private_:
+	    prefix = "private";
+	    break;
+	  }
+      }
+      break;
 
     case RK_FRAME:
       prefix = "frame-region";
@@ -238,9 +255,6 @@ analyzer_state_graph::make_node_id (const region &reg)
       break;
     case RK_LABEL:
       prefix = "label-region";
-      break;
-    case RK_THREAD_LOCAL:
-      prefix = "thread-local-region";
       break;
     case RK_SYMBOLIC:
       prefix = "symbolic-region";
@@ -301,10 +315,39 @@ make_state_node (enum node_properties::kind_t kind,
   return node;
 }
 
+static node_properties::kind_t
+get_node_properties_kind_for_memory_space (memory_space memspace)
+{
+  switch (memspace)
+    {
+    default:
+      gcc_unreachable ();
+    case memory_space::unknown:
+    case memory_space::read_only_data:
+    case memory_space::private_:
+      return node_properties::kind_t::other;
+
+    case memory_space::code:
+      return node_properties::kind_t::code;
+
+    case memory_space::globals:
+      return node_properties::kind_t::globals;
+
+    case memory_space::stack:
+      return node_properties::kind_t::stack;
+
+    case memory_space::heap:
+      return node_properties::kind_t::heap_;
+
+    case memory_space::thread_local_:
+      return node_properties::kind_t::thread_local_;
+    }
+}
+
 std::unique_ptr<diagnostics::digraphs::node>
 analyzer_state_graph::
 make_memspace_state_node (const region &reg,
-			  enum node_properties::kind_t kind)
+			  node_properties::kind_t kind)
 {
   return make_state_node (kind, make_node_id (reg));
 }
@@ -338,31 +381,19 @@ analyzer_state_graph::create_state_node (const region &reg)
       }
       break;
 
-    case RK_GLOBALS:
-      node = make_memspace_state_node (reg,
-				       node_properties::kind_t::globals);
+    case RK_MEMORY_SPACE:
+      {
+	auto &memspace_region = *as_a <const memory_space_region *> (&reg);
+	auto memspace = memspace_region.get_concrete_memory_space ();
+	auto kind = get_node_properties_kind_for_memory_space (memspace);
+	node = make_memspace_state_node (reg, kind);
+      }
       break;
-    case RK_CODE:
-      node = make_memspace_state_node (reg,
-				       node_properties::kind_t::code);
-      break;
+
     case RK_FUNCTION:
       node = make_memspace_state_node (reg,
 				       node_properties::kind_t::function);
       // TODO
-      break;
-
-    case RK_STACK:
-      node = make_memspace_state_node (reg,
-				       node_properties::kind_t::stack);
-      break;
-    case RK_HEAP:
-      node = make_memspace_state_node (reg,
-				       node_properties::kind_t::heap_);
-      break;
-    case RK_THREAD_LOCAL:
-      node = make_memspace_state_node (reg,
-				       node_properties::kind_t::thread_local_);
       break;
     case RK_ROOT:
       gcc_unreachable ();
