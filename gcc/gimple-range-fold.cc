@@ -1429,7 +1429,6 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
   tree phi_def = gimple_phi_result (phi);
   tree type = gimple_range_type (phi);
   value_range arg_range (type);
-  value_range equiv_range (type);
   unsigned x;
 
   if (!type)
@@ -1439,7 +1438,6 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
   tree single_arg = NULL_TREE;
   bool seen_arg = false;
 
-  relation_oracle *oracle = &(src.query()->relation ());
   // Start with an empty range, unioning in each argument's range.
   r.set_undefined ();
   for (x = 0; x < gimple_phi_num_args (phi); x++)
@@ -1456,15 +1454,8 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 
       if (!arg_range.undefined_p ())
 	{
+	  r.union_ (arg_range);
 	  // Register potential dependencies for stale value tracking.
-	  // Likewise, if the incoming PHI argument is equivalent to this
-	  // PHI definition, it provides no new info.  Accumulate these ranges
-	  // in case all arguments are equivalences.
-	  if (oracle->query (e, arg, phi_def) == VREL_EQ)
-	    equiv_range.union_(arg_range);
-	  else
-	    r.union_ (arg_range);
-
 	  if (gimple_range_ssa_p (arg) && src.gori_ssa ())
 	    src.gori_ssa ()->register_dependency (phi_def, arg);
 	}
@@ -1483,10 +1474,6 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	break;
     }
 
-  // If all arguments were equivalences, use the equivalence ranges as no
-  // arguments were processed.
-  if (r.undefined_p () && !equiv_range.undefined_p ())
-    r = equiv_range;
 
   // If the PHI boils down to a single effective argument, look at it.
   if (single_arg)
