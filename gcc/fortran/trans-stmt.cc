@@ -5477,6 +5477,16 @@ gfc_trans_forall_1 (gfc_code * code, forall_info * nested_forall_info)
       gfc_add_block_to_block (&block, &se.pre);
       step[n] = se.expr;
 
+      /* Use the limits and step evaluated once (F2018 11.1.7.4.2), except
+	 in a nested FORALL, whose limits may use outer index-names.  */
+      if (!nested_forall_info)
+	{
+	  start[n] = gfc_evaluate_now (start[n], &block);
+	  this_forall->start = start[n];
+	  this_forall->end = end[n];
+	  this_forall->step = step[n];
+	}
+
       /* Copy loop annotations.  */
       this_forall->annot = fa->annot;
 
