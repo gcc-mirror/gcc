@@ -2048,7 +2048,7 @@ vn_walk_cb_data::finish (alias_set_type set, alias_set_type base_set, tree val,
     }
   if (same_val && !operand_equal_p (val, same_val))
     return (void *) -1;
-  if (!insert)
+  if (!insert || same_val)
     {
       memset (&dummy_vr, 0, sizeof (vn_reference_s));
       dummy_vr.result = val;
@@ -2961,6 +2961,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == CONSTRUCTOR)
 	  && (ref->ref || data->orig_ref.ref)
 	  && !data->mask
+	  && !data->redundant_store
 	  && data->partial_defs.is_empty ()
 	  && multiple_p (get_object_alignment
 			   (ref->ref ? ref->ref : data->orig_ref.ref),

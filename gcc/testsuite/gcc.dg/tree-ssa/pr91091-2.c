@@ -10,6 +10,7 @@ void swap(struct s* p, struct t* q)
   q->x = p->x;
 }
 
-/* The second statement is redundant.  */
-/* { dg-final { scan-tree-dump-times "x = " 1 "fre1" { xfail { ! natural_alignment_32 } } } } */
+/* The second statement is _not_ redundant, it may change the dynamic
+   type back from struct s to struct t.  */
+/* { dg-final { scan-tree-dump-times "x = " 2 "fre1" } } */
 /* { dg-final { scan-tree-dump-times " = \[^;\]*x;" 1 "fre1" } } */
