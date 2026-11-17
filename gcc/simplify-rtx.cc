@@ -3753,7 +3753,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && XEXP (op0, 1) == CONST1_RTX (mode)
 	  && XEXP (op1, 1) == CONST0_RTX (mode)
 	  /* Verify bit position. */
-	  && CONST_INT_P (XEXP (XEXP (op0, 0), 1)))
+	  && CONST_INT_P (XEXP (XEXP (op0, 0), 1))
+	  && CONST_INT_P (XEXP (XEXP (op1, 0), 1)))
 	{
 	  unsigned HOST_WIDE_INT bitpos1 = INTVAL (XEXP (XEXP (op0, 0), 1));
 	  unsigned HOST_WIDE_INT mask
