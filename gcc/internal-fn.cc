@@ -6323,6 +6323,8 @@ void
 expand_CLMUL (internal_fn, gcall *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return;
   tree arg0 = gimple_call_arg (stmt, 0);
   tree arg1 = gimple_call_arg (stmt, 1);
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
@@ -6347,6 +6349,8 @@ void
 expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
+  if (lhs == NULL_TREE)
+    return;
   tree arg0 = gimple_call_arg (stmt, 0);
   tree arg1 = gimple_call_arg (stmt, 1);
   scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
