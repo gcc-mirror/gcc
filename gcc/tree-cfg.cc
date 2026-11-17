@@ -513,8 +513,9 @@ make_blocks_1 (gimple_seq seq, basic_block bb)
       if (stmt && is_gimple_call (stmt))
 	gimple_call_initialize_ctrl_altering (stmt);
 
-      suppress_coverage_p = in_pragma_suppress_coverage_p (stmt,
-							   suppress_coverage_p);
+      if (!is_gimple_debug (stmt))
+	suppress_coverage_p
+	  = in_pragma_suppress_coverage_p (stmt, suppress_coverage_p);
       if (suppress_coverage_p && !coverage_suppressed_p (bb))
 	start_new_block = true;
       else if (!suppress_coverage_p && coverage_suppressed_p (bb))
