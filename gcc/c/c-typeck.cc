@@ -675,7 +675,9 @@ c_type_canonical (tree type)
 	  tree new_node = make_node (TREE_CODE (m));
 	  TYPE_NAME (new_node) = TYPE_NAME (m);
 	  SET_TYPE_STRUCTURAL_EQUALITY (new_node);
-	  new_node = qualify_type (new_node, m);
+	  new_node = c_build_qualified_type
+		       (new_node, {TYPE_QUALS_NO_ADDR_SPACE_NO_ATOMIC (m),
+				   TYPE_ADDR_SPACE (m)});
 	  TREE_TYPE (f) = c_reconstruct_complex_type (TREE_TYPE (x),
 						      new_node);
 	}
