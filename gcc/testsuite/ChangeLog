@@ -1,3 +1,31 @@
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* gdc.dg/target/i386/targetinfo_CET.d: Check for
+	the exact value 3 and for GNU_CET.
+	* gdc.dg/target/i386/targetinfo_CET_check.d: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* g++.target/i386/pr128437.C: New test.
+	* g++.target/i386/pr128437-1.C: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/125932
+	* gcc.target/i386/pr125932-1.c: New test.
+	* gcc.target/i386/pr125932-2.c: Ditto.
+
 2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr36.adb: New test.
