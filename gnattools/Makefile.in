@@ -76,7 +76,8 @@ CXX_LFLAGS = \
  -B../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
  -B../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs \
  -L../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
- -L../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs
+ -L../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs \
+ $(XGCC_FLAGS_FOR_TARGET)
 
 # Variables for gnattools, native
 TOOLS_FLAGS_TO_PASS_NATIVE= \
