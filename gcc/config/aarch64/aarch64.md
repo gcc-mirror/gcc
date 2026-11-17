@@ -4646,6 +4646,32 @@
   }
 )
 
+(define_insn_and_split "*aarch64_conditional_subtract<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(minus:GPI (match_operand:GPI 1 "register_operand" "r")
+	    (if_then_else:GPI (geu (match_dup 1)
+		    (match_operand:GPI 2 "register_operand" "r"))
+		(match_dup 2) (const_int 0))))
+   (clobber (match_scratch:GPI 3 "=r"))
+   (clobber (reg:CC CC_REGNUM))]
+  ""
+  "#"
+  "&& 1"
+  [(parallel
+      [(set (reg:CC CC_REGNUM)
+	    (compare:CC
+		(match_dup 1) (match_dup 2)))
+       (set (match_dup 3)
+	    (minus:GPI (match_dup 1) (match_dup 2)))])
+   (set (match_dup 0)
+	(if_then_else:GPI (geu (reg:CC CC_REGNUM) (const_int 0))
+	    (match_dup 3) (match_dup 1)))]
+  {
+    if (GET_CODE (operands[3]) == SCRATCH)
+      operands[3] = gen_reg_rtx (<MODE>mode);
+  }
+)
+
 ;; -------------------------------------------------------------------
 ;; Comparison insns
 ;; -------------------------------------------------------------------
