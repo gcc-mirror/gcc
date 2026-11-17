@@ -542,7 +542,8 @@ operator_pointer_diff::op1_op2_relation (const irange &lhs, const prange &rhs1,
   // When a - b does not overflow and signed,
   // we can figure out the relationship between
   // a and b if the result is non-negative or non-positive.
-  if (TYPE_OVERFLOW_UNDEFINED (rhs1.type ()))
+  if (!rhs1.undefined_p ()
+      && TYPE_OVERFLOW_UNDEFINED (rhs1.type ()))
     {
       if (lhs.nonnegative_p ())
 	return contains_z ? VREL_GE : VREL_GT;
