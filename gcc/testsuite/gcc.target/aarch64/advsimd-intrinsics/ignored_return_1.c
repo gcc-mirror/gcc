@@ -5,5 +5,5 @@
 int8_t *bar();
 
 void foo() {
-  vld1q_u8 (bar);
+  vld1q_u8 (bar ());
 }
