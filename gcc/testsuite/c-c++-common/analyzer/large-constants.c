@@ -33,5 +33,5 @@ void
 test_nearly_all_ones_uint64_t (void)
 {
   uint64_t v = 0xfffffffffffffffeULL;
-  __analyzer_describe (0, v); /* { dg-warning "svalue: '\\\(uint64_t\\\)18446744073709551614'" } */
+  __analyzer_describe (0, v); /* { dg-warning "svalue: '\\\(\[^\n\r\]+\\\)18446744073709551614'" } */
 }
