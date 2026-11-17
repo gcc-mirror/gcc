@@ -6342,7 +6342,10 @@ expand_CLMUL (internal_fn, gcall *stmt)
       res = expand_and (mode, res, mask, NULL_RTX);
     }
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  emit_move_insn (target, res);
+  if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
+    convert_move (SUBREG_REG (target), res, SUBREG_PROMOTED_SIGN (target));
+  else
+    emit_move_insn (target, res);
 }
 
 void
