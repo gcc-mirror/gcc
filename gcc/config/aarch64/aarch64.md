@@ -6810,12 +6810,13 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>5_shift"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
-                          (match_operand:GPI 2 "const_int_operand" "n"))
-                 (and:GPI (ashift:GPI
-                           (match_operand:GPI 3 "register_operand" "r")
-                           (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))
-                          (match_operand:GPI 5 "const_int_operand" "n"))))]
+	(any_or_plus:GPI
+	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "const_int_operand" "n"))
+	  (and:GPI (ashift:GPI
+		    (match_operand:GPI 3 "register_operand" "r")
+		    (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))
+		   (match_operand:GPI 5 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]),
 				      UINTVAL (operands[4]),
 				      UINTVAL(operands[5]))"
@@ -6825,12 +6826,13 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>5_shift_alt"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (and:GPI (ashift:GPI
-                           (match_operand:GPI 1 "register_operand" "r")
-                           (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
-                          (match_operand:GPI 3 "const_int_operand" "n"))
-		 (and:GPI (match_operand:GPI 4 "register_operand" "0")
-                          (match_operand:GPI 5 "const_int_operand" "n"))))]
+	(any_or_plus:GPI
+	  (and:GPI (ashift:GPI
+		    (match_operand:GPI 1 "register_operand" "r")
+		    (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
+		   (match_operand:GPI 3 "const_int_operand" "n"))
+	  (and:GPI (match_operand:GPI 4 "register_operand" "0")
+		   (match_operand:GPI 5 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[5]),
 				      UINTVAL (operands[2]),
 				      UINTVAL(operands[3]))"
@@ -6843,11 +6845,12 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>4_noand"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
-                          (match_operand:GPI 2 "const_int_operand" "n"))
-                 (ashift:GPI
-                          (match_operand:GPI 3 "register_operand" "r")
-                          (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))))]
+	(any_or_plus:GPI
+	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "const_int_operand" "n"))
+	  (ashift:GPI
+	    (match_operand:GPI 3 "register_operand" "r")
+	    (match_operand:GPI 4 "aarch64_simd_shift_imm_<mode>" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]),
 				      UINTVAL (operands[4]),
 				      HOST_WIDE_INT_M1U << UINTVAL (operands[4]) )"
@@ -6860,11 +6863,12 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>4_noand_alt"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (ashift:GPI
-                          (match_operand:GPI 1 "register_operand" "r")
-                          (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
-		 (and:GPI (match_operand:GPI 3 "register_operand" "0")
-                          (match_operand:GPI 4 "const_int_operand" "n"))))]
+	(any_or_plus:GPI
+	  (ashift:GPI
+	    (match_operand:GPI 1 "register_operand" "r")
+	    (match_operand:GPI 2 "aarch64_simd_shift_imm_<mode>" "n"))
+	  (and:GPI (match_operand:GPI 3 "register_operand" "0")
+		   (match_operand:GPI 4 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[4]),
 				      UINTVAL (operands[2]),
 				      HOST_WIDE_INT_M1U << UINTVAL (operands[2]) )"
@@ -6881,10 +6885,11 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>4_noshift"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
-                          (match_operand:GPI 2 "const_int_operand" "n"))
-                 (and:GPI (match_operand:GPI 3 "register_operand" "r")
-                          (match_operand:GPI 4 "const_int_operand" "n"))))]
+	(any_or_plus:GPI
+	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "const_int_operand" "n"))
+	  (and:GPI (match_operand:GPI 3 "register_operand" "r")
+		   (match_operand:GPI 4 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]), 0,
 				      UINTVAL (operands[4]))"
   "bfi\t%<GPI:w>0, %<GPI:w>3, 0, %P4"
@@ -6893,10 +6898,11 @@
 
 (define_insn "*aarch64_bfi<GPI:mode>4_noshift_alt"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (ior:GPI (and:GPI (match_operand:GPI 3 "register_operand" "r")
-                          (match_operand:GPI 4 "const_int_operand" "n"))
-                 (and:GPI (match_operand:GPI 1 "register_operand" "0")
-                          (match_operand:GPI 2 "const_int_operand" "n"))))]
+	(any_or_plus:GPI
+	  (and:GPI (match_operand:GPI 3 "register_operand" "r")
+		   (match_operand:GPI 4 "const_int_operand" "n"))
+	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "const_int_operand" "n"))))]
   "aarch64_masks_and_shift_for_bfi_p (<MODE>mode, UINTVAL (operands[2]), 0,
 				      UINTVAL (operands[4]))"
   "bfi\t%<GPI:w>0, %<GPI:w>3, 0, %P4"
@@ -6905,7 +6911,7 @@
 
 (define_insn "*aarch64_bfxil<mode>_extr"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-        (any_or_plus:GPI
+	(any_or_plus:GPI
 	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
 		   (match_operand:GPI 2 "const_int_operand" "n"))
 	  (zero_extract:GPI
