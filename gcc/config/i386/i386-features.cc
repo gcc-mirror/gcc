@@ -3956,6 +3956,9 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
 	{
 	  dest = gen_lowpart (scalar_mode, dest);
 	  SET_DEST (set) = dest;
+	  /* SET_SRC is now the constant itself, so any REG_EQUAL or
+	     REG_EQUIV note is redundant (PR target/128690).  */
+	  remove_reg_equal_equiv_notes (insn, true);
 	}
       /* Drop possible dead definitions.  */
       PATTERN (insn) = set;
