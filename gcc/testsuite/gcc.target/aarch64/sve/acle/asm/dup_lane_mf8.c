@@ -24,7 +24,7 @@ TEST_UNIFORM_ZX (dup_lane_w0_mf8_untied, svmfloat8_t, uint8_t,
 
 /*
 ** dup_lane_0_mf8_tied1:
-**	dup	z0\.b, z0\.b\[0\]
+**	mov	z0\.b, b0
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_mf8_tied1, svmfloat8_t,
@@ -33,7 +33,7 @@ TEST_UNIFORM_Z (dup_lane_0_mf8_tied1, svmfloat8_t,
 
 /*
 ** dup_lane_0_mf8_untied:
-**	dup	z0\.b, z1\.b\[0\]
+**	mov	z0\.b, b1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_mf8_untied, svmfloat8_t,

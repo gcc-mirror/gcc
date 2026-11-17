@@ -24,7 +24,7 @@ TEST_UNIFORM_ZX (dup_lane_w0_s32_untied, svint32_t, uint32_t,
 
 /*
 ** dup_lane_0_s32_tied1:
-**	dup	z0\.s, z0\.s\[0\]
+**	mov	z0\.s, s0
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_s32_tied1, svint32_t,
@@ -33,7 +33,7 @@ TEST_UNIFORM_Z (dup_lane_0_s32_tied1, svint32_t,
 
 /*
 ** dup_lane_0_s32_untied:
-**	dup	z0\.s, z1\.s\[0\]
+**	mov	z0\.s, s1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_s32_untied, svint32_t,

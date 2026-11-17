@@ -24,7 +24,7 @@ TEST_UNIFORM_ZX (dup_lane_w0_bf16_untied, svbfloat16_t, uint16_t,
 
 /*
 ** dup_lane_0_bf16_tied1:
-**	dup	z0\.h, z0\.h\[0\]
+**	mov	z0\.h, h0
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_bf16_tied1, svbfloat16_t,
@@ -33,7 +33,7 @@ TEST_UNIFORM_Z (dup_lane_0_bf16_tied1, svbfloat16_t,
 
 /*
 ** dup_lane_0_bf16_untied:
-**	dup	z0\.h, z1\.h\[0\]
+**	mov	z0\.h, h1
 **	ret
 */
 TEST_UNIFORM_Z (dup_lane_0_bf16_untied, svbfloat16_t,
