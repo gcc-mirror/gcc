@@ -12,4 +12,5 @@ F(LSHIFT, <<, long)
 /* { dg-final { scan-assembler-not "li\t" } } */
 /* { dg-final { scan-assembler-not "sub\t" } } */
 /* { dg-final { scan-assembler-not "subw\t" } } */
+/* { dg-final { scan-assembler-not "andi\t" } } */
 

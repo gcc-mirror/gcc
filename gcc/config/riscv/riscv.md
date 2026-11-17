@@ -5299,6 +5299,8 @@
 ;; that -x = ~x + 1 which is equivalent to (-1 - x) = ~x.  When shifting only
 ;; low bits of X matter (5 for SI, 6 for DI).  So 31/63 are equivalent to -1
 ;; for SI/DI shifts.
+;; Keep the mask in RTL, since later combinations can select instructions
+;; with a different count width.  Masked shift patterns omit it in assembly.
 ;;
 ;; Strangely, even for rv64, the shift computation is done in SI, presumably
 ;; something narrowed the arithmetic prior to gimple->rtl expansion.
@@ -5311,11 +5313,13 @@
 			       (match_operand:SI 3 "register_operand")) 0)))
     (clobber (match_operand:X 4 "register_operand"))]
   ""
-  [(set (match_dup 4) (not:X (match_dup 6)))
-   (set (match_dup 0) (any_shift_rotate:X (match_dup 1) (match_dup 5)))]
+  [(set (match_dup 4) (not:X (match_dup 5)))
+   (set (match_dup 0)
+	(any_shift_rotate:X
+	  (match_dup 1)
+	  (subreg:QI (and:X (match_dup 4) (match_dup 2)) 0)))]
  {
-   operands[5] = gen_lowpart (QImode, operands[4]);
-   operands[6] = gen_lowpart (word_mode, operands[3]);
+   operands[5] = gen_lowpart (word_mode, operands[3]);
  })
 
 ;; This is the same thing as the prior pattern, but for 32 bit shifts on rv64.
@@ -5330,11 +5334,12 @@
   "TARGET_64BIT"
   [(set (match_dup 3) (not:DI (match_dup 2)))
    (set (match_dup 0)
-	(sign_extend:DI (any_shift_rotate:SI (match_dup 1)
-					     (match_dup 4))))]
+	(sign_extend:DI
+	  (any_shift_rotate:SI
+	    (match_dup 1)
+	    (subreg:QI (and:DI (match_dup 3) (const_int 31)) 0))))]
  {
    operands[2] = gen_lowpart (DImode, operands[2]);
-   operands[4] = gen_lowpart (QImode, operands[3]);
  })
 
 ;; This is similar using a shift triplet to implement a logical AND when
