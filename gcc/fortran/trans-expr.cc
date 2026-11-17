@@ -13007,50 +13007,51 @@ gfc_trans_arrayfunc_assign (gfc_expr * expr1, gfc_expr * expr2)
   return gfc_finish_block (&se.pre);
 }
 
-
-/* Try to efficiently translate array(:) = 0.  Return NULL if this
-   can't be done.  */
+/* Try to efficiently translate array(:,1) or similar to zero.  */
 
 static tree
 gfc_trans_zero_assign (gfc_expr * expr)
 {
-  tree dest, len, type;
+  tree dest_decl, len, type, dest;
   tree tmp;
   gfc_symbol *sym;
+  stmtblock_t block;
+  gfc_se dest_se;
 
   sym = expr->symtree->n.sym;
-  dest = gfc_get_symbol_decl (sym);
+  dest_decl = gfc_get_symbol_decl (sym);
 
-  type = TREE_TYPE (dest);
-  if (POINTER_TYPE_P (type))
-    type = TREE_TYPE (type);
-  if (GFC_ARRAY_TYPE_P (type))
-    {
-      /* Determine the length of the array.  */
-      len = GFC_TYPE_ARRAY_SIZE (type);
-      if (!len || TREE_CODE (len) != INTEGER_CST)
-	return NULL_TREE;
-    }
-  else if (GFC_DESCRIPTOR_TYPE_P (type)
-	  && gfc_is_simply_contiguous (expr, false, false))
-    {
-      if (POINTER_TYPE_P (TREE_TYPE (dest)))
-	dest = build_fold_indirect_ref_loc (input_location, dest);
-      len = gfc_conv_descriptor_size (dest, GFC_TYPE_ARRAY_RANK (type));
-      dest = gfc_conv_descriptor_data_get (dest);
-    }
-  else
-    return NULL_TREE;
+  type = TREE_TYPE (dest_decl);
+  if (POINTER_TYPE_P (dest_decl))
+    type = TREE_TYPE (dest_decl);
 
-  /* If we are zeroing a local array avoid taking its address by emitting
+  /* If we are zeroing a full local array avoid taking its address by emitting
      a = {} instead.  */
-  if (!POINTER_TYPE_P (TREE_TYPE (dest)))
-    return build2_loc (input_location, MODIFY_EXPR, void_type_node,
-		       dest, build_constructor (TREE_TYPE (dest),
-					      NULL));
+
+  if (gfc_full_array_ref_p (expr->ref, NULL) && GFC_ARRAY_TYPE_P (type))
+    {
+      len = GFC_TYPE_ARRAY_SIZE (type);
+      if (len != NULL_TREE && TREE_CODE (len) == INTEGER_CST
+	  && !POINTER_TYPE_P (TREE_TYPE (dest_decl)))
+	return build2_loc (input_location, MODIFY_EXPR, void_type_node,
+			   dest_decl, build_constructor (TREE_TYPE (dest_decl),
+						    NULL));
+    }
+
+  gfc_init_block (&block);
+  gfc_init_se (&dest_se, NULL);
+  gfc_conv_expr_descriptor (&dest_se, expr);
+  gfc_add_block_to_block (&block, &dest_se.pre);
+
+  len = gfc_conv_descriptor_size (dest_se.expr, expr->rank);
+
+  if (gfc_full_array_ref_p (expr->ref, NULL) && GFC_ARRAY_TYPE_P (type))
+    dest = dest_decl;
+  else
+    dest = gfc_conv_descriptor_data_get (dest_se.expr);
 
   /* Multiply len by element size.  */
-  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (type));
+  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (dest_se.expr)));
   len = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
 			 len, fold_convert (gfc_array_index_type, tmp));
 
@@ -13059,10 +13060,16 @@ gfc_trans_zero_assign (gfc_expr * expr)
   len = fold_convert (size_type_node, len);
 
   /* Construct call to __builtin_memset.  */
+
   tmp = build_call_expr_loc (input_location,
 			     builtin_decl_explicit (BUILT_IN_MEMSET),
 			     3, dest, integer_zero_node, len);
-  return fold_convert (void_type_node, tmp);
+  tmp = fold_convert (void_type_node, tmp);
+
+  gfc_add_expr_to_block (&block, tmp);
+  gfc_add_block_to_block (&block, &dest_se.post);
+
+  return gfc_finish_block (&block);
 }
 
 
@@ -14493,13 +14500,11 @@ copyable_slice_p (gfc_expr * expr)
     return false;
 
   /* Don't touch anything with coarrays.  */
-  if (gfc_is_coindexed (expr) || expr->symtree->n.sym->attr.codimension)
+  if (gfc_is_coindexed (expr) || expr->symtree->n.sym->attr.codimension
+      || expr->corank > 0)
     return false;
 
   if (!gfc_is_simply_contiguous (expr, false, false))
-    return false;
-
-  if (gfc_is_reallocatable_lhs (expr))
     return false;
 
   if (gfc_may_be_finalized (expr->ts))
@@ -14544,9 +14549,8 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	return tmp;
     }
 
-  /* Special case assigning an array to zero.  */
-  if (copyable_array_p (expr1)
-      && is_zero_initializer_p (expr2))
+  /* Special case assigning an array or array slice to zero.  */
+  if (copyable_slice_p (expr1) && is_zero_initializer_p (expr2))
     {
       tmp = gfc_trans_zero_assign (expr1);
       if (tmp)

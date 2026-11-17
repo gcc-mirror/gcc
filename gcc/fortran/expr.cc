@@ -6559,6 +6559,13 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 
       if (ar->dimen_type[i] == DIMEN_ELEMENT)
 	{
+	  /* An extent of one does not hurt as long as we aren't strict.  */
+	  if (ar->as  && ar->as->lower[i] && ar->as->upper[i]
+	      && ar->start[i]
+	      && gfc_dep_compare_expr (ar->as->lower[i], ar->as->upper[i]) == 0
+	      && gfc_dep_compare_expr (ar->as->lower[i], ar->start[i]) == 0)
+	    continue;
+
 	  colon = false;
 	  continue;
 	}
