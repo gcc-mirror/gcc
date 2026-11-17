@@ -19069,10 +19069,13 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       /* We currently don't expect these to be used in a loop body.  */
       break;
 
+    case vec_deconstruct:
+      /* add_stmt_cost converts vec_deconstruct to vec_to_scalar.  */
+      gcc_unreachable ();
+
     case vec_perm:
     case vec_promote_demote:
     case vec_construct:
-    case vec_deconstruct:
     case vec_to_scalar:
     case scalar_to_vec:
     case vector_stmt:
@@ -19484,6 +19487,16 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 but those only work on GPR anyway and this is the best we can do.  */
       if (tree lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info)))
 	vectype = TREE_TYPE (lhs);
+    }
+
+  /* A vec_deconstruct extracts every lane of a vector.  Cost it as one
+     vec_to_scalar per lane, so that the code below that handles
+     vec_to_scalar also applies to it.  */
+  if (kind == vec_deconstruct)
+    {
+      gcc_checking_assert (vectype);
+      count *= vect_nunits_for_cost (vectype);
+      kind = vec_to_scalar;
     }
 
   fractional_cost stmt_cost
