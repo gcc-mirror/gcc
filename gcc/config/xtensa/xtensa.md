@@ -54,6 +54,8 @@
   UNSPECV_EH_RETURN
   UNSPECV_SET_TP
   UNSPECV_BLOCKAGE
+  UNSPECV_GET_FSR
+  UNSPECV_SET_FSR
 ])
 
 ;; This code iterator allows signed and unsigned widening multiplications
@@ -1654,6 +1656,24 @@
 }
   [(set_attr "type"	"fstore")
    (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "get_fsr"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec_volatile:SI [(const_int 0)] UNSPECV_GET_FSR))]
+  "TARGET_HARD_FLOAT"
+  "rur.fsr\t%0"
+  [(set_attr "type"	"farith")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
+(define_insn "set_fsr"
+  [(unspec_volatile [(match_operand:SI 0 "register_operand" "r")]
+		    UNSPECV_SET_FSR)]
+  "TARGET_HARD_FLOAT"
+  "wur.fsr\t%0"
+  [(set_attr "type"	"farith")
+   (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
 ;; 64-bit floating point moves

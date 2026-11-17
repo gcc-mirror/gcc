@@ -157,6 +157,7 @@ static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, int, tree *, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, machine_mode, int);
 static tree xtensa_builtin_decl (unsigned, bool);
+static void xtensa_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static void xtensa_va_start (tree, rtx);
 static bool xtensa_frame_pointer_required (void);
 static rtx xtensa_static_chain (const_tree, bool);
@@ -290,6 +291,9 @@ static tree xtensa_handle_force_l32_attribute (tree *, tree, tree, int, bool *);
 #define TARGET_EXPAND_BUILTIN xtensa_expand_builtin
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL xtensa_builtin_decl
+
+#undef  TARGET_ATOMIC_ASSIGN_EXPAND_FENV
+#define TARGET_ATOMIC_ASSIGN_EXPAND_FENV xtensa_atomic_assign_expand_fenv
 
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS xtensa_preferred_reload_class
@@ -4410,6 +4414,8 @@ xtensa_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 enum xtensa_builtin
 {
   XTENSA_BUILTIN_UMULSIDI3,
+  XTENSA_BUILTIN_GET_FSR,
+  XTENSA_BUILTIN_SET_FSR,
   XTENSA_BUILTIN_max
 };
 
@@ -4430,6 +4436,27 @@ xtensa_init_builtins (void)
   xtensa_builtin_decls[XTENSA_BUILTIN_UMULSIDI3] = decl;
   TREE_NOTHROW (decl) = 1;
   TREE_READONLY (decl) = 1;
+
+  if (TARGET_HARD_FLOAT)
+    {
+      ftype = build_function_type_list (unsigned_intSI_type_node,
+					NULL_TREE);
+
+      decl = add_builtin_function ("__builtin_xtensa_get_fsr", ftype,
+				   XTENSA_BUILTIN_GET_FSR, BUILT_IN_MD,
+				   "__xtensa_get_fsr", NULL_TREE);
+      xtensa_builtin_decls[XTENSA_BUILTIN_GET_FSR] = decl;
+      TREE_NOTHROW (decl) = 1;
+
+      ftype = build_function_type_list (void_type_node,
+					unsigned_intSI_type_node, NULL_TREE);
+
+      decl = add_builtin_function ("__builtin_xtensa_set_fsr", ftype,
+				   XTENSA_BUILTIN_SET_FSR, BUILT_IN_MD,
+				   "__xtensa_set_fsr", NULL_TREE);
+      xtensa_builtin_decls[XTENSA_BUILTIN_SET_FSR] = decl;
+      TREE_NOTHROW (decl) = 1;
+    }
 }
 
 
@@ -4450,6 +4477,10 @@ xtensa_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *args,
 	return fold_build2 (MULT_EXPR, unsigned_intDI_type_node,
 			    fold_convert (unsigned_intDI_type_node, arg0),
 			    fold_convert (unsigned_intDI_type_node, arg1));
+      break;
+
+    case XTENSA_BUILTIN_GET_FSR:
+    case XTENSA_BUILTIN_SET_FSR:
       break;
 
     default:
@@ -4478,6 +4509,23 @@ xtensa_expand_builtin (tree exp, rtx target,
 	 implement it.  If not, just call the function.  */
       return expand_call (exp, target, ignore);
 
+    case XTENSA_BUILTIN_GET_FSR:
+	{
+	  expand_operand ops[1];
+	  create_output_operand (&ops[0], target, SImode);
+	  expand_insn (CODE_FOR_get_fsr, 1, ops);
+	  return ops[0].value;
+	}
+
+    case XTENSA_BUILTIN_SET_FSR:
+	{
+	  rtx op0 = expand_normal (CALL_EXPR_ARG (exp, 0));
+	  expand_operand ops[1];
+	  create_input_operand (&ops[0], op0, SImode);
+	  expand_insn (CODE_FOR_set_fsr, 1, ops);
+	  return const0_rtx;
+	}
+
     default:
       internal_error ("bad builtin code");
     }
@@ -4490,6 +4538,22 @@ xtensa_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   if (code >= XTENSA_BUILTIN_max)
     return error_mark_node;
   return xtensa_builtin_decls[code];
+}
+
+static void
+xtensa_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
+{
+  if (!TARGET_HARD_FLOAT)
+    return;
+
+  tree get_fsr = xtensa_builtin_decls[XTENSA_BUILTIN_GET_FSR];
+  tree set_fsr = xtensa_builtin_decls[XTENSA_BUILTIN_SET_FSR];
+  tree old_flags = create_tmp_var_raw (unsigned_type_node);
+
+  *hold = build4 (TARGET_EXPR, unsigned_type_node, old_flags,
+		  build_call_expr (get_fsr, 0), NULL_TREE, NULL_TREE);
+  *clear = build_call_expr (set_fsr, 1, old_flags);
+  *update = NULL_TREE;
 }
 
 /* Worker function for TARGET_PREFERRED_RELOAD_CLASS.  */
