@@ -37,10 +37,7 @@ TEST_BINARY (vtbl1_mf8, mfloat8x8_t, mfloat8x8_t, uint8x8_t)
 
 /*
 ** test_vtbl2_s8:
-**	sub	sp, sp, #16
-**	stp	d[0-9]+, d[0-9]+, \[sp\]
-**	ldr	q[0-9]+, \[sp\]
-**	add	sp, sp, 16
+**	zip1	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.2d
 **	tbl	v[0-9]+\.8b, {v[0-9]+\.16b}, v[0-9]+\.8b
 **	ret
 */
@@ -48,10 +45,7 @@ TEST_BINARY (vtbl2_s8, int8x8_t, int8x8x2_t, int8x8_t)
 
 /*
 ** test_vtbl2_u8:
-**	sub	sp, sp, #16
-**	stp	d[0-9]+, d[0-9]+, \[sp\]
-**	ldr	q[0-9]+, \[sp\]
-**	add	sp, sp, 16
+**	zip1	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.2d
 **	tbl	v[0-9]+\.8b, {v[0-9]+\.16b}, v[0-9]+\.8b
 **	ret
 */
@@ -59,10 +53,7 @@ TEST_BINARY (vtbl2_u8, uint8x8_t, uint8x8x2_t, uint8x8_t)
 
 /*
 ** test_vtbl2_p8:
-**	sub	sp, sp, #16
-**	stp	d[0-9]+, d[0-9]+, \[sp\]
-**	ldr	q[0-9]+, \[sp\]
-**	add	sp, sp, 16
+**	zip1	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.2d
 **	tbl	v[0-9]+\.8b, {v[0-9]+\.16b}, v[0-9]+\.8b
 **	ret
 */
@@ -70,10 +61,7 @@ TEST_BINARY (vtbl2_p8, poly8x8_t, poly8x8x2_t, uint8x8_t)
 
 /*
 ** test_vtbl2_mf8:
-**	sub	sp, sp, #16
-**	stp	d[0-9]+, d[0-9]+, \[sp\]
-**	ldr	q[0-9]+, \[sp\]
-**	add	sp, sp, 16
+**	zip1	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.2d
 **	tbl	v[0-9]+\.8b, {v[0-9]+\.16b}, v[0-9]+\.8b
 **	ret
 */

@@ -5769,7 +5769,7 @@ simplify_ashift:
 	     (subreg:N/2 OP 0)
 	     (subreg:N/2 OP N/2)) --> OP
 	   i.e. where concatenating the first and second halves of the
-	   same object OP.  */
+	   same object OP, if the target allows accessing OP in MODE.  */
 	{
 	  poly_uint64 offset = 0u;
 	  rtx base0 = get_ref_base_and_offset (trueop0, &offset);
@@ -5780,6 +5780,8 @@ simplify_ashift:
 	      rtx base1 = get_ref_base_and_offset (trueop1, &offset);
 	      if (rtx_equal_p (base0, base1)
 		  && known_eq (offset, GET_MODE_SIZE (op0_mode))
+		  && (!REG_P (base0)
+		      || targetm.modes_tieable_p (GET_MODE (base0), mode))
 		  && !side_effects_p (trueop0)
 		  && !side_effects_p (trueop1))
 		{
