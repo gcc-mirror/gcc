@@ -1,3 +1,523 @@
+2026-11-16  Sendao Yan  <yansendao@126.com>
+
+	* gimple-predicate-analysis.h (uninit_analysis::m_phi_def_valid):
+	New member.
+	* gimple-predicate-analysis.cc (pred_neg_p): Return false for
+	non-comparison operands instead of inverting their code, and honor
+	NaNs when inverting a floating-point comparison.
+	(pred_equal_p): Likewise.
+	(subset_of): Prove the one-way implication from an ordered
+	comparison to its inverted complement, which pred_equal_p no longer
+	provides for a possibly NaN operand.
+	(predicate::init_from_control_deps): Set m_cval when a path needs
+	no predicate and makes the whole predicate TRUE, and drop a
+	definition path that was accepted only because a statement on it
+	can throw.
+	(predicate::drop_conjuncts_implied_by): Simplify the whole
+	predicate to TRUE when it empties a chain.
+	(simplify_1b): Skip non-comparison pred pairs, and pairs whose
+	inversion is not exact because an operand may be a NaN.
+	(predicate::simplify_2): Set m_cval when a disjunction simplifies
+	to true.
+	(uninit_analysis::init_from_phi_def): Do not reject a definition
+	predicate that is empty but TRUE.
+	(uninit_analysis::m_phi_def_valid): New member, set when the
+	definition predicate has been computed for the current PHI.
+	(uninit_analysis::is_use_guarded): Use m_phi_def_valid rather than
+	m_phi_def_preds.is_empty() to gate the lazy initialization, since a
+	TRUE predicate is empty too.  Do not return early for an
+	empty use predicate; skip the overlap pruning and the superset
+	test for an unconditional use, which superset_of() cannot prove;
+	normalize and then simplify the relaxed definition predicate in
+	the fallback and treat a TRUE relaxed predicate as guarding any
+	use.
+	(uninit_analysis::prune_phi_opnds): Give each is_use_guarded
+	query its own analysis, and prune the operand when the query
+	proves its use guarded rather than when it does not.
+
+2026-11-16  Sendao Yan  <yansendao@126.com>
+
+	* passes.def (pass_lower_switch): Move after pass_thread_jumps_full.
+
+2026-11-16  Sendao Yan  <yansendao@126.com>
+
+	* gimple-predicate-analysis.cc (predicate::simplify_4): Do not
+	release a shallow copy of a chain.
+	(predicate::simplify): Set m_cval when a disjunct or the whole
+	predicate folds to a constant.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	PR target/128777
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(gimple_minmax::expand): Force arguments to be in registers.
+
+2026-11-16  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-phiopt.cc (check_uses): New function
+	(match_simplify_replacement): Call and check check_uses.
+
+2026-11-16  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-phiopt.cc (remove_unused_stmts): New function.
+	(gimple_simplify_phiopt): Call remove_unused_stmts before
+	phiopt_early_allow.
+
+2026-11-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128739
+	* tree-vect-loop-manip.cc (vect_set_loop_condition): Use backedge
+	values of header PHIs when copying exit PHI arguments to the latch
+	exit of peeled early-break loops.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128751
+	* config/i386/i386.cc (function_arg_advance_64): Do not advance
+	cum->words for TYPE_EMPTY_P arguments passed on the stack.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128670
+	* config/i386/i386.cc (classify_argument) <case ARRAY_TYPE>:
+	Classify each element at its actual offset and merge the classes
+	of the elements.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtins.h
+	(qualifier_struct_load_store_lane_index): Delete now-unused enum
+	member.
+	* config/aarch64/aarch64-builtins.cc (FLAG_LOAD):
+	Delete now-unused global variable.
+	(TYPES_LOADSTRUCT, TYPES_LOADSTRUCT_U, TYPES_LOADSTRUCT_P):
+	Delete now-unused macros.
+	(aarch64_scalar_builtin_types, aarch64_simd_intOI_type_node,
+	aarch64_simd_intCI_type_node, aarch64_simd_intXI_type_node):
+	Delete now-unused global variables.
+	(aarch64_mangle_builtin_scalar_type): Delete now-unused
+	function.
+	(aarch64_int_or_fp_type): Delete cases handling `E_OImode`,
+	`E_CImode` and `E_XImode`.
+	(aarch64_init_simd_builtin_types): Delete code to register
+	`__builtin_aarch64_simd_{oi,ci,xi}` types.
+	(aarch64_init_simd_builtin_scalar_types): Delete now-unused
+	function.
+	(enum class aarch64_builtin_signatures): Delete now-unused enum
+	members `load` and `store`.
+	(aarch64_fntype): Delete cases to handle
+	`aarch64_builtin_signatures::load` and
+	`aarch64_builtin_signatures::store`
+	(SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX): Delete now-unused enum
+	member.
+	(aarch64_simd_expand_args): Delete now-unused `builtin_mode`
+	argument; delete case to handle
+	`SIMD_ARG_STRUCT_LOAD_STORE_LANE_INDEX`.
+	(aarch64_simd_expand_builtin): Delete handling of
+	`qualifier_struct_load_store_lane_index`; remove last argument
+	of `aarch64_simd_expand_args`.
+	(aarch64_dereference_pointer, aarch64_convert_to_lane_mask):
+	Delete now-unused functions.
+	(aarch64_expand_pragma_builtin): Delete cases to handle
+	`UNSPEC_DUP`, `UNSPEC_LD2_DUP`, `UNSPEC_LD3_DUP` and
+	`UNSPEC_LD4_DUP`.
+	(aarch64_force_gimple_val, aarch64_fold_to_val,
+	aarch64_get_lane_bit_index, aarch64_set_lane,
+	aarch64_gimple_fold_pragma_builtin): Delete now-unused
+	functions.
+	(aarch64_general_gimple_fold_builtin): Delete call to
+	`aarch64_gimple_fold_pragma_builtin`.
+	* config/aarch64/aarch64-neon-builtins-base.cc (tuple_len): New
+	function.
+	(struct gimple_load_dup): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def (vld1_dup,
+	vld1q_dup, vld2_dup, vld2q_dup, vld3_dup, vld3q_dup, vld4_dup,
+	vld4q_dup): Declare new intrinsics.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	function declaractions.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Delete
+	intrinsic function definitions.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_simd_ld2r<vstruct_elt>,
+	@aarch64_simd_ld3r<vstruct_elt>,
+	@aarch64_simd_ld4r<vstruct_elt>,
+	aarch64_ld<nregs>r<vstruct_elt>): Replace with...
+	(@aarch64_simd_load_dup<mode>): ...this.
+	* config/aarch64/aarch64.md (UNSPEC_DUP): Delete now-unused
+	UNSPEC.
+	(UNSPEC_LD1_DUP, UNSPEC_LD2_DUP, UNSPEC_LD3_DUP,
+	UNSPEC_LD4_DUP): Replace with...
+	(UNSPEC_LOAD_DUP): ...this.
+	* config/aarch64/arm_neon.h
+	(vld1_dup_f16, vld1_dup_f32, vld1_dup_f64, vld1_dup_p8,
+	vld1_dup_p16, vld1_dup_p64, vld1_dup_s8, vld1_dup_s16,
+	vld1_dup_s32, vld1_dup_s64, vld1_dup_u8, vld1_dup_u16,
+	vld1_dup_u32, vld1_dup_u64, vld1q_dup_f16, vld1q_dup_f32,
+	vld1q_dup_f64, vld1q_dup_p8, vld1q_dup_p16, vld1q_dup_p64,
+	vld1q_dup_s8, vld1q_dup_s16, vld1q_dup_s32, vld1q_dup_s64,
+	vld1q_dup_u8, vld1q_dup_u16, vld1q_dup_u32, vld1q_dup_u64,
+	vld2_dup_s8, vld2_dup_s16, vld2_dup_s32, vld2_dup_f16,
+	vld2_dup_f32, vld2_dup_f64, vld2_dup_u8, vld2_dup_u16,
+	vld2_dup_u32, vld2_dup_p8, vld2_dup_p16, vld2_dup_p64,
+	vld2_dup_s64, vld2_dup_u64, vld2q_dup_s8, vld2q_dup_p8,
+	vld2q_dup_s16, vld2q_dup_p16, vld2q_dup_s32, vld2q_dup_s64,
+	vld2q_dup_u8, vld2q_dup_u16, vld2q_dup_u32, vld2q_dup_u64,
+	vld2q_dup_f16, vld2q_dup_f32, vld2q_dup_f64, vld2q_dup_p64,
+	vld3_dup_s64, vld3_dup_u64, vld3_dup_f64, vld3_dup_s8,
+	vld3_dup_p8, vld3_dup_s16, vld3_dup_p16, vld3_dup_s32,
+	vld3_dup_u8, vld3_dup_u16, vld3_dup_u32, vld3_dup_f16,
+	vld3_dup_f32, vld3_dup_p64, vld3q_dup_s8, vld3q_dup_p8,
+	vld3q_dup_s16, vld3q_dup_p16, vld3q_dup_s32, vld3q_dup_s64,
+	vld3q_dup_u8, vld3q_dup_u16, vld3q_dup_u32, vld3q_dup_u64,
+	vld3q_dup_f16, vld3q_dup_f32, vld3q_dup_f64, vld3q_dup_p64,
+	vld4_dup_s64, vld4_dup_u64, vld4_dup_f64, vld4_dup_s8,
+	vld4_dup_p8, vld4_dup_s16, vld4_dup_p16, vld4_dup_s32,
+	vld4_dup_u8, vld4_dup_u16, vld4_dup_u32, vld4_dup_f16,
+	vld4_dup_f32, vld4_dup_p64, vld4q_dup_s8, vld4q_dup_p8,
+	vld4q_dup_s16, vld4q_dup_p16, vld4q_dup_s32, vld4q_dup_s64,
+	vld4q_dup_u8, vld4q_dup_u16, vld4q_dup_u32, vld4q_dup_u64,
+	vld4q_dup_f16, vld4q_dup_f32, vld4q_dup_f64, vld4q_dup_p64,
+	vld1_dup_bf16, vld1q_dup_bf16, vld3_dup_bf16, vld3q_dup_bf16,
+	vld4_dup_bf16, vld4q_dup_bf16): Delete function definitions.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_d_neon): New
+	type array.
+	* config/aarch64/aarch64-builtins.cc
+	(FLAG_ALL, FLAG_STORE): Delete now-unused global variables.
+	(TYPES_LOAD1, TYPES_LOAD1_U, TYPES_LOAD1_P,
+	TYPES_LOADSTRUCT_LANE, TYPES_LOADSTRUCT_LANE_U,
+	TYPES_LOADSTRUCT_LANE_P, TYPES_STORESTRUCT_LANE,
+	TYPES_STORESTRUCT_LANE_U, TYPES_STORESTRUCT_LANE_P): Delete
+	now-unused macros.
+	(enum class aarch64_builtin_signatures): Delete now-unused `load_lane` and
+	`store_lane` members.
+	(aarch64_fntype): Delete cases handling
+	`aarch64_builtin_signatures::load_lane` and
+	`aarch64_builtin_signatures::store_lane`.
+	(aarch64_pragma_builtins_checker::check): Delete cases handling
+	`UNSPEC_{LD,ST}{1,2,3,4}_LANE` and `UNSPEC_SET_LANE`.
+	(aarch64_convert_to_lane_mask): Delete now-unused function.
+	(aarch64_expand_pragma_builtin): Delete cases handling
+	`UNSPEC_{LD,ST}{1,2,3,4}_LANE` and `UNSPEC_SET_LANE`.
+	(aarch64_copy_vops, aarch64_get_lane_bit_index,
+	aarch64_get_lane, aarch64_set_lane): Delete now-unused
+	functions.
+	(aarch64_gimple_fold_pragma_builtin): Delete cases handling
+	`UNSPEC_SET_LANE` and `UNSPEC_ST1_LANE`.
+	* config/aarch64/aarch64-neon-builtins-base.cc (struct
+	gimple_load_store_lane, struct gimple_load_store_lane_atomic):
+	New structs.
+	* config/aarch64/aarch64-neon-builtins-base.def (vld1_lane,
+	vld1q_lane, vld2_lane, vld2q_lane, vld3_lane, vld3q_lane,
+	vld4_lane, vld4q_lane, vst1_lane, vst1q_lane, vst2_lane,
+	vst2q_lane, vst3_lane, vst3q_lane, vst4_lane, vst4q_lane,
+	vldap1_lane, vldap1q_lane, vstl1_lane, vstl1q_lane): New
+	intrinsic function declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	function declarations.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Delete
+	intrinsic function declarations.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_vec_stl1_lane<mode>, aarch64_vec_ldap1_lane<mode>):
+	Make callable from `aarch64-neon-builtins-base.cc` and delete
+	unnecessary call to `aarch64_simd_lane_bounds` (out of bounds
+	indices should have already been rejected by this point).
+	(aarch64_vec_load_lanes<mode>_lane<vstruct_elt>,
+	@aarch64_ld<nregs>_lane<vstruct_elt>): Replace with...
+	(@aarch64_simd_load_lane<mode>): ...this.
+	(aarch64_vec_store_lanes<mode>_lane<vstruct_elt>,
+	@aarch64_st<nregs>_lane<vstruct_elt>): Replace with...
+	(@aarch64_simd_store_lane<mode>): ...this.
+	* config/aarch64/aarch64.md:
+	(UNSPEC_LD2_LANE, UNSPEC_LD3_LANE, UNSPEC_LD4_LANE): Replace with...
+	(UNSPEC_LOAD_LANE): ...this.
+	(UNSPEC_ST2_LANE, UNSPEC_ST3_LANE, UNSPEC_ST4_LANE): Replace with...
+	(UNSPEC_STORE_LANE): ...this.
+	(UNSPEC_SET_LANE): Delete.
+	* config/aarch64/arm_neon.h (vst2_lane_f16, vst2_lane_f32, vst2_lane_f64, vst2_lane_p8,
+	vst2_lane_p16, vst2_lane_p64, vst2_lane_s8, vst2_lane_s16,
+	vst2_lane_s32, vst2_lane_s64, vst2_lane_u8, vst2_lane_u16,
+	vst2_lane_u32, vst2_lane_u64, vst2q_lane_f16, vst2q_lane_f32,
+	vst2q_lane_f64, vst2q_lane_p8, vst2q_lane_p16, vst2q_lane_p64,
+	vst2q_lane_s8, vst2q_lane_s16, vst2q_lane_s32, vst2q_lane_s64,
+	vst2q_lane_u8, vst2q_lane_u16, vst2q_lane_u32, vst2q_lane_u64,
+	vst3_lane_f16, vst3_lane_f32, vst3_lane_f64, vst3_lane_p8,
+	vst3_lane_p16, vst3_lane_p64, vst3_lane_s8, vtbx2_s8,
+	vst3_lane_s16, vtbx2_u8, vst3_lane_s32, vtbx2_p8, target,
+	vst3_lane_s64, vst3_lane_u8, vst3_lane_u16, vst3_lane_u32,
+	vst3_lane_u64, vst3q_lane_f16, vst3q_lane_f32, vst3q_lane_f64,
+	vst3q_lane_p8, vst3q_lane_p16, vst3q_lane_p64, vst3q_lane_s8,
+	vst3q_lane_s16, vst3q_lane_s32, vst3q_lane_s64, vst3q_lane_u8,
+	vst3q_lane_u16, vst3q_lane_u32, vst3q_lane_u64, vst4_lane_f16,
+	vst4_lane_f32, vst4_lane_f64, vst4_lane_p8, vst4_lane_p16,
+	vst4_lane_p64, vst4_lane_s8, vst4_lane_s16, vst4_lane_s32,
+	vst4_lane_s64, vst4_lane_u8, vst4_lane_u16, vst4_lane_u32,
+	vst4_lane_u64, vst4q_lane_f16, vst4q_lane_f32, vst4q_lane_f64,
+	vst4q_lane_p8, vst4q_lane_p16, vst4q_lane_p64, vst4q_lane_s8,
+	vst4q_lane_s16, vst4q_lane_s32, vst4q_lane_s64, vst4q_lane_u8,
+	vst4q_lane_u16, vst4q_lane_u32, vst4q_lane_u64, vld1_lane_f16,
+	vld1_lane_f32, vld1_lane_f64, vld1_lane_p8, vld1_lane_p16,
+	vld1_lane_p64, vld1_lane_s8, vld1_lane_s16, vld1_lane_s32,
+	vld1_lane_s64, vld1_lane_u8, vld1_lane_u16, vld1_lane_u32,
+	vld1_lane_u64, vld1q_lane_f16, vld1q_lane_f32, vld1q_lane_f64,
+	vld1q_lane_p8, vld1q_lane_p16, vld1q_lane_p64, vld1q_lane_s8,
+	vld1q_lane_s16, vld1q_lane_s32, vld1q_lane_s64, vld1q_lane_u8,
+	vld1q_lane_u16, vld1q_lane_u32, vld1q_lane_u64, vldap1_lane_u64,
+	vldap1q_lane_u64, vldap1_lane_s64, vldap1q_lane_s64,
+	vldap1_lane_f64, vldap1q_lane_f64, vldap1_lane_p64,
+	vldap1q_lane_p64, vstl1_lane_u64, vstl1q_lane_u64,
+	vstl1_lane_s64, vstl1q_lane_s64, vstl1_lane_f64,
+	vstl1q_lane_f64, vstl1_lane_p64, vstl1q_lane_p64, vld2_lane_u8,
+	vld2_lane_u16, vld2_lane_u32, vld2_lane_u64, vld2_lane_s8,
+	vld2_lane_s16, vld2_lane_s32, vld2_lane_s64, vld2_lane_f16,
+	vld2_lane_f32, vld2_lane_f64, vld2_lane_p8, vld2_lane_p16,
+	vld2_lane_p64, vld2q_lane_u8, vld2q_lane_u16, vld2q_lane_u32,
+	vld2q_lane_u64, vld2q_lane_s8, vld2q_lane_s16, vld2q_lane_s32,
+	vld2q_lane_s64, vld2q_lane_f16, vld2q_lane_f32, vld2q_lane_f64,
+	vld2q_lane_p8, vld2q_lane_p16, vld2q_lane_p64, vld3_lane_u8,
+	vld3_lane_u16, vld3_lane_u32, vld3_lane_u64, vld3_lane_s8,
+	vld3_lane_s16, vld3_lane_s32, vld3_lane_s64, vld3_lane_f16,
+	vld3_lane_f32, vld3_lane_f64, vld3_lane_p8, vld3_lane_p16,
+	vld3_lane_p64, vld3q_lane_u8, vld3q_lane_u16, vld3q_lane_u32,
+	vld3q_lane_u64, vld3q_lane_s8, vld3q_lane_s16, vld3q_lane_s32,
+	vld3q_lane_s64, vld3q_lane_f16, vld3q_lane_f32, vld3q_lane_f64,
+	vld3q_lane_p8, vld3q_lane_p16, vld3q_lane_p64, vld4_lane_u8,
+	vld4_lane_u16, vld4_lane_u32, vld4_lane_u64, vld4_lane_s8,
+	vld4_lane_s16, vld4_lane_s32, vld4_lane_s64, vld4_lane_f16,
+	vld4_lane_f32, vld4_lane_f64, vld4_lane_p8, vld4_lane_p16,
+	vld4_lane_p64, vld4q_lane_u8, vld4q_lane_u16, vld4q_lane_u32,
+	vld4q_lane_u64, vld4q_lane_s8, vld4q_lane_s16, vld4q_lane_s32,
+	vld4q_lane_s64, vld4q_lane_f16, vld4q_lane_f32, vld4q_lane_f64,
+	vld4q_lane_p8, vld4q_lane_p16, vld4q_lane_p64, vld1_lane_bf16,
+	vld1q_lane_bf16, vst1_lane_bf16, vst1q_lane_bf16,
+	vld2_lane_bf16, vld2q_lane_bf16, vld3_lane_bf16,
+	vld3q_lane_bf16, vld4_lane_bf16, vld4q_lane_bf16,
+	vst2_lane_bf16, vst2q_lane_bf16, vst3_lane_bf16,
+	vst3q_lane_bf16, vst4_lane_bf16, vst4q_lane_bf16): Delete
+	function definitions.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (TYPES_STORE1,
+	TYPES_STORESTRUCT, TYPES_STORE1_U, TYPES_STORESTRUCT_U,
+	TYPES_STORE1_P, TYPES_STORESTRUCT_P): Delete macros.
+	(aarch64_expand_pragma_builtin): Delete cases handling
+	`UNSPEC_LD{2,3,4}` and `UNSPEC_ST{2,3,4}`.
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(build_tuple_get_array): New function.
+	(build_tuple_get): Call `build_tuple_get_array`.
+	(struct gimple_load_store_interleaved): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def (vld2, vld2q,
+	vld3, vld3q, vld4, vld4q, vst2, vst2q, vst3, vst3q, vst4,
+	vst4q): Declare new intrinsics.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	function declarations.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Delete
+	intrinsic function declarations.
+	* config/aarch64/aarch64-simd.md
+	(vec_load_lanes<mode><vstruct_elt>,
+	@aarch64_ld<nregs><vstruct_elt>, aarch64_simd_ld2<vstruct_elt>,
+	aarch64_simd_ld3<vstruct_elt>, aarch64_simd_ld4<vstruct_elt>,
+	aarch64_ld2<vstruct_elt>_dreg, aarch64_ld3<vstruct_elt>_dreg,
+	aarch64_ld4<vstruct_elt>_dreg): Replace with...
+	(vec_load_lanes<mode><vstruct_elt>, @aarch64_load_interleaved<mode>): ...these.
+	(vec_store_lanes<mode><vstruct_elt>,
+	@aarch64_st<nregs><vstruct_elt>, aarch64_simd_st2<vstruct_elt>,
+	aarch64_simd_st3<vstruct_elt>, aarch64_simd_st4<vstruct_elt>,
+	aarch64_st2<vstruct_elt>_dreg, aarch64_st3<vstruct_elt>_dreg,
+	aarch64_st4<vstruct_elt>_dreg): Replace with...
+	(vec_store_lanes<mode><vstruct_elt>, @aarch64_store_interleaved<mode>): ...these.
+	* config/aarch64/aarch64.md
+	(UNSPEC_LD2, UNSPEC_LD2_DREG, UNSPEC_LD3, UNSPEC_LD3_DREG,
+	UNSPEC_LD4, UNSPEC_LD4_DREG): Replace with ...
+	(UNSPEC_LOAD_INTERLEAVED): ...this.
+	(UNSPEC_ST2, UNSPEC_ST2_DREG, UNSPEC_ST3, UNSPEC_ST3_DREG,
+	UNSPEC_ST4, UNSPEC_ST4_DREG): Replace with ...
+	(UNSPEC_STORE_INTERLEAVED): ...this.
+	* config/aarch64/iterators.md (VSTRUCT_DNX): New iterator.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_p128): New types
+	array.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_expand_pragma_builtin): Delete cases handling
+	`UNSPEC_{LD,ST}1{,x2,x3,x4}.
+	(get_mem_type_for_load_store): Delete now-unused function.
+	(aarch64_record_vector_load_arg, aarch64_dereference): Remove
+	`static` qualifier.
+	(aarch64_fold_load, aarch64_fold_store): Delete now-unused
+	functions.
+	(aarch64_gimple_fold_pragma_builtin): Delete cases handling
+	`UNSPEC_LD1` and `UNSPEC_ST1`.
+	(aarch64_general_gimple_fold_builtin): Delete cases handling
+	aarch64_builtin_ld1 and aarch64_builtin_st1.
+	* config/aarch64/aarch64-neon-builtins-base.cc (NEON_FUNCTION):
+	(struct gimple_load_store_multiple):
+	* config/aarch64/aarch64-neon-builtins-base.def (vld1, vld1q,
+	vldrq, vst1, vst1q, vstrq): New intrinsic declarations.
+	* config/aarch64/aarch64-protos.h (aarch64_record_vector_load_arg,
+	aarch64_dereference): New function declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	function declarations.
+	* config/aarch64/aarch64-simd-pragma-builtins.def: Delete
+	intrinsic function declarations.
+	* config/aarch64/aarch64-simd.md
+	(@aarch64_ld1x3<vstruct_elt>, aarch64_ld1_x3_<vstruct_elt>,
+	@aarch64_ld1x4<vstruct_elt>, aarch64_ld1_x4_<vstruct_elt>,
+	aarch64_be_ld1<mode>, aarch64_be_st1<mode>,
+	@aarch64_ld1<VALL_F16:mode>, @aarch64_ld1x2<vstruct_elt>,
+	aarch64_simd_ld1<vstruct_elt>_x2): Replace with...
+	(@aarch64_simd_load_multiple<mode>): ...this.
+	(@aarch64_st1x2<vstruct_elt>, aarch64_st1_x2_<vstruct_elt>,
+	@aarch64_st1x3<vstruct_elt>, aarch64_st1_x3_<vstruct_elt>,
+	@aarch64_st1x4<vstruct_elt>, aarch64_st1_x4_<vstruct_elt>,
+	@aarch64_st1<VALL_F16:mode>): Replace with...
+	(@aarch64_simd_store_multiple<mode>): ...this.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (parse_type):
+	Parse `Dxt` and `Qxt`.
+	* config/aarch64/aarch64.md
+	(UNSPEC_LD1, UNSPEC_LD1x2, UNSPEC_LD1x3, UNSPEC_LD1x4): Replace
+	these...
+	(UNSPEC_LOAD_MULTIPLE): ...with this.
+	(UNSPEC_ST1, UNSPEC_ST1x2, UNSPEC_ST1x3, UNSPEC_ST1x4): Replace
+	these...
+	(UNSPEC_STORE_MULTIPLE): ...with this.
+	* config/aarch64/arm_neon.h (vld1_f16, vld1_f32, vld1_f64,
+	vld1_p8, vld1_p16, vld1_p64, vld1_s8, vld1_s16, vld1_s32,
+	vld1_s64, vld1_u8, vld1_u16, vld1_u32, vld1_u64, vld1_u8_x3,
+	vld1_s8_x3, vld1_u16_x3, vld1_s16_x3, vld1_u32_x3, vld1_s32_x3,
+	vld1_u64_x3, vld1_s64_x3, vld1_f16_x3, vld1_f32_x3, vld1_f64_x3,
+	vld1_p8_x3, vld1_p16_x3, vld1_p64_x3, vld1q_u8_x3, vld1q_s8_x3,
+	vld1q_u16_x3, vld1q_s16_x3, vld1q_u32_x3, vld1q_s32_x3,
+	vld1q_u64_x3, vld1q_s64_x3, vld1q_f16_x3, vld1q_f32_x3,
+	vld1q_f64_x3, vld1q_p8_x3, vld1q_p16_x3, vld1q_p64_x3,
+	vld1q_f16, vld1q_f32, vld1q_f64, vld1q_p8, vld1q_p16, vld1q_p64,
+	vld1q_s8, vld1q_s16, vld1q_s32, vld1q_s64, vld1q_u8, vld1_u8_x2,
+	vld1_s8_x2, vld1_u16_x2, vld1_s16_x2, vld1_u32_x2, vld1_s32_x2,
+	vld1_u64_x2, vld1_s64_x2, vld1_f16_x2, vld1_f32_x2, vld1_f64_x2,
+	vld1_p8_x2, vld1_p16_x2, vld1_p64_x2, vld1q_u8_x2, vld1q_s8_x2,
+	vld1q_u16_x2, vld1q_s16_x2, vld1q_u32_x2, vld1q_s32_x2,
+	vld1q_u64_x2, vld1q_s64_x2, vld1q_f16_x2, vld1q_f32_x2,
+	vld1q_f64_x2, vld1q_p8_x2, vld1q_p16_x2, vld1q_p64_x2,
+	vld1q_u16, vld1q_u32, vld1q_u64, vld1_s8_x4, vld1q_s8_x4,
+	vld1_s16_x4, vld1q_s16_x4, vld1_s32_x4, vld1q_s32_x4,
+	vld1_u8_x4, vld1q_u8_x4, vld1_u16_x4, vld1q_u16_x4, vld1_u32_x4,
+	vld1q_u32_x4, vld1_f16_x4, vld1q_f16_x4, vld1_f32_x4,
+	vld1q_f32_x4, vld1_p8_x4, vld1q_p8_x4, vld1_p16_x4,
+	vld1q_p16_x4, vld1_s64_x4, vld1_u64_x4, vld1_p64_x4,
+	vld1q_s64_x4, vld1q_u64_x4, vld1q_p64_x4, vld1_f64_x4,
+	vld1q_f64_x4, vldrq_p128, vst1_f16, vst1_f32, vst1_f64, vst1_p8,
+	vst1_p16, vst1_p64, vst1_s8, vst1_s16, vst1_s32, vst1_s64,
+	vst1_u8, vst1_u16, vst1_u32, vst1_u64, vst1q_f16, vst1q_f32,
+	vst1q_f64, vst1q_p8, vst1q_p16, vst1q_p64, vst1q_s8, vst1q_s16,
+	vst1q_s32, vst1q_s64, vst1q_u8, vst1q_u16, vst1q_u32, vst1q_u64,
+	vst1_s64_x2, vst1_u64_x2, vst1_f64_x2, vst1_s8_x2, vst1_p8_x2,
+	vst1_s16_x2, vst1_p16_x2, vst1_s32_x2, vst1_u8_x2, vst1_u16_x2,
+	vst1_u32_x2, vst1_f16_x2, vst1_f32_x2, vst1_p64_x2, vst1q_s8_x2,
+	vst1q_p8_x2, vst1q_s16_x2, vst1q_p16_x2, vst1q_s32_x2,
+	vst1q_s64_x2, vst1q_u8_x2, vst1q_u16_x2, vst1q_u32_x2,
+	vst1q_u64_x2, vst1q_f16_x2, vst1q_f32_x2, vst1q_f64_x2,
+	vst1q_p64_x2, vst1_s64_x3, vst1_u64_x3, vst1_f64_x3, vst1_s8_x3,
+	vst1_p8_x3, vst1_s16_x3, vst1_p16_x3, vst1_s32_x3, vst1_u8_x3,
+	vst1_u16_x3, vst1_u32_x3, vst1_f16_x3, vst1_f32_x3, vst1_p64_x3,
+	vst1q_s8_x3, vst1q_p8_x3, vst1q_s16_x3, vst1q_p16_x3,
+	vst1q_s32_x3, vst1q_s64_x3, vst1q_u8_x3, vst1q_u16_x3,
+	vst1q_u32_x3, vst1q_u64_x3, vst1q_f16_x3, vst1q_f32_x3,
+	vst1q_f64_x3, vst1q_p64_x3, vst1_s8_x4, vst1q_s8_x4,
+	vst1_s16_x4, vst1q_s16_x4, vst1_s32_x4, vst1q_s32_x4,
+	vst1_u8_x4, vst1q_u8_x4, vst1_u16_x4, vst1q_u16_x4, vst1_u32_x4,
+	vst1q_u32_x4, vst1_f16_x4, vst1q_f16_x4, vst1_f32_x4,
+	vst1q_f32_x4, vst1_p8_x4, vst1q_p8_x4, vst1_p16_x4,
+	vst1q_p16_x4, vst1_s64_x4, vst1_u64_x4, vst1_p64_x4,
+	vst1q_s64_x4, vst1q_u64_x4, vst1q_p64_x4, vst1_f64_x4,
+	vst1q_f64_x4, vstrq_p128, vld1_bf16, vld1q_bf16, vld1_bf16_x2,
+	vld1q_bf16_x2, vld1_bf16_x3, vld1q_bf16_x3, vld1_bf16_x4,
+	vld1q_bf16_x4, vst1_bf16, vst1_bf16_x2, vst1q_bf16_x2,
+	vst1_bf16_x3, vst1q_bf16_x3, vst1_bf16_x4, vst1q_bf16_x4,
+	vst1q_bf16): Delete function definitions.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128453
+	* tree-ssa-reassoc.h (operand_entry::count): Change type to
+	HOST_WIDE_INT.
+	* tree-ssa-reassoc.cc (acceptable_pow_call): Reject exponents
+	not fitting integer_type_node.
+	(attempt_builtin_powi): Record a factor in a separate element
+	when accumulating its occurrence count would overflow.  Limit
+	the power of __builtin_powi calls to the maximum value of
+	integer_type_node.
+
+2026-11-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.opt.urls: Regenerate.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128452
+	PR tree-optimization/128454
+	* tree-ssa-reassoc.cc (acceptable_pow_call): Forward declare.
+	(stmt_is_power_of_op): Use acceptable_pow_call.
+
+2026-11-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Document and add the "SIMDs per CU",
+	"Max waves per SIMD", "VGPR granularity", "SGPRs per SIMD",
+	"SGPR granularity", "Max normal SGPRs", "Max normal VGPRs" and
+	"Max normal AVGPRs" fields to every device.
+	* config/gcn/gcn-opts.h (TARGET_VGPR_GRANULARITY): Delete.
+	(TARGET_SHARED_SGPRS): New.
+	* config/gcn/gcn.h (struct gcn_device_def): Add simds_per_cu,
+	max_waves_per_simd, vgpr_granularity, sgprs_per_simd,
+	sgpr_granularity, max_normal_sgprs, max_normal_vgprs and
+	max_normal_avgprs.
+	* config/gcn/gcn.cc (MAX_NORMAL_SGPR_COUNT): Delete.
+	(MAX_NORMAL_VGPR_COUNT): Delete.
+	(MAX_NORMAL_AVGPR_COUNT): Delete.
+	(kernel_max_sgprs): New.
+	(kernel_max_vgprs): New.
+	(kernel_max_avgprs): New.
+	(gcn_devices): Initialize the new fields.
+	(gcn_kernel_extra_sgprs): New.
+	(gcn_set_kernel_register_limits): New.
+	(gcn_option_override): Call it for -mmin-waves-per-cu > 4.
+	(gcn_conditional_register_usage): Restrict kernel entry functions to
+	the kernel register budget.  Use the device's vgpr_granularity
+	instead of TARGET_VGPR_GRANULARITY, and the device's max_normal_*
+	fields instead of MAX_NORMAL_*_COUNT.
+	(gcn_hsa_declare_function_name): Use the device's vgpr_granularity
+	and max_normal_* fields.
+	Include the special SGPRs in the metadata .sgpr_count.
+	* config/gcn/gcn.opt (mmin-waves-per-cu=): New.
+	* doc/invoke.texi (AMD GCN Options): Document -mmin-waves-per-cu.
+
+2026-11-16  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/128602
+	* ipa-param-manipulation.cc
+	(ipa_param_adjustments::build_new_function_type): Fix initialization
+	of modified.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_reference_eq): When lexically comparing
+	also compare base and clique.
+	* tree-ssa-pre.cc (prefer): Compare restrict info and pick
+	unrestricted variant.
+
+2026-11-16  Sun, Qin  <qin.sun@intel.com>
+
+	PR target/128229
+	* config/i386/i386.cc (ix86_unspec_may_trap_p): New.
+	(TARGET_UNSPEC_MAY_TRAP_P): Define.
+
+2026-11-16  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* Makefile.in: Add stdbackport headers.
+
 2026-11-15  Kael Andrew Franco  <kaelfandrew@gmail.com>
 
 	* system.h: Remove #ifndef UCHAR_MAX.

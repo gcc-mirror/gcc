@@ -1,3 +1,332 @@
+2026-11-16  Sendao Yan  <yansendao@126.com>
+
+	* gcc.dg/uninit-fp-negate.c: New test.
+
+2026-11-16  Sendao Yan  <yansendao@126.com>
+
+	* gcc.dg/tree-ssa/pr128102.c: New test.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107144
+	* gfortran.dg/pr107144.f90: New test.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/52774
+	* gfortran.dg/asan/pr52774.f90: New test.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128736
+	* gfortran.dg/pr128736.f90: New test.
+
+2026-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128664
+	* gfortran.dg/bind_c_assumed_rank.f90: New test.
+
+2026-11-16  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/debug-file-catalogue-off.cob: New test.
+	* cobol.dg/debug-file-catalogue.cob: New test.
+	* cobol.dg/debug-perform-sites-off.cob: New test.
+	* cobol.dg/debug-perform-sites.cob: New test.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vminmax_imm.c: New test.
+
+2026-11-16  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128739
+	* gcc.dg/vect/vect-early-break_151-pr128739.c: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128751
+	* gcc.target/i386/pr128751.c: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128670
+	* gcc.target/i386/pr128670.c: New test.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vld1_dup.c: New test.
+	* gcc.target/aarch64/neon/vld2_dup.c: New test.
+	* gcc.target/aarch64/neon/vld3_dup.c: New test.
+	* gcc.target/aarch64/neon/vld4_dup.c: New test.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/vld2_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld2q_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld3q_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vld4q_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst2q_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst3q_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4_lane_u8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_bf16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_f64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_p8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_s8_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u16_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u32_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u64_indices_1.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst4q_lane_u8_indices_1.c:
+	Replace with ...
+	gcc.target/aarch64/advsimd-intrinsics/vld_lane_indices.c,
+	gcc.target/aarch64/advsimd-intrinsics/vst_lane_indices.c:
+	... these, and update expected error messages.
+	* gcc.target/aarch64/neon/arm_neon_test.h (TEST_LOAD_LANE,
+	TEST_LOAD_LANE_TUPLE, TEST_STORE_LANE, TEST_STORE_LANE_TUPLE):
+	New macros.
+	* gcc.target/aarch64/neon/vld1_lane.c: New test.
+	* gcc.target/aarch64/neon/vld2_lane.c: New test.
+	* gcc.target/aarch64/neon/vld3_lane.c: New test.
+	* gcc.target/aarch64/neon/vld4_lane.c: New test.
+	* gcc.target/aarch64/neon/vldap1_lane.c: New test.
+	* gcc.target/aarch64/neon/vst1_lane.c: New test.
+	* gcc.target/aarch64/neon/vst2_lane.c: New test.
+	* gcc.target/aarch64/neon/vst3_lane.c: New test.
+	* gcc.target/aarch64/neon/vst4_lane.c: New test.
+	* gcc.target/aarch64/neon/vstl1_lane.c: New test.
+	* gcc.target/aarch64/advsimd-intrinsics/vld_lane_indices.c: New file.
+	* gcc.target/aarch64/advsimd-intrinsics/vst_lane_indices.c: New file.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.dg/vect/vect-early-break_39.c: Mark as `xfail`.
+	* gcc.target/aarch64/pr99873_1.c: Update expected assembly (GCC
+	can now vectorize the loop tail as well as the loop body).
+	* gcc.target/aarch64/vld2-1.c: Update expected number of fwprop
+	iterations.
+	* gcc.target/aarch64/neon/vld2.c: New test.
+	* gcc.target/aarch64/neon/vld3.c: New test.
+	* gcc.target/aarch64/neon/vld4.c: New test.
+	* gcc.target/aarch64/neon/vst2.c: New test.
+	* gcc.target/aarch64/neon/vst3.c: New test.
+	* gcc.target/aarch64/neon/vst4.c: New test.
+
+2026-11-16  Karl Meakin  <karl.meakin@arm.com>
+
+	* g++.target/aarch64/pr94052.C: Replace call to
+	`__builtin_aarch64_st1v4si`.
+	* gcc.target/aarch64/advsimd-intrinsics/ignored_return_1.c:
+	Replace call to `__builtin_aarch64_ld1v16qi`.
+	* gcc.target/aarch64/neon/arm_neon_test.h (TEST_STORE): New
+	macro.
+	* gcc.target/aarch64/neon/vld1.c: New test.
+	* gcc.target/aarch64/neon/vldr.c: New test.
+	* gcc.target/aarch64/neon/vst1.c: New test.
+	* gcc.target/aarch64/neon/vstr.c: New test.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128453
+	* gcc.dg/pr128453-1.c: New testcase.
+	* gcc.dg/pr128453-2.c: Likewise.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128452
+	PR tree-optimization/128454
+	* gcc.dg/tree-ssa/reassoc-56.c: New testcase.
+	* gcc.dg/torture/pr128452.c: Likewise.
+
+2026-11-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/ivopts-reg-budget-1.c: Update expectation.
+
+2026-11-16  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/128602
+	* gcc.dg/ipa/pr128602.c: New test.
+
+2026-11-16  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/ssa-pre-restrict.c: New testcase.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/allocate_with_source_14.f03: Update __builtin_free
+	count.
+	* gfortran.dg/class_19.f03: Likewise.
+	* gfortran.dg/class_allocate_16.f90: Likewise.
+	* gfortran.dg/finalize_33.f90: Likewise.
+	* gfortran.dg/pdt_15.f03: Update __builtin_free and .n.data
+	counts.
+	* gfortran.dg/pdt_26.f03: Update __builtin_free and
+	__builtin_malloc counts.
+	* gfortran.dg/pdt_46.f03: Likewise.
+	* gfortran.dg/pdt_50.f03: Likewise.
+	* gfortran.dg/pdt_bug9.f90: Move the REAL(16) cases to
+	pdt_bug9a.f90.  Check that LEN components are freed.
+	* gfortran.dg/class_assign_5.f90: New test.
+	* gfortran.dg/pdt_bug9a.f90: New test.
+
+2026-11-16  Sun, Qin  <qin.sun@intel.com>
+
+	PR target/128229
+	* gcc.target/i386/pr128229-1.c: New test.
+	* gcc.target/i386/pr128229-2.c: Ditto.
+	* gcc.target/i386/pr128229-3.c: Ditto.
+	* gcc.target/i386/pr128229-4.c: Ditto.
+	* gcc.target/i386/pr128229-5.c: Ditto.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127541
+	PR fortran/53653
+	* gfortran.dg/der_io_5.f90: Expect no errors for output of an array
+	constructor of polymorphic values.
+	* gfortran.dg/pr127541.f90: New test.
+	* gfortran.dg/pr127541_2.f90: New test.
+
 2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/aggr36.adb: New test.

@@ -1,3 +1,28 @@
+2026-11-16  Robert Dubner  <rdubner@symas.com>
+
+	* cobol1.cc (cobol_langhook_init): Keep STOP RUN processing out of
+	the "cold partition" until PR/127011 is resolved.
+	* genapi.cc (parser_statement_begin): Establish detailed information
+	for creating debugging information.
+	(debug_perform_section): Return section name when not the default
+	section.
+	(save_debug_perform_site): Keep a list of PERFORM sites.
+	(finish_debug_perform_sites): Finish creating the list of PERFORM
+	sites.
+	(create_debug_perform_sites): Creates detailed list of debugging
+	information for PERFORM sites.
+	(create_debug_file_catalogue): Creates catalog information for debug
+	display of cobol file data.
+	(save_debug_file_connector): Likewise.
+	(internal_perform_through): Establish PERFORM return location so
+	that GDB can target it with "jump" and "finish".
+	(enter_program_common): Call creators of PERFORM and FILE debugging
+	data.
+	(parser_end_program): Finalize PERFORM site data.
+	(parser_division): Create debug information only when not -g0.
+	(parser_file_add): Save debugging information.
+	* gengen.h (struct gg_function_t):
+
 2026-11-04  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (establish_using): A run-time check for a NULL pointer

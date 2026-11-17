@@ -1,3 +1,70 @@
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107144
+	* trans-decl.cc (gfc_trans_deferred_vars): Do not set up the result
+	length of a CHARACTER dummy function.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/52774
+	* trans-expr.cc (rhs_may_redefine_lhs): New function.
+	(gfc_trans_assignment_1): Evaluate an rhs that may redefine the lhs
+	before the lhs components are saved for deallocation.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128736
+	* trans-array.cc (gfc_alloc_allocatable_for_assignment): Take the
+	element size of a variable that is not polymorphic from the declared
+	type of a polymorphic expression.
+
+2026-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128664
+	* trans-expr.cc (gfc_conv_structure): When a pointer to a temporary
+	structure constructor is requested, get address of the temporary.
+
+2026-11-16  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans.h (gfc_conv_subref_array_arg): Remove argument formal_ptr.
+	* trans-expr.cc (gfc_conv_subref_array_arg): Likewise.  Remove
+	code depending on the argument being true.
+	(gfc_conv_gfc_desc_to_cfi_desc, gfc_conv_procedure_call): Update
+	callers.
+	* trans-array.cc (gfc_conv_array_parameter): Likewise.
+	* trans-io.cc (set_internal_unit, gfc_trans_transfer): Likewise.
+	* trans-stmt.cc (trans_associate_var,
+	forall_make_variable_temp): Likewise.
+
+2026-11-16  Mikael Morin  <morin-mikael@orange.fr>
+
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc,
+	gfc_conv_procedure_call): Explicitly pass false as `formal_ptr'
+	argument to gfc_conv_subref_array_arg.
+	* trans-stmt.cc (trans_associate_var): Likewise.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82173
+	* class.cc (pdt_len_component, pdt_len_storage_comp): New
+	functions.
+	(comp_is_finalizable): Treat LEN-dependent PDT components as
+	finalizable.
+	(finalize_component): Deallocate them.
+	(generate_finalization_wrapper): Generate the wrapper for a PDT
+	with LEN-dependent components.
+	* trans-expr.cc (gfc_trans_assignment_1): Free the components of
+	a structure constructor temporary after a polymorphic
+	assignment.
+
+2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127541
+	PR fortran/53653
+	* array.cc (check_element_type): Without a type-spec, take the
+	declared type of a CLASS value, and require the same declared type
+	of all values.
+
 2026-11-15  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/128542

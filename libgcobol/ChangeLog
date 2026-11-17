@@ -1,3 +1,25 @@
+2026-11-16  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.in: Restore generated whitespace.
+
+2026-11-16  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Add some tests to the build.
+	* Makefile.in: Regenerated.
+	* libgcobol.cc (struct perform_invocation_cleanup): struct for
+	run-time debugging information.
+	(static_assert): Check sizes and signatures.
+	(class perform_stack_update): Support for GDB logical PERFORM
+	backtrace.
+	(__gg__pseudo_return_push): Likewise.
+	(__gg__pseudo_return_pop): Likewise.
+	(__gg__debug_pseudo_return_bookmark): Likewise.
+	(__gg__pseudo_return_flush): Likewise.
+	(__gg__debug_perform_unwind): Likewise.
+	(__gg__allocate): module_name_stack moved elsewhere.
+	* libgcobol.map: New functions added.
+	* perform-stack.h: New file.
+
 2026-11-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

@@ -1,3 +1,10 @@
+2026-11-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* plugin/plugin-gcn.c (struct isa_occupancy): New.
+	(isa_occupancy): New.
+	(kernel_waves_per_cu): New.
+	(run_kernel): Use kernel_waves_per_cu to limit threads/workers.
+
 2026-11-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* omp.h.in: Add omp::allocator::user_mem template.
