@@ -1,3 +1,36 @@
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* config/i386/i386-d.cc (ix86_d_target_versions):
+	Define GNU_CET only when CF_BRANCH or CF_RETURN is set.
+	(ix86_d_handle_target_cf_protection): Return only
+	the CF_BRANCH and CF_RETURN bits.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* config/i386/i386.md (*tls_local_dynamic_base_32_gnu): Output
+	xor of the result register when no local-dynamic TLS symbol
+	is left.
+	(*tls_local_dynamic_base_64_<mode>): Ditto.
+	(*tls_local_dynamic_base_64_largepic): Ditto.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/125932
+	* config/i386/i386-features.cc
+	(scalar_chain::analyze_register_chain): Abort the chain
+	when a non-convertible def is a jump insn.
+
 2026-11-14  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
