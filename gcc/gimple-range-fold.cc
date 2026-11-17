@@ -1951,9 +1951,9 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
   // if (a_2 < b_5)
   tree ssa1 = gimple_range_ssa_p (handler.operand1 ());
   tree ssa2 = gimple_range_ssa_p (handler.operand2 ());
-  value_range r1,r2;
   if (ssa1 && ssa2)
     {
+      value_range r1,r2;
       r1.set_varying (TREE_TYPE (ssa1));
       r2.set_varying (TREE_TYPE (ssa2));
       if (e0)
@@ -1994,12 +1994,13 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
       value_range r (TREE_TYPE (name));
       if (ssa1 && ssa2)
 	{
-	  r1.set_varying (TREE_TYPE (ssa1));
-	  r2.set_varying (TREE_TYPE (ssa2));
 	  if (e0 && gori ()->edge_range_p (r, e0, name, *m_query)
 	      && !r.undefined_p ()
 	      && !r.varying_p ())
 	    {
+	      value_range r1,r2;
+	      r1.set_varying (TREE_TYPE (ssa1));
+	      r2.set_varying (TREE_TYPE (ssa2));
 	      if (!gori ()->edge_range_p (r1, e0, ssa1, *m_query)
 		  || r1.undefined_p ())
 		r1.set_varying (TREE_TYPE (ssa1));
@@ -2014,6 +2015,9 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
 	      && !r.undefined_p ()
 	      && !r.varying_p ())
 	    {
+	      value_range r1,r2;
+	      r1.set_varying (TREE_TYPE (ssa1));
+	      r2.set_varying (TREE_TYPE (ssa2));
 	      if (!gori ()->edge_range_p (r1, e1, ssa1, *m_query)
 		  || r1.undefined_p ())
 		r1.set_varying (TREE_TYPE (ssa1));
