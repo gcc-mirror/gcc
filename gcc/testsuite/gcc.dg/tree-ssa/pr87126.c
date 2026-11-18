@@ -20,6 +20,6 @@ L2:
 
 /* The load of d could be eliminated if we'd value-number the
    irreducible region in RPO of the reducible result.  Likewise
-   a redundant store could be removed.  */
-/* { dg-final { scan-tree-dump-times "d = 0;" 1 "fre1" { xfail *-*-* } } } */
+   a redundant store can be removed.  */
+/* { dg-final { scan-tree-dump-times "d = 0;" 1 "fre1" } } */
 /* { dg-final { scan-tree-dump-not " = d;" "fre1" { xfail *-*-* } } } */
