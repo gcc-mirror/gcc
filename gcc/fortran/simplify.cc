@@ -7412,7 +7412,9 @@ gfc_simplify_is_contiguous (gfc_expr *array)
   if (gfc_is_simply_contiguous (array, false, true))
     return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 1);
 
-  if (gfc_is_not_contiguous (array))
+  /* F2023 8.5.7 does not make a section with a vector subscript
+     contiguous, so say it is not.  */
+  if (gfc_is_not_contiguous (array) || gfc_has_vector_subscript (array))
     return gfc_get_logical_expr (gfc_default_logical_kind, &array->where, 0);
 
   return NULL;
