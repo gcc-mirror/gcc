@@ -14339,6 +14339,9 @@ generate_component_assignments (gfc_code **code, gfc_namespace *ns)
 		    tmp_ns = (*code)->expr1->symtree->n.sym->ns;
 		  t1 = get_temp_from_expr ((*code)->expr1, tmp_ns);
 		  t1->symtree->n.sym->attr.artificial = 1;
+		  /* The temporary is a copy of the lhs, not a pointer.  */
+		  if (t1->rank == 0)
+		    t1->symtree->n.sym->attr.pointer = 0;
 		  temp_code = build_assignment (EXEC_ASSIGN,
 						t1, (*code)->expr1,
 				NULL, NULL, (*code)->loc);
