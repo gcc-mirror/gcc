@@ -4109,8 +4109,10 @@ eval_reflect_constant (location_t loc, const constexpr_ctx *ctx, tree type,
       || CP_TYPE_CONST_P (type)
       || TYPE_REF_P (type))
     {
-      error_at (loc, "%qT must be a cv-unqualified structural type that is "
-		"not a reference type", type);
+      if (!cxx_constexpr_quiet_p (ctx))
+	error_at (loc, "%qT must be a cv-unqualified structural type that is "
+		  "not a reference type", type);
+      *non_constant_p = true;
       return error_mark_node;
     }
   expr = convert_reflect_constant_arg (type, convert_from_reference (expr));
@@ -4134,7 +4136,9 @@ eval_reflect_object (location_t loc, const constexpr_ctx *ctx, tree type,
   if (eval_is_object_type (loc, ctx, type, non_constant_p, fun)
       != boolean_true_node)
     {
-      error_at (loc, "%qT must be an object type", TREE_TYPE (type));
+      if (!cxx_constexpr_quiet_p (ctx))
+	error_at (loc, "%qT must be an object type", type);
+      *non_constant_p = true;
       return error_mark_node;
     }
   type = cp_build_reference_type (type, /*rval=*/false);
@@ -4161,7 +4165,9 @@ eval_reflect_function (location_t loc, const constexpr_ctx *ctx, tree type,
 {
   if (eval_is_function_type (type) != boolean_true_node)
     {
-      error_at (loc, "%qT must be a function type", TREE_TYPE (type));
+      if (!cxx_constexpr_quiet_p (ctx))
+	error_at (loc, "%qT must be a function type", type);
+      *non_constant_p = true;
       return error_mark_node;
     }
   type = cp_build_reference_type (type, /*rval=*/false);
