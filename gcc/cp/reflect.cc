@@ -1134,6 +1134,7 @@ get_meta_exception_object (location_t loc, const constexpr_ctx *ctx,
   if (TREE_CODE (type) != TYPE_DECL || !CLASS_TYPE_P (TREE_TYPE (type)))
     {
       error_at (loc, "couldn%'t throw %qs", "std::meta::exception");
+      *non_constant_p = true;
       return NULL_TREE;
     }
   type = TREE_TYPE (type);
