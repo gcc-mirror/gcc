@@ -42,7 +42,7 @@ RISCV_PROFILE("rva20u64",     "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
 /* RVA22U contains the 'i,m,a,f,d,c,zicsr,zihintpause,zba,zbb,zbs,zicntr,
    zihpm,ziccif,ziccrse,ziccamoa, zicclsm,zic64b,za64rs,zicbom,zicbop,zicboz,
    zfhmin,zkt' as mandatory extensions.  */
-RISCV_PROFILE("rva22u64",     "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+RISCV_PROFILE("rva22u64",     "rv64imafdc_zicsr_zicntr_zihpm_ziccif_ziccrse_ziccamoa"
 			     "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
 			     "_zicboz_zfhmin_zkt")
 
