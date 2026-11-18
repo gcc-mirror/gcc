@@ -606,7 +606,7 @@ unstring_fixed( const cblc_referlet_t *id2,
 
   // There are complexities because of figurative constants, including the
   // LOW-VALUE figurative constant, which precludes the use of string
-  // operations that would be confused by embedded NUL characters.  Dammit.
+  // operations that would be confused by embedded NUL characters.
 
   // For each delimiter, there is an identifier-4 receiver that must be
   // resolved.  Each might have an identifier-5 delimiter, and each might have
@@ -751,6 +751,15 @@ unstring_fixed( const cblc_referlet_t *id2,
         {
         continue;
         }
+      if(   best_delimiter < ndelimiteds
+         && str_id2.size() < delimiters[best_delimiter].size() )
+         {
+         // When there are multiple possible matches, the longest delimiter
+         // takes precedence.  This one is shorter than the current winner, so
+         // there is no point in even looking at it.
+         continue;
+         }
+
       size_t nfound = left + finder_t::find(
                                      str_id1.data() + left * stride_id1,
                                      (right - left) * stride_id1,
