@@ -1132,6 +1132,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
       /* Add IF (fini_coarray).  */
       if (comp->attr.codimension
+	  || pdt_len_storage_comp (comp)
 	  || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
 	      && CLASS_DATA (comp)->attr.codimension))
 	{
@@ -1765,9 +1766,10 @@ finalizer_insert_packed_call (gfc_code *block, gfc_finalizer *fini,
      _final(assumed-rank array, stride, skip_corarray)
    where the array has to be contiguous (except of the lowest dimension). The
    stride (in bytes) is used to allow different sizes for ancestor types by
-   skipping over the additionally added components in the scalarizer. If
-   "fini_coarray" is false, coarray components are not finalized to allow for
-   the correct semantic with intrinsic assignment.  */
+   skipping over the additionally added components in the scalarizer.
+   "fini_coarray" is true when the object is deallocated; otherwise coarray
+   components and LEN-dependent PDT components, which outlive finalization
+   (F2023:7.5.6.3), are left alone.  */
 
 static void
 generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,

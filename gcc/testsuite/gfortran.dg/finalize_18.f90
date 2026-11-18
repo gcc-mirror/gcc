@@ -39,7 +39,7 @@ end
 ! { dg-final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void . restrict\\) y.aa;" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "desc.\[0-9\]+.data = \\(void . restrict\\) y.cc._data;" 1 "original" } }
 
-! { dg-final { scan-tree-dump-times "__final_m_T \\(&desc.\[0-9\]+, 0, 1\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "__final_m_T \\(&desc.\[0-9\]+, 0, 1\\);" 2 "original" } }
 ! { dg-final { scan-tree-dump-times "__final_m_T \\(&y.bb, 0, 1\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump "y.cc._vptr->_final \\(&desc.\[0-9\]+, (\\(integer\\(kind=8\\)\\) )?y.cc._vptr->_size, 1\\);" "original" } }
 ! { dg-final { scan-tree-dump "y.dd._vptr->_final \\(&y.dd._data, (\\(integer\\(kind=8\\)\\) )?y.dd._vptr->_size, 1\\);" "original" } }

@@ -1362,6 +1362,8 @@ gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
       cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 			    tmp, fold_convert (TREE_TYPE (tmp),
 						 null_pointer_node));
+      /* The component is deallocated after it is finalized.  */
+      fini_coarray = true;
     }
   else
     cond = logical_true_node;
@@ -1407,11 +1409,12 @@ gfc_add_comp_finalizer_call (stmtblock_t *block, tree decl, gfc_component *comp,
 
 
 /* Add a call to the finalizer, using the passed *expr. Returns
-   true when a finalizer call has been inserted.  */
+   true when a finalizer call has been inserted.  FINI_COARRAY is true
+   when EXPR is about to be deallocated.  */
 
 bool
 gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
-			tree class_container)
+			tree class_container, bool fini_coarray)
 {
   tree tmp;
   gfc_ref *ref;
@@ -1482,7 +1485,8 @@ gfc_add_finalizer_call (stmtblock_t *block, gfc_expr *expr2,
 
   tmp = build_call_expr_loc (input_location, final_se.expr, 3,
 			     desc_se.expr, size_se.expr,
-			     boolean_false_node);
+			     fini_coarray ? boolean_true_node
+					  : boolean_false_node);
 
   gfc_add_expr_to_block (&tmp_block, tmp);
 
@@ -1958,7 +1962,7 @@ gfc_deallocate_with_status (tree pointer, tree status, tree errmsg, tree errlen,
   gfc_start_block (&non_null);
   if (add_when_allocated)
     gfc_add_expr_to_block (&non_null, add_when_allocated);
-  gfc_add_finalizer_call (&non_null, expr, class_container);
+  gfc_add_finalizer_call (&non_null, expr, class_container, true);
   if (coarray_dealloc_mode == GFC_CAF_COARRAY_NOCOARRAY
       || flag_coarray != GFC_FCOARRAY_LIB)
     {
@@ -2135,7 +2139,8 @@ gfc_deallocate_scalar_with_status (tree pointer, tree status, tree label_finish,
   gfc_start_block (&non_null);
 
   /* Free allocatable components.  */
-  finalizable = gfc_add_finalizer_call (&non_null, expr, class_container);
+  finalizable = gfc_add_finalizer_call (&non_null, expr, class_container,
+					true);
   if (!finalizable && ts.type == BT_DERIVED && ts.u.derived->attr.alloc_comp)
     {
       int caf_mode = coarray
