@@ -17,6 +17,11 @@ void test_predefined_alloc()
   #pragma omp allocate(a) allocator(Alloc)
 }
 
+/* These cases are disallowed for static lifetime variables.  */
+template<> void test_predefined_alloc<omp_cgroup_mem_alloc>() {}
+template<> void test_predefined_alloc<omp_pteam_mem_alloc>() {}
+template<> void test_predefined_alloc<omp_thread_mem_alloc>() {}
+
 /* Because this is written to work as far back as c++11 it is a little bit
    crusty.  It is metaprogrammed to automatically test the full ranges
    specified above.  */
