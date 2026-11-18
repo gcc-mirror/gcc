@@ -1330,10 +1330,11 @@ class modifiable_tracker
   constexpr_global_ctx *global;
   hash_set<tree> *previous_set;
 public:
-  modifiable_tracker (constexpr_global_ctx *g)
+  modifiable_tracker (constexpr_global_ctx *g, bool push = true)
     : global (g), previous_set (g->modifiable)
   {
-    global->modifiable = &set;
+    if (push)
+      global->modifiable = &set;
   }
   ~modifiable_tracker ()
   {
@@ -2629,8 +2630,12 @@ is_within_lifetime (location_t loc, const constexpr_ctx *ctx, tree t, tree fun,
 	      inform (DECL_SOURCE_LOCATION (obj), "declared here");
 	    }
 	  else
-	    error_at (loc, "%qE on %qE from outside current evaluation "
-		      "is not a constant expression", DECL_NAME (fun), obj);
+	    {
+	      error_at (loc, "%qE on %qE from outside current evaluation "
+			"is not a constant expression", DECL_NAME (fun), obj);
+	      if (DECL_P (obj) && DECL_SOURCE_LOCATION (obj))
+		inform (DECL_SOURCE_LOCATION (obj), "from here");
+	    }
 	}
       *non_constant_p = true;
       return t;
@@ -8677,6 +8682,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
 	      else
 		error ("modification of %qE from outside current evaluation "
 		       "is not a constant expression", object);
+	      if (DECL_P (object) && DECL_SOURCE_LOCATION (object))
+		inform (DECL_SOURCE_LOCATION (object), "from here");
 	    }
 	}
       *non_constant_p = true;
@@ -11279,8 +11286,17 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    tree jmp_target = NULL_TREE;
 	    constexpr_ctx new_ctx = *ctx;
 	    new_ctx.quiet = true;
-	    /* Avoid modification of existing values.  */
-	    modifiable_tracker ms (new_ctx.global);
+	    /* The standard says a tentative evaluation uses the ignore
+	       semantic; we go ahead and check conditions during evaluation to
+	       avoid needing to do a second evaluation of anything involving
+	       contracts, but we need to avoid any modifications to objects
+	       from outside the predicate.  If we run into any such
+	       modifications, we set contract_condition_non_const; if the
+	       evaluation is otherwise constant, we'll try a non-tentative
+	       evaluation in _outermost_, which might succeed.
+
+	       During non-tentative evaluation, modification is OK.  */
+	    modifiable_tracker ms (new_ctx.global, /*push*/ctx->quiet);
 	    eval = (cxx_eval_constant_expression
 		    (&new_ctx, cond, vc_prvalue, &ctrct_non_const_p,
 		     &ctrct_overflow_p, &jmp_target));
@@ -11556,7 +11572,11 @@ check_for_failed_contracts (const constexpr_ctx *ctx)
     {
       emit_diagnostic (kind, loc, 0, "contract condition is not constant");
       if (error)
-	cxx_constant_value (cond);
+	{
+	  bool nc = false, ov = false; tree jmp = NULL_TREE;
+	  cxx_eval_constant_expression (ctx, cond, vc_prvalue, &nc, &ov, &jmp);
+	  gcc_checking_assert (nc||ov||jmp);
+	}
       return error;
     }
 
@@ -11923,17 +11943,24 @@ cxx_eval_outermost_constant_expr (tree t, bool allow_non_constant,
   if (!non_constant_p && allow_non_constant
       && global_ctx.contract_statement)
     {
-      /* Repeat evaluation to get cx_call_context for the diagnostic.  */
-      cxx_eval_outermost_constant_expr (t, /*allow*/false, strict,
-					manifestly_const_eval,
-					constexpr_dtor, object);
-      if (ctx.manifestly_const_eval != mce_true)
-	/* Treat it as non-constant so the violation is also detectable at
-	   runtime (if the compile succeeds because we're observing).  */
+      /* Repeat evaluation to get cx_call_context for the diagnostic or
+	 perform any modifications we didn't allow the first time.  */
+      r = cxx_eval_outermost_constant_expr (t, /*allow*/false, strict,
+					    manifestly_const_eval,
+					    constexpr_dtor, object);
+      bool term = contract_terminating_p (global_ctx.contract_statement);
+      if (!term && ctx.manifestly_const_eval != mce_true)
+	/* We're observing and not MCE, treat the evaluation as non-constant so
+	   we observe it again at runtime.  */
 	non_constant_p = true;
-      else if (contract_terminating_p (global_ctx.contract_statement))
-	/* Substitution failure (see discussion above).  */
+      else if (term && !TREE_CONSTANT (r))
+	/* Substitution failure (see discussion above).  We check TREE_CONSTANT
+	   to handle the case where in the trial evaluation we set
+	   contract_condition_non_const due to modifications we needed to
+	   ignore, but on reevaluation the contract is satisfied.  */
 	return error_mark_node;
+      else
+	return r;
     }
 
   /* Unshare the result.  */
