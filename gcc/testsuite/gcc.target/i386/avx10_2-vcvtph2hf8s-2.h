@@ -31,7 +31,7 @@ TEST (void)
   UNION_TYPE (AVX512F_LEN_HALF, i_b) res1, res2, res3; 
   UNION_TYPE (AVX512F_LEN, h) src;
   MASK_TYPE mask = MASK_VALUE;
-  unsigned char res_ref[SIZE];
+  unsigned char res_ref[SIZE_DST];
 
   sign = 1;
   for (i = 0; i < SIZE; i++)
