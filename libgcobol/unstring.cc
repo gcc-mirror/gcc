@@ -751,15 +751,6 @@ unstring_fixed( const cblc_referlet_t *id2,
         {
         continue;
         }
-      if(   best_delimiter < ndelimiteds
-         && str_id2.size() < delimiters[best_delimiter].size() )
-         {
-         // When there are multiple possible matches, the longest delimiter
-         // takes precedence.  This one is shorter than the current winner, so
-         // there is no point in even looking at it.
-         continue;
-         }
-
       size_t nfound = left + finder_t::find(
                                      str_id1.data() + left * stride_id1,
                                      (right - left) * stride_id1,
@@ -769,10 +760,10 @@ unstring_fixed( const cblc_referlet_t *id2,
       if( nfound != right )
         {
         // We found a delimiter
-        if( nfound > best_leftmost )
+        if( nfound >= best_leftmost )
           {
-          // This delimiter lives to the right of the best one we found so far.
-          // Ignore it, and proceed to the next delimiter.
+          // Keep the first listed delimiter when matches start at the same
+          // position, and ignore matches to its right.
           continue;
           }
         // This delimiter is the leftmost we've seen so far:
