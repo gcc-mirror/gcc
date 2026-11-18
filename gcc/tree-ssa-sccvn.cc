@@ -6021,7 +6021,8 @@ visit_nary_op (tree lhs, gassign *stmt)
 	}
       break;
     case TRUNC_DIV_EXPR:
-      if (TYPE_UNSIGNED (type))
+      /* (-a) / b == -(a / b) does not hold for INT_MIN.  */
+      if (!TYPE_OVERFLOW_UNDEFINED (type))
 	break;
       /* Fallthru.  */
     case RDIV_EXPR:
@@ -6038,9 +6039,22 @@ visit_nary_op (tree lhs, gassign *stmt)
 	    {
 	      unsigned j = i == 0 ? 1 : 0;
 	      tree ops[2];
-	      gimple_match_op match_op (gimple_match_cond::UNCOND,
-					NEGATE_EXPR, type, rhs[i]);
-	      ops[i] = vn_nary_build_or_lookup_1 (&match_op, false, true);
+	      if (!ANY_INTEGRAL_TYPE_P (type)
+		  || TYPE_OVERFLOW_WRAPS (type))
+		{
+		  gimple_match_op match_op (gimple_match_cond::UNCOND,
+					    NEGATE_EXPR, type, rhs[i]);
+		  ops[i] = vn_nary_build_or_lookup_1 (&match_op, false, true);
+		}
+	      else
+		{
+		  /* Do not simplify as if -rhs[i] were in the IL, instead
+		     see if such an operation is available.  */
+		  ops[i] = vn_nary_op_lookup_pieces (1, NEGATE_EXPR, type,
+						     &rhs[i], NULL);
+		  if (ops[i] && !vn_nary_result_avail_or_insertable_p (ops[i]))
+		    ops[i] = NULL_TREE;
+		}
 	      ops[j] = rhs[j];
 	      if (ops[i]
 		  && (ops[0] = vn_nary_op_lookup_pieces (2, code,
