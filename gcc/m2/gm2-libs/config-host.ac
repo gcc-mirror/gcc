@@ -1,31 +1,31 @@
-# 
-# config-host.in a configure sub script for GNU M2.
-# 
+#
+# config-host.ac a configure sub script for GNU M2.
+#
 # Copyright (C) 2005-2026 Free Software Foundation, Inc.
-# Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
-# 
+# Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+#
 # This file is part of GNU Modula-2.
-# 
+#
 # GNU Modula-2 is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # GNU Modula-2 is distributed in the hope that it will be useful, but
 # WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # General Public License for more details.
-# 
+#
 # Under Section 7 of GPL version 3, you are granted additional
 # permissions described in the GCC Runtime Library Exception, version
 # 3.1, as published by the Free Software Foundation.
-# 
+#
 # You should have received a copy of the GNU General Public License and
 # a copy of the GCC Runtime Library Exception along with this program;
 # see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
-AC_INIT(ASCII.def, 1.9.5, gm2@nongnu.org)
+AC_INIT(ASCII.def, 1.9.5)
 AC_CONFIG_HEADERS([gm2-libs-host.h:gm2-libs-host.h.in])
 
 # Checks for programs.
@@ -33,10 +33,9 @@ AC_CONFIG_HEADERS([gm2-libs-host.h:gm2-libs-host.h.in])
 # Checks for libraries.
 
 # Checks for header files.
-AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADER([math.h],
-	       [AC_DEFINE([HAVE_MATH_H], [1], [have math.h])])
+                [AC_DEFINE([HAVE_MATH_H], [1], [have math.h])])
 
 AC_CHECK_HEADERS([limits.h stddef.h string.h strings.h stdlib.h \
 		  time.h \
@@ -102,16 +101,19 @@ AC_CHECK_FUNCS(unlink)
 AC_CHECK_FUNCS(wait)
 AC_CHECK_FUNCS(write)
 
-
 dnl
 dnl  now check for specific types
 dnl
 
 AC_CHECK_SIZEOF([long])
 
+AC_LANG([C])
+
 dnl this routine has been adopted from the GNU emacs20 distrubution
 AC_MSG_CHECKING(for struct timeval)
-AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
+
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[
+#ifdef TIME_WITH_SYS_TIME
 #include <sys/time.h>
 #include <time.h>
 #else
@@ -120,17 +122,16 @@ AC_TRY_COMPILE([#ifdef TIME_WITH_SYS_TIME
 #else
 #include <time.h>
 #endif
-#endif], [static struct timeval x; x.tv_sec = x.tv_usec;],
+#endif
+
+static struct timeval x; x.tv_sec = x.tv_usec;
+]],
   [AC_MSG_RESULT(yes)
    HAVE_TIMEVAL=yes
    AC_DEFINE([HAVE_TIMEVAL], [1], [struct timeval exists])],
   [AC_MSG_RESULT(no)
-   HAVE_TIMEVAL=no]
-   AC_DEFINE([HAVE_TIMEVAL], [1], [struct timeval exists]))
-
-
-# AC_CHECK_TYPES(time_t)
-
+   HAVE_TIMEVAL=no
+   AC_DEFINE([HAVE_TIMEVAL], [1], [struct timeval exists])])])
 
 dnl
 dnl  now check for presence of libraries and functions within libraries.

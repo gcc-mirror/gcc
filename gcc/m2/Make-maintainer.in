@@ -626,7 +626,7 @@ BUILD-PGE-O = $(PPG-INTERFACE-C:%.c=m2/gm2-pge-boot/$(SRC_PREFIX)%.o) \
               $(PGE-SRC:%.mod=m2/gm2-pge-boot/$(SRC_PREFIX)%.o)
 
 BUILD-BOOT-PGE-H = $(BUILD-BOOT-H) $(PGE-DEF:%.def=m2/gm2-pge-boot/$(SRC_PREFIX)%.h)
-PGE-MC-OPTIONS = --gcc-config-system 
+PGE-MC-OPTIONS = --gcc-config-system
 
 m2/gm2-auto/pge.mod: m2/pg$(exeext)
 	-test -d m2/gm2-auto || $(mkinstalldirs) m2/gm2-auto
@@ -1126,9 +1126,9 @@ m2/mc-boot-gen/$(SRC_PREFIX)%.cc: m2/mc-obj/%.mod
 mc-bootstrap: mc-clean m2/boot-bin/mc$(exeext)
 
 gm2.maintainer-reconfigure: force
-	autoconf $(srcdir)/m2/gm2-libs/config-host.in > $(srcdir)/m2/gm2-libs/config-host
-	( cd $(srcdir)/m2/gm2-libs ; autoheader config-host.in )
-	( cd $(srcdir)/m2 ; autoconf configure.in > configure )
+	autoconf -o $(srcdir)/m2/gm2-libs/config-host $(srcdir)/m2/gm2-libs/config-host.ac
+	( cd $(srcdir)/m2/gm2-libs ; autoheader config-host.ac )
+	( cd $(srcdir)/m2 ; autoconf -o configure configure.ac )
 
 gm2.maintainer-help: force
 	@echo "make knows about:"
