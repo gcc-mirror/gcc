@@ -1545,7 +1545,11 @@ costs::record_type_sizes (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
       || TREE_CODE (type) == BOOLEAN_TYPE
       || !TYPE_SIZE (type)
       || !tree_fits_uhwi_p (TYPE_SIZE (type)))
-    return;
+    {
+      if (!m_largest_type)
+	m_largest_type = char_type_node;
+      return;
+    }
 
   unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
   if (!m_largest_type || size > tree_to_uhwi (TYPE_SIZE (m_largest_type)))
