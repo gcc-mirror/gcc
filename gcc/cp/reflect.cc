@@ -6168,10 +6168,14 @@ eval_data_member_spec (location_t loc, const constexpr_ctx *ctx,
 	  if (len >= 64)
 	    XDELETEVEC (namep);
 	  if (!cpp_valid_identifier (parse_in, ostr.text))
-	    return throw_exception (loc, ctx,
-				    "name is not a valid identifier",
-				    fun, non_constant_p, jump_target);
+	    {
+	      free (const_cast <unsigned char *> (ostr.text));
+	      return throw_exception (loc, ctx,
+				      "name is not a valid identifier",
+				      fun, non_constant_p, jump_target);
+	    }
 	  args[i] = get_identifier ((const char *) ostr.text);
+	  free (const_cast <unsigned char *> (ostr.text));
 	  switch (get_identifier_kind (args[i]))
 	    {
 	    case cik_keyword:
@@ -7619,7 +7623,7 @@ eval_exception__S_exception_cvt_tofrom_utf8 (location_t loc,
      of non-UTF8 SOURCE_CHARSET.  First translate from {exec charset,UTF-8} to
      SOURCE_CHARSET...  */
   cpp_string istr, ostr;
-  istr.len = TREE_STRING_LENGTH (str) + 1;
+  istr.len = TREE_STRING_LENGTH (str);
   istr.text = (const unsigned char *) TREE_STRING_POINTER (str);
   const char *name;
   if (!cpp_translate_string (parse_in, &istr, &ostr,
