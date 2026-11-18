@@ -1144,13 +1144,6 @@ will be from each other instruction, and therefore whether the usual
 instructions, or the longer sequences, must be used for each branch.
 The code for this pass is located in @file{final.cc}.
 
-@item Register-to-stack conversion
-
-Conversion from usage of some hard registers to usage of a register
-stack may be done at this point.  Currently, this is supported only
-for the floating-point registers of the Intel 80387 coprocessor.  The
-code for this pass is located in @file{reg-stack.cc}.
-
 @item Final
 
 This pass outputs the assembler code for the function.  The source files

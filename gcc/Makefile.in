@@ -1707,7 +1707,6 @@ OBJS = \
 	real.o \
 	realmpfr.o \
 	recog.o \
-	reg-stack.o \
 	regcprop.o \
 	reginfo.o \
 	regrename.o \
@@ -3158,8 +3157,7 @@ GTFILES = $(CPPLIB_H) $(srcdir)/input.h $(srcdir)/coretypes.h \
   $(srcdir)/gcse.cc $(srcdir)/godump.cc \
   $(srcdir)/lists.cc $(srcdir)/optabs-libfuncs.cc \
   $(srcdir)/profile.cc $(srcdir)/mcf.cc \
-  $(srcdir)/reg-stack.cc $(srcdir)/cfgrtl.cc \
-  $(srcdir)/stor-layout.cc \
+  $(srcdir)/cfgrtl.cc $(srcdir)/stor-layout.cc \
   $(srcdir)/stringpool.cc $(srcdir)/tree.cc $(srcdir)/varasm.cc \
   $(srcdir)/gimple.h \
   $(srcdir)/gimple-ssa.h \

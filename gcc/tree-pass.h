@@ -647,8 +647,6 @@ extern rtl_opt_pass *make_pass_leaf_regs (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_split_before_sched2 (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_compare_elim_after_reload (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_sched2 (gcc::context *ctxt);
-extern rtl_opt_pass *make_pass_stack_regs (gcc::context *ctxt);
-extern rtl_opt_pass *make_pass_stack_regs_run (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_df_finish (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_compute_alignments (gcc::context *ctxt);
 extern rtl_opt_pass *make_pass_duplicate_computed_gotos (gcc::context *ctxt);

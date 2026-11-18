@@ -2241,7 +2241,7 @@ low_pressure_loop_node_p (ira_loop_tree_node_t node)
 #ifdef STACK_REGS
 /* Return TRUE if LOOP has a complex enter or exit edge.  We don't
    form a region from such loop if the target use stack register
-   because reg-stack.cc cannot deal with such edges.  */
+   because the register stack pass cannot deal with such edges.  */
 static bool
 loop_with_complex_edge_p (class loop *loop)
 {

@@ -148,9 +148,9 @@
 
 	asm ("fsincos" : "=t" (cos), "=u" (sin) : "0" (inp));
 
-   This asm takes two inputs, which are popped by the fyl2xp1 opcode,
-   and replaces them with one output.  The user must code the "st(1)"
-   clobber for reg-stack.cc to know that fyl2xp1 pops both inputs.
+   This asm takes two inputs, which are popped by the fyl2xp1 opcode, and
+   replaces them with one output.  The user must code the "st(1)" clobber
+   for the register stack pass to know that fyl2xp1 pops both inputs.
 
 	asm ("fyl2xp1" : "=t" (result) : "0" (x), "u" (y) : "st(1)");
 
@@ -164,6 +164,7 @@
 #include "rtl.h"
 #include "tree.h"
 #include "df.h"
+#include "tm_p.h"
 #include "insn-config.h"
 #include "memmodel.h"
 #include "regs.h"
@@ -180,8 +181,6 @@
 #include "rtl-iter.h"
 #include "function-abi.h"
 
-#ifdef STACK_REGS
-
 /* We use this array to cache info about insns, because otherwise we
    spend too much time in stack_regs_mentioned_p.
 
@@ -192,7 +191,7 @@ static vec<char> stack_regs_mentioned_data;
 
 #define REG_STACK_SIZE (LAST_STACK_REG - FIRST_STACK_REG + 1)
 
-int regstack_completed = 0;
+bool regstack_completed = false;
 
 /* This is the basic stack record.  TOP is an index into REG[] such
    that REG[TOP] is the top of stack.  If TOP is -1 the stack is empty.
@@ -3458,66 +3457,22 @@ reg_to_stack (void)
   free_aux_for_blocks ();
   return true;
 }
-#endif /* STACK_REGS */
 
-namespace {
-
-const pass_data pass_data_stack_regs =
-{
-  RTL_PASS, /* type */
-  "*stack_regs", /* name */
-  OPTGROUP_NONE, /* optinfo_flags */
-  TV_REG_STACK, /* tv_id */
-  0, /* properties_required */
-  0, /* properties_provided */
-  0, /* properties_destroyed */
-  0, /* todo_flags_start */
-  0, /* todo_flags_finish */
-};
-
-class pass_stack_regs : public rtl_opt_pass
-{
-public:
-  pass_stack_regs (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_stack_regs, ctxt)
-  {}
-
-  /* opt_pass methods: */
-  bool gate (function *) final override
-    {
-#ifdef STACK_REGS
-      return true;
-#else
-      return false;
-#endif
-    }
-
-}; // class pass_stack_regs
-
-} // anon namespace
-
-rtl_opt_pass *
-make_pass_stack_regs (gcc::context *ctxt)
-{
-  return new pass_stack_regs (ctxt);
-}
-
 /* Convert register usage from flat register file usage to a stack
    register file.  */
 static unsigned int
 rest_of_handle_stack_regs (void)
 {
-#ifdef STACK_REGS
   if (reg_to_stack ())
     df_insn_rescan_all ();
-  regstack_completed = 1;
-#endif
+  regstack_completed = true;
+
   return 0;
 }
 
 namespace {
 
-const pass_data pass_data_stack_regs_run =
+const pass_data pass_data_stack_regs =
 {
   RTL_PASS, /* type */
   "stack", /* name */
@@ -3530,11 +3485,11 @@ const pass_data pass_data_stack_regs_run =
   TODO_df_finish, /* todo_flags_finish */
 };
 
-class pass_stack_regs_run : public rtl_opt_pass
+class pass_stack_regs : public rtl_opt_pass
 {
 public:
-  pass_stack_regs_run (gcc::context *ctxt)
-    : rtl_opt_pass (pass_data_stack_regs_run, ctxt)
+  pass_stack_regs (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_stack_regs, ctxt)
   {}
 
   /* opt_pass methods: */
@@ -3543,12 +3498,12 @@ public:
       return rest_of_handle_stack_regs ();
     }
 
-}; // class pass_stack_regs_run
+}; // class pass_stack_regs
 
 } // anon namespace
 
 rtl_opt_pass *
-make_pass_stack_regs_run (gcc::context *ctxt)
+make_pass_stack_regs (gcc::context *ctxt)
 {
-  return new pass_stack_regs_run (ctxt);
+  return new pass_stack_regs (ctxt);
 }

@@ -4575,7 +4575,7 @@ rest_of_clean_state (void)
   post_ra_split_completed = false;
   epilogue_completed = 0;
 #ifdef STACK_REGS
-  regstack_completed = 0;
+  regstack_completed = false;
 #endif
 
   /* Clear out the insn_length contents now that they are no

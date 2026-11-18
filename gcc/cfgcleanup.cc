@@ -1180,8 +1180,8 @@ old_insns_match_p (int mode ATTRIBUTE_UNUSED, rtx_insn *i1, rtx_insn *i2)
 
   /* If this is a CALL_INSN, compare register usage information.
      If we don't check this on stack register machines, the two
-     CALL_INSNs might be merged leaving reg-stack.cc with mismatching
-     numbers of stack registers in the same basic block.
+     CALL_INSNs might be merged leaving the register stack pass with
+     mismatching numbers of stack registers in the same basic block.
      If we don't check this on machines with delay slots, a delay slot may
      be filled that clobbers a parameter expected by the subroutine.
 

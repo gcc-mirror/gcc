@@ -54,6 +54,10 @@ i386-jit.o: $(srcdir)/config/i386/i386-jit.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+i386-reg-stack.o: $(srcdir)/config/i386/i386-reg-stack.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 i386-options.o: $(srcdir)/config/i386/i386-options.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)

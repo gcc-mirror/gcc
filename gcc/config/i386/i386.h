@@ -967,9 +967,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 /* Standard register usage.  */
 
-/* This processor has special stack-like registers.  See reg-stack.cc
-   for details.  */
-
+/* This processor has special stack-like registers.  */
 #define STACK_REGS
 
 #define IS_STACK_MODE(MODE)				\

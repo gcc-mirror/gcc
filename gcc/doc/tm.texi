@@ -2400,18 +2400,10 @@ stack.
 Currently, GCC can only handle one group of stack-like registers, and
 they must be consecutively numbered.  Furthermore, the existing
 support for stack-like registers is specific to the 80387 floating
-point coprocessor.  If you have a new architecture that uses
-stack-like registers, you will need to do substantial work on
-@file{reg-stack.cc} and write your machine description to cooperate
-with it, as well as defining these macros.
+point coprocessor.
 
 @defmac STACK_REGS
 Define this if the machine has any stack-like registers.
-@end defmac
-
-@defmac STACK_REG_COVER_CLASS
-This is a cover class containing the stack registers.  Define this if
-the machine has any stack-like registers.
 @end defmac
 
 @defmac FIRST_STACK_REG

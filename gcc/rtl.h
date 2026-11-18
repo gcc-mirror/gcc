@@ -4330,9 +4330,8 @@ extern bool lra_in_progress;
 #define can_create_pseudo_p() (!reload_in_progress && !reload_completed)
 
 #ifdef STACK_REGS
-/* Nonzero after end of regstack pass.
-   Set to 1 or 0 by reg-stack.cc.  */
-extern int regstack_completed;
+/* True after end of regstack pass.  */
+extern bool regstack_completed;
 #endif
 
 /* If this is nonzero, we do not bother generating VOLATILE

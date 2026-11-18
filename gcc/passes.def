@@ -547,11 +547,6 @@ along with GCC; see the file COPYING3.  If not see
 	  NEXT_PASS (pass_leaf_regs);
 	  NEXT_PASS (pass_split_before_sched2);
 	  NEXT_PASS (pass_sched2);
-	  NEXT_PASS (pass_stack_regs);
-	  PUSH_INSERT_PASSES_WITHIN (pass_stack_regs)
-	      NEXT_PASS (pass_split_before_regstack);
-	      NEXT_PASS (pass_stack_regs_run);
-	  POP_INSERT_PASSES ()
       POP_INSERT_PASSES ()
       NEXT_PASS (pass_late_thread_prologue_and_epilogue);
       /* No target-independent code motion is allowed beyond this point,
