@@ -256,17 +256,17 @@ shared_memory_init (shared_memory_act *mem, size_t size)
 #ifdef HAVE_MMAP
   mem->glbl.base
     = mmap (base_ptr, size, PROT_READ | PROT_WRITE, MAP_SHARED, mem->shm_fd, 0);
+  if (mem->glbl.base == MAP_FAILED)
+    {
+      perror ("mmap failed");
+      exit (1);
+    }
   if (base_ptr && mem->glbl.base != base_ptr)
     {
       /* The supervisor will start us again.  */
       close (mem->shm_fd);
       free (local);
       exit (210);
-    }
-  else if (!base_ptr && !mem->glbl.base)
-    {
-      perror ("mmap failed");
-      exit (1);
     }
 #ifdef MADV_DONTDUMP
   /* Keep the unlinked object, which counts as anonymous shared memory, out
