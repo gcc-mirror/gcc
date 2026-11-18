@@ -1887,6 +1887,18 @@ scalar_manager<ConcreteValueType>::get_named_test_scalar (std::string name)
   return result;
 }
 
+template
+const scalar<integer> &
+scalar_manager<integer>::get_named_test_scalar (std::string name);
+
+template
+const scalar<concrete_bit_offset> &
+scalar_manager<concrete_bit_offset>::get_named_test_scalar (std::string name);
+
+template
+const scalar<concrete_byte_offset> &
+scalar_manager<concrete_byte_offset>::get_named_test_scalar (std::string name);
+
 #endif /* #if CHECKING_P */
 
 template<>
