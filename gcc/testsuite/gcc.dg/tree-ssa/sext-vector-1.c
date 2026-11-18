@@ -37,4 +37,5 @@ vnu (v4si x)
   return (x ^ m) - m;
 }
 
-/* { dg-final { scan-tree-dump-times " \\^ " 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \\^ \\{ 128, \[^\n\]*\\}" 3 "optimized" } } */
+/* { dg-final { scan-tree-dump " \\^ \\{ 64, \[^\n\]*\\}" "optimized" } } */
