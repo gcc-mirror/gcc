@@ -156,6 +156,7 @@ static unsigned int xtensa_function_arg_boundary (machine_mode,
 static void xtensa_init_builtins (void);
 static tree xtensa_fold_builtin (tree, int, tree *, bool);
 static rtx xtensa_expand_builtin (tree, rtx, rtx, machine_mode, int);
+static tree xtensa_builtin_decl (unsigned, bool);
 static void xtensa_va_start (tree, rtx);
 static bool xtensa_frame_pointer_required (void);
 static rtx xtensa_static_chain (const_tree, bool);
@@ -287,6 +288,8 @@ static tree xtensa_handle_force_l32_attribute (tree *, tree, tree, int, bool *);
 #define TARGET_FOLD_BUILTIN xtensa_fold_builtin
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN xtensa_expand_builtin
+#undef  TARGET_BUILTIN_DECL
+#define TARGET_BUILTIN_DECL xtensa_builtin_decl
 
 #undef  TARGET_PREFERRED_RELOAD_CLASS
 #define TARGET_PREFERRED_RELOAD_CLASS xtensa_preferred_reload_class
@@ -4410,6 +4413,7 @@ enum xtensa_builtin
   XTENSA_BUILTIN_max
 };
 
+static GTY(()) tree xtensa_builtin_decls[XTENSA_BUILTIN_max];
 
 static void
 xtensa_init_builtins (void)
@@ -4423,6 +4427,7 @@ xtensa_init_builtins (void)
   decl = add_builtin_function ("__builtin_umulsidi3", ftype,
 			       XTENSA_BUILTIN_UMULSIDI3, BUILT_IN_MD,
 			       "__umulsidi3", NULL_TREE);
+  xtensa_builtin_decls[XTENSA_BUILTIN_UMULSIDI3] = decl;
   TREE_NOTHROW (decl) = 1;
   TREE_READONLY (decl) = 1;
 }
@@ -4477,6 +4482,14 @@ xtensa_expand_builtin (tree exp, rtx target,
       internal_error ("bad builtin code");
     }
   return NULL_RTX;
+}
+
+static tree
+xtensa_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
+{
+  if (code >= XTENSA_BUILTIN_max)
+    return error_mark_node;
+  return xtensa_builtin_decls[code];
 }
 
 /* Worker function for TARGET_PREFERRED_RELOAD_CLASS.  */
