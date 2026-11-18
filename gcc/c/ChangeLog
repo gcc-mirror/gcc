@@ -1,3 +1,9 @@
+2026-11-17  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR c/128789
+	* c-typeck.cc (c_type_canonical): Copy the qualifiers of the
+	replaced type directly instead of using qualify_type.
+
 2026-11-13  Christopher Bazley  <chris.bazley@arm.com>
 
 	PR c/128606

@@ -1,3 +1,163 @@
+2026-11-17  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR c/128789
+	* gcc.target/i386/addr-space-7.c: New test.
+
+2026-11-17  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vcage.c: New test.
+	* gcc.target/aarch64/neon/vcagt.c: New test.
+	* gcc.target/aarch64/neon/vcale.c: New test.
+	* gcc.target/aarch64/neon/vcalt.c: New test.
+	* gcc.target/aarch64/neon/vceq.c: New test.
+	* gcc.target/aarch64/neon/vceqz.c: New test.
+	* gcc.target/aarch64/neon/vcge.c: New test.
+	* gcc.target/aarch64/neon/vcgez.c: New test.
+	* gcc.target/aarch64/neon/vcgt.c: New test.
+	* gcc.target/aarch64/neon/vcgtz.c: New test.
+	* gcc.target/aarch64/neon/vcle.c: New test.
+	* gcc.target/aarch64/neon/vclez.c: New test.
+	* gcc.target/aarch64/neon/vclt.c: New test.
+	* gcc.target/aarch64/neon/vcltz.c: New test.
+	* gcc.target/aarch64/neon/vtst.c: New test.
+	* gcc.target/aarch64/simd/facgt_constpool_1.c: Add a test for
+	the same function but with the constant input on the LHS.
+	* gcc.target/aarch64/simd/vcage_f64.c: Wrap `vcage_f64` in a
+	`noipa` function so that the abs is not removed.
+	* gcc.target/aarch64/simd/vcagt_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcale_f64.c: Likewise.
+	* gcc.target/aarch64/simd/vcalt_f64.c: Likewise.
+
+2026-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/128508
+	* g++.dg/ext/is_invocable8.C: New test.
+
+2026-11-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/40598
+	PR fortran/128776
+	* gfortran.dg/vect/fast-math-rnflow-trs2a2.f90: Adjust vect count;
+	zeroing is now done by memset.
+	* gfortran.dg/array_memset_4.f90: New test.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR middle-end/121105
+	* gcc.target/aarch64/sve/pr121105_1.c: New test.
+	* gcc.target/aarch64/sve/pr121105_2.c: New test.
+	* g++.target/aarch64/sve/pr121105.C: New test.
+	* gcc.target/riscv/rvv/base/pr121105.c: New test.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/tree-ssa/sext-xor-1.c: New test.
+	* gcc.dg/tree-ssa/sext-xor-2.c: New test.
+	* gcc.dg/tree-ssa/sext-cond-1.c: New test.
+	* gcc.dg/tree-ssa/sext-cond-2.c: New test.
+	* gcc.dg/tree-ssa/sext-bitint-1.c: New test.
+	* gcc.dg/tree-ssa/sext-vector-1.c: New test.
+	* gcc.dg/torture/sext-idiom-1.c: New test.
+	* gcc.target/arm/sext-idiom-1.c: New test.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/callee_save_4.c: New test.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR middle-end/97473
+	PR middle-end/97473
+	* gcc.dg/pr97473.c: New test.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/cmpelim_mult_uses_2.c: New test.
+	* gcc.target/arm/cmpelim_mult_uses_1.c: New test.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zba-shNadd-13.c: New test.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbb-rol-ror-11.c: New test.
+	* gcc.target/riscv/zbs-masked-count-1.c: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128588
+	* gcc.dg/torture/pr128588.c: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128580
+	* gcc.dg/torture/pr128580.c: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128424
+	* gcc.dg/torture/pr128424.c: New test.
+	* gcc.dg/tree-ssa/loop-unswitch-trap-1.c: New test.
+	* gcc.dg/tree-ssa/loop-unswitch-trap-2.c: New test.
+
+2026-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128637
+	PR tree-optimization/128688
+	* gcc.dg/torture/pr128637-1.c: New testcase.
+	* gcc.dg/torture/pr128637-2.c: Likewise.
+	* gcc.dg/torture/pr128688.c: Likewise.
+
+2026-11-17  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR target/127771
+	* gcc.target/aarch64/sve/acle/general/pr127771.c: New test.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128738
+	* gcc.dg/torture/pr128738.c: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128147
+	* g++.dg/torture/pr128147.C: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128556
+	* gcc.target/aarch64/simd/pr128556.c: New test.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128284
+	* gcc.target/aarch64/pr128284.c: New test.
+
+2026-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128578
+	* gcc.dg/builtin-clmulg-1.c: New test.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/pack64-zba.c: New test.
+
+2026-11-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/gcc-dg.exp (scan-symbol-common): Return -2 for a
+	skipped test, and -1 for a tool failure.  Treat missing output
+	file as a tool failure instead of failing with a special message.
+	(scan-symbol): Adjust accordingly.  When calling scan-symbol-common,
+	use eval, to avoid folding arguments into one string.  Include
+	only the symbol in the pass/fail message.
+	(scan-symbol-not): Ditto.
+
+2026-11-17  Hans-Peter Nilsson  <hp@axis.com>
+
+	* lib/gcc-dg.exp (scan-symbol-common): To catch the output of nm,
+	use remote_exec host, not open/read/close.
+
 2026-11-16  Sendao Yan  <yansendao@126.com>
 
 	* gcc.dg/uninit-fp-negate.c: New test.

@@ -1,3 +1,22 @@
+2026-11-17  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* diagnostic-manager.cc (diagnostic_manager::annotate_exploded_path):
+	Make idx unsigned and print it with %u.
+	* engine.cc (leak_ploc_fixer_for_epath::fixup_for_epath): Print
+	location_t with %wx.  Add missing "x" to "0x" prefix.
+	(interprocedural_return::try_to_rewind_data_flow): Remove unused
+	logger.  Use fn_result.
+	(strongly_connected_components::dump): Print index with
+	HOST_SIZE_T_PRINT_UNSIGNED.
+	* supergraph.cc (supergraph::populate_for_basic_block): Print
+	location_t with %wx.
+	(supernode::dump_dot): Likewise.
+	(superedge::dump_label_to_pp): Likewise.
+	* supergraph-fixup-locations.cc (location_fixer::consider_node):
+	Likewise.
+	* supergraph-sorting.cc (supergraph::reorder_nodes_and_ids): Print
+	size_t with %zu.
+
 2026-11-15  David Malcolm  <dmalcolm@redhat.com>
 
 	* svalue.cc (svalue_from_bit_vector::svalue_from_bit_vector):

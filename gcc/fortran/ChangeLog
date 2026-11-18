@@ -1,3 +1,17 @@
+2026-11-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/40598
+	PR fortran/128776
+	* expr.cc (gfc_is_simply_contiguous): An extent of one can
+	also be contiguous.
+	* trans-expr.cc (gfc_trans_zero_assign): Modify to also deal with
+	array slices.
+	(copyable_slice_p): Reallocatable expressions can be fine; check
+	is in gfc_trans_assignment. Also return false for expressions
+	which have a corank.
+	(gfc_trans_assignment): Use copyable_slice_p instead of
+	copyable_array_p for gfc_trans_zero_assign.
+
 2026-11-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/107144

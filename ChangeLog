@@ -1,3 +1,10 @@
+2026-11-17  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl (POSTSTAGE1_CXX_EXPORT): Add
+	SYSROOT_CFLAGS_FOR_TARGET.
+	(GCC_FOR_TARGET): Likewise.
+
 2026-11-16  Jiahao Xu  <xujiahao@loongson.cn>
 
 	* MAINTAINERS: Regenerate.

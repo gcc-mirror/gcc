@@ -1,3 +1,342 @@
+2026-11-17  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(all_float_and_signed_no_fp16, d_float_and_signed, d_signed,
+	neon_eq): New type arrays.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_types_binop_uss_qualifiers, TYPES_BINOP_USS): Delete
+	now-unused qualifiers.
+	* config/aarch64/aarch64-neon-builtins-base.cc (enum class
+	compare_kind): New enum.
+	(class gimple_compare_base): New class.
+	* config/aarch64/aarch64-neon-builtins-base.def (vcages, vcaged,
+	vcage, vcageq, vcagts, vcagtd, vcagt, vcagtq, vcales, vcaled,
+	vcale, vcaleq, vcalts, vcaltd, vcalt, vcaltq, vceqs, vceqd,
+	vceq, vceqq, vceqzs, vceqzd, vceqz, vceqzq, vcges, vcged, vcge,
+	vcgeq, vcgezs, vcgezd, vcgez, vcgezq, vcgts, vcgtd, vcgt, vcgtq,
+	vcgtzs, vcgtzd, vcgtz, vcgtzq, vcles, vcled, vcle, vcleq,
+	vclezs, vclezd, vclez, vclezq, vclts, vcltd, vclt, vcltq,
+	vcltzs, vcltzd, vcltz, vcltzq, vtstd, vtst, vtstq): New function
+	groups.
+	* config/aarch64/aarch64-simd.md (vec_cmp<mode><v_int_equiv>):
+	Use `VHSDF` as mode iterator, so that the expander covers FP16
+	comparisons as well.
+	(aarch64_fac<optab><mode><vczle><vczbe>_const): New insn
+	pattern.
+	* config/aarch64/aarch64-protos.h
+	(nonnegative_vector_constant_p): New function declaration.
+	* config/aarch64/aarch64.cc (nonnegative_vector_constant_p): New
+	function.
+	* config/aarch64/predicates.md (nonnegative_constant_operand):
+	New predicate.
+	* config/aarch64/arm_neon.h (vtst_p8, vtst_p16, vtst_p64,
+	vtstq_p8, vtstq_p16, vtstq_p64, vaeseq_u8, vaesdq_u8,
+	vaesmcq_u8, vaesimcq_u8, vmull_p64, vmull_high_p64, vcage_f64,
+	vcages_f32, vcage_f32, vcageq_f32, vcaged_f64, vcageq_f64,
+	vcagts_f32, vcagt_f32, vcagt_f64, vcagtq_f32, vcagtd_f64,
+	vcagtq_f64, vcale_f32, vcale_f64, vcaled_f64, vcales_f32,
+	vcaleq_f32, vcaleq_f64, vcalt_f32, vcalt_f64, vcaltd_f64,
+	vcaltq_f32, vcaltq_f64, vcalts_f32, vceq_f32, vceq_f64, vceq_p8,
+	vceq_p64, vceq_s8, vceq_s16, vceq_s32, vceq_s64, vceq_u8,
+	vceq_u16, vceq_u32, vceq_u64, vceqq_f32, vceqq_f64, vceqq_p8,
+	vceqq_s8, vceqq_s16, vceqq_s32, vceqq_s64, vceqq_u8, vceqq_u16,
+	vceqq_u32, vceqq_u64, vceqq_p64, vceqs_f32, vceqd_s64,
+	vceqd_u64, vceqd_f64, vceqz_f32, vceqz_f64, vceqz_p8, vceqz_s8,
+	vceqz_s16, vceqz_s32, vceqz_s64, vceqz_u8, vceqz_u16, vceqz_u32,
+	vceqz_u64, vceqz_p64, vceqzq_f32, vceqzq_f64, vceqzq_p8,
+	vceqzq_s8, vceqzq_s16, vceqzq_s32, vceqzq_s64, vceqzq_u8,
+	vceqzq_u16, vceqzq_u32, vceqzq_u64, vceqzq_p64, vceqzs_f32,
+	vceqzd_s64, vceqzd_u64, vceqzd_f64, vcge_f32, vcge_f64, vcge_s8,
+	vcge_s16, vcge_s32, vcge_s64, vcge_u8, vcge_u16, vcge_u32,
+	vcge_u64, vcgeq_f32, vcgeq_f64, vcgeq_s8, vcgeq_s16, vcgeq_s32,
+	vcgeq_s64, vcgeq_u8, vcgeq_u16, vcgeq_u32, vcgeq_u64, vcges_f32,
+	vcged_s64, vcged_u64, vcged_f64, vcgez_f32, vcgez_f64, vcgez_s8,
+	vcgez_s16, vcgez_s32, vcgez_s64, vcgezq_f32, vcgezq_f64,
+	vcgezq_s8, vcgezq_s16, vcgezq_s32, vcgezq_s64, vcgezs_f32,
+	vcgezd_s64, vcgezd_f64, vcgt_f32, vcgt_f64, vcgt_s8, vcgt_s16,
+	vcgt_s32, vcgt_s64, vcgt_u8, vcgt_u16, vcgt_u32, vcgt_u64,
+	vcgtq_f32, vcgtq_f64, vcgtq_s8, vcgtq_s16, vcgtq_s32, vcgtq_s64,
+	vcgtq_u8, vcgtq_u16, vcgtq_u32, vcgtq_u64, vcgts_f32, vcgtd_s64,
+	vcgtd_u64, vcgtd_f64, vcgtz_f32, vcgtz_f64, vcgtz_s8, vcgtz_s16,
+	vcgtz_s32, vcgtz_s64, vcgtzq_f32, vcgtzq_f64, vcgtzq_s8,
+	vcgtzq_s16, vcgtzq_s32, vcgtzq_s64, vcgtzs_f32, vcgtzd_s64,
+	vcgtzd_f64, vcle_f32, vcle_f64, vcle_s8, vcle_s16, vcle_s32,
+	vcle_s64, vcle_u8, vcle_u16, vcle_u32, vcle_u64, vcleq_f32,
+	vcleq_f64, vcleq_s8, vcleq_s16, vcleq_s32, vcleq_s64, vcleq_u8,
+	vcleq_u16, vcleq_u32, vcleq_u64, vcles_f32, vcled_s64,
+	vcled_u64, vcled_f64, vclez_f32, vclez_f64, vclez_s8, vclez_s16,
+	vclez_s32, vclez_s64, vclezq_f32, vclezq_f64, vclezq_s8,
+	vclezq_s16, vclezq_s32, vclezq_s64, vclezs_f32, vclezd_s64,
+	vclezd_f64, vclt_f32, vclt_f64, vclt_s8, vclt_s16, vclt_s32,
+	vclt_s64, vclt_u8, vclt_u16, vclt_u32, vclt_u64, vcltq_f32,
+	vcltq_f64, vcltq_s8, vcltq_s16, vcltq_s32, vcltq_s64, vcltq_u8,
+	vcltq_u16, vcltq_u32, vcltq_u64, vclts_f32, vcltd_s64,
+	vcltd_u64, vcltd_f64, vcltz_f32, vcltz_f64, vcltz_s8, vcltz_s16,
+	vcltz_s32, vcltz_s64, vcltzq_f32, vcltzq_f64, vcltzq_s8,
+	vcltzq_s16, vcltzq_s32, vcltzq_s64, vcltzs_f32, vcltzd_s64,
+	vcltzd_f64, vtst_s8, vtst_s16, vtst_s32, vtst_s64, vtst_u8,
+	vtst_u16, vtst_u32, vtst_u64, vtstq_s8, vtstq_s16, vtstq_s32,
+	vtstq_s64, vtstq_u8, vtstq_u16, vtstq_u32, vtstq_u64, vtstd_s64,
+	vtstd_u64, vceqz_f16, vceqzq_f16, vcgez_f16, vcgezq_f16,
+	vcgtz_f16, vcgtzq_f16, vclez_f16, vclezq_f16, vcltz_f16,
+	vcltzq_f16, vcage_f16, vcageq_f16, vcagt_f16, vcagtq_f16,
+	vcale_f16, vcaleq_f16, vcalt_f16, vcaltq_f16, vceq_f16,
+	vceqq_f16, vcge_f16, vcgeq_f16, vcgt_f16, vcgtq_f16, vcle_f16,
+	vcleq_f16, vclt_f16, vcltq_f16): Delete function definitions.
+	* config/aarch64/arm_fp16.h (vceqzh_f16, vcgezh_f16, vcgtzh_f16,
+	vclezh_f16, vcltzh_f16, vcageh_f16, vcagth_f16, vcaleh_f16,
+	vcalth_f16, vceqh_f16, vcgeh_f16, vcgth_f16, vcleh_f16,
+	vclth_f16): Use normal C comparisons instead of now-deleted
+	`__builtin_aarch64` functions
+	* config/aarch64/aarch64-simd-builtins.def (cmeq, cmge, cmgt,
+	cmle, cmlt, faclt, facle, facgt, facge): Delete now-unused
+	builtins.
+
+2026-11-17  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* text-art/style.cc (style::color::print_sgr): Include the color
+	selector in the pp_printf format.
+	* text-art/table.cc (selftest::test_spans_3): Disable -Wformat-diag.
+
+2026-11-17  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* diagnostics/sarif-sink.cc: Print content_length with %zu.
+	* diagnostics/digraphs-to-dot-from-cfg.cc: Disable -Wformat-diag.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR middle-end/121105
+	* expr.cc (store_constructor): Assert that SIZE is nonnegative.
+	Drop the then-redundant known_size_p check.
+	(expand_constructor): Pass the poly_int64 size of the type to
+	store_constructor.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR middle-end/121105
+	* config/aarch64/aarch64-sve.md (mov<mode>) <SVE_STRUCT_BI>: Add a
+	Dz alternative.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* match.pd (`(x ^ CST) - CST`): New pattern.
+	(`(signed:N) x < 0 ? (T) x - CST : (T) x`): New pattern.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* ira-color.cc (calculate_saved_regs_cost): New function, split
+	out from...
+	(assign_hard_reg): ...here.
+	(improve_allocation): Use it instead of the memory move costs.
+
+2026-11-17  Dominic P  <gcc@gcc.dp11.uk>
+
+	* compare-elim.cc (MAX_CMP_USE): Remove.
+	(struct comparison): Make uses an auto_vec.  Remove n_uses.
+	(find_flags_uses_in_insn): Do not limit the number of uses.
+	(maybe_select_cc_mode): Use uses.length ().
+	(find_comparison_dom_walker::before_dom_children): Allocate
+	comparisons with new.
+	(execute_compare_elim_after_reload): Free them with delete in a
+	range-based for, clearing each slot.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md: Add a split for shift-add followed by
+	word rotations.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*<bitmanip_optab><X:mode>3_mask)
+	(*<bitmanip_optab>3_mask_si)
+	(*<bitmanip_optab>si3_sext_mask): Allow SImode counts.
+	(*<bit_optab><X:mode>_mask, *bset<X:mode>_1_mask)
+	(*bclr<X:mode>_mask): Use an independent GPR count mode and
+	explicit X mode names.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/md.texi (cmpstrn@var{m}, cmpstr@var{m}): Allow reads of more
+	than one byte that cannot fault.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* optabs.cc (prepare_cmp_insn): Use only cmpmem for BLKmode
+	comparisons.  Try the next mode if the expander fails.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128588
+	* gimple-if-to-switch.cc (find_conditions): Reject an IOR of
+	anti-ranges.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128580
+	* tree-chrec.cc (chrec_fold_multiply_poly_poly): Multiply
+	CHREC_RIGHT by the invariant chrec in the nested-loop cases.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128424
+	* tree-ssa-loop-unswitch.cc (find_unswitching_predicates_for_bb):
+	Reject conditions that may trap unless they are in the loop
+	header.  Do not hoist them out of enclosing loops.
+
+2026-11-17  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (is_a_helper <const gimple_statement_wce *>): New
+	specialization.
+	(gimple_call_nonnull_result_p, gimple_call_nonnull_arg): Accept
+	const gcall *.
+	(gimple_assign_copy_p, gimple_assign_ssa_name_copy_p,
+	gimple_assign_unary_nop_p, gimple_assign_rhs_could_trap_p): Accept
+	const gimple *.
+	(gimple_copy): Accept const gimple *.
+	(gimple_move_vops): Accept const gimple * for old_stmt.
+	(gimple_call_copy_skip_args): Accept const gcall * and
+	const_bitmap.
+	(gimple_compare_field_offset): Accept const_tree parameters.
+	(dump_decl_set): Accept const_bitmap.
+	(nonfreeing_call_p, nonbarrier_call_p): Accept const gimple *.
+	(infer_nonnull_range_by_attribute): Accept const gimple *.
+	(gimple_inexpensive_call_p): Accept const gcall *.
+	(gimple_or_expr_nonartificial_location): Accept const gimple *.
+	(gimple_statement_structure, gimple_has_substatements): Accept
+	const gimple *.
+	(gimple_visited_p, gimple_plf, gimple_references_memory_p): Accept
+	const gimple *.
+	(gimple_ops): Add const overload returning const tree *.  Implement
+	the non-const overload using it.
+	(gimple_op): Avoid const_cast by using the const overload of
+	gimple_ops.
+	(gimple_assign_rhs3_ptr): Add gassign * overload.
+	(gimple_call_from_thunk_p, gimple_call_expected_throw_p,
+	gimple_call_by_descriptor_p): Accept const gcall *.
+	(gimple_call_alloca_for_var_p): Accept const gcall * and
+	const gimple *.
+	(gimple_call_copy_flags): Accept const gcall * for orig_call.
+	(gimple_wce_cleanup): Accept const gimple *.
+	(gimple_phi_arg_location_from_edge): Accept const gphi *.
+	(gimple_debug_bind_has_value_p): Accept const gimple *.
+	(gimple_do_not_emit_location_p): Accept const gimple *.
+	* gimple.cc (gimple_call_nonnull_result_p, gimple_call_nonnull_arg):
+	Update parameter types to const.
+	(gimple_assign_copy_p, gimple_assign_ssa_name_copy_p,
+	gimple_assign_unary_nop_p, gimple_assign_rhs_could_trap_p):
+	Likewise.
+	(gimple_copy): Likewise.  Use as_a <const ...> to access the
+	source statement.
+	(gimple_move_vops): Update parameter types to const.
+	(gimple_call_copy_skip_args): Likewise.
+	(gimple_compare_field_offset): Likewise.
+	(dump_decl_set): Likewise.
+	(nonfreeing_call_p, nonbarrier_call_p): Likewise.
+	(infer_nonnull_range_by_attribute): Likewise.  Use
+	dyn_cast <const greturn *>.
+	(gimple_inexpensive_call_p): Update parameter types to const.
+	(gimple_or_expr_nonartificial_location): Likewise.
+
+2026-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128637
+	PR tree-optimization/128688
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::dummy_vr): New member.
+	(vn_walk_cb_data::using_dummy_vr): Likewise.
+	(vn_walk_cb_data::vn_walk_cb_data): Initialize using_dummy_vr.
+	(vn_walk_cb_data::finish): Add parameter to indicate whether
+	to insert an expression and use the dummy_vr if not.
+	(vn_walk_cb_data::push_partial_def): Skip expression insertion.
+	(vn_reference_lookup_pieces): Do not expose the dummy VR.
+	(vn_reference_lookup): Likewise.
+	(eliminate_dom_walker::eliminate_stmt): When there is no
+	actual single store found avoid redundant store elimination.
+
+2026-11-17  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc
+	(gimple_folder::convert_and_fold): Use ret_type directly instead of
+	copying it into a local.
+	* config/aarch64/aarch64-neon-builtins-base.cc (gimple_combine::fold)
+	(gimple_dup::fold, gimple_dup_lane::fold, gimple_bsl::fold)
+	(gimple_eor3::fold, gimple_xar::fold, gimple_ifn::fold)
+	(gimple_permute_pair::fold, gimple_reinterpret::fold)
+	(multiply_accumulate::fold, gimple_fused_mla::fold)
+	(gimple_minmax::fold, gimple_reduce_minmax::fold)
+	(gimple_shift_imm::fold, gimple_load_dup::fold): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcreate_impl::fold)
+	(svdup_impl::fold, svdupq_impl::fold_nonconst_dupq)
+	(svdupq_impl::fold, svindex_impl::fold, svld1rq_impl::fold)
+	(svld234_impl::fold): Likewise.
+
+2026-11-17  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR target/127771
+	* config/aarch64/aarch64-acle-builtins.h (build_var): Declare.
+	(gimple_folder::lhs): Change from a member variable to a member
+	function.
+	(gimple_folder::ret_type): New member variable.
+	(gimple_folder::m_lhs): New private member variable.
+	* config/aarch64/aarch64-acle-builtins.cc (build_var): Move here from
+	aarch64-neon-builtins-base.cc and add a comment.
+	(gimple_folder::gimple_folder): Initialize ret_type.
+	(gimple_folder::lhs): New function.
+	(gimple_folder::force_val): Use build_var.
+	(gimple_folder::fold): Do not create a placeholder lhs.
+	(gimple_folder::fold_contiguous_load, gimple_folder::fold_pfalse)
+	(gimple_folder::convert_and_fold, gimple_folder::fold_to_cstu)
+	(gimple_folder::fold_to_ptrue, gimple_folder::fold_to_pfalse)
+	(gimple_folder::fold_to_vl_pred, gimple_folder::fold_const_binary)
+	(gimple_folder::fold_active_lanes_to, gimple_folder::fold_call_to): Use
+	ret_type and lhs.
+	* config/aarch64/aarch64-neon-builtins-base.cc: Likewise.
+	(build_var): Move to aarch64-acle-builtins.cc.
+	* config/aarch64/aarch64-sve-builtins-base.cc: Likewise.
+	* config/aarch64/aarch64-sve-builtins-functions.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sve2.cc: Likewise.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128738
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	For IOR of multiple single bit bitfields, ensure the second operand
+	of OP1's AND is a CONST_INT.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128147
+	* tree-ssa-sink.cc (statement_sink_location): Do not sink
+	statements that may throw when !cfun->can_delete_dead_exceptions.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128556
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(gimple_abs_diff::fold): Perform the accumulation in the
+	unsigned type.
+
+2026-11-17  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128284
+	* config/aarch64/aarch64.md (aarch64_gcsss1): Add a memory clobber.
+	(aarch64_gcsss2): Likewise.
+
+2026-11-17  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/tuning_models/neoversev3.h: Decrease register
+	move costs by using generic_armv9_a_regmove_cost.
+
+2026-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128578
+	* internal-fn.cc (expand_CLMUL, expand_CLMUL_WIDEN): If lhs is
+	NULL_TREE, don't do anything.
+
+2026-11-17  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_pack_expr_p): New helper.
+	(riscv_rtx_costs): Use it to share and generalize packh costs.
+
 2026-11-16  Sendao Yan  <yansendao@126.com>
 
 	* gimple-predicate-analysis.h (uninit_analysis::m_phi_def_valid):

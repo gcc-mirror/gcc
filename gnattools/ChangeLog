@@ -1,3 +1,7 @@
+2026-11-17  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* Makefile.in (CXX_LFLAGS): Add XGCC_FLAGS_FOR_TARGET.
+
 2026-11-12  Alexandre Oliva  <oliva@adacore.com>
 
 	* configure: Rebuild.
