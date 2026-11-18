@@ -1983,18 +1983,30 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
    *DATAREFS.  */
 
 static opt_result
-vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
+vect_get_datarefs_in_loop (loop_p loop,
+			   const vect_loop_form_info &loop_form_info,
 			   vec<data_reference_p> *datarefs)
 {
   for (unsigned i = 0; i < loop->num_nodes; i++)
-    for (gimple_stmt_iterator gsi = gsi_start_bb (bbs[i]);
+    for (gimple_stmt_iterator gsi = gsi_start_bb (loop_form_info.bbs[i]);
 	 !gsi_end_p (gsi); gsi_next (&gsi))
       {
 	gimple *stmt = gsi_stmt (gsi);
 	if (is_gimple_debug (stmt))
 	  continue;
-	opt_result res = vect_find_stmt_data_reference (loop, stmt, datarefs,
-							NULL, 0);
+
+	/* An uncounted loop doesn't have analyzed niters.  Don't record
+	   nowrap assumptions for it.
+	   ??? We could probably make this work by adding a virtual
+	   early-break exit that guards the type bound?  */
+	bool record_nowrap_assumptions = true;
+	if (!loop_form_info.number_of_iterations
+	    || chrec_contains_undetermined
+	    (loop_form_info.number_of_iterations))
+	  record_nowrap_assumptions = false;
+
+	opt_result res = vect_find_stmt_data_reference
+	  (loop, stmt, datarefs, NULL, 0, record_nowrap_assumptions);
 	if (!res)
 	  {
 	    if (is_gimple_call (stmt) && loop->safelen)
@@ -2077,8 +2089,10 @@ vect_build_assumptions (class loop *loop, vec_info_shared *shared,
       scev_combine_nowrap_bounds (&bound_min, bound);
     }
 
+  gcc_assert (!bound_min || niter_known);
+
   /* Build "NITER < BOUND_MIN".  */
-  if (niter_known && bound_min)
+  if (bound_min)
     {
       unsigned prec = MAX (TYPE_PRECISION (TREE_TYPE (niter)),
 			   TYPE_PRECISION (TREE_TYPE (bound_min)));
@@ -3027,7 +3041,7 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
       return opt_loop_vec_info::propagate_failure (res);
     }
 
-  res = vect_get_datarefs_in_loop (loop, loop_form_info.bbs,
+  res = vect_get_datarefs_in_loop (loop, loop_form_info,
 				   &shared->datarefs);
   if (!res)
     {

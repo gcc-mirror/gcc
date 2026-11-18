@@ -5046,7 +5046,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 opt_result
 vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 			       vec<data_reference_p> *datarefs,
-			       vec<int> *dataref_groups, int group_id)
+			       vec<int> *dataref_groups, int group_id,
+			       bool record_nowrap_assumptions_p)
 {
   /* We can ignore clobbers for dataref analysis - they are removed during
      loop vectorization and BB vectorization checks dependences with a
@@ -5065,7 +5066,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 				   stmt);
 
   auto_vec<data_reference_p, 2> refs;
-  opt_result res = find_data_references_in_stmt (loop, stmt, &refs, true);
+  opt_result res = find_data_references_in_stmt (loop, stmt, &refs,
+						 record_nowrap_assumptions_p);
   if (!res)
     return res;
 
