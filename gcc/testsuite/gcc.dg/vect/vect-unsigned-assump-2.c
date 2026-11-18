@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_early_break } */
+/* { dg-add-options vect_early_break } */
 /* { dg-require-effective-target vect_load_lanes } */
 
 #define uint8_t unsigned char

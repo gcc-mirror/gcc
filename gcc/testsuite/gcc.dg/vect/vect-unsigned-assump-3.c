@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
 /* { dg-require-effective-target vect_early_break } */
+/* { dg-add-options vect_early_break } */
 
 #define uint8_t unsigned char
 #define uint32_t unsigned int
