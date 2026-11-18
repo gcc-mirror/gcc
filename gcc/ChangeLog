@@ -1,3 +1,22 @@
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127908
+	* config/riscv/riscv.cc (riscv_unspec_may_trap_p): New function.
+	(TARGET_UNSPEC_MAY_TRAP_P): Define.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128738
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	For IOR of multiple single bit bitfields, ensure the second operand
+	of OP1's AND is a CONST_INT.
+
 2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

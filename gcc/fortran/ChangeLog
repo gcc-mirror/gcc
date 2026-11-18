@@ -1,3 +1,12 @@
+2026-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128664
+	* trans-expr.cc (gfc_conv_structure): When a pointer to a temporary
+	structure constructor is requested, get address of the temporary.
+
 2026-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

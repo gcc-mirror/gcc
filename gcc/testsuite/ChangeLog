@@ -1,3 +1,27 @@
+2026-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128664
+	* gfortran.dg/bind_c_assumed_rank.f90: New test.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127908
+	* gcc.target/riscv/pr127908.c: New test.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128738
+	* gcc.dg/torture/pr128738.c: New test.
+
 2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
