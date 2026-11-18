@@ -47,35 +47,35 @@ __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vceqzh_f16 (float16_t __a)
 {
-  return __a == 0.0f;
+  return __a == 0.0f ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcgezh_f16 (float16_t __a)
 {
-  return __a >= 0.0f;
+  return __a >= 0.0f ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcgtzh_f16 (float16_t __a)
 {
-  return __a > 0.0f;
+  return __a > 0.0f ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vclezh_f16 (float16_t __a)
 {
-  return __a <= 0.0f;
+  return __a <= 0.0f ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcltzh_f16 (float16_t __a)
 {
-  return __a < 0.0f;
+  return __a < 0.0f ? -1 : 0;
 }
 
 __extension__ extern __inline float16_t
@@ -434,63 +434,63 @@ __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcageh_f16 (float16_t __a, float16_t __b)
 {
-  return vabsh_f16 (__a) >= vabsh_f16 (__b);
+  return vabsh_f16 (__a) >= vabsh_f16 (__b) ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcagth_f16 (float16_t __a, float16_t __b)
 {
-  return vabsh_f16 (__a) > vabsh_f16 (__b);
+  return vabsh_f16 (__a) > vabsh_f16 (__b) ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcaleh_f16 (float16_t __a, float16_t __b)
 {
-  return vabsh_f16 (__a) <= vabsh_f16 (__b);
+  return vabsh_f16 (__a) <= vabsh_f16 (__b) ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcalth_f16 (float16_t __a, float16_t __b)
 {
-  return vabsh_f16 (__a) < vabsh_f16 (__b);
+  return vabsh_f16 (__a) < vabsh_f16 (__b) ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vceqh_f16 (float16_t __a, float16_t __b)
 {
-  return __a == __b;
+  return __a == __b ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcgeh_f16 (float16_t __a, float16_t __b)
 {
-  return __a >= __b;
+  return __a >= __b ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcgth_f16 (float16_t __a, float16_t __b)
 {
-  return __a > __b;
+  return __a > __b ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vcleh_f16 (float16_t __a, float16_t __b)
 {
-  return __a <= __b;
+  return __a <= __b ? -1 : 0;
 }
 
 __extension__ extern __inline uint16_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vclth_f16 (float16_t __a, float16_t __b)
 {
-  return __a < __b;
+  return __a < __b ? -1 : 0;
 }
 
 __extension__ extern __inline float16_t
