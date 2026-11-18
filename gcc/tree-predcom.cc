@@ -833,10 +833,15 @@ pcom_worker::determine_offset (struct data_reference *a,
   aff_tree diff, baseb, step;
   tree typea, typeb;
 
-  /* Check that both the references access the location in the same type.  */
+  /* Check that both the references access the location in the same type
+     and behave the same for TBAA.  The references created for a chain
+     reuse the alias info of the chain root, which is not known here and
+     can be either of A and B, so check both directions.  */
   typea = TREE_TYPE (DR_REF (a));
   typeb = TREE_TYPE (DR_REF (b));
-  if (!useless_type_conversion_p (typeb, typea))
+  if (!useless_type_conversion_p (typeb, typea)
+      || !refs_same_for_tbaa_p (DR_REF (a), DR_REF (b))
+      || !refs_same_for_tbaa_p (DR_REF (b), DR_REF (a)))
     return false;
 
   /* Check whether the base address and the step of both references is the
