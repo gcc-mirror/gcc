@@ -7240,6 +7240,54 @@ riscv_pass_fpr_pair (machine_mode mode, unsigned regno1,
 				   GEN_INT (offset2))));
 }
 
+/* Return true if MODE and TYPE describe a value that is exactly 2 * XLEN
+   bits wide and uses significance-based scalar ordering.  Floating-point
+   reals, aggregates and complex values follow memory-layout ordering.  */
+
+static bool
+riscv_2xlen_significance_scalar_p (machine_mode mode, const_tree type)
+{
+  if (!known_eq (GET_MODE_SIZE (mode), 2 * UNITS_PER_WORD)
+      || COMPLEX_MODE_P (mode)
+      || VECTOR_MODE_P (mode)
+      || mode == BLKmode)
+    return false;
+
+  if (!type)
+    return SCALAR_INT_MODE_P (mode);
+
+  if (AGGREGATE_TYPE_P (type)
+      || TREE_CODE (type) == COMPLEX_TYPE
+      || VECTOR_TYPE_P (type))
+    return false;
+
+  return (INTEGRAL_TYPE_P (type)
+	  || FIXED_POINT_TYPE_P (type)
+	  || POINTER_TYPE_P (type));
+}
+
+/* Pass or return a 2 * XLEN scalar in REGNO and REGNO + 1 using
+   significance-based ordering.  On big-endian targets this differs from
+   memory-layout ordering: the lower-numbered register holds the low-order
+   XLEN bits.  */
+
+static rtx
+riscv_pass_2xlen_scalar_gpr_pair (machine_mode mode, unsigned regno)
+{
+  HOST_WIDE_INT low_offset = BYTES_BIG_ENDIAN ? UNITS_PER_WORD : 0;
+  HOST_WIDE_INT high_offset = BYTES_BIG_ENDIAN ? 0 : UNITS_PER_WORD;
+
+  return gen_rtx_PARALLEL
+    (mode,
+     gen_rtvec (2,
+		gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (word_mode, regno),
+				   GEN_INT (low_offset)),
+		gen_rtx_EXPR_LIST (VOIDmode,
+				   gen_rtx_REG (word_mode, regno + 1),
+				   GEN_INT (high_offset))));
+}
+
 /* Return true if VLS mode MODE fits in general purpose registers per the
    psABI.  The psABI allows aggregates up to 2 * XLEN bits to be passed in
    GPRs.  */
@@ -7754,6 +7802,13 @@ riscv_get_arg_info (struct riscv_arg_info *info, const CUMULATIVE_ARGS *cum,
       info->num_gprs
 	= MIN (num_words, MAX_ARGS_IN_REGISTERS - info->gpr_offset);
       info->stack_p = (num_words - info->num_gprs) != 0;
+
+      if (BYTES_BIG_ENDIAN
+	  && named
+	  && info->num_gprs == 2
+	  && riscv_2xlen_significance_scalar_p (mode, type))
+	return riscv_pass_2xlen_scalar_gpr_pair (mode,
+						 gpr_base + info->gpr_offset);
 
       if (info->num_gprs || return_p)
 	return gen_rtx_REG (mode, gpr_base + info->gpr_offset);
