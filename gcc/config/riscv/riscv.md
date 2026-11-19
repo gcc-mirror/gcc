@@ -4970,7 +4970,7 @@
        (ashift:X (match_operand:X 1 "register_operand")
 		  (const_int 1))
 		(ge:X (match_dup 1) (const_int 0))))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
   [(set (match_dup 0)
        (rotatert:X (match_dup 1) (match_operand 2 "const_int_operand")))
    (set (match_dup 0)
