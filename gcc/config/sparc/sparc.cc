@@ -9944,6 +9944,7 @@ sparc_type_code (tree type)
 	case BOOLEAN_TYPE:	/* Boolean truth value type.  */
 	case LANG_TYPE:
 	case NULLPTR_TYPE:
+	case OPAQUE_TYPE:
 	  return qualifiers;
 
 	default:
