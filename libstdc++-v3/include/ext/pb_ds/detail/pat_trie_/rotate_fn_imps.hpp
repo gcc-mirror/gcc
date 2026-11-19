@@ -108,7 +108,7 @@ rotate_parent(node_pointer p_nd)
     rotate_right(p_parent);
   else
     rotate_left(p_parent);
-  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_parent = p_nd);
+  _GLIBCXX_DEBUG_ASSERT(p_parent->m_p_parent == p_nd);
   _GLIBCXX_DEBUG_ASSERT(p_nd->m_p_left == p_parent || p_nd->m_p_right == p_parent);
 }
 
