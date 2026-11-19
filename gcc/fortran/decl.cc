@@ -4648,11 +4648,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 				gfc_dt_lower_string (c2->ts.u.derived->name));
 		  if (s)
 		    c2->initializer->symtree = s;
-		  c2->initializer->ts = c2->ts;
 		  if (!s)
 		    gfc_insert_parameter_exprs (c2->initializer,
 						type_param_spec_list);
-		  gfc_simplify_expr (c2->initializer, 1);
 		}
 	    }
 
@@ -4665,8 +4663,6 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 		 || c2->attr.pdt_array) && c1->initializer)
 	{
 	  c2->initializer = gfc_copy_expr (c1->initializer);
-	  if (c2->initializer->ts.type == BT_UNKNOWN)
-	    c2->initializer->ts = c2->ts;
 	  gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
 	  /* The template initializers are parsed using gfc_match_expr rather
 	     than gfc_match_init_expr. Apply the missing reduction to the
@@ -4676,19 +4672,24 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_free_expr (c2->initializer);
 	      goto error_return;
 	    }
-	  gfc_simplify_expr (c2->initializer, 1);
 	}
 
-      /* Pick up any remaining initializers that could be simplified.  */
+      /* Pick up any remaining initializers and, if necessary, substitite
+	 parameters, simplify and correct the typespec.  */
       if (c1->initializer)
 	{
 	  if (!c2->initializer)
 	    c2->initializer = gfc_copy_expr (c1->initializer);
+
 	  if (gfc_derived_parameter_expr (c2->initializer))
 	    gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
-	  c2->initializer->ts = c2->ts;
+
 	  if (!gfc_is_constant_expr (c2->initializer))
 	    gfc_simplify_expr (c2->initializer, 1);
+
+	  if (c2->initializer->ts.type == BT_UNKNOWN
+	      || (c2->initializer->ts.type == c2->ts.type))
+	    c2->initializer->ts = c2->ts;
 	}
     }
 

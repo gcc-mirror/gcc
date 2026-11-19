@@ -18288,6 +18288,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
 
   if (c->initializer && !sym->attr.vtype
       && !c->attr.pdt_kind && !c->attr.pdt_len
+      && !(sym->attr.pdt_template && c->ts.type == BT_REAL && c->ts.kind == 0)
       && !gfc_check_assign_symbol (sym, c, c->initializer))
     return false;
 
