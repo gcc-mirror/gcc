@@ -612,7 +612,7 @@ static bool sparc_legitimate_address_p (machine_mode, rtx, bool,
 					code_helper = ERROR_MARK);
 static bool sparc_legitimate_constant_p (machine_mode, rtx);
 static rtx sparc_builtin_saveregs (void);
-static int epilogue_renumber (rtx *, int);
+static bool epilogue_renumber (rtx *, bool, bool = false);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx_insn *);
 static void sparc_asm_function_prologue (FILE *);
@@ -4030,29 +4030,28 @@ emit_cbcond_nop (rtx_insn *insn)
 }
 
 /* Return nonzero if TRIAL, an insn, can be combined with a 'restore'
-   instruction.  RETURN_P is true if the v9 variant 'return' is to be
-   considered in the test too.
-
-   TRIAL must be a SET whose destination is a REG appropriate for the
-   'restore' instruction or, if RETURN_P is true, for the 'return'
    instruction.  */
 
 static int
-eligible_for_restore_insn (rtx_insn *trial, bool return_p)
+eligible_for_restore_insn (rtx_insn *trial)
 {
   rtx pat = PATTERN (trial);
+
+  if (GET_CODE (pat) != SET
+      || GET_CODE (SET_DEST (pat)) != REG
+      || !SPARC_INT_REG_P (REGNO (SET_DEST (pat)))
+      || (REGNO (SET_DEST (pat)) >= 8 && REGNO (SET_DEST (pat)) < 24))
+    return 0;
+
   rtx src = SET_SRC (pat);
+  rtx src_reg = src;
   bool src_is_freg = false;
-  rtx src_reg;
 
   /* Since we now can do moves between float and integer registers when
-     VIS3 is enabled, we have to catch this case.  We can allow such
-     moves when doing a 'return' however.  */
-  src_reg = src;
+     VIS3 is enabled, we have to catch this case.  */
   if (GET_CODE (src_reg) == SUBREG)
     src_reg = SUBREG_REG (src_reg);
-  if (GET_CODE (src_reg) == REG
-      && SPARC_FP_REG_P (REGNO (src_reg)))
+  if (GET_CODE (src_reg) == REG && SPARC_FP_REG_P (REGNO (src_reg)))
     src_is_freg = true;
 
   /* The 'restore src,%g0,dest' pattern for word mode and below.  */
@@ -4078,11 +4077,6 @@ eligible_for_restore_insn (rtx_insn *trial, bool return_p)
 
   /* The 'restore src,%g0,dest' pattern for double if no FPU.  */
   else if (! TARGET_FPU && TARGET_ARCH64 && register_operand (src, DFmode))
-    return 1;
-
-  /* If we have the 'return' instruction, anything that does not use
-     local or output registers and can go into a delay slot wins.  */
-  else if (return_p && TARGET_V9 && !epilogue_renumber (&pat, 1))
     return 1;
 
   /* The 'restore src1,src2,dest' pattern for SImode.  */
@@ -4122,14 +4116,12 @@ eligible_for_restore_insn (rtx_insn *trial, bool return_p)
 int
 eligible_for_return_delay (rtx_insn *trial)
 {
-  int regno;
-  rtx pat;
-
   /* If the function uses __builtin_eh_return, the eh_return machinery
      occupies the delay slot.  */
   if (crtl->calls_eh_return)
     return 0;
 
+  /* The instruction must first be eligible for a branch delay slot.  */
   if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
     return 0;
 
@@ -4140,47 +4132,11 @@ eligible_for_return_delay (rtx_insn *trial)
   if (!NONJUMP_INSN_P (trial))
     return 0;
 
-  pat = PATTERN (trial);
-  if (GET_CODE (pat) == PARALLEL)
-    {
-      int i;
+  /* See whether we may use a 'return' instruction.  */
+  if (TARGET_V9 && epilogue_renumber (&PATTERN (trial), true))
+    return 1;
 
-      if (! TARGET_V9)
-	return 0;
-      for (i = XVECLEN (pat, 0) - 1; i >= 0; i--)
-	{
-	  rtx expr = XVECEXP (pat, 0, i);
-	  if (GET_CODE (expr) != SET)
-	    return 0;
-	  if (GET_CODE (SET_DEST (expr)) != REG)
-	    return 0;
-	  regno = REGNO (SET_DEST (expr));
-	  if (regno >= 8 && regno < 24)
-	    return 0;
-	}
-      return !epilogue_renumber (&pat, 1);
-    }
-
-  if (GET_CODE (pat) != SET)
-    return 0;
-
-  if (GET_CODE (SET_DEST (pat)) != REG)
-    return 0;
-
-  regno = REGNO (SET_DEST (pat));
-
-  /* Otherwise, only operations which can be done in tandem with
-     a `restore' or `return' insn can go into the delay slot.  */
-  if (regno >= 8 && regno < 24)
-    return 0;
-
-  /* If this instruction sets up floating point register and we have a return
-     instruction, it can probably go in.  But restore will not work
-     with FP_REGS.  */
-  if (! SPARC_INT_REG_P (regno))
-    return TARGET_V9 && !epilogue_renumber (&pat, 1);
-
-  return eligible_for_restore_insn (trial, true);
+  return eligible_for_restore_insn (trial);
 }
 
 /* Return nonzero if TRIAL can go into the sibling call's delay slot.  */
@@ -4190,6 +4146,7 @@ eligible_for_sibcall_delay (rtx_insn *trial)
 {
   rtx pat;
 
+  /* The instruction must first be eligible for a branch delay slot.  */
   if (get_attr_in_branch_delay (trial) == IN_BRANCH_DELAY_FALSE)
     return 0;
 
@@ -4212,22 +4169,12 @@ eligible_for_sibcall_delay (rtx_insn *trial)
       return 1;
     }
 
-  if (GET_CODE (pat) != SET)
-    return 0;
-
-  /* Otherwise, only operations which can be done in tandem with
-     a `restore' insn can go into the delay slot.  */
-  if (GET_CODE (SET_DEST (pat)) != REG
-      || (REGNO (SET_DEST (pat)) >= 8 && REGNO (SET_DEST (pat)) < 24)
-      || ! SPARC_INT_REG_P (REGNO (SET_DEST (pat))))
-    return 0;
-
   /* If it mentions %o7, it can't go in, because sibcall will clobber it
      in most cases.  */
   if (reg_mentioned_p (gen_rtx_REG (Pmode, 15), pat))
     return 0;
 
-  return eligible_for_restore_insn (trial, false);
+  return eligible_for_restore_insn (trial);
 }
 
 /* Determine if it's legal to put X into the constant pool.  This
@@ -6469,9 +6416,9 @@ output_return (rtx_insn *insn)
 
 	  pat = PATTERN (delay);
 
-	  if (TARGET_V9 && ! epilogue_renumber (&pat, 1))
+	  if (TARGET_V9 && epilogue_renumber (&pat, true))
 	    {
-	      epilogue_renumber (&pat, 0);
+	      epilogue_renumber (&pat, false);
 	      return "return\t%%i7+%)%#";
 	    }
 	  else
@@ -8896,20 +8843,20 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
   return string;
 }
 
-/* Return 1, if any of the registers of the instruction are %l[0-7] or %o[0-7].
-   Such instructions cannot be used in the delay slot of return insn on v9.
-   If TEST is 0, also rename all %i[0-7] registers to their %o[0-7] counterparts.
- */
+/* Return false if any of the registers present in WHERE are %l[0-7] or %o[0-7]
+   or if WHERE contains a load from an address that may be in the current frame.
+   Such patterns cannot be used in the delay slot of the 'return' instruction.
+   If TEST_ONLY is false, also rename all %i[0-7] registers to their %o[0-7]
+   counterparts.  SET_DEST is set in recursive calls within the LHS of a SET.  */
 
-static int
-epilogue_renumber (rtx *where, int test)
+static bool
+epilogue_renumber (rtx *where, bool test_only, bool set_dest)
 {
-  const char *fmt;
-  int i;
   enum rtx_code code;
+  const char *fmt;
 
   if (*where == 0)
-    return 0;
+    return true;
 
   code = GET_CODE (*where);
 
@@ -8917,8 +8864,8 @@ epilogue_renumber (rtx *where, int test)
     {
     case REG:
       if (REGNO (*where) >= 8 && REGNO (*where) < 24)      /* oX or lX */
-	return 1;
-      if (! test && REGNO (*where) >= 24 && REGNO (*where) < 32)
+	return false;
+      if (!test_only && REGNO (*where) >= 24 && REGNO (*where) < 32)
 	{
 	  if (ORIGINAL_REGNO (*where))
 	    {
@@ -8931,37 +8878,28 @@ epilogue_renumber (rtx *where, int test)
 	    *where = gen_rtx_REG (GET_MODE (*where),
 				  OUTGOING_REGNO (REGNO (*where)));
 	}
-      return 0;
+      return true;
+
+    case SET:
+      if (!epilogue_renumber (&SET_DEST (*where), test_only, true)
+	  || !epilogue_renumber (&SET_SRC (*where), test_only))
+	return false;
+      return true;
 
     case SCRATCH:
     case PC:
     case CONST_INT:
     case CONST_WIDE_INT:
     case CONST_DOUBLE:
-      return 0;
-
-      /* Do not replace the frame pointer with the stack pointer because
-	 it can cause the delayed instruction to load below the stack.
-	 This occurs when instructions like:
-
-	 (set (reg/i:SI 24 %i0)
-	     (mem/f:SI (plus:SI (reg/f:SI 30 %fp)
-                       (const_int -20 [0xffffffec])) 0))
-
-	 are in the return delayed slot.  */
-    case PLUS:
-      if (GET_CODE (XEXP (*where, 0)) == REG
-	  && REGNO (XEXP (*where, 0)) == HARD_FRAME_POINTER_REGNUM
-	  && (GET_CODE (XEXP (*where, 1)) != CONST_INT
-	      || INTVAL (XEXP (*where, 1)) < SPARC_STACK_BIAS))
-	return 1;
-      break;
+      return true;
 
     case MEM:
-      if (SPARC_STACK_BIAS
-	  && GET_CODE (XEXP (*where, 0)) == REG
-	  && REGNO (XEXP (*where, 0)) == HARD_FRAME_POINTER_REGNUM)
-	return 1;
+      /* The delay slot of 'return' is executed after the register window
+	 has been restored, so the frame is then below the stack pointer and
+	 may be overwritten by a trap or a signal.  Do not read from a memory
+	 reference if the frame may contain something it can address.  */
+      if (!set_dest && (sparc_apparent_frame_size > 0 || cfun->calls_alloca))
+	return false;
       break;
 
     default:
@@ -8970,20 +8908,21 @@ epilogue_renumber (rtx *where, int test)
 
   fmt = GET_RTX_FORMAT (code);
 
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
+  for (int i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
     {
       if (fmt[i] == 'E')
 	{
 	  int j;
 	  for (j = XVECLEN (*where, i) - 1; j >= 0; j--)
-	    if (epilogue_renumber (&(XVECEXP (*where, i, j)), test))
-	      return 1;
+	    if (!epilogue_renumber (&(XVECEXP (*where, i, j)), test_only))
+	      return false;
 	}
       else if (fmt[i] == 'e'
-	       && epilogue_renumber (&(XEXP (*where, i)), test))
-	return 1;
+	       && !epilogue_renumber (&(XEXP (*where, i)), test_only))
+	return false;
     }
-  return 0;
+
+  return true;
 }
 
 /* Leaf functions and non-leaf functions have different needs.  */
