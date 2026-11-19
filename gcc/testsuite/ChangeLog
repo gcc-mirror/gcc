@@ -1,3 +1,382 @@
+2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128836
+	* gcc.target/i386/pr128836.c: New test.
+
+2026-11-18  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/128841
+	* gcc.target/riscv/rvv/autovec/pr128841.c: New test.
+
+2026-11-18  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR testsuite/128822
+	* gcc.dg/vect/vect-unsigned-assump-1.c: Add early-break options.
+	* gcc.dg/vect/vect-unsigned-assump-2.c: Ditto.
+	* gcc.dg/vect/vect-unsigned-assump-3.c: Ditto.
+
+2026-11-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/128687
+	* gcc.dg/torture/pr128687.c: New.
+
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128691
+	* gfortran.dg/pr128691.f90: New test.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128672
+	* gcc.dg/torture/pr128672-1.c: New testcase.
+	* gcc.dg/torture/pr128672-2.c: Likewise.
+
+2026-11-18  Jerry Delisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/finalize_18.f90: Update the count of finalizer calls
+	with fini_coarray true.
+	* gfortran.dg/pdt_bug9b.f90: New test.
+
+2026-11-18  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/128039
+	* gcc.target/arm/pch/arm-pch.exp: New test driver.
+	* gcc.target/arm/pch/pr128039.c: New test.
+	* gcc.target/arm/pch/pr128039.hs: New test.
+
+2026-11-18  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.target/arm/mve.exp: Add -save-temps to DEFAULT_CFLAGS.
+	* gcc.target/arm/mve/mve.exp: Likewise.
+	* gcc.target/arm/simd/simd.exp: Likewise.
+	* gcc.target/arm/mve/intrinsics/vadcq-check-carry.c: Add
+	-save-temps.
+	* gcc.target/arm/mve/mve_vpt.c: Likewise.
+	* gcc.target/arm/mve/pr122858.c: Likewise.
+	* gcc.target/arm/simd/mve-compare-1.c: Likewise.
+	* gcc.target/arm/simd/mve-compare-2.c: Likewise.
+	* gcc.target/arm/simd/mve-compare-3.c: Likewise.
+	* gcc.target/arm/simd/mve-compare-scalar-1.c: Likewise.
+	* gcc.target/arm/simd/mve-vabs.c: Likewise.
+	* gcc.target/arm/simd/mve-vand.c: Likewise.
+	* gcc.target/arm/simd/mve-vbic.c: Likewise.
+	* gcc.target/arm/simd/mve-vcmp-f16.c: Likewise.
+	* gcc.target/arm/simd/mve-vcmp-f32-2.c: Likewise.
+	* gcc.target/arm/simd/mve-vcmp-f32.c: Likewise.
+	* gcc.target/arm/simd/mve-vcmp.c: Likewise.
+	* gcc.target/arm/simd/mve-veor.c: Likewise.
+	* gcc.target/arm/simd/mve-vld2.c: Likewise.
+	* gcc.target/arm/simd/mve-vld4.c: Likewise.
+	* gcc.target/arm/simd/mve-vmvn.c: Likewise.
+	* gcc.target/arm/simd/mve-vneg.c: Likewise.
+	* gcc.target/arm/simd/mve-vorn.c: Likewise.
+	* gcc.target/arm/simd/mve-vorr.c: Likewise.
+	* gcc.target/arm/simd/mve-vshl.c: Likewise.
+	* gcc.target/arm/simd/mve-vshr.c: Likewise.
+	* lib/target-supports.exp (arm_v8_1m_mve_fp_ok, arm_v8_1m_mve_ok)
+	(arm_v8_1m_mve_nofp_ok): Remove -save-temps.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/aop_add_imm_1.c: New test.
+
+2026-11-18  Waffl3x  <waffl3x@baylibre.com>
+
+	PR testsuite/128811
+	* g++.dg/gomp/allocate-handles-2.C: Don't test ill-formed cases.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/zvbdota-acc-lmul-vlen32-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-acc-lmul-vlen64-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-altfmt-chain.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-avlprop.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-fixed-max.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-invalid.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-scalable.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-vlen128-invalid.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-vlen512-invalid.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-ci-vlen512.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-no-overlap.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-no-rm-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvbdota-require-extension.c: New test.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/rvv/base/zvdota-altfmt-chain.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-bf16-elen-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-elen-dependency.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-fp8-mode-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-fp8-overloaded-fixed.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-fp8-overloaded.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-i16-require-extension.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-intrinsic.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-lmul.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-no-rm-fail.c: New test.
+	* gcc.target/riscv/rvv/base/zvdota-require-extension.c: New test.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbs-word-mask-2.c: New test.
+	* gcc.target/riscv/zbs-word-mask.c: New test.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/pr123838.c: Check for no extra andi.
+	* gcc.target/riscv/shift-count-complement-1.c: New test.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128269
+	* gcc.dg/torture/pr128269.c: New test.
+	* gcc.dg/tree-ssa/pr128269.c: New test.
+
+2026-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* gcc.target/sparc/fix-gr712rc-1.c: New test.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128818
+	* gcc.dg/torture/pr128818-1.c: New testcase.
+	* gcc.dg/torture/pr128818-2.c: Likewise.
+	* gcc.dg/torture/pr128818-3.c: Likewise.
+	* gcc.dg/tree-ssa/pr91091-2.c: Adjust.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr87126.c: Remove XFAIL for the redundant
+	store removal.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/autopref-xt-c9501fdvt.c: Use nonadjacent stores
+	and update the expected offsets.
+	* gcc.target/riscv/fusion-add-addi-andi.c: Remove the fusion xfail.
+	* gcc.target/riscv/fusion-add-ldst.c: Likewise.
+	* gcc.target/riscv/fusion-add-st.c: Likewise.
+	* gcc.target/riscv/fusion-addw-adduw-ldst.c: Likewise.
+	* gcc.target/riscv/fusion-addw-adduw-st.c: Likewise.
+	* gcc.target/riscv/fusion-andi-add-addi.c: Likewise.
+	* gcc.target/riscv/fusion-andi-addiw-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-andi-adduw-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-c950-lui-auipc.c: New test.
+	* gcc.target/riscv/fusion-ldindexed.c: Use xt-c9501fdvt and remove
+	the fusion xfail.
+	* gcc.target/riscv/fusion-ldst-pair-dec.c: Remove the fusion xfail.
+	* gcc.target/riscv/fusion-ldst-pair-inc.c: Likewise.
+	* gcc.target/riscv/fusion-load-dest-equal-rtl-add-ldst.c: Likewise.
+	* gcc.target/riscv/fusion-load-dest-equal-rtl-postindex.c: Likewise.
+	* gcc.target/riscv/fusion-logic-logic-zbkb.c: Likewise.
+	* gcc.target/riscv/fusion-logic-logic.c: Likewise.
+	* gcc.target/riscv/fusion-memory-rtl-rv32-zilsd.c: New test.
+	* gcc.target/riscv/fusion-memory-rtl-shapes-ldst-pair.c: Remove the
+	fusion xfail.
+	* gcc.target/riscv/fusion-memory-rtl-shapes-postindex.c: Likewise.
+	* gcc.target/riscv/fusion-memory-rtl-shapes-preindex-st.c: Likewise.
+	* gcc.target/riscv/fusion-mv-li-andi-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-pair-subreg-prera-positive.c: Likewise.
+	* gcc.target/riscv/fusion-postindex-ldst.c: Likewise.
+	* gcc.target/riscv/fusion-postindex-st.c: Likewise.
+	* gcc.target/riscv/fusion-preindex-load-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-preindex-load.c: Likewise.
+	* gcc.target/riscv/fusion-preindex-st.c: Likewise.
+	* gcc.target/riscv/fusion-slli-srli.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-add-andi.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-andi-add.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-logic-logic.c: Likewise.
+	* gcc.target/riscv/fusion-srli-add.c: Likewise.
+	* gcc.target/riscv/fusion-srli-add-zero-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-sub-seqz-snez.c: Likewise.
+	* gcc.target/riscv/fusion-word-positive-rtl-slli-srli.c: Likewise.
+	* gcc.target/riscv/fusion-word-positive-rtl-srli-add.c: Likewise.
+	* gcc.target/riscv/fusion-zilsd-no-overlap.c: New test.
+	* gcc.target/riscv/fusion-zilsd-overlap.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-fldfst-pair-dec.c: New test.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-fldfst-pair-inc.c: New test.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-ldst-pair-dec.c: New test.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-ldst-pair-inc.c: New test.
+	* gcc.target/riscv/fusion-memory-rtl-shapes-ldst-pair.c: Likewise.
+	* gcc.target/riscv/fusion-memory-rtl-shapes-ldst-pair-unaligned.c:
+	Likewise.
+	* gcc.target/riscv/fusion-pair-subreg-prera-negative.c: Likewise.
+	* gcc.target/riscv/fusion-pair-subreg-prera-positive.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-memory-rtl-shapes-postindex.c: New test.
+	* gcc.target/riscv/fusion-postindex-st.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-load-dest-equal-rtl-postindex.c: New test.
+	* gcc.target/riscv/fusion-postindex-ldst.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-memory-rtl-shapes-preindex-st.c: New test.
+	* gcc.target/riscv/fusion-preindex-st.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-preindex-load.c: New test.
+	* gcc.target/riscv/fusion-preindex-load-rtl.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-srli-add.c: New test.
+	* gcc.target/riscv/fusion-srli-add-zero-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-word-positive-rtl-srli-add.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-slli-srli.c: New test.
+	* gcc.target/riscv/fusion-word-positive-rtl-slli-srli.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-logic-logic.c: New test.
+	* gcc.target/riscv/fusion-logic-logic-zbkb.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-logic-logic.c:
+	Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-andi-add-addi.c: New test.
+	* gcc.target/riscv/fusion-andi-addiw-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-andi-adduw-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-andi-add.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-add-addi-andi.c: New test.
+	* gcc.target/riscv/fusion-mv-li-andi-rtl.c: Likewise.
+	* gcc.target/riscv/fusion-special-positive-rtl-add-andi.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-add-st.c: New test.
+	* gcc.target/riscv/fusion-addw-adduw-st.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-add-ldst.c: New test.
+	* gcc.target/riscv/fusion-addw-adduw-ldst.c: Likewise.
+	* gcc.target/riscv/fusion-load-dest-equal-rtl-add-ldst.c: Likewise.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-sub-seqz-snez.c: New test.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/fusion-lui-addi-prera-rtl.c: New test.
+	* gcc.target/riscv/fusion-lui-addi-source-mismatch-postra-rtl.c:
+	Likewise.
+	* gcc.target/riscv/fusion-lui-addi-source-mismatch-rtl.c: Likewise.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/builtin-clmulg-promoted-1.c: New test.
+
+2026-11-18  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.target/aarch64/neon/discarded_result.c (test_vmull_s8,
+	test_vmull_high_s16, test_vmull_s32, test_vmlal_u8,
+	test_vmlsl_high_s16, test_vmull_high_redirect,
+	test_vmull_splat_redirect): New functions.
+	* gcc.target/aarch64/neon/vmlal.c: New test.
+	* gcc.target/aarch64/neon/vmlsl.c: Likewise.
+	* gcc.target/aarch64/neon/vmull.c: Likewise.
+	* gcc.target/aarch64/simd/fold_to_highpart_1.c: Allow either operand
+	order for vmlsl, which GIMPLE is free to commute.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/fneg-abs_3.c: Accept register-offset and
+	post-increment addressing in the check-function-bodies patterns.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/advsimd-intrinsics/ignored_return_1.c (foo):
+	Call bar.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_bf16.c: Expect MOV
+	for lane 0.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_f16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_f32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_f64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_mf8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_s8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_s16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_s32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_s64.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_u8.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_u16.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_u32.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/dup_lane_u64.c: Likewise.
+
+2026-11-18  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/tree-ssa/sext-vector-1.c: Scan for the XOR constants
+	instead of counting the XORs.
+
+2026-11-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128690
+	* gcc.target/i386/pr128690.c: New test.
+
+2026-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/mcpu-native-1.c: New test.
+	* gcc.target/riscv/mcpu-native-1.cpuinfo: New file.
+
+2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128533
+	* gcc.target/i386/pr128533.c: New test.
+
+2026-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128770
+	* gcc.target/i386/pr128770.c: New test.
+
+2026-11-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128759
+	* gcc.dg/torture/pr128759-1.c: New test.
+
+2026-11-18  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/avx10_2-vcvtph2hf8-2.h: Correct res_ref size.
+	* gcc.target/i386/avx10_2-vcvtph2hf8s-2.h: Ditto.
+
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128793
+	* gfortran.dg/do_concurrent_16.f90: New test.
+
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128678
+	* gfortran.dg/gomp/simd-body-local-1.f90: New test.
+
 2026-11-17  Vineet Gupta  <vineet.gupta@linux.dev>
 
 	PR c/128789

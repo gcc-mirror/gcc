@@ -1,3 +1,13 @@
+2026-11-18  Robert Dubner  <rdubner@symas.com>
+
+	* unstring.cc (unstring_fixed): Keep the first listed delimiter when
+	matches start at the same position.
+
+2026-11-18  Robert Dubner  <rdubner@symas.com>
+
+	* unstring.cc (unstring_fixed): When checking for delimiters skip
+	any that are shorter than the current "winner".
+
 2026-11-16  Robert Dubner  <rdubner@symas.com>
 
 	* Makefile.in: Restore generated whitespace.

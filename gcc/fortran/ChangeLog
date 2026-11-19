@@ -1,3 +1,44 @@
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128691
+	* trans-array.cc (gfc_conv_expr_descriptor): Do not treat an
+	expression with a vector subscript as a subreference array target.
+
+2026-11-18  Jerry Delisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82173
+	* class.cc (finalize_component): Deallocate LEN-dependent PDT
+	components only if fini_coarray is true.
+	(generate_finalization_wrapper): Document fini_coarray.
+	* trans.cc (gfc_add_comp_finalizer_call): Pass true for
+	fini_coarray if the component is allocatable.
+	(gfc_add_finalizer_call): Add argument FINI_COARRAY and pass it to
+	the finalizer.
+	(gfc_deallocate_with_status): Pass true for fini_coarray.
+	(gfc_deallocate_scalar_with_status): Likewise.
+	* trans.h (gfc_add_finalizer_call): Add a bool argument.
+
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128793
+	* trans-stmt.cc (gfc_trans_forall_1): For an outermost construct,
+	evaluate the start once and use the evaluated start, end and step
+	in the loops.
+
+2026-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128678
+	* trans-openmp.cc (gfc_is_class_pointer_type): Rename to ...
+	(gfc_class_container_kind): ... this.  Return the kind suffix of
+	the class container type name.
+	(gfc_omp_body_local_private_p): New function.
+	(gfc_omp_clause_default_ctor): Return NULL_TREE for a body-local
+	private clause.
+	(gfc_omp_clause_copy_ctor): Use gfc_class_container_kind.
+	(gfc_omp_clause_dtor): Likewise.  Return NULL_TREE for a body-local
+	private clause and for a nonallocatable CLASS copy not made by
+	gfc_omp_clause_copy_ctor.
+
 2026-11-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/40598

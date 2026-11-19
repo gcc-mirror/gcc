@@ -1,3 +1,495 @@
+2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128836
+	* config/i386/i386.md
+	(split and with -65536 to strict_low_part movhi):
+	Require reload_completed.
+
+2026-11-18  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/vector-iterators.md: Add TARGET_ZVFH to VWEXTF
+	VLS SF modes.
+
+2026-11-18  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* tree-vect-loop-manip.cc (vect_do_peeling): Don't set niter
+	range for partial vects.
+
+2026-11-18  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/128841
+	* config/riscv/riscv-vector-costs.cc (costs::record_type_sizes):
+	Record char as largest_type if type is unusable.
+
+2026-11-18  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/128687
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Accumulate
+	the range of every argument unconditionally.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128672
+	* tree-ssa-sccvn.cc (visit_nary_op): Check whether a negated
+	operand of a division or multiplication is available, do not
+	just attempt to build or simplify it, when the negation may
+	cause UB.  Only handle TRUNC_DIV_EXPR when x cannot be INT_MIN.
+
+2026-11-18  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	* wide-int.cc (W_TYPE_SIZE): Remove == 32.
+
+2026-11-18  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR target/128039
+	* config.gcc: Add arm-builtins.h to target_gtfiles.
+	* config/arm/arm-builtins.cc (arm_simd_types, arm_fp16_type_node):
+	Declare with GTY annotation.
+	* config/arm/arm-builtins.h (struct arm_simd_type_info): Add GTY
+	annotation.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.md (aop<mode>3): New expander.
+
+2026-11-18  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-ssa-structalias.cc (ipa_pta_execute): In shadow variable
+	solution postprocessing, don't iterate over fields of global
+	variables.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv-vector-builtins-bases.cc (vqwbdota, vfwbdota,
+	vfqwbdota, vfbdota): New expanders.
+	(BASE): Register them.
+	* config/riscv/riscv-vector-builtins-bases.h: Declare new bases.
+	* config/riscv/riscv-vector-builtins-functions.def: Add intrinsics.
+	* config/riscv/riscv-vector-builtins-shapes.cc (bdot_def): New template.
+	(zvbdota_def, vfbdota_def, vfbdota_frm_def): New shapes.
+	(SHAPE): Register Zvbdota shapes.
+	* config/riscv/riscv-vector-builtins-shapes.h: Declare them.
+	* config/riscv/riscv-vector-builtins.cc: Add operand type tables.
+	(get_builtin_partition): Handle Zvbdota extensions.
+	(get_zvbdota_i8_type_index, get_zvbdota_i16_type_index,
+	get_zvbdota_f32_type_index, get_zvbdota_f32_group_type_index,
+	get_zvbdota_bf16_type_index, get_zvbdota_fp8_type_index): New helpers.
+	(rvv_arg_type_info::get_function_type_index): Handle batched operands.
+	(function_checker::require_zvbdota_ci): Check ci bounds and alignment.
+	(validate_instance_type_required_extensions): Check minimum VLEN.
+	* config/riscv/riscv-vector-builtins.def: Add batched operand types.
+	* config/riscv/riscv-vector-builtins.h (RVV_REQUIRE_MIN_VLEN_128,
+	RVV_REQUIRE_MIN_VLEN_256, RVV_REQUIRE_MIN_VLEN_512): New flags.
+	(required_ext, rvv_builtin_partition): Add Zvbdota extensions.
+	(required_ext_to_isa_name, required_extensions_specified): Handle them.
+	(function_checker): Declare require_zvbdota_ci.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/genrvv-type-indexer.cc (float8type): New helper.
+	(emit_zvdota_type_indexes, emit_float8_type_index): New functions.
+	(main): Emit accumulator and FP8 type indexes.
+	* config/riscv/riscv-vector-builtins-bases.cc (zvdota_vs2_argno,
+	zvdota_unsigned_vs2_p, zvdota_e5m2_vs2_p): New helpers.
+	(vqwdota, vfwdota, vfqwdota): New expanders.
+	(BASE): Register them.
+	* config/riscv/riscv-vector-builtins-bases.h: Declare new bases.
+	* config/riscv/riscv-vector-builtins-functions.def: Add intrinsics.
+	* config/riscv/riscv-vector-builtins-shapes.cc (supports_vectype_p):
+	Allow Zvdota BF16 types.
+	(zvdota_def): New shape.
+	(SHAPE): Register it.
+	* config/riscv/riscv-vector-builtins-shapes.h: Declare it.
+	* config/riscv/riscv-vector-builtins.cc: Add operand type tables.
+	(DEF_RVV_TYPE_INDEX): Add accumulator and FP8 indexes.
+	(get_builtin_partition): Handle Zvdota extensions.
+	(register_builtin_types_on_null): Register FP8 scalar types.
+	(mangle_fp8_type): New helper.
+	(registered_function::overloaded_hash): Hash FP8 formats separately.
+	* config/riscv/riscv-vector-builtins.def: Add FP8 and base types.
+	* config/riscv/riscv-vector-builtins.h (required_ext,
+	rvv_builtin_partition): Add Zvdota extensions.
+	(required_ext_to_isa_name, required_extensions_specified): Handle them.
+	* config/riscv/riscv.cc (riscv_vector_element_bitsize): Handle FP8.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/generic-vector-ooo.md (vec_imul, vec_fmul): Handle
+	dot-product types.
+	* config/riscv/andes-23-series.md (andes_23_unknown): Likewise.
+	* config/riscv/andes-25-series.md (andes_25_vector_unknown): Likewise.
+	* config/riscv/andes-45-series.md (andes_45_vector_unknown): Likewise.
+	* config/riscv/arcv-rhx100.md (arcv_rhx100_unknown): Likewise.
+	* config/riscv/arcv-rmx100.md (arcv_rmx100_unknown): Likewise.
+	* config/riscv/mips-i8500.md (mips_i8500_unknown): Likewise.
+	* config/riscv/mips-p8700.md (mips_p8700_unknown): Likewise.
+	* config/riscv/sifive-7.md (sifive_7_vec_unknown): Likewise.
+	* config/riscv/sifive-p400.md (sifive_p400_unknown): Likewise.
+	* config/riscv/sifive-p600.md (sifive_p600_unknown): Likewise.
+	* config/riscv/spacemit-x60.md (spacemit_x60_dummy): Likewise.
+	* config/riscv/tt-ascalon-d8.md (tt_ascalon_d8_vec_unknown): Likewise.
+	* config/riscv/xiangshan.md (xiangshan_alu_unknown): Likewise.
+	* config/riscv/xt-c908.md (xt_c908_dummy): Likewise.
+	* config/riscv/predicates.md (zvbdota_ci_operand): New predicate.
+	* config/riscv/riscv-avlprop.cc (avl_can_be_propagated_p): Exclude
+	dot-product types.
+	* config/riscv/riscv-protos.h (altfmt_type): Extend comment.
+	* config/riscv/riscv.md (type, fp_vector_disabled): Add dot-product
+	types.  Include vector-dot.md.
+	* config/riscv/vector.md (has_vtype_op, has_vl_op, ratio,
+	merge_op_idx, mode_idx, vl_op_idx, ta, ma, avl_type_idx): Handle
+	dot-product types.
+	* config/riscv/vector-dot.md: New file.
+	* config/riscv/vector-iterators.md: Add dot-product UNSPECs,
+	mode mappings and extension-specific iterators.
+	(V_EXT_LMUL1): Add BF16 modes.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* common/config/riscv/riscv-common.cc
+	(riscv_extra_ext_flag_table): Enable BF16 for dot-product extensions.
+	* config/riscv/riscv-ext.def: Add Zvdota and Zvbdota extensions.
+	* config/riscv/riscv-ext.opt: Regenerate.
+	* doc/riscv-ext.texi: Regenerate.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*<bit_optab>di_zext_si): New pattern.
+	(*bclrdi_zext_si): Ditto.
+	(*bclrdi_zext_si_canonical): Ditto.
+
+2026-11-18  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.md: Preserve count masks in the native and
+	word shift-complement splitters.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128269
+	* gimple-ssa-sprintf.cc (format_character): Pass -1 as the negative
+	bound to get_int_range.  Check the maximum of the range in the ASCII
+	case.
+
+2026-11-18  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/sparc/sparc.cc (sparc_do_work_around_errata): Use
+	next_active_non_empty_insn to find the insn at a branch target.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128818
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Avoid skipping
+	same-val may-defs when doing redundant store elimination.
+	(vn_walk_cb_data::finish): Also skip hashtable insertion when
+	same-val stores were skipped.
+
+2026-11-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.h (vn_reference_lookup): Change parameter
+	redundant_store_removal_p from bool to gimple *redundant_store.
+	* tree-ssa-sccvn.cc (struct vn_walk_cb_data): Change field
+	redundant_store_removal_p to gimple *redundant_store.
+	(vn_reference_lookup_3): Ignore def_stmt if it is the redundant
+	store itself on a backedge.
+	(vn_reference_lookup_pieces): Pass NULL redundant_store.
+	(vn_reference_lookup): Update parameter and pass down
+	redundant_store.
+	(eliminate_dom_walker::eliminate_stmt): Pass stmt as
+	redundant_store to vn_reference_lookup.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (xt_c9501_tune_info): Enable supported
+	fusion pairs.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fusion_mem_rules): Add
+	RISCV_FUSE_FLDFST_PAIR_DEC.
+	(riscv_fuse_fldfst_pair_dec): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_FLDFST_PAIR_DEC.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_FLDFST_PAIR_DEC.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fusion_mem_rules): Add
+	RISCV_FUSE_FLDFST_PAIR_INC.
+	(riscv_fuse_fldfst_pair_inc): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_FLDFST_PAIR_INC.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_FLDFST_PAIR_INC.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fusion_mem_rules): Add
+	RISCV_FUSE_LDST_PAIR_DEC.
+	(riscv_fuse_ldst_pair_dec): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_LDST_PAIR_DEC.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_LDST_PAIR_DEC.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fusion_mem_rules): Add
+	RISCV_FUSE_LDST_PAIR_INC.
+	(riscv_fuse_ldst_pair_inc): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_LDST_PAIR_INC.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_LDST_PAIR_INC.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_postindex_st): New
+	function.
+	(riscv_fusion_table): Add RISCV_FUSE_POSTINDEX_ST.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_POSTINDEX_ST.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_postindex_ld): New
+	function.
+	(riscv_fusion_table): Add RISCV_FUSE_POSTINDEX_LD.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_POSTINDEX_LD.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_preindex_st): New
+	function.
+	(riscv_fusion_table): Add RISCV_FUSE_PREINDEX_ST.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_PREINDEX_ST.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_indexed_mem_p): New
+	function.  Check overlap with the complete store-data register range.
+	(riscv_fuse_ldpreincrement): Use it and accept scalar integer or
+	floating-point loads.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_srli_add): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_SRLI_ADD.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_SRLI_ADD.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_set_is_srai_p): New function.
+	(riscv_set_is_shift_type_p): Likewise.
+	(riscv_fuse_shift_pair_p): Likewise.
+	(riscv_fuse_bfext): Use riscv_fuse_shift_pair_p.
+	(riscv_fuse_slli_srli): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_SLLI_SRLI.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_SLLI_SRLI.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_insn_is_logical_type_p): New
+	function.
+	(riscv_fuse_logic_logic): Likewise.
+	(riscv_fusion_table): Add RISCV_FUSE_LOGIC_LOGIC.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_LOGIC_LOGIC.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_andi_add): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_ANDI_ADD.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_ANDI_ADD.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_insn_is_add_addi_p): New
+	function.
+	(riscv_insn_is_andi_type_p): Likewise.
+	(riscv_fuse_b_alui): Reuse the ANDI matcher.
+	(riscv_fuse_add_andi): New function.
+	(riscv_fusion_table): Add RISCV_FUSE_ADD_ANDI.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_ADD_ANDI.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_add_st): New function.
+	Check overlap with the complete store-data register range.
+	Use the parsed memory register for overlap checks.
+	(riscv_fusion_table): Add RISCV_FUSE_ADD_ST.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_ADD_ST.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_set_is_addw_p): New function.
+	(riscv_insn_is_add_type_p): New function.  Optionally report whether
+	the instruction is a word form.
+	(riscv_fuse_add_mem_p): New function.
+	(riscv_fuse_ldindexed): Use the common matcher and accept ADDW,
+	ADD.UW, and either load-destination relationship.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc (riscv_insn_is_sub_type_p): New
+	function.
+	(riscv_fuse_sub_seqz): Likewise.
+	(riscv_fusion_table): Add RISCV_FUSE_SUB_SEQZ.
+	* config/riscv/riscv-protos.h (enum riscv_fusion_pairs): Add
+	RISCV_FUSE_SUB_SEQZ.
+
+2026-11-18  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-fusion.cc: Include insn-attr.h.
+	(riscv_fuse_sets_p): New function.
+	(riscv_set_extract_word_binary_p): Likewise.
+	(riscv_regno): New function.  Prefer pseudo identities while
+	pseudos may still be created.
+	(riscv_fuse_same_reg_p): New function.  Compare subregister bit
+	positions for pseudos.
+	(riscv_fuse_same_dest_p): Rename from
+	riscv_fusion_same_dest_p and handle hard-register SUBREGs.  Preserve
+	preallocation destination overmatching and optionally check the
+	first-source dependency.
+	(riscv_set_is_addiw_p): New function.
+	(riscv_insn_is_mv_li_p): Likewise.
+	(riscv_insn_is_addi_type_p): New function.  Clear SRC0 for LI.
+	(riscv_set_is_shift_p): Likewise.
+	(riscv_set_is_slli_p): Likewise.
+	(riscv_set_is_srli_p): Likewise.
+	(enum sched_fusion_type): New bitmask enum.
+	(riscv_fusion_mem_info): New struct.  Retain the register operand
+	and memory mode for shared pair checks.
+	(riscv_fuse_extract_address): New function.
+	(riscv_fuse_mem_p): New function.  Accept mode-specific zero stores
+	and classify soft-float memory moves by move_type.  Use unsigned
+	memory-width comparisons.
+	(riscv_fusion_direction): New enum.
+	(riscv_fusion_mem_rule): New struct.
+	(riscv_fusion_mem_rules): New table for memory-pair constraints.
+	(riscv_fuse_mem_candidate_p): New function.
+	(riscv_fuse_mem_pair_p): New functions for parsed accesses and
+	instruction pairs.  Check offsets and register ranges.
+	(riscv_fuse_zext_common): Require RV64 and use the common
+	helpers.
+	(riscv_fuse_zextw): Update accordingly.
+	(riscv_fuse_zextws): Likewise.
+	(riscv_fuse_zexth): Likewise.
+	(riscv_fuse_ldindexed): Use the renamed same-destination predicate.
+	(riscv_fuse_expanded_ld): Use the common helpers.
+	(riscv_fuse_ldpreincrement): Use the renamed same-destination
+	predicate and check the update dependency.
+	(riscv_fuse_lui_addi): Reuse the ADDI matcher, check the source
+	dependency, and reject zero-valued LUI patterns.
+	(riscv_fuse_auipc_addi): Reuse the ADDI matcher and check the source
+	dependency.
+	(riscv_fuse_lui_ld): Use the common helpers.
+	(riscv_fuse_auipc_ld): Likewise.  Check the address dependency.
+	(riscv_fuse_aligned_std): Use the shared memory-pair rule.
+	(riscv_fuse_bfext): Use the renamed same-destination predicate.
+	(riscv_fuse_b_alui): Use the common arithmetic helpers.
+
+2026-11-18  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/arm_fp16.h (vceqzh_f16, vcgezh_f16, vcgtzh_f16,
+	vclezh_f16, vcltzh_f16, vcageh_f16, vcagth_f16, vcaleh_f16,
+	vcalth_f16, vceqh_f16, vcgeh_f16, vcgth_f16, vcleh_f16,
+	vclth_f16): Return -1 for true.
+
+2026-11-18  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* internal-fn.cc (expand_CLMUL): Use convert_move for promoted
+	SUBREG targets.
+
+2026-11-18  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-builtin-pairs.def (BINOP_LONG_LH_PAIRS,
+	TERNOP_LONG_LH_PAIRS): Drop the pairs for the ported intrinsics.
+	* config/aarch64/aarch64-builtins.cc (aarch64_v128_highpart_src_reg):
+	New function.
+	(aarch64_fold_lo_call_to_hi): Use it.
+	(aarch64_build_vector_cst): Make non-static.
+	* config/aarch64/aarch64-builtins.h (aarch64_v128_highpart_src_reg,
+	aarch64_build_vector_cst): Declare.
+	* config/aarch64/aarch64-neon-builtins-base.cc: Include
+	aarch64-builtins.h and aarch64-neon-builtins-shapes.h.
+	(build_vec_extract_half): New function.
+	(gimple_get_half::fold): Use it.
+	(gimple_widen_mult): New class.
+	(vmull, vmull_high, vmlal, vmlal_high, vmlsl, vmlsl_high): New
+	function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vmull, vmull_high,
+	vmlal, vmlal_high, vmlsl, vmlsl_high): New function groups.
+	* config/aarch64/aarch64-simd-builtins.def (smlal, umlal, smlsl,
+	umlsl, intrinsic_vec_smult_lo_, intrinsic_vec_umult_lo_): Delete,
+	now that nothing expands to them.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_intrinsic_vec_<su>mult_lo_<mode>): Rename to ...
+	(@aarch64_intrinsic_vec_<su>mult_lo_<mode>): ... this, so that it
+	can be selected by mode.
+	(aarch64_<su>mlal<mode>): Rename to ...
+	(@aarch64_<su>mlal<mode>): ... this.
+	(aarch64_<su>mlsl<mode>): Rename to ...
+	(@aarch64_<su>mlsl<mode>): ... this.
+	(aarch64_<su>mlal_hi<mode>): Rename to ...
+	(@aarch64_<su>mlal_hi<mode>): ... this.
+	(aarch64_<su>mlsl_hi<mode>): Rename to ...
+	(@aarch64_<su>mlsl_hi<mode>): ... this.
+	* config/aarch64/arm_neon.h (vmlal_high_s8, vmlal_high_s16,
+	vmlal_high_s32, vmlal_high_u8, vmlal_high_u16, vmlal_high_u32,
+	vmlal_s8, vmlal_s16, vmlal_s32, vmlal_u8, vmlal_u16, vmlal_u32,
+	vmlsl_high_s8, vmlsl_high_s16, vmlsl_high_s32, vmlsl_high_u8,
+	vmlsl_high_u16, vmlsl_high_u32, vmlsl_s8, vmlsl_s16, vmlsl_s32,
+	vmlsl_u8, vmlsl_u16, vmlsl_u32, vmull_high_s8, vmull_high_s16,
+	vmull_high_s32, vmull_high_u8, vmull_high_u16, vmull_high_u32,
+	vmull_s8, vmull_s16, vmull_s32, vmull_u8, vmull_u16, vmull_u32):
+	Delete functions.
+
+2026-11-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128690
+	* config/i386/i386-features.cc (replace_vector_const): Remove
+	REG_EQUAL and REG_EQUIV notes when replacing the source with a
+	CONST_INT.
+
+2026-11-18  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/driver-riscv.cc (host_detect_local_cpu): Handle
+	"cpu".
+	* config/riscv/riscv.h (RISCV_NATIVE_SPECS): Pass -mcpu= for
+	-mcpu=native.
+	* doc/invoke.texi (RISC-V Options): Say that -mcpu=native also
+	selects the detected core.
+
+2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128533
+	* doc/extend.texi (x86 Floating-Point asm Operands):
+	Document that operands must occupy a single register.
+	* reg-stack.cc: Document rule #7.
+	(check_asm_stack_operands): Reject operands
+	that need more than one stack register.
+
+2026-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128770
+	* config/i386/i386-expand.cc (ix86_expand_fp_compare): Use
+	UNSPEC_OPTCOMX only if HONOR_NANS.
+
+2026-11-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges): Move
+	the definitions of r1/r2 to the branches which use them.
+
+2026-11-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128759
+	* range-op-ptr.cc (operator_pointer_diff::op1_op2_relation): Fix
+	rhs1 being undefined.
+
 2026-11-17  Karl Meakin  <karl.meakin@arm.com>
 
 	* config/aarch64/aarch64-acle-builtins.h

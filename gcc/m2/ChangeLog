@@ -1,3 +1,13 @@
+2026-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/128683
+	* Make-maintainer.in (gm2.maintainer-reconfigure): Rewrite
+	referencing source file config-host.ac.
+	* gm2-libs/config-host: Regenerate.
+	* gm2-libs/gm2-libs-host.h.in: Regenerate.
+	* gm2-libs/config-host.in: Move to...
+	* gm2-libs/config-host.ac: ...here.
+
 2026-11-09  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-ici/M2Emit.mod: Removed.

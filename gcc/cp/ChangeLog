@@ -1,3 +1,9 @@
+2026-11-18  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (eval_data_member_spec): Free ostr.text.
+	(eval_exception__S_exception_cvt_tofrom_utf8): Don't add 1 to
+	TREE_STRING_LENGTH.
+
 2026-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/128508
