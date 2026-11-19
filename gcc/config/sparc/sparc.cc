@@ -1235,7 +1235,7 @@ sparc_do_work_around_errata (void)
 
 	  const unsigned int dest_reg = REGNO (SET_DEST (single_set (insn)));
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 
@@ -1291,7 +1291,7 @@ sparc_do_work_around_errata (void)
 		  break;
 		}
 
-	      after = next_active_insn (after);
+	      after = next_active_non_empty_insn (after);
 	      if (!after)
 		break;
 	    }
@@ -1374,7 +1374,7 @@ sparc_do_work_around_errata (void)
 	  unsigned int src1, src2, dest;
 	  int code;
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 	  /* If the insn is a branch, then it cannot be problematic.  */
@@ -1443,7 +1443,7 @@ sparc_do_work_around_errata (void)
 	     dependency on the first single-cycle load.  */
 	  rtx x = SET_DEST (set);
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 	  /* If the insn is a branch, then it cannot be problematic.  */
@@ -1497,7 +1497,7 @@ sparc_do_work_around_errata (void)
 	  rtx_insn *after;
 	  int i;
 
-	  next = next_active_insn (insn);
+	  next = next_active_non_empty_insn (insn);
 	  if (!next)
 	    break;
 	  /* If the insn is a branch, then it cannot be problematic.  */
@@ -1518,7 +1518,7 @@ sparc_do_work_around_errata (void)
 	    {
 	      bool branch_p;
 
-	      after = next_active_insn (after);
+	      after = next_active_non_empty_insn (after);
 	      if (!after)
 		break;
 
