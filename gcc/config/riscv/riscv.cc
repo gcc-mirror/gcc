@@ -4870,8 +4870,8 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  return true;
 	}
 
-      /* orn, andn and xorn pattern for zbb.  */
-      if (TARGET_ZBB
+      /* orn, andn and xnor patterns for Zbb or Zbkb.  */
+      if ((TARGET_ZBB || TARGET_ZBKB)
 	  && GET_CODE (XEXP (x, 0)) == NOT)
 	{
 	  *total = riscv_binary_cost (x, 1, 2);
@@ -16506,9 +16506,9 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
   if (budget < 0)
     {
       /* We're going to have to synthesize the constant.  However, if
-	 we have Zbb, then we have XNOR and ORN.  So if the inverted constant
-	 is cheaper, invert it and use XNOR/ORN.  */
-      if (TARGET_ZBB
+	 we have Zbb or Zbkb, then we have XNOR and ORN.  If the inverted
+	 constant is cheaper, invert it and use XNOR/ORN.  */
+      if ((TARGET_ZBB || TARGET_ZBKB)
 	  && (riscv_integer_cost (INTVAL (operands[2]), true)
 	      > riscv_integer_cost (~UINTVAL (operands[2]), true)))
 	{
@@ -16811,9 +16811,9 @@ synthesize_and (rtx operands[3])
   if (ival || budget < 0)
     {
       /* We're going to have to synthesize the constant.  However, if
-	 we have Zbb, then we have ANDN.  So if the inverted constant
+	 we have Zbb or Zbkb, then we have ANDN.  If the inverted constant
 	 is cheaper, invert it and use ANDN.  */
-      if (TARGET_ZBB
+      if ((TARGET_ZBB || TARGET_ZBKB)
 	  && riscv_integer_cost (~UINTVAL (operands[2]), true) > 0
 	  && (riscv_integer_cost (UINTVAL (operands[2]), true)
 	      > riscv_integer_cost (~UINTVAL (operands[2]), true)))
