@@ -820,6 +820,16 @@ pcom_worker::aff_combination_dr_offset (struct data_reference *dr,
   aff_combination_add (offset, &delta);
 }
 
+/* Returns true if the references A and B behave the same for TBAA.  The
+   references created for a chain reuse the alias info of the chain root,
+   which can be either of A and B, so check both directions.  */
+
+static bool
+refs_tbaa_equivalent_p (tree a, tree b)
+{
+  return refs_same_for_tbaa_p (a, b) && refs_same_for_tbaa_p (b, a);
+}
+
 /* Determines number of iterations of the innermost enclosing loop before B
    refers to exactly the same location as A and stores it to OFF.  If A and
    B do not have the same step, they never meet, or anything else fails,
@@ -834,14 +844,11 @@ pcom_worker::determine_offset (struct data_reference *a,
   tree typea, typeb;
 
   /* Check that both the references access the location in the same type
-     and behave the same for TBAA.  The references created for a chain
-     reuse the alias info of the chain root, which is not known here and
-     can be either of A and B, so check both directions.  */
+     and behave the same for TBAA.  */
   typea = TREE_TYPE (DR_REF (a));
   typeb = TREE_TYPE (DR_REF (b));
   if (!useless_type_conversion_p (typeb, typea)
-      || !refs_same_for_tbaa_p (DR_REF (a), DR_REF (b))
-      || !refs_same_for_tbaa_p (DR_REF (b), DR_REF (a)))
+      || !refs_tbaa_equivalent_p (DR_REF (a), DR_REF (b)))
     return false;
 
   /* Check whether the base address and the step of both references is the
@@ -1373,8 +1380,11 @@ pcom_worker::valid_initializer_p (struct data_reference *ref, unsigned distance,
   aff_tree diff, base, step;
   poly_widest_int off;
 
-  /* Both REF and ROOT must be accessing the same object.  */
-  if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0))
+  /* Both REF and ROOT must be accessing the same object and behave the
+     same for TBAA, since the initializer stands in for a reference with
+     the alias info of ROOT.  */
+  if (!operand_equal_p (DR_BASE_ADDRESS (ref), DR_BASE_ADDRESS (root), 0)
+      || !refs_tbaa_equivalent_p (DR_REF (ref), DR_REF (root)))
     return false;
 
   /* The initializer is defined outside of loop, hence its address must be
