@@ -25,6 +25,7 @@ GCOBOL_17.1
     __gg__call_parameter_signature;
     __gg__call_warning_message;
     __gg__char;
+    __gg__char_national;
     __gg__check_fatal_exception;
     __gg__classify;
     __gg__clear_exception;

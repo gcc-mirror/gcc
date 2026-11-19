@@ -641,8 +641,8 @@ unstring_fixed( const cblc_referlet_t *id2,
         || static_cast<unsigned __int128>(p)
                                       > std::numeric_limits<size_t>::max() )
       {
-      overflow = 1;
-      goto done;
+      // No characters were examined; leave all operands unchanged.
+      return 1;
       }
     pointer = static_cast<size_t>(p);
     }
@@ -850,10 +850,7 @@ unstring_fixed( const cblc_referlet_t *id2,
     // Update the state variables:
     tally += 1;
     nreceiver += 1;
-    if( best_delimiter != ndelimiteds )
-      {
-      pointer = left+1 ;
-      }
+    pointer = left+1 ;
     }
 
 done:

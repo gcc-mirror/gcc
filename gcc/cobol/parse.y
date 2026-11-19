@@ -11516,6 +11516,11 @@ intrinsic:      function_udf
                   $$ = new_alphanumeric("CHAR");
                   if( ! intrinsic_call_1($$, CHAR, $r1, @r1)) YYERROR;
                 }
+        |       CHAR_NATIONAL  '(' cexpr[r1] ')' {
+                  location_set(@1);
+                  $$ = new_alphanumeric("CHAR_NATIONAL", current_encoding('N'));
+                  if( ! intrinsic_call_1($$, CHAR, $r1, @r1)) YYERROR;
+                }
                 /* convert formulations:
                  *  1. ANY to ALNUM HEX, or NAT HEX
                  *  2. HEX to BYTE
@@ -12263,7 +12268,7 @@ intrinsic0:     CURRENT_DATE {
 intrinsic_I:    BOOLEAN_OF_INTEGER     { $$ = BOOLEAN_OF_INTEGER;
 		  cbl_unimplemented("BOOLEAN-OF-INTEGER");
 		}
-        |       CHAR_NATIONAL          { $$ = CHAR_NATIONAL; }
+//        |       CHAR_NATIONAL          { $$ = CHAR_NATIONAL; }
         |       DATE_OF_INTEGER        { $$ = DATE_OF_INTEGER; }
         |       DAY_OF_INTEGER         { $$ = DAY_OF_INTEGER; }
         |       FACTORIAL              { $$ = FACTORIAL; }
