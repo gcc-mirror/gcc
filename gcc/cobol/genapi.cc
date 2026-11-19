@@ -2106,7 +2106,7 @@ debug_perform_section(const cbl_label_t *label)
    nonlocal landing points to reload live state for a debugger-forced return.  */
 static void
 save_debug_perform_site(cbl_label_t *start, cbl_proc_t *end, size_t index,
-			tree continuation)
+      tree continuation)
   {
   if( debug_info_level == DINFO_LEVEL_NONE )
     {
@@ -2115,17 +2115,17 @@ save_debug_perform_site(cbl_label_t *start, cbl_proc_t *end, size_t index,
 
   bool generated = start->name[0] == '_';
   int line = generated ? cobol_location().first_line
-		       : current_function->debug_statement_line;
+           : current_function->debug_statement_line;
   int column = generated ? cobol_location().first_column
-			 : current_function->debug_statement_column;
+       : current_function->debug_statement_column;
   const char *file = generated ? current_filename.back().c_str()
-			       : current_function->debug_statement_file.c_str();
+             : current_function->debug_statement_file.c_str();
   tree head = current_function->debug_perform_sites;
   tree record_type = TREE_TYPE(TREE_TYPE(head));
   static size_t serial = 0;
   char name[80];
   snprintf(name, sizeof(name), "_gdb_perform_site_" HOST_SIZE_T_PRINT_DEC,
-	   (fmt_size_t)++serial);
+     (fmt_size_t)++serial);
   tree site = gg_define_variable(record_type, name, vs_static);
   TREE_READONLY(site) = 1;
   TREE_USED(site) = 1;
@@ -2164,15 +2164,15 @@ finish_debug_perform_sites()
       {
       constructor_elt *element = CONSTRUCTOR_ELT(initializer, i);
       if( element->index == start_field )
-	{
-	element->value = gg_cast(CONST_CHAR_P,
-	  gg_string_literal(debug_perform_section(record.start)));
-	}
+  {
+  element->value = gg_cast(CONST_CHAR_P,
+    gg_string_literal(debug_perform_section(record.start)));
+  }
       else if( element->index == end_field )
-	{
-	element->value = gg_cast(CONST_CHAR_P,
-	  gg_string_literal(debug_perform_section(record.end)));
-	}
+  {
+  element->value = gg_cast(CONST_CHAR_P,
+    gg_string_literal(debug_perform_section(record.end)));
+  }
       }
     }
   }
@@ -2188,31 +2188,31 @@ create_debug_perform_sites()
     }
   tree record_type = make_node(RECORD_TYPE);
   tree type_decl = build_decl(UNKNOWN_LOCATION, TYPE_DECL,
-			      get_identifier("__gg__debug_perform_site_v2"),
-			      record_type);
+            get_identifier("__gg__debug_perform_site_v2"),
+            record_type);
   TYPE_NAME(record_type) = type_decl;
   TYPE_STUB_DECL(record_type) = type_decl;
   DECL_ARTIFICIAL(type_decl) = 1;
   tree pointer_type = build_pointer_type(record_type);
   tree types[] = {UINT, VOID_P, SIZE_T, VOID_P, CONST_CHAR_P, CONST_CHAR_P,
-		  CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P,
-		  UINT, UINT, UINT, pointer_type};
+      CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P, CONST_CHAR_P,
+      UINT, UINT, UINT, pointer_type};
   const char *names[] = {"version", "end_signature", "dispatch_index",
-			 "continuation", "program", "file", "start", "through",
-			 "start_section", "through_section", "line", "column",
-			 "generated", "next"};
+       "continuation", "program", "file", "start", "through",
+       "start_section", "through_section", "line", "column",
+       "generated", "next"};
   tree *link = &TYPE_FIELDS(record_type);
   for( size_t i = 0; i < ARRAY_SIZE(types); i += 1 )
     {
     tree field = build_decl(UNKNOWN_LOCATION, FIELD_DECL,
-			    get_identifier(names[i]), types[i]);
+          get_identifier(names[i]), types[i]);
     DECL_CONTEXT(field) = record_type;
     *link = field;
     link = &DECL_CHAIN(field);
     }
   layout_type(record_type);
   tree head = gg_define_variable(pointer_type, "_gdb_perform_sites", vs_static,
-				 gg_cast(pointer_type, null_pointer_node));
+         gg_cast(pointer_type, null_pointer_node));
   TREE_READONLY(head) = 1;
   TREE_USED(head) = 1;
   DECL_PRESERVE_P(head) = 1;
@@ -2896,7 +2896,7 @@ internal_perform_through( cbl_label_t *proc_1,
                                   return_address_decl);
 
   save_debug_perform_site(proc_1, proc2, dispatch_index,
-			   return_address_decl);
+         return_address_decl);
 
   // Put the dispatch_index for this PERFORM onto the stack
   pseudo_return_push(proc2, dispatch_index);
@@ -7461,11 +7461,11 @@ parser_division(cbl_division_t division,
       // One-based active bookmark identity, retained separately in every frame.
       tree marker_type = build_qualified_type(SIZE_T, TYPE_QUAL_VOLATILE);
       tree marker = gg_define_variable(marker_type, "_gdb_perform_invocation",
-					vs_stack);
+          vs_stack);
       TREE_THIS_VOLATILE(marker) = 1;
       TREE_SIDE_EFFECTS(marker) = 1;
       gg_assign(marker, gg_cast(marker_type,
-	gg_call_expr(SIZE_T, "__gg__debug_pseudo_return_bookmark", NULL_TREE)));
+  gg_call_expr(SIZE_T, "__gg__debug_pseudo_return_bookmark", NULL_TREE)));
       }
     else
       {
@@ -9424,7 +9424,7 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
                   __gg__iconverter(parent->codeset.default_encodings.source->type,
                                    parent->codeset.encoding,
                                    src->first.name(),
-                                   strlen(src->first.name())+1,
+                                   strlen(src->first.name()),
                                    &converted_bytes);
     gg_call(VOID,
             "__gg__refer_from_string",
@@ -9432,6 +9432,7 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
             size_t_zero_node,
             build_int_cst_type(SIZE_T, parent->data.capacity()),
             build_string_literal(converted_bytes, converted),
+            build_int_cst_type(SIZE_T, converted_bytes),
             NULL_TREE);
     }
   else

@@ -12709,24 +12709,15 @@ void
 __gg__refer_from_string(cblc_field_t *field,
                          size_t field_offset,
                          size_t field_size,
-                   const char *string)
+                   const char *string,
+                         size_t string_length)
   {
-  // 'string' has to be in the 'field' encoding.  Use this when the input
-  // might, or might not, be nul-terminated, and you don't want a
-  // nul-terminator in the data of the target field.  For intermediates, the
-  // string must be nul-terminated
-  const charmap_t *charmap = __gg__get_charmap(field->encoding);
-  if( field->attr & intermediate_e )
-    {
-    field_size = SSIZE_MAX;
-    }
-  size_t nbytes = charmap->strlen(string, field_size);
-  if( field->attr & intermediate_e )
-    {
-    __gg__adjust_dest_size(field, nbytes);
-    field_size  = nbytes;
-    }
-  __gg__field_from_string(field, field_offset, field_size, string, nbytes);
+  // 'string' has to be in the 'field' encoding.
+  __gg__field_from_string(field,
+                          field_offset,
+                          field_size,
+                          string,
+                          string_length);
   }
 
 extern "C"
