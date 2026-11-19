@@ -1937,10 +1937,8 @@
       DONE;
     }
 
-  /* If the source is a register and we do not have ZBB or similar
-     extensions with similar capabilities, then emit the two
-     shifts now.  */
-  if (!TARGET_ZBB && !TARGET_XTHEADBB
+  /* Emit the two shifts now if the target has no halfword extension.  */
+  if (!TARGET_ZBB && !TARGET_ZBKB && !TARGET_XTHEADBB
       && !TARGET_XTHEADMEMIDX && !TARGET_XANDESPERF
       && register_operand (operands[1], HImode))
     {
@@ -1959,7 +1957,7 @@
 (define_insn "*zero_extendhi<GPR:mode>2"
   [(set (match_operand:GPR    0 "register_operand"     "=r")
 	(zero_extend:GPR (match_operand:HI 1 "memory_operand" "m")))]
-  "!TARGET_ZBB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
+  "!TARGET_ZBB && !TARGET_ZBKB && !TARGET_XTHEADBB && !TARGET_XTHEADMEMIDX
    && !TARGET_XANDESPERF"
   "lhu\t%0,%1"
   [(set_attr "move_type" "load")

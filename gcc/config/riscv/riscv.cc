@@ -4543,7 +4543,12 @@ riscv_extend_cost (rtx op, bool unsigned_p)
   if (TARGET_ZBA && TARGET_64BIT && unsigned_p && GET_MODE (op) == SImode)
     return COSTS_N_INSNS (1);
 
-  /* ZBB provide zext.h, sext.b and sext.h.  */
+  /* Zbkb provides zext.h through pack or packw with rs2 = x0.  */
+  if (TARGET_ZBKB && !TARGET_XTHEADMEMIDX && unsigned_p
+      && GET_MODE (op) == HImode)
+    return COSTS_N_INSNS (1);
+
+  /* Zbb provides zext.h, sext.b and sext.h.  */
   if (TARGET_ZBB)
     {
       if (!unsigned_p && GET_MODE (op) == QImode)
