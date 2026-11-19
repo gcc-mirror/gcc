@@ -6757,7 +6757,7 @@ sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
        Vector ABI (as implemented by the Sun VIS SDK) says that integer
        vectors are passed like floats of the same size, that is in
        registers up to 8 bytes.  Pass all vector floats by reference
-       like structure and unions.  */
+       like structures and unions.  */
     return ((type && (AGGREGATE_TYPE_P (type) || VECTOR_FLOAT_TYPE_P (type)))
 	    || mode == SCmode
 	    /* Catch CDImode, TFmode, DCmode and TCmode.  */
@@ -6777,7 +6777,7 @@ sparc_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 
        Vector ABI (as implemented by the Sun VIS SDK) says that integer
        vectors are passed like floats of the same size, that is in
-       registers (up to 16 bytes).  Pass all vector floats like structure
+       registers (up to 16 bytes).  Pass all vector floats like structures
        and unions.  */
     return ((type
 	     && (AGGREGATE_TYPE_P (type) || VECTOR_TYPE_P (type))
@@ -6911,9 +6911,13 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
   else
     *ppadding = 0;
 
+  /* Skip libcalls.  */
+  if (!type)
+    ;
+
   /* Vector types deserve special treatment because they are polymorphic wrt
      their mode, depending upon whether VIS instructions are enabled.  */
-  if (type && VECTOR_TYPE_P (type))
+  else if (VECTOR_TYPE_P (type))
     {
       if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (type)))
 	{
@@ -6933,6 +6937,10 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
 	  mclass = MODE_FLOAT;
 	}
     }
+
+  /* Structures and unions are handled independently of their mode.  */
+  else if (TREE_CODE (type) == RECORD_TYPE || TREE_CODE (type) == UNION_TYPE)
+    mclass = MODE_RANDOM;
 
   switch (mclass)
     {
@@ -6968,7 +6976,7 @@ function_arg_slotno (const struct sparc_args *cum, machine_mode mode,
       if (mode == VOIDmode)
 	return -1;
 
-      if (TARGET_64BIT && TARGET_FPU && named
+      if (TARGET_ARCH64 && TARGET_FPU && named
 	  && type
 	  && (TREE_CODE (type) == RECORD_TYPE || VECTOR_TYPE_P (type)))
 	{
@@ -7409,27 +7417,26 @@ sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
   const CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   const int regbase
     = incoming ? SPARC_INCOMING_INT_ARG_FIRST : SPARC_OUTGOING_INT_ARG_FIRST;
+  const tree type = arg.type;
+  const machine_mode mode = arg.mode;
+  const enum mode_class mclass = GET_MODE_CLASS (mode);
+  const bool named = arg.named;
   int slotno, regno, padding;
-  tree type = arg.type;
-  machine_mode mode = arg.mode;
-  enum mode_class mclass = GET_MODE_CLASS (mode);
-  bool named = arg.named;
 
   slotno
     = function_arg_slotno (cum, mode, type, named, incoming, &regno, &padding);
+
+  /* Return zero if the argument is passed on the stack.  */
   if (slotno == -1)
-    return 0;
+    return NULL_RTX;
 
-  /* Integer vectors are handled like floats as per the Sun VIS SDK.  */
-  if (type && VECTOR_INTEGER_TYPE_P (type))
-    mclass = MODE_FLOAT;
-
-  if (TARGET_ARCH32)
+  /* In the 32-bit ABI, all arguments use a single register.  */
+  else if (TARGET_ARCH32)
     return gen_rtx_REG (mode, regno);
 
   /* Structures up to 16 bytes in size are passed in arg slots on the stack
      and are promoted to registers if possible.  */
-  if (type && TREE_CODE (type) == RECORD_TYPE)
+  else if (type && TREE_CODE (type) == RECORD_TYPE)
     {
       const int size = int_size_in_bytes (type);
       gcc_assert (size <= 16);
@@ -7455,16 +7462,21 @@ sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
       return function_arg_vector_value (size, slotno, named, regno);
     }
 
-  /* v9 fp args in reg slots beyond the int reg slots get passed in regs
+  /* Integer vectors are handled like floats as per the Sun VIS SDK.
+     V9 fp args in reg slots beyond the int reg slots get passed in regs
      but also have the slot allocated for them.
      If no prototype is in scope fp values in register slots get passed
      in two places, either fp regs and int regs or fp regs and memory.  */
-  else if ((mclass == MODE_FLOAT || mclass == MODE_COMPLEX_FLOAT)
+  else if (((type && VECTOR_INTEGER_TYPE_P (type))
+	    || mclass == MODE_FLOAT
+	    || mclass == MODE_COMPLEX_FLOAT)
 	   && SPARC_FP_REG_P (regno))
     {
       rtx reg = gen_rtx_REG (mode, regno);
+
       if (cum->prototype_p || cum->libcall_p)
 	return reg;
+
       else
 	{
 	  rtx v0, v1;
@@ -7485,14 +7497,14 @@ sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
 	      v0 = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
 	      v1 = gen_rtx_EXPR_LIST (VOIDmode, gen_rtx_REG (mode, intreg),
 				      const0_rtx);
-	      return gen_rtx_PARALLEL (mode, gen_rtvec (2, v0, v1));
 	    }
 	  else
 	    {
 	      v0 = gen_rtx_EXPR_LIST (VOIDmode, NULL_RTX, const0_rtx);
 	      v1 = gen_rtx_EXPR_LIST (VOIDmode, reg, const0_rtx);
-	      return gen_rtx_PARALLEL (mode, gen_rtvec (2, v0, v1));
 	    }
+
+	  return gen_rtx_PARALLEL (mode, gen_rtvec (2, v0, v1));
 	}
     }
 
@@ -7503,10 +7515,14 @@ sparc_function_arg_1 (cumulative_args_t cum_v, const function_arg_info &arg,
       const int size = int_size_in_bytes (type);
       gcc_assert (size <= 16);
 
-      mode = int_mode_for_size (size * BITS_PER_UNIT, 0).else_blk ();
+      return
+	gen_rtx_REG (int_mode_for_size (size * BITS_PER_UNIT, 0).else_blk (),
+		     regno);
     }
 
-  return gen_rtx_REG (mode, regno);
+  /* All other arguments use a single register.  */
+  else
+    return gen_rtx_REG (mode, regno);
 }
 
 /* Handle the TARGET_FUNCTION_ARG target hook.  */
@@ -7683,8 +7699,8 @@ sparc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
        Vector ABI (as implemented by the Sun VIS SDK) says that vector
        integers are returned like floats of the same size, that is in
        registers up to 8 bytes and in memory otherwise.  Return all
-       vector floats in memory like structure and unions; note that
-       they always have BLKmode like the latter.  */
+       vector floats in memory like structures and unions; note that
+       they always have BLKmode.  */
     return (TYPE_MODE (type) == BLKmode
 	    || TYPE_MODE (type) == TFmode
 	    || (TREE_CODE (type) == VECTOR_TYPE
@@ -7701,8 +7717,8 @@ sparc_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
        Vector ABI (as implemented by the Sun VIS SDK) says that vector
        integers are returned like floats of the same size, that is in
-       registers.  Return all vector floats like structure and unions;
-       note that they always have BLKmode like the latter.  */
+       registers.  Return all vector floats like structures and unions;
+       note that they always have BLKmode.  */
     return (TYPE_MODE (type) == BLKmode
 	    && (unsigned HOST_WIDE_INT) int_size_in_bytes (type) > 32);
 }
