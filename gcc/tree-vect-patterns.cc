@@ -7129,6 +7129,14 @@ vect_determine_min_output_precision_1 (vec_info *vinfo,
 	  && use->use != gimple_assign_rhs2_ptr (assign)
 	  && use->use != gimple_assign_rhs3_ptr (assign))
 	return false;
+      /* The input precision recorded for shifts applies only to the
+	 shifted value, not the shift amount.  */
+      gassign *use_assign = dyn_cast <gassign *> (use_stmt);
+      if (use_assign
+	  && (gimple_assign_rhs_code (use_assign) == LSHIFT_EXPR
+	      || gimple_assign_rhs_code (use_assign) == RSHIFT_EXPR)
+	  && use->use != gimple_assign_rhs1_ptr (use_assign))
+	return false;
       precision = MAX (precision, use_stmt_info->min_input_precision);
     }
 
@@ -7296,7 +7304,12 @@ vect_determine_precisions_from_range (stmt_vec_info stmt_info, gassign *stmt)
 		     value_precision, (gimple *) stmt);
 
   vect_set_operation_type (stmt_info, type, value_precision, sign);
-  vect_set_min_input_precision (stmt_info, type, value_precision);
+  /* Non-truncatable operations like division depend on all bits of their
+     inputs if the operation itself is not narrowed - which we cannot
+     guarantee if doing BB vectorization.  So do not claim that only
+     VALUE_PRECISION bits of the inputs are needed.  */
+  if (vect_truncatable_operation_p (code))
+    vect_set_min_input_precision (stmt_info, type, value_precision);
 }
 
 /* Use information about the users of STMT's result to decide whether
