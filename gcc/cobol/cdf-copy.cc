@@ -258,8 +258,9 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
   }
 
   char *path = NULL;
+  bool absolutely = '/' == source.name[0];
 
-  if( dname || library.name ) {
+  if( (dname || library.name) && ! absolutely ) {
     if( dname && library.name ) {
       path = xasprintf( "%s/%s/%s", dname, library.name, source.name );
     } else {
@@ -298,7 +299,7 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
   gcc_assert( ! literally );
 
   free(copier);
-  
+
   extern int yydebug;
   if( yydebug ) {
     std::string pattern(path);
@@ -317,7 +318,7 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
     std::string pattern(path);
     pattern += suffix;
     auto filename = pattern.c_str();
-    
+
     if( (this->fd = open(filename, O_RDONLY)) != -1 ) {
       struct stat sb;
       if (fstat(fd, &sb)) {
