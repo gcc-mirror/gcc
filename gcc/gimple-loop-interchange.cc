@@ -1323,6 +1323,10 @@ compute_access_stride (class loop *&loop_nest, class loop *loop,
       else
 	return;
     }
+  else if (TREE_CODE (ref) == BIT_FIELD_REF)
+    /* We can't take address of bitfields.  Just use address of the
+       base, for analysis of the strides that shouldn't matter.  */
+    ref = TREE_OPERAND (ref, 0);
   tree scev_base = build_fold_addr_expr (ref);
   tree scev = analyze_scalar_evolution (loop, scev_base);
   if (chrec_contains_undetermined (scev))
