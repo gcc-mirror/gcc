@@ -561,18 +561,6 @@ prange::set_addr (tree expr, bool known_p)
   if (!is_gimple_min_invariant (expr))
     return;
 
-  aff_tree offset;
-  poly_widest_int size;
-  tree obj = TREE_OPERAND (expr, 0);
-  tree base = get_inner_reference_aff (obj, &offset, &size);
-
-  if (!base)
-    return;
-  if (!offset.offset.is_constant ())
-    return;
-  if (!size.is_constant ())
-    return;
-
   m_addr = expr;
   m_known_p = known_p;
   m_kind = VR_RANGE;
@@ -599,58 +587,6 @@ prange::clear_function_local_addr ()
   return false;
 }
 
-// Return object/allocation the pointer refers into, otherwise NULL_TREE.
-
-tree
-prange::addr_base () const
-{
-  if (!m_addr || !m_known_p)
-    return NULL_TREE;
-
-  aff_tree off;
-  poly_widest_int sz;
-
-  gcc_checking_assert (m_addr);
-  return get_inner_reference_aff (m_addr, &off, &sz);
-}
-
-// Return possible byte offset range from BASE.
-
-void
-prange::addr_offset (irange &r) const
-{
-  aff_tree off;
-  poly_widest_int sz;
-
-  gcc_checking_assert (m_addr);
-  gcc_checking_assert (m_known_p);
-
-  get_inner_reference_aff (m_addr, &off, &sz);
-  gcc_checking_assert (off.offset.is_constant ());
-
-  widest_int w = off.offset.coeffs[0];
-  wide_int w2 = wi::to_wide (wide_int_to_tree (sizetype, w));
-  r.set (sizetype, w2, w2);
-}
-
-// Return possible size range of the referenced object.
-
-void
-prange::addr_size (irange &r) const
-{
-  aff_tree off;
-  poly_widest_int sz;
-
-  gcc_checking_assert (m_addr);
-  gcc_checking_assert (m_known_p);
-
-  get_inner_reference_aff (m_addr, &off, &sz);
-  gcc_checking_assert (sz.is_constant ());
-
-  widest_int w = sz.coeffs[0];
-  wide_int w2 = wi::to_wide (wide_int_to_tree (sizetype, w));
-  r.set (sizetype, w2, w2);
-}
 // Prange implementation.
 
 void

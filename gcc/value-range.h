@@ -480,15 +480,6 @@ public:
   // from the other,  Ie, both known and excluded
   bool addr_inverted_p (const prange &r) const;
 
-  // These routines decompose addr to its component parts for a known address.
-
-  // addr_base () - object/allocation the pointer refers into.
-  tree addr_base () const;
-  // addr_offset () - possible byte offset range from BASE.
-  void addr_offset (irange &) const;
-  // addr_size () - possible size range of the referenced object.
-  void addr_size (irange &) const;
-
 protected:
   bool varying_compatible_p () const;
 

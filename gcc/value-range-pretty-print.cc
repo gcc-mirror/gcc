@@ -129,29 +129,6 @@ vrange_printer::print_addr (const prange &r) const
       else
 	pp_string (pp, " ! -> ");
       dump_generic_node (pp, addr, 0, TDF_NONE | TDF_NOUID, false);
-      if (known_p)
-	{
-	  int_range_max sz;
-	  int_range_max off;
-	  tree b;
-	  b = r.addr_base ();
-	  r.addr_offset(off);
-	  r.addr_size (sz);
-	  pp_string (pp, " { Base: ");
-	  dump_generic_node (pp, b, 0, TDF_NONE | TDF_NOUID, false);
-	  if (!off.varying_p () && !off.undefined_p () && !off.zero_p ())
-	    {
-	      pp_string (pp, " ; Off: ");
-	      visit (off);
-	    }
-	  if (!sz.varying_p () && !sz.undefined_p ())
-	      {
-		pp_string (pp, " ; Size: ");
-		visit (sz);
-	      }
-	  pp_string (pp, " }");
-	}
-
     }
 }
 
