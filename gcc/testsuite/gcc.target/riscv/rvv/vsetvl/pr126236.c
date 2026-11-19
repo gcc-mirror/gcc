@@ -2,6 +2,10 @@
 /* { dg-do run { target { riscv_v } } } */
 /* { dg-additional-options "-std=c99 -O2 -fduplicate-switch-dispatch -mno-explicit-relocs -fdump-rtl-compgotos" } */
 
+/* Keep the eight-way switch eligible for a jump table so vsetvl sees
+   incoming edges from dispatches that share the table.  */
+/* { dg-additional-options "--param=case-values-threshold=5" } */
+
 /* Execute each ordered pair of handlers with different vector configurations.
    The reference uses the same unsigned operations without vectorization.  */
 

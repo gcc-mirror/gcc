@@ -300,6 +300,7 @@ struct riscv_tune_param
   const char *jump_align;
   const char *loop_align;
   bool prefer_agnostic;
+  unsigned short case_values_threshold = 0;
   unsigned short int_reassoc_width = 1;
   unsigned short fp_reassoc_width = 1;
   unsigned short vec_reassoc_width = 1;
@@ -727,6 +728,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   NULL,						/* jump_align */
   NULL,						/* loop_align */
   true,						/* prefer-agnostic.  */
+  0,						/* case_values_threshold.  */
   2,						/* int_reassoc_width.  */
   2,						/* fp_reassoc_width.  */
   1,						/* vec_reassoc_width.  */
@@ -815,6 +817,7 @@ static const struct riscv_tune_param xt_c9501_tune_info = {
   "8",						/* jump_align */
   "16",						/* loop_align */
   true,						/* prefer-agnostic.  */
+  11,						/* case_values_threshold.  */
   3,						/* int_reassoc_width.  */
   2,						/* fp_reassoc_width.  */
   1,						/* vec_reassoc_width.  */
@@ -1019,6 +1022,7 @@ static const struct riscv_tune_param spacemit_x100_tune_info = {
   NULL,						/* jump_align */
   NULL,						/* loop_align */
   true,						/* prefer-agnostic.  */
+  11,						/* case_values_threshold.  */
 };
 
 /* Costs to use when optimizing for Andes 23 series.  */
@@ -2462,6 +2466,16 @@ riscv_cannot_force_const_mem (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
     return true;
 
   return false;
+}
+
+/* Implement TARGET_CASE_VALUES_THRESHOLD.  */
+
+static unsigned int
+riscv_case_values_threshold (void)
+{
+  if (!optimize_size && tune_param->case_values_threshold)
+    return tune_param->case_values_threshold;
+  return default_case_values_threshold ();
 }
 
 /* Return true if register REGNO is a valid base register for mode MODE.
@@ -17455,6 +17469,9 @@ riscv_memtag_tag_bitsize ()
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM riscv_cannot_force_const_mem
+
+#undef TARGET_CASE_VALUES_THRESHOLD
+#define TARGET_CASE_VALUES_THRESHOLD riscv_case_values_threshold
 
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P riscv_legitimate_constant_p
