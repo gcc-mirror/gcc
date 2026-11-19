@@ -2263,7 +2263,6 @@ factor_out_operators (tree *res, gimple_stmt_iterator *gsi,
 		      tree *arg0, tree *arg1, gphi *phi)
 {
   gimple_match_op arg0_op, arg1_op;
-  bool repeated = false;
 
 again:
   if (TREE_CODE (*arg0) != SSA_NAME || TREE_CODE (*arg1) != SSA_NAME)
@@ -2274,9 +2273,7 @@ again:
 
   /* If either args have > 1 use, then this transformation actually
      increases the number of expressions evaluated at runtime.  */
-  if (repeated
-      ? (!has_zero_uses (*arg0) || !has_zero_uses (*arg1))
-      : (!has_single_use (*arg0) || !has_single_use (*arg1)))
+  if (!has_single_use (*arg0) || !has_single_use (*arg1))
     return;
 
   gimple *arg0_def_stmt = SSA_NAME_DEF_STMT (*arg0);
@@ -2380,7 +2377,6 @@ again:
   gimple_phi_arg (phi, 1)->def = new_arg1;
   update_stmt (phi);
 
-  repeated = true;
   goto again;
 }
 
