@@ -1976,7 +1976,7 @@ bit_vector_manager::get_tristate_bits (const symbolic_bit_size &num_bits,
     return *(iter->second);
   auto bv_up = std::make_unique<symbolic::tristate_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_tristate_map.insert ({k, std::move (bv_up)});
+  m_tristate_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2174,7 +2174,7 @@ get_concat_bits (std::vector<const bit_vector *> bvs)
 
   auto bv_up = std::make_unique<symbolic::concat_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_concat_map.insert ({k, std::move (bv_up)});
+  m_concat_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2198,7 +2198,7 @@ bit_vector_manager::get_conjured_bits (const gimple *stmt,
     }
   auto bv_up = std::make_unique<symbolic::conjured_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_conjured_map.insert ({k, std::move (bv_up)});
+  m_conjured_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2433,7 +2433,7 @@ get_cropped_bits (const bit_vector &inner_bv,
     return *(iter->second);
   auto bv_up = std::make_unique<cropped_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_cropped_map.insert ({k, std::move (bv_up)});
+  m_cropped_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2489,7 +2489,7 @@ get_repeated_bits (const bit_vector &inner_bv,
     return *(iter->second);
   auto bv_up = std::make_unique<repeated_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_repeated_map.insert ({k, std::move (bv_up)});
+  m_repeated_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2624,7 +2624,7 @@ bit_vector_manager::get_bit_vector_from_svalue (const svalue &sval)
     return *(iter->second);
   auto bv_up = std::make_unique<symbolic::bit_vector_from_svalue> (*this, k);
   auto &result = *bv_up.get ();
-  m_svalue_to_bv_map.insert ({k, std::move (bv_up)});
+  m_svalue_to_bv_map.emplace (k, std::move (bv_up));
   return result;
 }
 
@@ -2656,7 +2656,7 @@ bit_vector_manager::get_poisoned_bits (const symbolic_bit_size &num_bits,
 
   auto bv_up = std::make_unique<poisoned_bit_vector> (*this, k);
   auto &result = *bv_up.get ();
-  m_poisoned_map.insert ({k, std::move (bv_up)});
+  m_poisoned_map.emplace (k, std::move (bv_up));
   return result;
 }
 

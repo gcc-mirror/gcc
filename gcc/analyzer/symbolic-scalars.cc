@@ -1446,7 +1446,7 @@ scalar_manager<ConcreteValueType>::get_concrete (const ConcreteValueType &value)
      *this,
      value);
   auto &result = *s.get ();
-  m_concrete_map.insert ({value, std::move (s)});
+  m_concrete_map.emplace (value, std::move (s));
   return result;
 }
 
@@ -1559,7 +1559,7 @@ get_sum_unmemoized (const typename sum<ConcreteValueType>::memoization_key &memo
 						     *this,
 						     ck);
   auto &result = *s.get ();
-  m_sum_map.insert ({std::move (ck), std::move (s)});
+  m_sum_map.emplace (std::move (ck), std::move (s));
   return result;
 }
 
@@ -1738,7 +1738,7 @@ get_product (const scalar<ConcreteValueType> &lhs,
 						    *this,
 						    k);
   auto &result = *s.get ();
-  m_product_map.insert ({std::move (k), std::move (s)});
+  m_product_map.emplace (std::move (k), std::move (s));
   return result;
 }
 
@@ -1789,7 +1789,7 @@ scalar_manager<ConcreteValueType>::get_scalar_from_svalue (const svalue &sval)
      *this,
      k);
   auto &result = *s.get ();
-  m_scalar_from_svalue_map.insert ({std::move (k), std::move (s)});
+  m_scalar_from_svalue_map.emplace (std::move (k), std::move (s));
   return result;
 }
 
@@ -1935,7 +1935,7 @@ get_bits_from_bytes (const symbolic_byte_size &bytes)
      *this,
      k);
   auto &result = *s.get ();
-  m_bits_from_bytes_map.insert ({std::move (k), std::move (s)});
+  m_bits_from_bytes_map.emplace (std::move (k), std::move (s));
   return result;
 }
 

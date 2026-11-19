@@ -106,6 +106,8 @@ concrete::range<ConcreteValueType>::dump_to_pp (pretty_printer *pp) const
 
 /* "_pretty" variant.  Same for bytes  */
 
+namespace concrete {
+
 template<>
 void
 concrete_byte_range::dump_to_pp_pretty (pretty_printer *pp) const
@@ -147,6 +149,8 @@ concrete_byte_range::dump () const
   pp_newline (&pp);
   pp_flush (&pp);
 }
+
+} // namespace concrete
 
 template<typename ConcreteValueType>
 int

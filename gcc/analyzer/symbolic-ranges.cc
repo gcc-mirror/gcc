@@ -67,6 +67,8 @@ void
 symbolic::range<integer_with_unit<units::bit>>::
 accept_node_visitor (node_visitor &v) const;
 
+namespace symbolic {
+
 template<>
 DEBUG_FUNCTION void
 symbolic_bit_range::dump () const
@@ -80,6 +82,8 @@ symbolic_byte_range::dump () const
 {
   symbolic::dump_node_tree_to_stderr<symbolic_byte_range> (*this);
 }
+
+} // namespace symbolic
 
 template<typename ConcreteValueType>
 void

@@ -637,7 +637,7 @@ unfoldable_bit_contents::get_bits (const symbolic_bit_range &bit_range) const
   auto bv_up
     = std::make_unique<symbolic::bit_vector_from_ubc> (*this, bit_range);
   auto &result = *bv_up;
-  m_range_to_bv_map.insert ({bit_range, std::move (bv_up)});
+  m_range_to_bv_map.emplace (bit_range, std::move (bv_up));
   return result;
 }
 
@@ -2364,7 +2364,7 @@ bit_contents_manager::get_untracked (value_set maybe_live)
 
   auto p = std::make_unique<untracked_bit_contents> (m_node_mgr, k);
   auto &result = *p;
-  m_untracked_bit_contents.insert ({k, std::move (p)});
+  m_untracked_bit_contents.emplace (k, std::move (p));
   return result;
 }
 
@@ -2433,7 +2433,7 @@ get_concrete_bit_overlay (concrete_bit_overlay::key k,
 
   auto p = std::make_unique<concrete_bit_overlay> (k);
   auto &result = *p;
-  m_concrete_bit_overlays.insert ({k, std::move (p)});
+  m_concrete_bit_overlays.emplace (k, std::move (p));
   return result;
 }
 
@@ -2496,7 +2496,7 @@ get_symbolic_bit_overlay (symbolic_bit_overlay::key k,
 
   auto p = std::make_unique<symbolic_bit_overlay> (k);
   auto &result = *p;
-  m_symbolic_bit_overlays.insert ({k, std::move (p)});
+  m_symbolic_bit_overlays.emplace (k, std::move (p));
   return result;
 }
 
@@ -2654,7 +2654,7 @@ get_conjured_bit_contents (const region &base_reg,
     }
   auto bc = std::make_unique<symbolic::conjured_bit_contents> (m_node_mgr, k);
   auto &result = *bc.get ();
-  m_conjured_map.insert ({k, std::move (bc)});
+  m_conjured_map.emplace (k, std::move (bc));
   return result;
 }
 
@@ -2690,7 +2690,7 @@ get_offset_bit_contents (const bit_contents &inner_bc,
 
   auto bc = std::make_unique<symbolic::offset_bit_contents> (m_node_mgr, k);
   auto &result = *bc.get ();
-  m_offset_map.insert ({k, std::move (bc)});
+  m_offset_map.emplace (k, std::move (bc));
   return result;
 }
 
