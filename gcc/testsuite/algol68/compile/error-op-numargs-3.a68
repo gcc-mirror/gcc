@@ -1,0 +1,8 @@
+begin
+  op FOO = (real x) real: 1.11; { dg-error "number of operands" }
+  op BAR = real: 2.22; { dg-error "number of operands" }
+
+  real y := FOO(0.0);
+  real z := BAR(0.0);
+  skip
+end

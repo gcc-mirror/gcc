@@ -1099,11 +1099,12 @@ check_operator_dec (NODE_T *p, MOID_T *u)
 
   if (u == NO_MOID)
     {
-      NODE_T *pack = SUB_SUB (NEXT_NEXT (p)); /* Where the parameter pack
-						 is.  */
-      if (ATTRIBUTE (NEXT_NEXT (p)) != ROUTINE_TEXT)
-	pack = SUB (pack);
-      k = 1 + a68_count_operands (pack);
+      if (IS (NEXT_NEXT (p), ROUTINE_TEXT)
+	  && IS (SUB (NEXT_NEXT (p)), PARAMETER_PACK))
+	{
+	  NODE_T *pack = SUB_SUB (NEXT_NEXT (p));
+	  k = 1 + a68_count_operands (pack);
+	}
     }
   else
     k = a68_count_pack_members (PACK (u));

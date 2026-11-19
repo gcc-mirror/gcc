@@ -1,0 +1,4 @@
+begin
+      op BAZ = int: 10; { dg-error "number of operands" }
+      skip
+end
