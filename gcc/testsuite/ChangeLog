@@ -1,3 +1,10 @@
+2026-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/pr119136.f90: New test.
+
 2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:

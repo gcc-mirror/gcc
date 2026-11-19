@@ -1,3 +1,10 @@
+2026-11-18  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-01-06  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* libgfortran.h: Add enum for new LIBERROR_RECURSIVE_IO.
+
 2026-11-12  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
