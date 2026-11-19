@@ -10921,7 +10921,8 @@ vect_slp_function (function *fun)
 	 value we have to insert on edges when inserting after it for
 	 a vector containing its definition.  Avoid this for now.  */
       if (gimple *last = *gsi_last_bb (bb))
-	if (gimple_get_lhs (last)
+	if ((gimple_get_lhs (last)
+	     || !zero_ssa_operands (last, SSA_OP_DEF))
 	    && is_ctrl_altering_stmt (last))
 	  {
 	    if (dump_enabled_p ())
