@@ -56,10 +56,11 @@ proc core-diagnostics { } {
     close $f
     catch { exec diff -u $expected $actual } diff
     regsub {\nchild process exited abnormally$} $diff "" diff
-    send_log "diff -u core-1.49.expected core-diagnostics.out:\n$diff\n"
-    send_log "if the change is expected, update the file with\n"
-    send_log "  $srcdir/$subdir/regen-core-expected.sh <build dir>\n"
-    fail "$name: diagnostics differ from core-1.49.expected, see rust.log"
+    # print it, rust.log isn't shown in CI
+    send_user "diff -u core-1.49.expected core-diagnostics.out:\n$diff\n"
+    send_user "if the change is expected, update the file with\n"
+    send_user "  $srcdir/$subdir/regen-core-expected.sh <build dir>\n"
+    fail "$name: diagnostics differ from core-1.49.expected"
 }
 
 set individual_timeout 1200
