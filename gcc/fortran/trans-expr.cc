@@ -1791,7 +1791,7 @@ gfc_trans_class_array_init_assign (gfc_expr *rhs, gfc_expr *lhs, gfc_expr *obj)
   res = gfc_trans_call (ppc_code, false, NULL, NULL, false);
   gfc_free_statements (ppc_code);
 
-  if (UNLIMITED_POLY(obj))
+  if (UNLIMITED_POLY(obj) || IS_CLASS_PDT (obj))
     {
       /* Check if rhs is non-NULL. */
       gfc_se src;
