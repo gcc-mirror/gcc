@@ -5885,6 +5885,14 @@ users:
   inactive_email:
   - robert.suchanek@imgtec.com
   - robert.suchanek@mips.com
+- sn: Sun
+  cn: Qin Sun
+  email:
+  - qin.sun@intel.com
+  - qsun@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: qsun
 - sn: Supers1ngular
   cn: Supers1ngular
   email:
