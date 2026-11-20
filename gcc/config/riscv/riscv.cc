@@ -14342,7 +14342,10 @@ singleton_vxrm_need (void)
 	continue;
 
       int vxrm_mode = get_attr_vxrm_mode (insn);
-      if (vxrm_mode == VXRM_MODE_NONE)
+
+      /* Even if the VXRM write at the start is redundant because there is
+	 a call on every path, DCE should take care of it.  */
+      if (vxrm_mode == VXRM_MODE_NONE || vxrm_mode == VXRM_MODE_CLOBBER)
 	continue;
 
       /* If this is the first VXRM need, note it.  */
