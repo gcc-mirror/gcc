@@ -110,7 +110,7 @@ gcc/cp/std-name-hint.h: gcc/cp/std-name-hint.gperf
 gcc/cp/std-name-hint.gperf: gcc/cp/cxxapi-data.csv
 gcc/m2/configure: gcc/m2/configure.ac
 gcc/m2/gm2config.h.in: gcc/m2/configure.ac
-gcc/m2/gm2-libs/config-host: gcc/m2/gm2-libs/config-host.in
+gcc/m2/gm2-libs/config-host: gcc/m2/gm2-libs/config-host.ac
 # testsuite
 # Without this, _Pragma3.c can have a false negative.
 gcc/testsuite/gcc.dg/cpp/_Pragma3.c: gcc/testsuite/gcc.dg/cpp/mi1c.h
