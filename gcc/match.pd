@@ -13547,7 +13547,7 @@ and,
    constraints, and @shift0 ties the shift amount to the inner constants.  */
 (match (mul_carry_low_sum @op0 @op1 @mul_hilo0 @mul_hilo1 @mul_hilo2 @shift0)
   (lshift
-    (convert (gt
+    (convert (gt:c
       @mul_hilo0
       (mul_low_sum @op0 @op1 @mul_hilo1 @mul_hilo2 @shift0
        @1)))
@@ -13557,7 +13557,7 @@ and,
    with no inherent type or halfwidth constraint.  */
 (match (mul_carry_cross_sum @mul_hilo0 @mul_hilo1 @mul_hilo2)
   (lshift
-    (convert (gt
+    (convert (gt:c
       @mul_hilo0
       (mul_cross_sum @mul_hilo1 @mul_hilo2)))
     INTEGER_CST@0)
