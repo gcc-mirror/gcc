@@ -207,9 +207,9 @@ static const struct tune_params hip12_tunings =
   (AARCH64_FUSE_BASE
    | AARCH64_FUSE_CMP_CSEL
    | AARCH64_FUSE_CMP_CSET), /* fusible_ops  */
-  "16", /* function_align.  */
+  "32", /* function_align.  */
   "4",  /* jump_align.  */
-  "8",  /* loop_align.  */
+  "32:16",  /* loop_align.  */
   2,    /* int_reassoc_width.  */
   4,    /* fp_reassoc_width.  */
   2,    /* fma_reassoc_width.  */
