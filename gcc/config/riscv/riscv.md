@@ -2637,8 +2637,8 @@
 })
 
 (define_insn "*movdi_32bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m,r")
-	(match_operand:DI 1 "move_operand"         " r,i,m,rJ,*J*r,*m,*f,*f,*f,vp"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*th_m_fpr,r")
+	(match_operand:DI 1 "move_operand"         " r,i,m,rJ,*J*r,*th_m_fpr,*f,*f,*f,vp"))]
   "!TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -2649,8 +2649,8 @@
    (set_attr "ext" "base,base,base,base,d,d,d,d,d,vector")])
 
 (define_insn "*movdi_64bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*m,r")
-	(match_operand:DI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,*f,vp"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*th_m_fpr,r")
+	(match_operand:DI 1 "move_operand"         " r,T,m,rJ,*r*J,*th_m_fpr,*f,*f,*f,vp"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
@@ -2683,16 +2683,16 @@
 })
 
 (define_insn "*movsi_internal"
-  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*m,r")
-	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*m,*f,*f,vp"))]
+  [(set (match_operand:SI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*f,*r,*f,*th_m_fpr,r")
+	(match_operand:SI 1 "move_operand"         " r,T,m,rJ,*r*J,*th_m_fpr,*f,*f,*f,vp"))]
   "(register_operand (operands[0], SImode)
     || reg_or_0_operand (operands[1], SImode))
     && !(REG_P (operands[1]) && VL_REG_P (REGNO (operands[1])))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fpstore,rdvlenb")
+  [(set_attr "move_type" "move,const,load,store,mtc,fpload,mfc,fmove,fpstore,rdvlenb")
    (set_attr "mode" "SI")
-   (set_attr "type" "move,move,load,store,mtc,fpload,mfc,fpstore,move")
-   (set_attr "ext" "base,base,base,base,f,f,f,f,vector")])
+   (set_attr "type" "move,move,load,store,mtc,fpload,mfc,fmove,fpstore,move")
+   (set_attr "ext" "base,base,base,base,f,f,f,f,f,vector")])
 
 ;; 16-bit Integer moves
 
@@ -2711,15 +2711,15 @@
 })
 
 (define_insn "*movhi_internal"
-  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r,r")
-	(match_operand:HI 1 "move_operand"	   " r,T,m,rJ,*r*J,*f,vp"))]
+  [(set (match_operand:HI 0 "nonimmediate_operand" "=r,r,r, m,  *f,*r,*f,r")
+	(match_operand:HI 1 "move_operand"	   " r,T,m,rJ,*r*J,*f,*f,vp"))]
   "(register_operand (operands[0], HImode)
     || reg_or_0_operand (operands[1], HImode))"
   { return riscv_output_move (operands[0], operands[1]); }
-  [(set_attr "move_type" "move,const,load,store,mtc,mfc,rdvlenb")
+  [(set_attr "move_type" "move,const,load,store,mtc,mfc,fmove,rdvlenb")
    (set_attr "mode" "HI")
-   (set_attr "type" "move,move,load,store,mtc,mfc,move")
-   (set_attr "ext" "base,base,base,base,f,f,vector")])
+   (set_attr "type" "move,move,load,store,mtc,mfc,fmove,move")
+   (set_attr "ext" "base,base,base,base,f,f,f,vector")])
 
 ;; HImode constant generation; see riscv_move_integer for details.
 ;; si+si->hi without truncation is legal because of

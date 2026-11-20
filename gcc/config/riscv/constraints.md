@@ -354,6 +354,15 @@
 		 (and (match_test "!th_memidx_legitimate_index_p (op, false)")
 		      (match_test "!th_memidx_legitimate_index_p (op, true)"))))))
 
+(define_memory_constraint "th_m_fpr"
+  "@internal
+   A memory operand usable by an FPR.  XTheadMemIdx writeback addresses
+   require a GPR, and indexed FPR accesses require XTheadFMemIdx."
+  (and (match_operand 0 "memory_operand")
+       (ior (match_test "satisfies_constraint_th__m__noi (op)")
+	    (and (match_test "TARGET_XTHEADFMEMIDX")
+		 (match_test "th_memidx_legitimate_index_p (op)")))))
+
 ;; CORE-V Constraints
 (define_constraint "CV_alu_pow2"
   "@internal

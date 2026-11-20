@@ -840,6 +840,16 @@ th_memidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
 static const char *
 th_fmemidx_output_index (rtx dest, rtx src, machine_mode mode, bool load)
 {
+  /* Integer-mode values can also reside in FPRs.  */
+  machine_mode fmode = mode;
+  if (mode == SImode)
+    fmode = SFmode;
+  else if (mode == DImode)
+    fmode = DFmode;
+
+  if (!TARGET_XTHEADFMEMIDX || !is_fmemidx_mode (fmode))
+    return NULL;
+
   struct riscv_address_info info;
   char format[24];
   rtx output_operands[2];
@@ -920,15 +930,14 @@ th_output_move (rtx dest, rtx src)
 
   if (dest_code == REG && src_code == MEM)
     {
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  || (GET_MODE_CLASS (mode) == MODE_FLOAT && GP_REG_P (REGNO (dest))))
+      if (GP_REG_P (REGNO (dest)))
 	{
 	  if ((insn = th_memidx_output_index (dest, src, mode, true)))
 	    return insn;
 	  if ((insn = th_memidx_output_modify (dest, src, mode, true)))
 	    return insn;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_FLOAT && HARDFP_REG_P (REGNO (dest)))
+      else if (HARDFP_REG_P (REGNO (dest)))
 	{
 	  if ((insn = th_fmemidx_output_index (dest, src, mode, true)))
 	    return insn;
@@ -936,16 +945,14 @@ th_output_move (rtx dest, rtx src)
     }
   else if (dest_code == MEM && (src_code == REG || src == CONST0_RTX (mode)))
     {
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  || src == CONST0_RTX (mode)
-	  || (GET_MODE_CLASS (mode) == MODE_FLOAT && GP_REG_P (REGNO (src))))
+      if (src == CONST0_RTX (mode) || GP_REG_P (REGNO (src)))
 	{
 	  if ((insn = th_memidx_output_index (dest, src, mode, false)))
 	    return insn;
 	  if ((insn = th_memidx_output_modify (dest, src, mode, false)))
 	    return insn;
 	}
-      else if (GET_MODE_CLASS (mode) == MODE_FLOAT && HARDFP_REG_P (REGNO (src)))
+      else if (HARDFP_REG_P (REGNO (src)))
 	{
 	  if ((insn = th_fmemidx_output_index (dest, src, mode, false)))
 	    return insn;

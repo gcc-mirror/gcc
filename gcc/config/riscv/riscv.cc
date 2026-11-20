@@ -11846,7 +11846,10 @@ riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	return false;
 
       if (GET_MODE_CLASS (mode) != MODE_FLOAT
-	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT)
+	  && GET_MODE_CLASS (mode) != MODE_COMPLEX_FLOAT
+	  && !((mode == DImode && TARGET_DOUBLE_FLOAT && TARGET_64BIT)
+	       || (mode == SImode && TARGET_HARD_FLOAT)
+	       || (mode == HImode && TARGET_ZFHMIN)))
 	return false;
 
       /* Only use callee-saved registers if a potential callee is guaranteed
@@ -13483,6 +13486,30 @@ riscv_can_change_mode_class (machine_mode from, machine_mode to,
   if (reg_classes_intersect_p (V_REGS, rclass)
       && !ordered_p (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to)))
     return false;
+
+  if ((SCALAR_INT_MODE_P (to) || SCALAR_FLOAT_MODE_P (to))
+      && (rclass == FP_REGS || rclass == RVC_FP_REGS
+	  || rclass == GR_REGS || rclass == RVC_GR_REGS
+	  || rclass == JALR_REGS))
+    {
+      /* fmv.x.w or fmv.w.x.  */
+      if (TARGET_HARD_FLOAT)
+	if ((from == SFmode && to == SImode)
+	    || (from == SImode && to == SFmode))
+	  return true;
+
+      /* fmv.x.d or fmv.d.x.  */
+      if (TARGET_DOUBLE_FLOAT && TARGET_64BIT)
+	if ((from == DFmode && to == DImode)
+	    || (from == DImode && to == DFmode))
+	  return true;
+
+      /* fmv.x.h or fmv.h.x.  */
+      if (TARGET_ZFHMIN)
+	if ((from == HFmode && to == HImode)
+	    || (from == HImode && to == HFmode))
+	  return true;
+    }
 
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
