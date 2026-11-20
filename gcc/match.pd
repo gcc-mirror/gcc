@@ -1174,6 +1174,59 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			       wi::exact_log2 (wi::to_wide (@1))); }))))
 #endif
 
+#if GIMPLE
+/* Simplify (T)(X * C1) * Y / C2 -> ((T)X * Y) * ((T)C1 / C2), where
+   C2 is nonzero and C1 is an exact multiple of C2.  When C1 equals C2,
+   simplify to (T)X * Y instead.
+   This is valid when T and the type of X are signed with undefined
+   overflow and T is not narrower.  When C1 and C2 differ, exclude C1
+   equal to zero or minus one so that (T)X * Y cannot overflow on defined
+   executions, and require C1 / C2 to fit in T.  Exclude overflow
+   instrumentation and require single-use intermediates to avoid
+   duplicating computations.  */
+(for div (trunc_div exact_div)
+ (simplify
+  (div (mult:cs (convert:s (mult:s @0 INTEGER_CST@1)) @2) INTEGER_CST@3)
+  (if (INTEGRAL_TYPE_P (type)
+       && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (type)
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (type)
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+       && !integer_zerop (@3))
+   (if (wi::to_widest (@1) == wi::to_widest (@3))
+    (mult (convert @0) @2)
+    (with { widest_int quot; }
+     (if (!integer_zerop (@1)
+	  && !integer_minus_onep (@1)
+	  && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@3),
+				SIGNED, &quot)
+	  && wi::fits_to_tree_p (quot, type))
+      (mult (mult (convert @0) @2) { wide_int_to_tree (type, quot); })))))))
+
+/* Simplify (T)(X * C1) * Y * C2 -> ((T)X * Y) * ((T)C1 * C2).
+   This is valid when T and the type of X are signed with undefined
+   overflow and T is not narrower.  Exclude C1 equal to zero or minus one
+   so that (T)X * Y cannot overflow on defined executions, and require
+   C1 * C2 to fit in T.  Exclude overflow instrumentation and require
+   single-use intermediates to avoid duplicating computations.  */
+(simplify
+ (mult (mult:cs (convert:s (mult:s @0 INTEGER_CST@1)) @2) INTEGER_CST@3)
+ (if (INTEGRAL_TYPE_P (type)
+      && INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (type) >= TYPE_PRECISION (TREE_TYPE (@0))
+      && TYPE_OVERFLOW_UNDEFINED (type)
+      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
+      && !TYPE_OVERFLOW_SANITIZED (type)
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+      && !integer_zerop (@1)
+      && !integer_minus_onep (@1))
+  (with { widest_int prod = wi::to_widest (@1) * wi::to_widest (@3); }
+   (if (wi::fits_to_tree_p (prod, type))
+    (mult (mult (convert @0) @2) { wide_int_to_tree (type, prod); })))))
+#endif
+
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  /* Simplify (t * u) / u -> t.  */
  (simplify
