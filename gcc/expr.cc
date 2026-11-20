@@ -7107,8 +7107,7 @@ count_type_elements (const_tree type, bool for_ctor_p)
 	      m = count_type_elements (TREE_TYPE (f), false);
 	      /* If the field doesn't span the whole union, add an extra
 		 scalar for the rest.  */
-	      if (simple_cst_equal (TYPE_SIZE (TREE_TYPE (f)),
-				    TYPE_SIZE (type)) != 1)
+	      if (simple_cst_equal (DECL_SIZE (f), TYPE_SIZE (type)) != 1)
 		m++;
 	      if (n < m)
 		n = m;
@@ -7295,23 +7294,45 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	}
     }
 
-  if (!p_complete->sparse && !complete_ctor_at_level_p (TREE_TYPE (ctor),
-						num_fields, elt_type))
+  if (!p_complete->sparse
+      && !complete_ctor_at_level_p (TREE_TYPE (ctor),
+				    num_fields, elt_type))
     p_complete->sparse = true;
   else if (TREE_CODE (TREE_TYPE (ctor)) == UNION_TYPE
 	   || TREE_CODE (TREE_TYPE (ctor)) == QUAL_UNION_TYPE)
     {
+      tree member = NULL_TREE;
+      if (num_fields)
+	{
+	  member = CONSTRUCTOR_ELT (ctor, 0)->index;
+	  if (!member)
+	    {
+	      for (member = TYPE_FIELDS (TREE_TYPE (ctor)); member;
+		   member = DECL_CHAIN (member))
+		if (TREE_CODE (member) == FIELD_DECL)
+		  break;
+	    }
+	  if (member
+	      && DECL_BIT_FIELD (member)
+	      && !p_complete->sparse
+	      && flag_zero_init_padding_bits >= ZERO_INIT_PADDING_BITS_UNIONS
+	      && simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
+				   DECL_SIZE (member)) != 1)
+	    p_complete->sparse = true;
+	}
       if (!p_complete->sparse
 	  && CONSTRUCTOR_ZERO_PADDING_BITS (ctor)
 	  && (num_fields
 	      ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
-				  TYPE_SIZE (elt_type)) != 1
+				  member ? DECL_SIZE (member)
+				  : TYPE_SIZE (elt_type)) != 1
 	      : type_has_padding_at_level_p (TREE_TYPE (ctor))))
 	p_complete->sparse = true;
       else if (!p_complete->sparse && !p_complete->padded_union
 	       && (num_fields
 		   ? simple_cst_equal (TYPE_SIZE (TREE_TYPE (ctor)),
-				       TYPE_SIZE (elt_type)) != 1
+				       member ? DECL_SIZE (member)
+				       : TYPE_SIZE (elt_type)) != 1
 		   : type_has_padding_at_level_p (TREE_TYPE (ctor))))
 	p_complete->padded_union = true;
     }
