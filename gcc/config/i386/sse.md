@@ -1242,7 +1242,8 @@
    (V4TI "V16SF") (V2TI "V8SF") (V1TI "V4SF")
    (V8SF "V8SF") (V4SF "V4SF")
    (V4DF "V8SF") (V2DF "V4SF")
-   (V32HF "V16SF") (V16HF "V8SF") (V8HF "V4SF")])
+   (V32HF "V16SF") (V16HF "V8SF") (V8HF "V4SF")
+   (V32BF "V16SF") (V16BF "V8SF") (V8BF "V4SF")])
 
 (define_mode_attr ssePSmodelower
   [(V16SI "v16sf") (V8DF "v16sf")
@@ -1254,7 +1255,8 @@
    (V4TI "v16sf") (V2TI "v8sf") (V1TI "v4sf")
    (V8SF "v8sf") (V4SF "v4sf")
    (V4DF "v8sf") (V2DF "v4sf")
-   (V32HF "v16sf") (V16HF "v8sf") (V8HF "v4sf")])
+   (V32HF "v16sf") (V16HF "v8sf") (V8HF "v4sf")
+   (V32BF "v16sf") (V16BF "v8sf") (V8BF "v4sf")])
 
 (define_mode_attr ssePSmode2
   [(V8DI "V8SF") (V4DI "V4SF")])
@@ -32680,6 +32682,18 @@ gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
   "TARGET_AVX512BF16"
   "vdpbf16ps\t{%3, %2, %0%{%4%}|%0%{%4%}, %2, %3}")
 
+(define_expand "sdot_prod<ssePSmodelower><mode>"
+  [(match_operand:<ssePSmode> 0 "register_operand")
+   (match_operand:VF_AVX512BF16VL 1 "register_operand")
+   (match_operand:VF_AVX512BF16VL 2 "register_operand")
+   (match_operand:<ssePSmode> 3 "register_operand")]
+  "TARGET_AVX512BF16 && flag_unsafe_math_optimizations && !flag_rounding_math"
+{
+  emit_insn (gen_avx512f_dpbf16ps_<ssePSmodelower> (operands[0], operands[3],
+						    operands[1], operands[2]));
+  DONE;
+})
+
 ;; KEYLOCKER
 (define_insn "loadiwkey"
   [(unspec_volatile:V2DI [(match_operand:V2DI 0 "register_operand" "x")
@@ -32979,6 +32993,20 @@ gen = gen_insn_fix<fixunssuffix>_trunc<ssehalfvecmodelower><vunpckfixt_model>2;
       emit_insn (gen_add<ssedvecmodelower>3 (operands[0], res1, res2));
     }
 
+  DONE;
+})
+
+(define_expand "sdot_prod<ssePSmodelower><mode>"
+  [(match_operand:<ssePSmode> 0 "register_operand")
+   (match_operand:VHF_AVX512VL 1 "register_operand")
+   (match_operand:VHF_AVX512VL 2 "register_operand")
+   (match_operand:<ssePSmode> 3 "register_operand")]
+  "TARGET_AVX10_2 && !flag_rounding_math"
+{
+  operands[1] = lowpart_subreg (<ssePSmode>mode, operands[1], <MODE>mode);
+  operands[2] = lowpart_subreg (<ssePSmode>mode, operands[2], <MODE>mode);
+  emit_insn (gen_vdpphps_<ssePSmodelower> (operands[0], operands[3],
+					   operands[1], operands[2]));
   DONE;
 })
 
