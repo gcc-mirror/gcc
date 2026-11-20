@@ -5543,14 +5543,20 @@ bitint_large_huge::lower_cplxpart_stmt (tree obj, gimple *stmt)
   insert_before (g);
 }
 
-/* Lower COMPLEX_EXPR stmt.  */
+/* Lower COMPLEX_EXPR or COMPLEX_CST stmt.  */
 
 void
 bitint_large_huge::lower_complexexpr_stmt (gimple *stmt)
 {
   tree lhs = gimple_assign_lhs (stmt);
-  tree rhs1 = gimple_assign_rhs1 (stmt);
-  tree rhs2 = gimple_assign_rhs2 (stmt);
+  tree rhs1 = gimple_assign_rhs1 (stmt), rhs2;
+  if (gimple_assign_rhs_code (stmt) == COMPLEX_EXPR)
+    rhs2 = gimple_assign_rhs2 (stmt);
+  else
+    {
+      rhs2 = TREE_IMAGPART (rhs1);
+      rhs1 = TREE_REALPART (rhs1);
+    }
   int part = var_to_partition (m_map, lhs);
   gcc_assert (m_vars[part] != NULL_TREE);
   lhs = m_vars[part];
@@ -7007,6 +7013,7 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	lower_cplxpart_stmt (NULL_TREE, stmt);
 	return;
       case COMPLEX_EXPR:
+      case COMPLEX_CST:
 	lower_complexexpr_stmt (stmt);
 	return;
       default:
@@ -8509,6 +8516,13 @@ gimple_lower_bitint (void)
 	      {
 		bitint_prec_kind this_kind
 		  = bitint_precision_kind (TREE_TYPE (t));
+		kind = MAX (kind, this_kind);
+	      }
+	    else if (TREE_CODE (TREE_TYPE (t)) == COMPLEX_TYPE
+		     && BITINT_TYPE_P (TREE_TYPE (TREE_TYPE (t))))
+	      {
+		bitint_prec_kind this_kind
+		  = bitint_precision_kind (TREE_TYPE (TREE_TYPE (t)));
 		kind = MAX (kind, this_kind);
 	      }
 	  if (is_gimple_assign (stmt) && gimple_store_p (stmt))
