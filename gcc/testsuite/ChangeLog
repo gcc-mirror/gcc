@@ -1,3 +1,188 @@
+2026-11-19  Stian Halseth  <stian@itx.no>
+	    Eric Botcazou   <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/return-delay-mem.c: New test.
+
+2026-11-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/128797
+	* algol68/compile/error-op-numargs-1.a68: New test.
+	* algol68/compile/error-op-numargs-3.a68: Likewise.
+	* algol68/compile/error-op-numargs-2.a68: Likewise.
+
+2026-11-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/128682
+	* gfortran.dg/transpose_reshape_char.f90: New test.
+
+2026-11-19  Djordje Todorovic  <djordje.todorovic@htecgroup.com>
+	    Eldar Osmanovic  <eldar.osmanovic@htecgroup.com>
+
+	* gcc.target/riscv/abi/rv32be-abi-2xlen-aggregate-return.c: New test.
+	* gcc.target/riscv/abi/rv32be-abi-2xlen-aggregate.c: New test.
+	* gcc.target/riscv/abi/rv32be-abi-2xlen-float-incoming.c: New test.
+	* gcc.target/riscv/abi/rv32be-abi-2xlen-scalar-arg.c: New test.
+	* gcc.target/riscv/abi/rv32be-abi-2xlen-scalar-return.c: New test.
+	* gcc.target/riscv/abi/rv64be-abi-2xlen-scalar-incoming.c: New test.
+	* gcc.target/riscv/abi/rv64be-abi-2xlen-vararg.c: New test.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128658
+	* gcc.dg/vect/bb-slp-over-widen-3.c: New test.
+	* gcc.dg/vect/bb-slp-over-widen-4.c: Likewise.
+
+2026-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/small-struct-2.c: New test.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128878
+	* gcc.dg/torture/pr128878.c: New testcase.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/ipa/inline-aggregate-retval.C: New test.
+	* g++.dg/ipa/inline-aggregate-retval-2.C: Likewise.
+	* gcc.dg/ipa/inline-aggregate-retval.c: Likewise.
+	* gcc.dg/ipa/inline-aggregate-retval-2.c: Likewise.
+	* gcc.dg/ipa/inline-aggregate-retval-3.c: Likewise.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/121722
+	* gcc.dg/bitint-148.c: New test.
+	* gcc.dg/torture/bitint-116.c: New test.
+	* gcc.dg/torture/bitint-117.c: New test.
+
+2026-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128662
+	* gcc.target/i386/pr128662.c: Rename to...
+	* gcc.target/i386/pr128662-1.c: ...this.
+	* gcc.target/i386/pr128662-2.c: New test.
+
+2026-11-19  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vmovl.c: New test.
+	* gcc.target/aarch64/neon/vmovn.c: New test.
+	* gcc.target/aarch64/neon/vqmovn.c: New test.
+	* gcc.target/aarch64/neon/vqmovun.c: New test.
+	* gcc.target/aarch64/pr113573.c: Replace call to
+	`__builtin_aarch64_uxtlv8hi_uu` with call to `vmovl_u8`.
+	* gcc.target/aarch64/simd/fold_to_highpart_6.c: Update expected
+	assembly.
+
+2026-11-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/pr128004.c: XFAIL for arm_mixed_fp.
+	* gcc.dg/pr128007.c: Likewise.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/torture/reassoc-ends-bb-1.C: New test.
+	* g++.dg/torture/reassoc-ends-bb-2.C: New test.
+	* gcc.c-torture/compile/reassoc-ends-bb-1.c: New test.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128641
+	* gcc.dg/torture/pr128641.c: New test.
+	* gcc.dg/torture/pr128641-2.c: Likewise.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/bitint-args.c (f65, f127): Update expected
+	output.
+
+2026-11-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/128324
+	* lib/target-supports.exp (arm arches): Add v7a_neon_hard.
+	* gcc.target/arm/pr128324-2.c: New test.
+	Assisted-by: Sashiko 0.8.0 (gemini/gemini-4-argon)
+
+2026-11-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/builtin-fsr.c: New test.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128864
+	* gcc.dg/vect/bb-slp-pr128864.c: New testcase.
+
+2026-11-19  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/v2ti-const-move.c: New test.
+	* gcc.target/loongarch/vector/lsx/v1ti-const-move.c: New test.
+
+2026-11-19  Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* gcc.target/loongarch/la64/load-long-to-float.c: New test.
+
+2026-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/analyzer/large-constants.c
+	(test_nearly_all_ones_uint64_t): Don't require "uint64_t" as the
+	type prefix in the result of __analyzer_describe.
+
+2026-11-19  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/contracts/cpp26/constexpr-modify1.C: New test.
+	* g++.dg/contracts/cpp26/constexpr-modify1a.C: New test.
+
+2026-11-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-67.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-68.c: New test.
+
+2026-11-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u8-mf8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv_vs1-u32-mf2.c: New test.
+
+2026-11-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i8-mf8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv_vs1-i32-mf2.c: New test.
+
+2026-11-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i8-m4.c: Adjust
+	asm check.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i16-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsub_wv-i32-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u8-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u16-m4.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwsubu_wv-u32-m4.c: Ditto.
+
 2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/128836

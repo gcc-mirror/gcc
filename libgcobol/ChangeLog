@@ -1,3 +1,15 @@
+2026-11-19  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (__gg__refer_from_string): Accept correct value.
+
+2026-11-19  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.map: __gg__char_national has been added to the map.
+	* unstring.cc (unstring_fixed): A bad input pointer is left
+	unchanged; the OVERFLOW flag is still being set.
+	* testsuite/perform-stack.cc: New test.
+	* testsuite/runpath.py: New test.
+
 2026-11-18  Robert Dubner  <rdubner@symas.com>
 
 	* unstring.cc (unstring_fixed): Keep the first listed delimiter when

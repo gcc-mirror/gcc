@@ -1,3 +1,53 @@
+2026-11-19  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* concrete-ranges.cc (concrete_byte_range::dump_to_pp_pretty)
+	(concrete_bit_range::dump_to_pp_pretty, concrete_bit_range::dump)
+	(concrete_byte_range::dump): Define in namespace 'concrete'.
+	* symbolic-ranges.cc (symbolic_bit_range::dump)
+	(symbolic_byte_range::dump): Define in namespace 'symbolic'.
+	* symbolic-bit-contents.cc (unfoldable_bit_contents::get_bits)
+	(bit_contents_manager::get_untracked)
+	(bit_contents_manager::get_concrete_bit_overlay)
+	(bit_contents_manager::get_symbolic_bit_overlay)
+	(bit_contents_manager::get_conjured_bit_contents)
+	(bit_contents_manager::get_offset_bit_contents): Use 'emplace'
+	instead of 'insert' for maps of 'std::unique_ptr'.
+	* symbolic-bit-vectors.cc (bit_vector_manager::get_tristate_bits)
+	(bit_vector_manager::get_concat_bits)
+	(bit_vector_manager::get_conjured_bits)
+	(bit_vector_manager::get_cropped_bits)
+	(bit_vector_manager::get_repeated_bits)
+	(bit_vector_manager::get_bit_vector_from_svalue)
+	(bit_vector_manager::get_poisoned_bits): Likewise.
+	* symbolic-scalars.cc (scalar_manager<ConcreteValueType>::get_concrete)
+	(scalar_manager<ConcreteValueType>::get_sum_unmemoized)
+	(scalar_manager<ConcreteValueType>::get_product)
+	(scalar_manager<ConcreteValueType>::get_scalar_from_svalue)
+	(scalar_manager<concrete_bit_size>::get_bits_from_bytes): Likewise.
+
+2026-11-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/128854
+	* symbolic-scalars.cc
+	(scalar_manager<integer>::get_named_test_scalar): Add
+	template instantiation.
+	(scalar_manager<concrete_bit_offset>::get_named_test_scalar):
+	Likewise.
+	(scalar_manager<concrete_byte_offset>::get_named_test_scalar):
+	Likewise.
+
+2026-11-19  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* engine.cc (leak_ploc_fixer_for_epath::fixup_for_epath): Remove
+	the redundant 0x prefix before %wx.
+	(exploded_graph_diagnostic_digraph::add_node_for_enode): Make
+	the call-string loop index unsigned.
+	* supergraph-fixup-locations.cc (location_fixer::consider_node):
+	Remove the redundant 0x prefix before %wx.
+	* supergraph.cc (supergraph::populate_for_basic_block): Likewise.
+	(supernode::dump_dot): Likewise.
+	(superedge::dump_label_to_pp): Likewise.
+
 2026-11-17  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
 
 	* diagnostic-manager.cc (diagnostic_manager::annotate_exploded_path):

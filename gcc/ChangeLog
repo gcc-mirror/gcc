@@ -1,3 +1,367 @@
+2026-11-19  Stian Halseth  <stian@itx.no>
+	    Eric Botcazou   <ebotcazou@adacore.com>
+
+	PR target/128395
+	* config/sparc/sparc.cc (eligible_for_restore_insn): Remove
+	RETURN_P parameter and accept any instruction on entry.
+	(eligible_for_return_delay): Simplify and adjust calls to
+	epilogue_renumber and eligible_for_restore_insn.
+	(eligible_for_sibcall_delay): Simplify and adjust call to
+	eligible_for_restore_insn.
+	(output_return): Adjust calls to epilogue_renumber.
+	(epilogue_renumber): Return a boolean, rename TEST parameter
+	into TEST_ONLY and add SET_DEST parameter.
+	<SET>: New case.
+	<MEM>: Reject all loads if the current function has a frame.
+
+2026-11-19  Djordje Todorovic  <djordje.todorovic@htecgroup.com>
+	    Eldar Osmanovic  <eldar.osmanovic@htecgroup.com>
+
+	* config/riscv/riscv.cc (riscv_2xlen_significance_scalar_p):
+	New function.
+	(riscv_pass_2xlen_scalar_gpr_pair): Likewise.
+	(riscv_get_arg_info): Use significance-based ordering for named
+	2 * XLEN scalar arguments and return values.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128658
+	* tree-vect-patterns.cc (vect_determine_precisions_from_range): Only
+	call vect_set_min_input_precision if vect_truncatable_operation_p.
+	(vect_determine_min_output_precision_1): Return false if the use is
+	the shift amount of an LSHIFT_EXPR or RSHIFT_EXPR.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* tree-if-conv.cc (factor_out_operators): Fix Checks.
+
+2026-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/128810
+	* config/sparc/sparc.cc (sparc_type_code): Accept OPAQUE_TYPE.
+
+2026-11-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.cc (sparc_pass_by_reference): Fix typos in
+	comments.
+	(function_arg_slotno): Redirect the processing for all structures
+	and unions to the BLKmode path.  Test TARGET_ARCH64.
+	(sparc_function_arg_1): Minor cleanup.
+	(sparc_return_in_memory): Fix typos in comments.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128878
+	* gimple-loop-interchange.cc (compute_access_stride):
+	For a BIT_FIELD_REF ref, use the address of its base for
+	analysis.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ipa-fnsummary.cc (eliminated_by_inlining_prob): Do not credit
+	volatile accesses.  Compute once whether the statement writes to
+	the return value.  Credit aggregate copies into the return value
+	from automatic local variables and parameters whose address is not
+	taken as eliminated by inlining.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/121722
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Lower the PHI
+	copies edge by edge, with the constant stores after the copies.
+	Save a partition that an earlier copy on the edge writes to a
+	temporary and let the later copies read the temporary.
+
+2026-11-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128662
+	* config/i386/i386.md (*bsf<mode>_1): Convert to
+	define_insn_and_split.  Split to *bsf<mode>_1_falsedep when
+	TARGET_AVOID_FALSE_DEP_FOR_BSR is set and the destination is not
+	mentioned in the source.
+	(*bsf<mode>_1_falsedep): New insn.
+	(ctz<mode>2): Use TARGET_AVOID_FALSE_DEP_FOR_BSR in the split
+	condition when TARGET_BMI is not set.
+	(*ctzsidi2_<s>ext): Ditto.
+	(*ctz<mode>2_falsedep): Output plain bsf instead of
+	gcc_unreachable.  Update prefix_rep attribute.
+	(*ctzsidi2_<s>ext_falsedep): Ditto.
+	* config/i386/x86-tune.def (X86_TUNE_AVOID_FALSE_DEP_FOR_BSR):
+	Update comment.
+
+2026-11-19  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-simd-builtins.def (smlal_hi, umlal_hi,
+	smlsl_hi, umlsl_hi): Delete, now that nothing uses them.
+
+2026-11-19  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtin-pairs.def (UNOP_LONG_LH_PAIRS):
+	Delete macro.
+	* config/aarch64/aarch64-builtins.cc (LO_HI_PAIRINGS): Delete
+	`UNOP_LONG_LH_PAIRS` invocation.
+	* config/aarch64/aarch64-neon-builtins-base.cc (build_combine):
+	New function.
+	(struct gimple_combine): Call `build_combine`.
+	(struct gimple_widen, struct gimple_narrow, struct
+	gimple_narrow_saturate): New structs.
+	(build_vec_extract_half): Infer return type from argument type
+	for convenience.
+	(gimple_get_half::gimple): Don't pass return type to
+	`build_vec_extract_half`.
+	* config/aarch64/aarch64-neon-builtins-base.def (vmovn,
+	vmovn_high, vmovl, vmovl_high, vqmovnh, vqmovns, vqmovnd,
+	vqmovn, vqmovn_high, vqmovunh, vqmovuns, vqmovund, vqmovun,
+	vqmovun_high): Declare new functions.
+	* config/aarch64/aarch64-simd-builtins.def (sxtl. uxtl, xtn,
+	sqmovun, sqxtun2, sqmovn, uqmovn, sqxtn2): Delete builtin
+	function declarations.
+	* config/aarch64/aarch64-simd.md (aarch64_xtn2<mode>): Delete
+	now-unused expander.
+	(<sat_trunc_op>trunc<mode><Vnarrowq>2): New expander for integer
+	saturating truncation.
+	(aarch64_sqmovun<mode>): Restrict to GPI modes.
+	(aarch64_sqmovunhi): New insn.
+	(aarch64_sqmovun<mode>): Delete insn.
+	(aarch64_<su>qxtn2<mode>, aarch64_sqxtun2<mode>,
+	aarch64_<su>xtl<mode>, aarch64_xtn<mode>): Delete now-unused
+	expanders.
+	* config/aarch64/arm_neon.h (vmovl_high_s8, vmovl_high_s16,
+	vmovl_high_s32, vmovl_high_u8, vmovl_high_u16, vmovl_high_u32,
+	vmovl_s8, vmovl_s16, vmovl_s32, vmovl_u8, vmovl_u16,
+	vmovl_u32, vmovn_high_s16, vmovn_high_s32, vmovn_high_s64,
+	vmovn_high_u16, vmovn_high_u32, vmovn_high_u64, vmovn_s16,
+	vmovn_s32, vmovn_s64, vmovn_u16, vmovn_u32, vmovn_u64,
+	vqmovn_high_s16, vqmovn_high_s32, vqmovn_high_s64,
+	vqmovn_high_u16, vqmovn_high_u32, vqmovn_high_u64,
+	vqmovun_high_s16, vqmovun_high_s32, vqmovun_high_s64,
+	vqmovn_s16, vqmovn_s32, vqmovn_s64, vqmovn_u16, vqmovn_u32,
+	vqmovn_u64, vqmovnh_s16, vqmovns_s32, vqmovnd_s64,
+	vqmovnh_u16, vqmovns_u32, vqmovnd_u64, vqmovun_s16,
+	vqmovun_s32, vqmovun_s64, vqmovunh_s16, vqmovuns_s32,
+	vqmovund_s64): Delete function definitions.
+	* config/aarch64/iterators.md (Vnarrowq): Add entries for
+	HI/SI/DI.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-reassoc.cc (update_range_test): Treat a definition of
+	OP that ends its basic block like a default definition.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128641
+	* tree-predcom.cc (pcom_worker::determine_offset): Also require
+	refs_same_for_tbaa_p in both directions for the two references.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_bfi_operands_p)
+	(aarch64_bfi_rtx_p): New functions.
+	(aarch64_rtx_costs): Use aarch64_bfi_rtx_p for PLUS and IOR.
+	* config/aarch64/aarch64.md (*aarch64_bfi<GPI:mode>5_shift)
+	(*aarch64_bfi<GPI:mode>5_shift_alt, *aarch64_bfi<GPI:mode>4_noand)
+	(*aarch64_bfi<GPI:mode>4_noand_alt, *aarch64_bfi<GPI:mode>4_noshift)
+	(*aarch64_bfi<GPI:mode>4_noshift_alt): Use any_or_plus instead of ior.
+
+2026-11-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc (count_functions): New
+	constexpr function.
+	(max_registered_functions): New constant.
+	(function_builder::function_builder): Use it to size function_table
+	and reserve registered_functions.
+	* config/aarch64/aarch64-acle-builtins.h (DEF_SVE_TYPES_ARRAY)
+	(types_none): Make the array constexpr.
+	(groups_none, preds_none): Likewise, and the other group and
+	predication suffix arrays.
+
+2026-11-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/128324
+	* config/arm/neon.md (neon_vdup_lane<VDQW:mode>_internal): Guard
+	the split with reload_completed.
+	(neon_vdup_lane<VHFBF:mode>_internal): Likewise.
+	(neon_vdupq_lane<VQ2BF:mode>_internal): Use simplify_gen_subreg
+	instead of gen_lowpart.
+
+2026-11-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_atomic_assign_expand_fenv):
+	New declaration.
+	(TARGET_ATOMIC_ASSIGN_EXPAND_FENV): New macro.
+	(XTENSA_BUILTIN_GET_FSR, XTENSA_BUILTIN_SET_FSR): New constants.
+	(xtensa_init_builtins): Create decls for
+	__builtin_xtensa_get_fsr () and __builtin_xtensa_set_fsr ().
+	(xtensa_fold_builtin): Return NULL for XTENSA_BUILTIN_GET_FSR
+	and XTENSA_BUILTIN_SET_FSR.
+	(xtensa_expand_builtin): Expand __builtin_xtensa_get_fsr () to
+	the get_fsr instruction and __builtin_xtensa_set_fsr () to the
+	set_fsr.
+	(xtensa_atomic_assign_expand_fenv): New function.
+	* config/xtensa/xtensa.md (UNSPECV_GET_FSR, UNSPECV_SET_FSR):
+	New constants.
+	(get_fsr, set_fsr): New patterns.
+
+2026-11-19  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.cc (xtensa_builtin_decl): New
+	declaration.
+	(TARGET_BUILTIN_DECL): New macro.
+	(xtensa_builtin_decls): New static variable.
+	(xtensa_init_builtins): Record new decl in the
+	xtensa_builtin_decls.
+	(xtensa_builtin_decl): New function.
+
+2026-11-19  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/tuning_models/neoversev3.h: Increase
+	int_cmp_ops and fp_cmp_ops from 1 to 4.
+
+2026-11-19  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-json-schema.h: Add fields int_cmp_ops
+	and fp_cmp_ops.
+	* config/aarch64/aarch64-json-tunings-parser-generated.inc
+	(parse_vec_costs_issue_info_sve): Regenerated.
+	* config/aarch64/aarch64-json-tunings-printer-generated.inc
+	(serialize_vec_costs_issue_info_sve): Regenerated.
+	* config/aarch64/aarch64-protos.h
+	(struct aarch64_sve_vec_issue_info): Add fields int_cmp_ops and
+	fp_cmp_ops.
+	* config/aarch64/aarch64.cc
+	(aarch64_vector_costs::count_ops): Include the cost of
+	int_cmp_ops and fp_cmp_ops in general cost.
+	* config/aarch64/tuning_models/cortexx925.h: Add new cmp fields.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Likewise.
+	* config/aarch64/tuning_models/hip12.h: Likewise.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+	* config/aarch64/tuning_models/olympus.h: Likewise.
+
+2026-11-19  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/riscv/riscv-profiles.def (RISCV_PROFILE): Add the zihpm
+	extension to the rva22u64 profile.
+
+2026-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128864
+	* tree-vect-slp.cc (vect_slp_function): Split region when
+	a control stmt has a SSA def.
+
+2026-11-19  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_output_move): Use
+	CONST_SCALAR_INT_P instead of CONST_INT_P when checking vector
+	constants for vldi/xvldi, allowing CONST_WIDE_INT elements in
+	V1TI and V2TI constants.
+
+2026-11-19  Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* config/loongarch/loongarch.md: Remove * on f and m
+	constraint in movdi_64bit.
+
+2026-11-19  Shiva S  <shivasubramanian@outlook.com>
+
+	PR tree-optimization/128701
+	* gimple-ssa-warn-access.cc (pass_waccess::set_pass_param): Use
+	gcc_unreachable instead of __builtin_unreachable.
+
+2026-11-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (rtx_insn::location, rtx_insn::set_location,
+	rtx_insn::has_location): New functions.  Remove INSN_LOCATION
+	and INSN_HAS_LOCATION.
+	(RTL_LOCATION): Use location.
+	* cfgcleanup.cc: Use location and set_location.
+	* cfghooks.cc: Use location and has_location.
+	* cfgloop.cc: Use has_location.
+	* cfgrtl.cc: Use location, set_location, and has_location.
+	* combine.cc: Use location and set_location.
+	* compare-elim.cc: Likewise.
+	* config/aarch64/aarch64-speculation.cc: Likewise.
+	* config/arm/arm.cc: Likewise.
+	* config/avr/avr.cc: Likewise.
+	* config/bfin/bfin.cc: Likewise.
+	* config/bpf/bpf.cc: Use has_location.
+	* config/c6x/c6x.cc: Use location and set_location.
+	* config/i386/i386-features.cc: Likewise.
+	* config/microblaze/microblaze.cc: Likewise.
+	* config/mips/mips.cc: Likewise.
+	* config/nvptx/nvptx.md: Likewise.
+	* config/riscv/riscv-sr.cc: Likewise.
+	* config/sh/sh.cc: Likewise.
+	* config/sparc/sparc.cc: Likewise.
+	* dumpfile.cc: Likewise.
+	* emit-rtl.cc: Likewise.
+	* except.cc: Likewise.
+	* final.cc: Use location and has_location.
+	* gcse.cc: Use location and set_location.
+	* hierarchical_discriminator.cc: Use location and has_location.
+	* ifcvt.cc: Use location and set_location.
+	* ira-emit.cc: Likewise.
+	* modulo-sched.cc: Use has_location.
+	* print-rtl.cc: Likewise.
+	* recog.cc: Use location and set_location.
+	* reorg.cc: Likewise.
+	* var-tracking.cc: Likewise.
+	* gdbinit.in: Skip location, set_location, and has_location.
+
+2026-11-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* emit-rtl.cc (make_insn_raw, make_debug_insn_raw,
+	make_jump_insn_raw, make_call_insn_raw): Clear the next and
+	previous links.  Export the jump and call makers.
+	* genemit.cc (start_gen_insn): Take return_pat.
+	(gen_insn_wrapper): New function.
+	(gen_insn, gen_expand): Emit a gen_insn_NAME wrapper.
+	* genflags.cc (gen_proto): Declare gen_insn_NAME, stub an elided
+	pattern, and return rtx_insn * from a sequence expand.
+	* gensupport.cc (get_make_insn_function): Rename from
+	get_emit_function.  Return make_*_insn_raw.
+	* gensupport.h (get_make_insn_function): Declare.
+	* rtl.cc (classify_insn_vec, predicate_is_always_insn): New
+	functions.
+	(classify_insn): Classify PARALLEL and MATCH_PARALLEL from their
+	elements.  Treat a const_int match_operand as an insn.
+	* rtl.h (make_jump_insn_raw, make_call_insn_raw): Declare.
+	* config/i386/i386-expand.cc: Use an rtx_insn * generator.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_expand_builtin_rsqrt): Use an rtx_insn * generator.
+	* config/arm/arm.cc (arm_block_set_unaligned_vect): Likewise.
+	* config/avr/avr-passes.cc: Likewise.
+	* config/avr/avr-protos.h (avr_emit3_fix_outputs): Likewise.
+	* config/avr/avr.cc (avr_emit3_fix_outputs): Likewise.
+	* config/i386/i386-protos.h (ix86_expand_reduc): Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/mmx.md: Likewise.
+	* config/i386/sse.md: Likewise.
+	* config/i386/sync.md: Likewise.
+	* config/ia64/ia64.cc: Likewise.
+	* config/loongarch/lasx.md: Likewise.
+	* config/loongarch/loongarch-protos.h: Likewise.
+	* config/loongarch/loongarch.cc: Likewise.
+	* config/mips/loongson-mmi.md: Likewise.
+	* config/mips/mips-protos.h: Likewise.
+	* config/mips/mips.cc: Likewise.
+	* config/rl78/rl78-protos.h: Likewise.
+	* config/rl78/rl78.cc: Likewise.
+	* config/rs6000/rs6000-string.cc: Likewise.
+	* config/rs6000/rs6000.cc: Likewise.
+	* config/s390/s390.cc: Likewise.
+
+2026-11-19  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Take the Wn4 constraint for the
+	operand 3 of the vwsub[u].wv.
+
 2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/128836

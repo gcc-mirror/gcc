@@ -1,3 +1,9 @@
+2026-11-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/128797
+	* a68-parser-taxes.cc (check_operator_dec): Fix check for proper
+	number of operator arguments.
+
 2026-11-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-parser-prelude.cc (gnu_moids): New function.

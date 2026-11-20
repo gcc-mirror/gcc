@@ -1,3 +1,9 @@
+2026-11-19  Jason Merrill  <jason@redhat.com>
+
+	* include/ext/pb_ds/detail/bin_search_tree_/rotate_fn_imps.hpp
+	* include/ext/pb_ds/detail/gp_hash_table_map_/erase_fn_imps.hpp
+	* include/ext/pb_ds/detail/pat_trie_/rotate_fn_imps.hpp: Fix =/== typo.
+
 2026-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/algorithm: Add comment to #endif.

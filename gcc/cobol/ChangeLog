@@ -1,3 +1,17 @@
+2026-11-19  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (save_debug_perform_site): Whitespace.
+	(finish_debug_perform_sites): Whitespace.
+	(create_debug_perform_sites): Whitespace.
+	(internal_perform_through): Whitespace.
+	(parser_division): Whitespace.
+	(parser_set_conditional88): Fix off-by-one error; pass correct value.
+
+2026-11-19  Robert Dubner  <rdubner@symas.com>
+
+	* parse.y: CHAR-NATIONAL now assigns the result of
+	__gg__char_national to an alphanumeric value.
+
 2026-11-16  Robert Dubner  <rdubner@symas.com>
 
 	* cobol1.cc (cobol_langhook_init): Keep STOP RUN processing out of
