@@ -2103,3 +2103,98 @@ riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 	     INSN_UID (prev), INSN_UID (curr), riscv_fusion_type_name (op));
   return true;
 }
+
+/* Return a scheduling direction for MEM under the current tune.  Sorting
+   existing accesses requires their current offsets to be size-aligned.
+   This candidate query does not prove that a fusible partner exists.  */
+
+static enum riscv_fusion_direction
+riscv_fuse_mem_direction (const struct riscv_fusion_mem_info *mem)
+{
+  unsigned HOST_WIDE_INT fusible_ops = riscv_get_fusible_ops ();
+  bool inc_p = false, dec_p = false, any_p = false;
+  /* Collect directions from all enabled rules that accept this access.  */
+  for (const riscv_fusion_mem_rule &rule : riscv_fusion_mem_rules)
+    {
+      if (!(fusible_ops & rule.op)
+	  || !riscv_fuse_mem_candidate_p (mem, rule))
+	continue;
+
+      HOST_WIDE_INT access_size = GET_MODE_SIZE (mem->mode).to_constant ();
+      if (INTVAL (mem->addr.offset) % access_size != 0)
+	continue;
+
+      inc_p |= rule.direction == RISCV_FUSION_INC;
+      dec_p |= rule.direction == RISCV_FUSION_DEC;
+      any_p |= rule.direction == RISCV_FUSION_ANY;
+    }
+
+  /* Prefer directional rules over bidirectional rules to preserve their
+     scheduling order when both are eligible.  */
+  if (inc_p && dec_p)
+    return RISCV_FUSION_ANY;
+  if (inc_p)
+    return RISCV_FUSION_INC;
+  if (dec_p)
+    return RISCV_FUSION_DEC;
+  return any_p ? RISCV_FUSION_ANY : RISCV_FUSION_NONE;
+}
+
+/* Implement TARGET_SCHED_FUSION_PRIORITY.  Group load/store pair candidates
+   by register file, access kind, mode and base register, then by offset.  */
+
+void
+riscv_sched_fusion_priority (rtx_insn *insn, int max_pri,
+			     int *fusion_pri, int *pri)
+{
+  struct riscv_fusion_mem_info mem;
+  unsigned int base_regno;
+  bool isload_p, fp_p, inc_p;
+  int fusion_type, tmp;
+
+  gcc_assert (INSN_P (insn));
+
+  /* Keep default priorities unless this instruction is a pair candidate.  */
+  tmp = max_pri - 1;
+  *fusion_pri = tmp;
+  *pri = tmp;
+
+  if (!riscv_fuse_mem_p (insn, &mem))
+    return;
+
+  enum riscv_fusion_direction direction
+    = riscv_fuse_mem_direction (&mem);
+  if (direction == RISCV_FUSION_NONE)
+    return;
+
+  base_regno = riscv_regno (mem.addr.reg);
+  if (base_regno >= FIRST_PSEUDO_REGISTER)
+    return;
+
+  isload_p = mem.type != SCHED_FUSION_ST;
+  fp_p = mem.fp_p;
+  /* Prefer increasing offsets when either direction is possible.  */
+  inc_p = direction != RISCV_FUSION_DEC;
+
+  /* Give each load/store class and base register a distinct priority below
+     that of unrelated instructions.  */
+  fusion_type = (fp_p ? 2 : 0) + (isload_p ? 0 : 1);
+  fusion_type *= NUM_MACHINE_MODES;
+  fusion_type += (int) mem.mode + 1;
+  *fusion_pri -= (fusion_type * FIRST_PSEUDO_REGISTER
+		  + (int) base_regno);
+
+  tmp /= 2;
+  HOST_WIDE_INT off_val = INTVAL (mem.addr.offset);
+  /* Use unsigned arithmetic to handle the most negative offset.  */
+  unsigned HOST_WIDE_INT magnitude = off_val < 0
+				       ? -(unsigned HOST_WIDE_INT) off_val
+				       : off_val;
+  int offset_pri = magnitude & 0xfffff;
+
+  /* Order offsets in the preferred pair direction.  */
+  if (inc_p == (off_val >= 0))
+    *pri = tmp - offset_pri;
+  else
+    *pri = tmp + offset_pri;
+}
