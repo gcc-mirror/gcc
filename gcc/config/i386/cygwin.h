@@ -62,12 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef ENABLE_SHARED_LIBGCC
 #define SHARED_LIBGCC_SPEC " \
- %{static|static-libgcc:-lgcc -lgcc_eh} \
- %{!static: \
-   %{!static-libgcc: \
-     -lgcc_s -lgcc \
-    } \
-  } "
+ %{static|static-libgcc:-lgcc -lgcc_eh; \
+   :-lgcc_s -lgcc } "
 #else
 #define SHARED_LIBGCC_SPEC " -lgcc "
 #endif
