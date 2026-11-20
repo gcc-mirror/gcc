@@ -16050,6 +16050,12 @@ riscv_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
 				      unsigned alignment,
 				      enum by_pieces_operation op, bool speed_p)
 {
+  /* Do not bypass an explicit memset threshold through by-pieces.  */
+  if ((op == CLEAR_BY_PIECES || op == SET_BY_PIECES)
+      && riscv_memset_size_threshold >= 0
+      && size > (unsigned HOST_WIDE_INT) riscv_memset_size_threshold)
+    return false;
+
   /* Query the expanders whether they can handle the given operation.  */
   if ((op == CLEAR_BY_PIECES || op == SET_BY_PIECES)
       && speed_p && size > UNITS_PER_WORD)

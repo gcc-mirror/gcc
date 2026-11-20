@@ -1101,6 +1101,12 @@ riscv_expand_block_clear (rtx dest, rtx length, bool testing_p)
   if (optimize_function_for_size_p (cfun))
     return false;
 
+  if (CONST_INT_P (length)
+      && riscv_memset_size_threshold >= 0
+      && UINTVAL (length)
+	 > (unsigned HOST_WIDE_INT) riscv_memset_size_threshold)
+    return false;
+
   return riscv_expand_block_clear_zicboz_zic64b (dest, length, testing_p);
 }
 
