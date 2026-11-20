@@ -5004,15 +5004,62 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 		bpos %= BITS_PER_UNIT;
 		HOST_WIDE_INT end
 		  = ROUND_UP (bpos + fldsz, BITS_PER_UNIT) / BITS_PER_UNIT;
+		if (pos > cur_pos)
+		  {
+		    clear_padding_add_padding (buf, pos - cur_pos);
+		    cur_pos = pos;
+		  }
 		if (pos + end > cur_pos)
 		  {
-		    clear_padding_add_padding (buf, pos + end - cur_pos);
-		    cur_pos = pos + end;
+		    if ((unsigned HOST_WIDE_INT) end
+			> (unsigned HOST_WIDE_INT) clear_padding_buf_size / 2)
+		      {
+			if ((unsigned HOST_WIDE_INT) pos + clear_padding_unit
+			    > (unsigned HOST_WIDE_INT) cur_pos)
+			  {
+			    clear_padding_add_padding (buf,
+						       pos + clear_padding_unit
+						       - cur_pos);
+			    cur_pos = pos + clear_padding_unit;
+			  }
+		      }
+		    else
+		      {
+			clear_padding_add_padding (buf, pos + end - cur_pos);
+			cur_pos = pos + end;
+		      }
 		  }
 		gcc_assert (cur_pos > pos
 			    && ((unsigned HOST_WIDE_INT) buf->size
 				>= (unsigned HOST_WIDE_INT) cur_pos - pos));
 		unsigned char *p = buf->buf + buf->size - (cur_pos - pos);
+		HOST_WIDE_INT fldszu = 0;
+		auto bitfld_adjust = [&] {
+		  memset (p, 0, buf->buf + buf->size - p);
+		  fldszu -= buf->buf + buf->size - p;
+		  clear_padding_flush (buf, false);
+		  while ((unsigned HOST_WIDE_INT) fldszu
+			 > (unsigned HOST_WIDE_INT) 2 * clear_padding_unit)
+		    {
+		      HOST_WIDE_INT this_sz
+			= MIN ((HOST_WIDE_INT) (clear_padding_buf_size
+						- buf->size),
+			       (HOST_WIDE_INT) (fldszu
+						- 2 * clear_padding_unit));
+		      memset (buf->buf + buf->size, 0, this_sz);
+		      fldszu -= this_sz;
+		      cur_pos += this_sz;
+		      buf->size += this_sz;
+		      clear_padding_flush (buf, false);
+		    }
+		  clear_padding_add_padding (buf, pos + end - cur_pos);
+		  cur_pos = pos + end;
+		  pos = cur_pos - fldszu - ((fldsz % BITS_PER_UNIT) != 0);
+		  gcc_assert (cur_pos > pos
+			      && ((unsigned HOST_WIDE_INT) buf->size
+				  >= (unsigned HOST_WIDE_INT) cur_pos - pos));
+		  p = buf->buf + buf->size - (cur_pos - pos);
+		};
 		if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 		  sorry_at (buf->loc, "PDP11 bit-field handling unsupported"
 				      " in %qs", "__builtin_clear_padding");
@@ -5030,8 +5077,11 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 			    p++;
 			    fldsz -= BITS_PER_UNIT - bpos;
 			  }
-			memset (p, 0, fldsz / BITS_PER_UNIT);
-			p += fldsz / BITS_PER_UNIT;
+			fldszu = fldsz / BITS_PER_UNIT;
+			if (cur_pos < pos + end)
+			  bitfld_adjust ();
+			memset (p, 0, fldszu);
+			p += fldszu;
 			fldsz %= BITS_PER_UNIT;
 			if (fldsz)
 			  *p &= ((1U << BITS_PER_UNIT) - 1) >> fldsz;
@@ -5050,8 +5100,11 @@ clear_padding_type (clear_padding_struct *buf, tree type,
 			    p++;
 			    fldsz -= BITS_PER_UNIT - bpos;
 			  }
-			memset (p, 0, fldsz / BITS_PER_UNIT);
-			p += fldsz / BITS_PER_UNIT;
+			fldszu = fldsz / BITS_PER_UNIT;
+			if (cur_pos < pos + end)
+			  bitfld_adjust ();
+			memset (p, 0, fldszu);
+			p += fldszu;
 			fldsz %= BITS_PER_UNIT;
 			if (fldsz)
 			  *p &= ~((1 << fldsz) - 1);
