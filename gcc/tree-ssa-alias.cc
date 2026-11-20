@@ -912,10 +912,13 @@ ao_ref_init_from_ptr_and_range (ao_ref *ref, tree ptr,
 	ptr = gimple_assign_rhs1 (stmt);
       else if (is_gimple_assign (stmt)
 	       && gimple_assign_rhs_code (stmt) == POINTER_PLUS_EXPR
-	       && ptrdiff_tree_p (gimple_assign_rhs2 (stmt), &extra_offset))
+	       && ptrdiff_tree_p (gimple_assign_rhs2 (stmt), &t)
+	       && coeffs_in_range_p (t,
+				     -HOST_WIDE_INT_MAX / BITS_PER_UNIT,
+				     HOST_WIDE_INT_MAX / BITS_PER_UNIT))
 	{
 	  ptr = gimple_assign_rhs1 (stmt);
-	  extra_offset *= BITS_PER_UNIT;
+	  extra_offset = t * BITS_PER_UNIT;
 	}
     }
 
