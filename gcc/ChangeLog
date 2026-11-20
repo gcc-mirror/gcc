@@ -1,3 +1,87 @@
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.cc (DEFAULT_ARCH, DEFAULT_CPU):
+	Remove.
+	(get_cpu_from_ext): New function.  Select a generic CPU using
+	SVE2 and extensions that depend on it.
+	(host_detect_local_cpu): Use the inferred generic CPU and its
+	architecture for unknown CPUs, including heterogeneous systems.
+	Limit inherited features without cpuinfo tokens to the Armv8-A
+	baseline when the CPU is unknown.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-07-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126465
+	* match.pd: Fix FMS patterns.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-20  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126961
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Fix remainder use
+	and add signedness check.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126592
+	* tree-vect-slp-patterns.cc (is_linear_load_p): Rewrite using
+	vec_perm_indices.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126593
+	* tree-vect-slp-patterns.cc (compatible_complex_nodes_p): Check def
+	stmts of real and imag pairs.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-11-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/128665
+	* config/aarch64/aarch64-simd.md (vec_cbranch_any,
+	vec_cbranch_all): Correct mask.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/126063
+	* config/aarch64/aarch64-sve-builtins.cc (function_instance::hash):
+	Use ptr diff for hash instead of ptr.
+	(gt_pch_nx): Add the pointers to PCH tracking.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* tree-if-conv.cc (factor_out_operators): Fix PHI update.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* tree-if-conv.cc (factor_out_operators): Fix Checks.
+
 2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:

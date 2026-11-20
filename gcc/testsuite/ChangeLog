@@ -1,3 +1,68 @@
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Update the expected
+	architecture and extensions for the generic Armv9 fallback.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: Likewise.
+	* gcc.target/aarch64/cpunative/info_37: New cpuinfo fixture for an
+	unknown CPU with SVE2.1 and missing Armv9 baseline features.
+	* gcc.target/aarch64/cpunative/info_38: New cpuinfo fixture for an
+	unknown CPU without SVE2.
+	* gcc.target/aarch64/cpunative/info_41: New cpuinfo fixture for an
+	unknown CPU with SVE2 and all reportable Armv9-A baseline features.
+	* gcc.target/aarch64/cpunative/native_cpu_37.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_38.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_39.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_40.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_41.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-07-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126465
+	* gcc.target/aarch64/sve/cond_fma.c: New test.
+	* gcc.target/aarch64/sve/cond_fma_neg_addend.c: New test.
+	* gcc.target/aarch64/sve/cond_fms.c: New test.
+	* gcc.target/aarch64/sve/cond_fnma.c: New test.
+	* gcc.target/aarch64/sve/cond_fnms.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126592
+	* gcc.target/aarch64/pr126592.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126593
+	* gcc.target/aarch64/pr126593.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-11-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/128665
+	* gcc.target/aarch64/sve/vect-revectorize-ptest-1.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* gcc.dg/vect/pr128095.c: New test.
+
 2026-11-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
