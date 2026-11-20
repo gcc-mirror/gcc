@@ -4928,7 +4928,8 @@
     else
       {
 	expand_reversed_crc_table_based (operands[0], operands[1],
-					 msg, operands[3], <MODE>mode);
+					 msg, operands[3],
+					 GET_MODE_BITSIZE (<MODE>mode));
       }
     DONE;
   })

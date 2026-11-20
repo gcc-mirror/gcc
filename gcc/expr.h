@@ -402,8 +402,9 @@ extern unsigned HOST_WIDE_INT
 gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT, unsigned short);
 
 /* Generate table-based CRC.  */
-extern void expand_crc_table_based (rtx, rtx, rtx, rtx, machine_mode);
-extern void expand_reversed_crc_table_based (rtx, rtx, rtx, rtx, machine_mode);
+extern void expand_crc_table_based (rtx, rtx, rtx, rtx, unsigned short);
+extern void expand_reversed_crc_table_based (rtx, rtx, rtx, rtx,
+					     unsigned short);
 
 /* Cache of the "extended" flag in the target's _BitInt description
    for use during expand.  */

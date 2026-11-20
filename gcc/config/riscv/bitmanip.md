@@ -1493,7 +1493,7 @@
        To reflect values use standard reflecting algorithm.  */
     expand_reversed_crc_table_based (operands[0], operands[1],
 				     operands[2], operands[3],
-				     GET_MODE (operands[2]));
+				     GET_MODE_BITSIZE (<ANYI1:MODE>mode));
   DONE;
 })
 

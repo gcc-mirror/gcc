@@ -7851,11 +7851,12 @@ expand_builtin_crc_table_based (internal_fn fn, scalar_mode crc_mode,
     op2 = convert_to_mode (crc_mode, op2, 0);
 
   if (fn == IFN_CRC)
-    expand_crc_table_based (target, op1, op2, op3, data_mode);
+    expand_crc_table_based (target, op1, op2, op3,
+			    GET_MODE_BITSIZE (data_mode));
   else
     /* If it's IFN_CRC_REV generate bit-reversed CRC.  */
     expand_reversed_crc_table_based (target, op1, op2, op3,
-				     data_mode);
+				     GET_MODE_BITSIZE (data_mode));
   return target;
 }
 

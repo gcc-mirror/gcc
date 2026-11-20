@@ -5068,7 +5068,8 @@
     else
       /* Otherwise, generate table-based CRC.  */
       expand_reversed_crc_table_based (operands[0], operands[1], operands[2],
-				       operands[3], <ALLI:MODE>mode);
+				       operands[3],
+				       GET_MODE_BITSIZE (<ALLI:MODE>mode));
     DONE;
   }
 )

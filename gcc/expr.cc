@@ -14734,7 +14734,8 @@ generate_reversed_crc_table (unsigned HOST_WIDE_INT polynom,
 
    First, using POLYNOMIAL's value generates CRC table of 256 elements,
    then generates the assembly for the following code,
-   where crc_bit_size and data_bit_size may be 8, 16, 32, 64, depending on CRC:
+   where crc_bit_size may be 8, 16, 32, 64 and data_bit_size multiple of 8,
+   depending on CRC:
 
      for (int i = 0; i < data_bit_size / 8; i++)
        crc = (crc << 8) ^ crc_table[(crc >> (crc_bit_size - 8))
@@ -14748,11 +14749,12 @@ generate_reversed_crc_table (unsigned HOST_WIDE_INT polynom,
 static void
 calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 			   const rtx &polynomial,
-			   machine_mode data_mode)
+			   unsigned short data_bit_size)
 {
   machine_mode mode = GET_MODE (*crc);
   unsigned short crc_bit_size = GET_MODE_BITSIZE (mode).to_constant ();
-  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
+  gcc_assert (data_bit_size % 8 == 0);
+  unsigned short data_size = data_bit_size / 8;
   rtx tab = generate_crc_table (UINTVAL (polynomial), crc_bit_size);
 
   for (unsigned short i = 0; i < data_size; i++)
@@ -14762,7 +14764,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
       rtx op1 = expand_shift (RSHIFT_EXPR, mode, *crc, crc_bit_size - 8,
 			      NULL_RTX, 1);
 
-      /* data >> (8 * (GET_MODE_SIZE (data_mode).to_constant () - i - 1)).  */
+      /* data >> (8 * (data_size - i - 1)).  */
       unsigned range_8 = 8 * (data_size - i - 1);
       /* CRC's mode is always at least as wide as INPUT_DATA.  Convert
 	 INPUT_DATA into CRC's mode.  */
@@ -14770,8 +14772,7 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
       convert_move (data, input_data, 1);
       data = expand_shift (RSHIFT_EXPR, mode, data, range_8, NULL_RTX, 1);
 
-      /* data >> (8 * (GET_MODE_SIZE (mode)
-					.to_constant () - i - 1)) & 0xFF.  */
+      /* data >> (8 * (data_size - i - 1)) & 0xFF.  */
       rtx data_final = expand_and (mode, data,
 				   gen_int_mode (255, mode), NULL_RTX);
 
@@ -14819,11 +14820,12 @@ calculate_table_based_CRC (rtx *crc, const rtx &input_data,
 static void
 calculate_table_based_reversed_CRC (rtx *crc, const rtx &input_data,
 				    const rtx &polynomial,
-				    machine_mode data_mode)
+				    unsigned short data_bit_size)
 {
   machine_mode mode = GET_MODE (*crc);
   unsigned short crc_bit_size = GET_MODE_BITSIZE (mode).to_constant ();
-  unsigned short data_size = GET_MODE_SIZE (data_mode).to_constant ();
+  gcc_assert (data_bit_size % 8 == 0);
+  unsigned short data_size = data_bit_size / 8;
   rtx tab = generate_reversed_crc_table (UINTVAL (polynomial), crc_bit_size);
 
   /* CRC's mode is always at least as wide as INPUT_DATA.  Convert
@@ -14878,7 +14880,7 @@ calculate_table_based_reversed_CRC (rtx *crc, const rtx &input_data,
 
    CRC is OP1, data is OP2 and the polynomial is OP3.
    This must generate a CRC table and an assembly for the following code,
-   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   where crc_bit_size may be 8, 16, 32, 64 and data_bit_size multiple of 8:
    uint_crc_bit_size_t
    crc_crc_bit_size (uint_crc_bit_size_t crc_init,
 		     uint_data_bit_size_t data, size_t size)
@@ -14893,14 +14895,14 @@ calculate_table_based_reversed_CRC (rtx *crc, const rtx &input_data,
 
 void
 expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
-			machine_mode data_mode)
+			unsigned short data_bit_size)
 {
   gcc_assert (!CONST_INT_P (op0));
   gcc_assert (CONST_INT_P (op3));
   machine_mode crc_mode = GET_MODE (op0);
   rtx crc = gen_reg_rtx (crc_mode);
   convert_move (crc, op1, 0);
-  calculate_table_based_CRC (&crc, op2, op3, data_mode);
+  calculate_table_based_CRC (&crc, op2, op3, data_bit_size);
   convert_move (op0, crc, 0);
 }
 
@@ -14909,7 +14911,7 @@ expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
 
    CRC is OP1, data is OP2 and the polynomial is OP3.
    This generates a reversed CRC table and assembly for the following code,
-   where crc_bit_size and data_bit_size may be 8, 16, 32, 64:
+   where crc_bit_size may be 8, 16, 32, 64 and data_bit_size multiple of 8:
    uint_crc_bit_size_t
    crc_crc_bit_size (uint_crc_bit_size_t crc_init,
 		     uint_data_bit_size_t data)
@@ -14925,13 +14927,13 @@ expand_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
 
 void
 expand_reversed_crc_table_based (rtx op0, rtx op1, rtx op2, rtx op3,
-				 machine_mode data_mode)
+				 unsigned short data_bit_size)
 {
   gcc_assert (!CONST_INT_P (op0));
   gcc_assert (CONST_INT_P (op3));
   machine_mode crc_mode = GET_MODE (op0);
   rtx crc = gen_reg_rtx (crc_mode);
   convert_move (crc, op1, 0);
-  calculate_table_based_reversed_CRC (&crc, op2, op3, data_mode);
+  calculate_table_based_reversed_CRC (&crc, op2, op3, data_bit_size);
   convert_move (op0, crc, 0);
 }
