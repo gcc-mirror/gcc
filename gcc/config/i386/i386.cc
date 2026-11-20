@@ -25051,6 +25051,10 @@ x86_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
 	sname = fentry_section;
 
       fprintf (file, "\t.section %s, \"a\",@progbits\n", sname);
+      /* Align the entries to their size: the linker only uses packed
+	 relative relocations (RELR) for them in position independent
+	 output if they are aligned.  */
+      ASM_OUTPUT_ALIGN (file, TARGET_64BIT ? 3 : 2);
       fprintf (file, "\t.%s 1b\n", TARGET_64BIT ? "quad" : "long");
       fprintf (file, "\t.previous\n");
     }
