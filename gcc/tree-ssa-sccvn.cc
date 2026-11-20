@@ -5745,17 +5745,34 @@ valueized_wider_op (tree wide_type, tree op, bool allow_truncate)
   return NULL_TREE;
 }
 
-/* Return true if RESULT, the result of a value-number lookup, may be
-   used at the statement being visited.  A result of wrapping type can
-   be inserted for code hoisting without introducing undefined
-   overflow; anything else has to be available.  See PR86554.  */
+/* Return a value-number for RES_OP whose first operand is VAL, the
+   result of a value-number lookup, or NULL_TREE if VAL may not be used
+   at the statement being visited.  When VAL has a leader available in
+   the current block simplify using that, otherwise VAL is a leader
+   that does not dominate the statement being visited and using SSA
+   name info such as range information of it is not valid.  We can
+   still insert the unsimplified expression if VAL is of wrapping type
+   since that can be inserted for code hoisting without introducing
+   undefined overflow, see PR86554.  See PR128884.  */
 
-static bool
-vn_nary_result_avail_or_insertable_p (tree result)
+static tree
+vn_nary_build_or_lookup_avail (gimple_match_op *res_op, tree val)
 {
-  return (TYPE_OVERFLOW_WRAPS (TREE_TYPE (result))
-	  || (rpo_avail && vn_context_bb
-	      && rpo_avail->eliminate_avail (vn_context_bb, result)));
+  tree leader = val;
+  if (TREE_CODE (val) == SSA_NAME)
+    leader = (rpo_avail && vn_context_bb
+	      ? rpo_avail->eliminate_avail (vn_context_bb, val) : NULL_TREE);
+  if (leader)
+    {
+      res_op->ops[0] = leader;
+      return vn_nary_build_or_lookup (res_op);
+    }
+  if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (val)))
+    {
+      res_op->ops[0] = val;
+      return vn_nary_build_or_lookup_1 (res_op, true, false);
+    }
+  return NULL_TREE;
 }
 
 /* If OP is an SSA name defined by a conversion from an integral type,
@@ -5831,8 +5848,7 @@ visit_nary_op (tree lhs, gassign *stmt)
 		{
 		  ops[0] = vn_nary_op_lookup_pieces
 		      (2, gimple_assign_rhs_code (def), type, ops, NULL);
-		  /* We have wider operation available.  */
-		  if (ops[0] && vn_nary_result_avail_or_insertable_p (ops[0]))
+		  if (ops[0])
 		    {
 		      unsigned lhs_prec = TYPE_PRECISION (type);
 		      unsigned rhs_prec = TYPE_PRECISION (TREE_TYPE (rhs1));
@@ -5840,16 +5856,15 @@ visit_nary_op (tree lhs, gassign *stmt)
 			  || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 			      && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (rhs1))))
 			{
-			  gimple_match_op match_op (gimple_match_cond::UNCOND,
-						    NOP_EXPR, type, ops[0]);
-			  result = vn_nary_build_or_lookup (&match_op);
-			  if (result)
-			    {
-			      bool changed = set_ssa_val_to (lhs, result);
-			      if (TREE_CODE (result) == SSA_NAME)
-				vn_nary_op_insert_stmt (stmt, result);
-			      return changed;
-			    }
+			  /* The wider operation computes the same value.
+			     Use it if it is available or can be inserted
+			     for code hoisting, see PR86554.  */
+			  if (TREE_CODE (ops[0]) != SSA_NAME
+			      || TYPE_OVERFLOW_WRAPS (type)
+			      || (rpo_avail && vn_context_bb
+				  && rpo_avail->eliminate_avail (vn_context_bb,
+								 ops[0])))
+			    result = ops[0];
 			}
 		      else
 			{
@@ -5859,14 +5874,15 @@ visit_nary_op (tree lhs, gassign *stmt)
 						    BIT_AND_EXPR,
 						    TREE_TYPE (lhs),
 						    ops[0], mask);
-			  result = vn_nary_build_or_lookup (&match_op);
-			  if (result)
-			    {
-			      bool changed = set_ssa_val_to (lhs, result);
-			      if (TREE_CODE (result) == SSA_NAME)
-				vn_nary_op_insert_stmt (stmt, result);
-			      return changed;
-			    }
+			  result = vn_nary_build_or_lookup_avail (&match_op,
+								  ops[0]);
+			}
+		      if (result)
+			{
+			  bool changed = set_ssa_val_to (lhs, result);
+			  if (TREE_CODE (result) == SSA_NAME)
+			    vn_nary_op_insert_stmt (stmt, result);
+			  return changed;
 			}
 		    }
 		}
@@ -5924,11 +5940,11 @@ visit_nary_op (tree lhs, gassign *stmt)
 	const tree narrow_val
 	  = vn_nary_op_lookup_pieces (2, code, ntype, ops, NULL);
 	/* We have a narrower or sign-changed operation available.  */
-	if (narrow_val && vn_nary_result_avail_or_insertable_p (narrow_val))
+	if (narrow_val)
 	  {
 	    gimple_match_op match_op (gimple_match_cond::UNCOND,
 				      NOP_EXPR, type, narrow_val);
-	    result = vn_nary_build_or_lookup (&match_op);
+	    result = vn_nary_build_or_lookup_avail (&match_op, narrow_val);
 	    if (result)
 	      {
 		const bool changed = set_ssa_val_to (lhs, result);
@@ -6052,7 +6068,10 @@ visit_nary_op (tree lhs, gassign *stmt)
 		     see if such an operation is available.  */
 		  ops[i] = vn_nary_op_lookup_pieces (1, NEGATE_EXPR, type,
 						     &rhs[i], NULL);
-		  if (ops[i] && !vn_nary_result_avail_or_insertable_p (ops[i]))
+		  if (ops[i]
+		      && !(rpo_avail && vn_context_bb
+			   && rpo_avail->eliminate_avail (vn_context_bb,
+							  ops[i])))
 		    ops[i] = NULL_TREE;
 		}
 	      ops[j] = rhs[j];
