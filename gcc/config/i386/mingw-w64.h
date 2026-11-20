@@ -70,12 +70,13 @@ along with GCC; see the file COPYING3.  If not see
 #undef ASM_SPEC
 #define ASM_SPEC "%{m32:--32} %{m64:--64}"
 
+/* Note: Keep SPEC_PTHREAD2 referenced, otherwise it will be rejected by driver */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{" SPEC_PTHREAD1 ":-lpthread} " \
 		 "%{" SPEC_PTHREAD2 ": } " \
 		 "%{mwindows:-lgdi32 -lcomdlg32} " \
-     "%{fvtable-verify=preinit:-lvtv -lpsapi; \
-        fvtable-verify=std:-lvtv -lpsapi} " \
+		 "%{fvtable-verify=preinit:-lvtv -lpsapi; " \
+		 "  fvtable-verify=std:-lvtv -lpsapi} " \
 		 "-ladvapi32 -lshell32 -luser32 -lkernel32"
 
 #undef SPEC_32

@@ -94,7 +94,6 @@ along with GCC; see the file COPYING3.  If not see
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{mthreads:-D_MT} " \
 		 "%{" SPEC_PTHREAD1 ":-D_REENTRANT} " \
-		 "%{" SPEC_PTHREAD2 ": } " \
 		 "%{mcrtdll=crtdll*:-U__MSVCRT__ -D__CRTDLL__} " \
 		 "%{mcrtdll=msvcrt10*:-D__MSVCRT_VERSION__=0x100} " \
 		 "%{mcrtdll=msvcrt20*:-D__MSVCRT_VERSION__=0x200} " \
@@ -113,13 +112,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* For Windows applications, include more libraries, but always include
    kernel32.  */
+/* Note: Keep SPEC_PTHREAD2 referenced, otherwise it will be rejected by driver */
 #undef LIB_SPEC
 #define LIB_SPEC "%{pg:-lgmon} %{" SPEC_PTHREAD1 ":-lpthread} " \
 		 "%{" SPEC_PTHREAD2 ": } " \
 		 "%{mwindows:-lgdi32 -lcomdlg32} " \
-     "%{fvtable-verify=preinit:-lvtv -lpsapi; \
-        fvtable-verify=std:-lvtv -lpsapi} " \
-                 "-ladvapi32 -lshell32 -luser32 -lkernel32"
+		 "%{fvtable-verify=preinit:-lvtv -lpsapi; " \
+		 "  fvtable-verify=std:-lvtv -lpsapi} " \
+		 "-ladvapi32 -lshell32 -luser32 -lkernel32"
 
 /* Weak symbols do not get resolved if using a Windows dll import lib.
    Make the unwind registration references strong undefs.  */
