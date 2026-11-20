@@ -13722,8 +13722,9 @@ static bool
 riscv_optab_supported_p (int op, machine_mode, machine_mode result_mode,
 			 optimization_type opt_type)
 {
-  /* The second CRC optab mode is the result mode.  The CLMUL expansion
-     requires room for a quotient wider than the CRC value itself.  */
+  /* The second CRC optab mode is the result mode.  For a full-width
+     Zbkc CRC, materializing the constants for clmul can take more
+     space than the original loop.  */
   if (op == crc_rev_optab && opt_type != OPTIMIZE_FOR_SPEED)
     return (((TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
 	     && result_mode < word_mode)
@@ -16222,8 +16223,7 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
   ref_polynomial = reflect_hwi (UINTVAL (polynomial),
 				crc_size);
 
-  bool use_clmulr = crc_size == BITS_PER_WORD;
-  gcc_assert (TARGET_ZBC || !use_clmulr);
+  bool use_clmulr = crc_size == BITS_PER_WORD && TARGET_ZBC;
 
   rtx t1 = gen_reg_rtx (word_mode);
   if (use_clmulr)
@@ -16256,6 +16256,14 @@ expand_reversed_crc_using_clmul (scalar_mode crc_mode, scalar_mode data_mode,
 	    emit_insn (gen_riscv_clmulr_di (a0, a0, t1));
 	  else
 	    emit_insn (gen_riscv_clmulr_si (a0, a0, t1));
+	}
+      else if (crc_mode == DImode && (UINTVAL (polynomial) & 1))
+	{
+	  /* The left shift of the reflected polynomial discarded its top
+	     bit.  XOR the multiplicand back into the high product.  */
+	  rtx high = gen_reg_rtx (DImode);
+	  emit_insn (gen_riscv_clmulh_di (high, a0, t1));
+	  riscv_expand_op (XOR, DImode, a0, high, a0);
 	}
       else
 	{

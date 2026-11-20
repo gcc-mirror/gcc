@@ -1479,16 +1479,13 @@
   /* We don't support the case when data's size is bigger than CRC's size.  */
   "<ANYI:MODE>mode >= <ANYI1:MODE>mode"
 {
-  /* If we have the ZBC or ZBKC extension (ie, clmul) and
-     it is possible to store the quotient within a single variable
-     (E.g.  CRC64's quotient may need 65 bits,
-     we can't keep it in 64 bit variable.)
-     then use clmul instruction to implement the CRC.
-     If we have the ZBC extension (ie, clmulr) 1 bit can be left
-     implicit, allowing CRC64 using a 64 bit variable.  */
+  /* Zbc has clmulr for full-width CRCs.  For CRC64 with Zbkc, use
+     clmulh when an update replaces at least four byte table lookups.  */
   if (((TARGET_ZBKC || TARGET_ZBC || TARGET_ZVBC)
 	&& <ANYI:MODE>mode < word_mode)
-      || (TARGET_ZBC && <ANYI:MODE>mode == word_mode))
+      || (TARGET_ZBC && <ANYI:MODE>mode == word_mode)
+      || (TARGET_ZBKC && <ANYI:MODE>mode == DImode
+	  && <ANYI1:MODE>mode >= SImode))
     expand_reversed_crc_using_clmul (<ANYI:MODE>mode, <ANYI1:MODE>mode,
 				     operands);
   else
