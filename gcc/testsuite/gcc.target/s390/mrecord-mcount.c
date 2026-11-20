@@ -6,5 +6,6 @@ profileme (void)
 {
   /* { dg-final { scan-assembler ".section __mcount_loc, \"a\",@progbits" } } */
   /* { dg-final { scan-assembler ".quad 1b" } } */
+  /* { dg-final { scan-assembler ".align\t8\n\t.quad 1b" } } */
   /* { dg-final { scan-assembler ".previous" } } */
 }

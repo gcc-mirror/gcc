@@ -14194,6 +14194,10 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
   if (flag_record_mcount)
     {
       fprintf (file, "\t.section __mcount_loc, \"a\",@progbits\n");
+      /* Align the entries to their size: the linker only uses packed
+	 relative relocations (RELR) for them in position independent
+	 output if they are aligned.  */
+      ASM_OUTPUT_ALIGN (file, 3);
       fprintf (file, "\t.quad 1b\n");
       fprintf (file, "\t.previous\n");
     }
