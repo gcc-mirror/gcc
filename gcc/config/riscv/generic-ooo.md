@@ -105,7 +105,7 @@
 ;; Float move, convert and compare.
 (define_insn_reservation "generic_ooo_float_move" 3
   (and (eq_attr "tune" "generic_ooo")
-       (eq_attr "type" "fmove"))
+       (eq_attr "type" "fmove,fminmax"))
   "generic_ooo_issue,generic_ooo_fxu")
 
 (define_insn_reservation "generic_ooo_fcvt" 3

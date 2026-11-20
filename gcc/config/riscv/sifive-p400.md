@@ -150,7 +150,7 @@
 
 (define_insn_reservation "sifive_p400_fmove" 2
   (and (eq_attr "tune" "sifive_p400")
-       (eq_attr "type" "fmove,fcvt"))
+       (eq_attr "type" "fmove,fminmax,fcvt"))
   "p400_float_pipe,sifive_p400_fpu")
 
 ;; We need something for HF so that we don't abort during

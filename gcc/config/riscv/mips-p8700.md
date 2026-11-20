@@ -56,7 +56,7 @@
 
 (define_insn_reservation "mips_p8700_fpu_fabs" 2
   (and (eq_attr "tune" "mips_p8700")
-       (eq_attr "type" "fcmp,fmove"))
+       (eq_attr "type" "fcmp,fmove,fminmax"))
   "mips_p8700_fpu_short, mips_p8700_fpu_apu")
 
 (define_insn_reservation "mips_p8700_fpu_fload" 8

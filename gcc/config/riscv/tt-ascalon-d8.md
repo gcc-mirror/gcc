@@ -75,7 +75,7 @@
 ;; are executed by the FPU, but we can't model that at the moment.
 (define_insn_reservation "tt_ascalon_d8_float_move" 4
   (and (eq_attr "tune" "tt_ascalon_d8,tt_ascalon_xg")
-       (eq_attr "type" "fmove"))
+       (eq_attr "type" "fmove,fminmax"))
   "tt_ascalon_d8_decode,tt_ascalon_d8_fp")
 
 (define_insn_reservation "tt_ascalon_d8_fcvt" 3

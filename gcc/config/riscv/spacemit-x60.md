@@ -130,7 +130,7 @@
 
 (define_insn_reservation "spacemit_x60_fcvt" 4
   (and (eq_attr "tune" "spacemit_x60")
-       (eq_attr "type" "fcvt,fmove"))
+       (eq_attr "type" "fcvt,fmove,fminmax"))
   "spacemit_x60_fpalu")
 
 (define_insn_reservation "spacemit_x60_fcmp" 6

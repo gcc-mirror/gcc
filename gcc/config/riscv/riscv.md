@@ -332,6 +332,7 @@
 ;; idiv		integer divide
 ;; move		integer register move (addi rd, rs1, 0)
 ;; fmove	floating point register move
+;; fminmax	floating point min/max
 ;; fadd		floating point add/subtract
 ;; fmul		floating point multiply
 ;; fmadd	floating point multiply-add
@@ -508,9 +509,9 @@
 ;; xt_vilo      vector odd interleave instruction
 (define_attr "type"
   "unknown,branch,jump,jalr,ret,call,load,fpload,store,fpstore,
-   mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fadd,fmul,
-   fmadd,fdiv,fcmp,fcvt,fcvt_i2f,fcvt_f2i,fsqrt,multi,auipc,sfb_alu,nop,trap,
-   ghost,bitmanip,rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
+   mtc,mfc,const,arith,logical,shift,slt,imul,idiv,move,fmove,fminmax,
+   fadd,fmul,fmadd,fdiv,fcmp,fcvt,fcvt_i2f,fcvt_f2i,fsqrt,multi,auipc,sfb_alu,
+   nop,trap,ghost,bitmanip,rotate,clmul,min,max,minu,maxu,clz,ctz,cpop,
    atomic,condmove,crypto,mvpair,zicond,rdvlenb,rdvl,wrvxrm,wrfrm,
    rdfrm,vsetvl,vsetvl_pre,vlde,vste,vldm,vstm,vlds,vsts,
    vldux,vldox,vstux,vstox,vldff,vldr,vstr,
@@ -1667,7 +1668,7 @@
 		     UNSPEC_FMINM))]
   "TARGET_HARD_FLOAT && TARGET_ZFA"
   "fminm.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "fmaxm<mode>3"
@@ -1677,7 +1678,7 @@
 		     UNSPEC_FMAXM))]
   "TARGET_HARD_FLOAT && TARGET_ZFA"
   "fmaxm.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "fmin<mode>3"
@@ -1687,7 +1688,7 @@
 		     UNSPEC_FMIN))]
   "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SNANS (<MODE>mode)"
   "fmin.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "fmax<mode>3"
@@ -1697,7 +1698,7 @@
 		     UNSPEC_FMAX))]
   "(TARGET_HARD_FLOAT || TARGET_ZFINX) && !HONOR_SNANS (<MODE>mode)"
   "fmax.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "smin<mode>3"
@@ -1706,7 +1707,7 @@
 		   (match_operand:ANYF 2 "register_operand" " f")))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fmin.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 (define_insn "smax<mode>3"
@@ -1715,7 +1716,7 @@
 		   (match_operand:ANYF 2 "register_operand" " f")))]
   "TARGET_HARD_FLOAT || TARGET_ZFINX"
   "fmax.<fmt>\t%0,%1,%2"
-  [(set_attr "type" "fmove")
+  [(set_attr "type" "fminmax")
    (set_attr "mode" "<UNITMODE>")])
 
 ;;

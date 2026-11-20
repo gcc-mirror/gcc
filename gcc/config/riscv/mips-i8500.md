@@ -89,12 +89,14 @@
        (eq_attr "type" "mfc,mtc"))
   "mips_i8500_control_alu0 | mips_i8500_agen_alu1")
 
-;; fmin/fmax takes 2 cycles where as remaining fmove instructions such as
-;; fabs, fsgnj, fmv.w.x takes 1 cycle.  so define the latency for fmove as
-;; 2 (worstcase)
-(define_insn_reservation "mips_i8500_fmove" 2
+(define_insn_reservation "mips_i8500_fmove" 1
   (and (eq_attr "tune" "mips_i8500")
        (eq_attr "type" "fmove"))
+  "mips_i8500_fpu_short")
+
+(define_insn_reservation "mips_i8500_fminmax" 2
+  (and (eq_attr "tune" "mips_i8500")
+       (eq_attr "type" "fminmax"))
   "mips_i8500_fpu_short")
 
 (define_insn_reservation "mips_i8500_fcmp" 2

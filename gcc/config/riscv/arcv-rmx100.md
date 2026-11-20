@@ -70,7 +70,7 @@
 
 (define_insn_reservation "arcv_rmx100_xfer" 1
   (and (eq_attr "tune" "arcv_rmx100")
-       (eq_attr "type" "fmove,mtc,mfc,fcvt,fcvt_f2i,fcvt_i2f"))
+       (eq_attr "type" "fmove,fminmax,mtc,mfc,fcvt,fcvt_f2i,fcvt_i2f"))
    "arcv_rmx100_FPU")
 
 (define_insn_reservation "arcv_rmx100_fmul_insn" 2

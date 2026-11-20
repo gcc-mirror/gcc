@@ -157,7 +157,7 @@
 
 (define_insn_reservation "xiangshan_f2f" 3
   (and (eq_attr "tune" "xiangshan")
-       (eq_attr "type" "fcvt,fcvt_f2i,fmove"))
+       (eq_attr "type" "fcvt,fcvt_f2i,fmove,fminmax"))
   "xs_fmisc_rs")
 
 (define_insn_reservation "xiangshan_f2i" 3

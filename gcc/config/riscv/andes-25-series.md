@@ -128,7 +128,7 @@
 
 (define_insn_reservation "andes_25_fpu_move" 3
   (and (eq_attr "tune" "andes_25_series")
-       (eq_attr "type" "fmove,mtc,mfc"))
+       (eq_attr "type" "fmove,fminmax,mtc,mfc"))
   "andes_25_fpu_pipe")
 
 (define_insn_reservation "andes_25_fpu_cmp" 3

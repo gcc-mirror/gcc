@@ -87,7 +87,7 @@
 ;; (soft) floating points
 (define_insn_reservation "arcv_rhx100_xfer" 3
   (and (eq_attr "tune" "arcv_rhx100,arcv_rpx100")
-       (eq_attr "type" "mfc,mtc,fcvt,fcvt_i2f,fcvt_f2i,fmove,fcmp"))
+       (eq_attr "type" "mfc,mtc,fcvt,fcvt_i2f,fcvt_f2i,fmove,fminmax,fcmp"))
   "(arcv_rhx100_ALU_A_fuse0_early | arcv_rhx100_ALU_B_fuse0_early)")
 
 (define_insn_reservation "arcv_rhx100_fmul" 5

@@ -112,7 +112,7 @@
 
 (define_insn_reservation "andes_23_fpu_move" 2
   (and (eq_attr "tune" "andes_23_series")
-       (eq_attr "type" "fmove,mtc,mfc"))
+       (eq_attr "type" "fmove,fminmax,mtc,mfc"))
   "andes_23_pipe_unify, andes_23_fpu")
 
 (define_insn_reservation "andes_23_fpu_cmp" 3

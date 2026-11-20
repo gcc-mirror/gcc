@@ -101,7 +101,7 @@
 
 (define_insn_reservation "sifive_7_fp_other" 3
   (and (eq_attr "tune" "sifive_7")
-       (eq_attr "type" "fcvt,fcvt_i2f,fcvt_f2i,fcmp,fmove"))
+       (eq_attr "type" "fcvt,fcvt_i2f,fcvt_f2i,fcmp,fmove,fminmax"))
   "sifive_7_B")
 
 (define_insn_reservation "sifive_7_fdiv_h" 14

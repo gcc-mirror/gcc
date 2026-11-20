@@ -157,7 +157,7 @@
 
 (define_insn_reservation "andes_45_fpu_move" 1
   (and (eq_attr "tune" "andes_45_series")
-       (eq_attr "type" "fmove,mtc,mfc"))
+       (eq_attr "type" "fmove,fminmax,mtc,mfc"))
   "andes_45_pipe0 + andes_45_fpu_fmv | andes_45_pipe1 + andes_45_fpu_fmv")
 
 (define_insn_reservation "andes_45_fpu_cmp" 2
