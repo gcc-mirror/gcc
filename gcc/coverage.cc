@@ -1214,6 +1214,8 @@ coverage_obj_fn (vec<constructor_elt, va_gc> *ctor, tree fn,
   tree init = build_fn_info (data, gcov_fn_info_type, gcov_info_var);
   tree var = build_var (fn, gcov_fn_info_type, -1);
 
+  /* The library reads the function information only.  */
+  TREE_READONLY (var) = 1;
   DECL_INITIAL (var) = init;
   varpool_node::finalize_decl (var);
 
@@ -1238,6 +1240,7 @@ coverage_obj_finish (vec<constructor_elt, va_gc> *ctor,
   char name_buf[32];
 
   TREE_STATIC (fn_info_ary) = 1;
+  TREE_READONLY (fn_info_ary) = 1;
   ASM_GENERATE_INTERNAL_LABEL (name_buf, "LPBX", 1);
   DECL_NAME (fn_info_ary) = get_identifier (name_buf);
   DECL_INITIAL (fn_info_ary) = build_constructor (fn_info_ary_type, ctor);
