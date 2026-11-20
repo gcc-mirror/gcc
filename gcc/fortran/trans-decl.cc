@@ -4798,7 +4798,8 @@ gfc_init_default_pdt (gfc_symbol *sym, bool dealloc)
      there are no LEN components.  */
   c = sym->ts.u.derived->components;
   for (; c; c = c->next)
-    if (c->attr.pdt_len || !c->initializer)
+    if (c->attr.pdt_len || !c->initializer
+	|| (IS_PDT (c) && c->ts.u.derived->attr.alloc_comp))
       return NULL_TREE;
 
   gfc_init_block (&block);
@@ -5274,14 +5275,12 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		}
 	    }
 	}
-      else if (IS_CLASS_PDT (sym) && !CLASS_DATA (sym)->attr.pointer)
+      else if (IS_CLASS_PDT (sym) && !CLASS_DATA (sym)->attr.class_pointer)
 	{
 	  gfc_component *data = CLASS_DATA (sym);
 	  is_pdt_type = true;
 	  gfc_init_block (&tmpblock);
-	  if (!(sym->attr.dummy
-		|| CLASS_DATA (sym)->attr.pointer
-		|| CLASS_DATA (sym)->attr.allocatable))
+	  if (!sym->attr.dummy && !CLASS_DATA (sym)->attr.allocatable)
 	    {
 	      tmp = gfc_class_data_get (sym->backend_decl);
 	      tmp = gfc_allocate_pdt_comp (data->ts.u.derived, tmp,
@@ -5322,7 +5321,11 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 		 treatment in gfc_trans_allocate.  */
 	      if (all_explicit)
 		{
-		  tmp = gfc_class_data_get (sym->backend_decl);
+		  tmp = sym->backend_decl;
+		  if (DECL_LANG_SPECIFIC (tmp))
+		    tmp = GFC_DECL_SAVED_DESCRIPTOR (tmp);
+
+		  tmp = gfc_class_data_get (tmp);
 		  tmp = gfc_check_pdt_dummy (declared, tmp,
 					     class_data->as ?
 						      class_data->as->rank : 0,
