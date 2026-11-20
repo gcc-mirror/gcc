@@ -15138,6 +15138,19 @@ aarch64_branch_cost (bool speed_p, bool predictable_p)
     return branch_costs->unpredictable;
 }
 
+/* Return true if OP0 and OP1, the operands of a PLUS in MODE, are
+   (and R MASK) and IMM where MASK and IMM form a single MOVK instruction.
+   See *aarch64_movk<mode>.  MODE must be SImode or DImode.  */
+static bool
+aarch64_movk_plus_p (rtx op0, rtx op1, machine_mode mode)
+{
+  return (GET_CODE (op0) == AND
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (op1)
+	  && aarch64_movk_shift (rtx_mode_t (XEXP (op0, 1), mode),
+				 rtx_mode_t (op1, mode)) >= 0);
+}
+
 /* Return true if X is a zero or sign extract
    usable in an ADD or SUB (extended register) instruction.  */
 static bool
@@ -16066,6 +16079,16 @@ cost_minus:
 
 	op0 = XEXP (x, 0);
 	op1 = XEXP (x, 1);
+
+	/* MOVK.  This is one instruction whatever the immediate is.  */
+	if ((mode == SImode || mode == DImode)
+	    && aarch64_movk_plus_p (op0, op1, mode))
+	  {
+	    *cost += rtx_cost (XEXP (op0, 0), mode, AND, 0, speed);
+	    if (speed)
+	      *cost += extra_cost->alu.logical;
+	    return true;
+	  }
 
 cost_plus:
 	if (VECTOR_MODE_P (mode))
