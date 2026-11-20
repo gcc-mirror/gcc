@@ -9165,10 +9165,11 @@ is_alpha_a_number(const cblc_field_t *field,
   cbl_char_t mapped_0 = charmap->mapped_character(ascii_0);
   cbl_char_t mapped_9 = charmap->mapped_character(ascii_9);
   int retval = 1;
-  size_t i = offset;
+  const unsigned char *data = field->data + offset;
+  size_t i = 0;
   while(i < size)
     {
-    cbl_char_t ch = charmap->getch(field->data, &i);
+    cbl_char_t ch = charmap->getch(data, &i);
     if(    (ch < mapped_0)
         || (ch > mapped_9) )
       {
@@ -9773,7 +9774,7 @@ __gg__alphabet_use( cbl_encoding_t display_encoding,
 
 extern "C"
 void
-__gg__parser_set_conditional(cblc_field_t *var, int figconst_)
+__gg__parser_set_conditional(cblc_field_t *var, size_t offset, int figconst_)
   {
   charmap_t *charmap = __gg__get_charmap(var->encoding);
 
@@ -9800,7 +9801,7 @@ __gg__parser_set_conditional(cblc_field_t *var, int figconst_)
     default:
       break;
     }
-  charmap->memset( var->data, special, var->capacity);
+  charmap->memset( var->data+offset, special, var->capacity);
   }
 
 extern "C"
@@ -10400,6 +10401,25 @@ __gg__match_exception( cblc_field_t *index )
                            [enabled, raised]( const cbl_declarative_t& dcl ) {
                              return match_declarative(enabled, raised, dcl);
                            } );
+
+    // Ordinary exception handlers prefer an exact EC over a category,
+    // and a category over EC-ALL. Keep the first match at equal specificity.
+    // Preserve first-match selection for Format 1 I/O declaratives.
+    if( p != declaratives.end() && !p->is_format_1() ) {
+      auto specificity = [ec]( const cbl_declarative_t& dcl ) {
+        return dcl.type == ec ? 2 : dcl.type == ec_all_e ? 0 : 1;
+      };
+      int best = specificity(*p);
+      auto candidate = p;
+      for( ++candidate; candidate != declaratives.end(); ++candidate ) {
+        if( candidate->is_format_1() ) continue;
+        int rank = specificity(*candidate);
+        if( rank > best && match_declarative(enabled, raised, *candidate) ) {
+          p = candidate;
+          best = rank;
+        }
+      }
+    }
 
     if( p == declaratives.end() ) {
       if( MATCH_DECLARATIVE ) {

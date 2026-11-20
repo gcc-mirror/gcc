@@ -242,6 +242,103 @@ get_integer_value(const cbl_refer_t &refer,
   return value;
   }
 
+// SET TO requires integral values when assigning an occurrence index.
+void
+parser_set_indices(size_t ntgt, cbl_refer_t *tgts, const cbl_refer_t& src)
+  {
+  if( mode_syntax_only() ) return;
+  const cbl_enabled_exceptions_t& enabled_exceptions(cdf_enabled_exceptions());
+  bool has_index = false;
+  for( size_t i = 0; i < ntgt; ++i )
+    has_index |= tgts[i].field->type == FldIndex;
+  if( !has_index || !enabled_exceptions.match(ec_bound_subscript_e) )
+    {
+    parser_move(ntgt, tgts, src);
+    return;
+    }
+
+  // Evaluate once, before any destination can overwrite the source.
+  gg_assign(var_decl_fracdigits, integer_zero_node);
+  tree value = gg_define_variable(INT128,
+                     get_integer_value(src, CHECK_FOR_FRACTIONAL_DIGITS));
+  IF( var_decl_fracdigits, ne_op, integer_zero_node )
+    {
+    gg_assign(var_decl_fracdigits, integer_zero_node);
+    set_exception_code(ec_bound_subscript_e);
+    }
+  ELSE
+    {
+    for( size_t i = 0; i < ntgt; ++i )
+      {
+      gg_call(INT,
+              "__gg__int128_to_qualified_field",
+              gg_get_address_of(tgts[i].field->var_decl_node),
+              refer_offset(tgts[i]),
+              refer_size_dest(tgts[i]),
+              value,
+              integer_zero_node,
+              build_int_cst_type(INT, truncation_e),
+              NULL_TREE);
+      }
+    }
+  ENDIF
+  }
+
+// SET UP/DOWN BY checks the increment before changing occurrence indexes.
+void
+parser_adjust_indices(const std::list<cbl_num_result_t>& tgts,
+                      const cbl_refer_t& step, bool down)
+  {
+  if( mode_syntax_only() ) return;
+  const cbl_enabled_exceptions_t& enabled_exceptions(cdf_enabled_exceptions());
+  bool all_indexes = !tgts.empty();
+  for( const auto& tgt : tgts )
+    all_indexes &= tgt.refer.field->type == FldIndex;
+  if( !all_indexes || !enabled_exceptions.match(ec_bound_subscript_e) )
+    {
+    // Preserve ordinary arithmetic for unchecked SET and numeric extensions.
+    for( const auto& tgt : tgts )
+      {
+      if( down )
+        parser_subtract(tgt.refer, tgt.refer, step, tgt.rounded);
+      else
+        parser_add(tgt.refer, tgt.refer, step, tgt.rounded);
+      }
+    return;
+    }
+
+  // Capture the increment once, even when it aliases one of the targets.
+  gg_assign(var_decl_fracdigits, integer_zero_node);
+  tree increment = gg_define_variable(INT128,
+                     get_integer_value(step, CHECK_FOR_FRACTIONAL_DIGITS));
+  IF( var_decl_fracdigits, ne_op, integer_zero_node )
+    {
+    gg_assign(var_decl_fracdigits, integer_zero_node);
+    set_exception_code(ec_bound_subscript_e);
+    }
+  ELSE
+    {
+    for( const auto& tgt : tgts )
+      {
+      tree offset = gg_define_variable(SIZE_T, refer_offset(tgt.refer));
+      tree size = refer_size_dest(tgt.refer);
+      tree value = gg_define_variable(INT128,
+                                      get_binary_value(tgt.refer, INT128));
+      value = down ? gg_subtract(value, increment) : gg_add(value, increment);
+      gg_call(INT,
+              "__gg__int128_to_qualified_field",
+              gg_get_address_of(tgt.refer.field->var_decl_node),
+              offset,
+              size,
+              value,
+              integer_zero_node,
+              build_int_cst_type(INT, truncation_e),
+              NULL_TREE);
+      }
+    }
+  ENDIF
+  }
+
 static
 tree  // This is a SIZE_T
 get_any_capacity(cbl_field_t *field)

@@ -9415,6 +9415,9 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
 
   cbl_figconst_t figconst = cbl_figconst_of(src->first.name());
 
+  cbl_refer_t parent_refer = refer;
+  parent_refer.field = parent;
+
   if( !figconst )
     {
     // We are dealing with an ordinary string.
@@ -9429,7 +9432,7 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
     gg_call(VOID,
             "__gg__refer_from_string",
             gg_get_address_of(parent->var_decl_node),
-            size_t_zero_node,
+            refer_offset(parent_refer),
             build_int_cst_type(SIZE_T, parent->data.capacity()),
             build_string_literal(converted_bytes, converted),
             build_int_cst_type(SIZE_T, converted_bytes),
@@ -9441,6 +9444,7 @@ parser_set_conditional88( const cbl_refer_t& refer, bool which_way )
     gg_call(VOID,
             "__gg__parser_set_conditional",
             gg_get_address_of(parent->var_decl_node),
+            refer_offset(parent_refer),
             build_int_cst_type(INT, figconst),
             NULL_TREE);
     }
@@ -11758,19 +11762,9 @@ parser_lsearch_start(   cbl_label_t *name,
   // Establish the initial value of our counter:
   lsearch->counter = gg_define_variable(LONG);
 
-  tree value;
-  if(varying)
-    {
-    value = get_binary_value(varying, SIZE_T);
-    }
-  else if( index )
-    {
-    value = get_binary_value(index, SIZE_T);
-    }
-  else
-    {
-    gcc_unreachable();
-    }
+  // Bounds follow the search index, not an independent VARYING item.
+  gcc_assert(index);
+  tree value = get_binary_value(index, SIZE_T);
   gg_assign(lsearch->counter, gg_cast(LONG, value));
 
   // And we need these around, so we can increment them:

@@ -6173,6 +6173,10 @@ add_body:       sum TO rnames
                   $$ = new arith_t(@sum, corresponding_e, *$sum);
                   $$->tgts.push_front(rhs.front());
                   $$->locs.tgts = @rnames;
+                  if( !pairs.empty() ) {
+                    save_subscripts($$->A.front());
+                    save_subscripts($$->tgts.front().refer);
+                  }
                   // use arith_t functor to populate A and tgts
                   *$$ = std::for_each( pairs.begin(), pairs.end(), *$$ );
                   $$->A.pop_front();
@@ -8858,6 +8862,10 @@ subtract_body:  sum FROM rnames
                   $$ = new arith_t(@sum, corresponding_e, *$sum);
                   $$->tgts.push_front(rhs.front());
                   $$->locs.tgts = @rnames;
+                  if( !pairs.empty() ) {
+                    save_subscripts($$->A.front());
+                    save_subscripts($$->tgts.front().refer);
+                  }
                   // use arith_t functor to populate A and tgts
                   *$$ = std::for_each( pairs.begin(), pairs.end(), *$$ );
                   $$->A.pop_front();
@@ -9734,9 +9742,7 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                   statement_begin(@1, SET);
                   list<cbl_num_result_t>& tgts = $tgts->targets;
 
-                  for( auto p = tgts.begin(); p != tgts.end(); p++ ) {
-                    parser_add2( *p, *$src );
-                  }
+                  parser_adjust_indices(tgts, *$src, false);
                   delete $tgts;
                 }
         |       SET set_tgts[tgts] DOWN BY num_operand[src]
@@ -9744,9 +9750,7 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                   statement_begin(@1, SET);
                   list<cbl_num_result_t>& tgts = $tgts->targets;
 
-                  for( auto p = tgts.begin(); p != tgts.end(); p++ ) {
-                    parser_subtract2( *p, *$src );
-                  }
+                  parser_adjust_indices(tgts, *$src, true);
                   delete $tgts;
                 }
         |       SET ENVIRONMENT envar TO alpha_val[scalar]
@@ -9896,7 +9900,18 @@ search_1_body:  name[table] search_varying[varying]
                   cbl_label_t *name = label_add( LblSearch,
                                                  label_name, @1.first_line );
 		  auto varying($varying);
-                  if( index == varying ) varying = NULL;
+                  // An associated VARYING index selects the search index.
+                  // Other VARYING items advance alongside the primary index.
+                  if( varying ) {
+                    const auto& indexes = $table->occurs.indexes;
+                    for( size_t i = 0; i < indexes.nfield; ++i ) {
+                      if( varying == cbl_field_of(symbol_at(indexes.fields[i])) ) {
+                        index = varying;
+                        varying = NULL;
+                        break;
+                      }
+                    }
+                  }
                   parser_lsearch_start( name, $table, index, varying );
                   search_alloc(name);
                 }

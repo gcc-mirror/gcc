@@ -2263,6 +2263,19 @@ cbl_refer_t::deref_str() const {
   return output;
 }
 
+// Evaluate subscripts before any corresponding field changes.
+void
+save_subscripts( cbl_refer_t& refer )
+{
+  for( auto& subscript : refer.subscripts ) {
+    if( is_literal(subscript.field) ) continue;
+    cbl_refer_t saved(subscript.loc,
+                      new_temporary(FldNumericBin5, nullptr, signable_e));
+    parser_move(saved, subscript);
+    subscript = saved;
+  }
+}
+
 struct move_corresponding_field {
   cbl_refer_t tgt, src;
 
@@ -2295,6 +2308,9 @@ move_corresponding( cbl_refer_t& tgt, cbl_refer_t& src )
   corresponding_fields_t pairs = corresponding_move_fields( src.field,
                                                             tgt.field );
   if( pairs.empty() ) return false;
+
+  save_subscripts(src);
+  save_subscripts(tgt);
 
   std::for_each( pairs.begin(), pairs.end(),
                  move_corresponding_field(tgt, src) );

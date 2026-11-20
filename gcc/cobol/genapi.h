@@ -328,6 +328,12 @@ void parser_move(struct cbl_refer_t to,
 void parser_move( size_t ntgt, cbl_refer_t *tgts,
                   cbl_refer_t src, cbl_round_t rounded=truncation_e );
 
+void parser_set_indices( size_t ntgt, cbl_refer_t *tgts,
+                         const cbl_refer_t& src );
+
+void parser_adjust_indices( const std::list<cbl_num_result_t>& tgts,
+                            const cbl_refer_t& step, bool down );
+
 void parser_initialize_table( size_t ntgt, cbl_refer_t src,
                               size_t nspan, const cbl_bytespan_t spans[],
                               size_t table, // symbol table index

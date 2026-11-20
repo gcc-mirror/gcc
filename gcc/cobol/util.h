@@ -47,6 +47,8 @@ int cobol_lineno(void);
 
 unsigned long gb4( size_t input );
 
+void save_subscripts( struct cbl_refer_t& refer );
+
 template <typename P>
 static inline const void *
 as_voidp( P p ) {

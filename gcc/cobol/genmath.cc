@@ -463,6 +463,47 @@ largest_binary_term(size_t nA, const cbl_refer_t *A,
   return properties.widest_type;
   }
 
+// Compute the magnitude of an arithmetic result for an unsigned receiver.
+// Unsigned intermediates also handle the minimum signed source value without
+// overflowing when its magnitude is taken.
+static tree
+unsigned_binary_arith_result(tree target, tree source, bool subtract)
+  {
+  tree source_type = TREE_TYPE(source);
+  tree target_type = TREE_TYPE(target);
+  tree work_type = unsigned_type_for(
+                    TYPE_PRECISION(source_type) > TYPE_PRECISION(target_type)
+                    ? source_type : target_type);
+  tree source_value = gg_define_variable(source_type);
+  gg_assign(source_value, source);
+  source = source_value;
+  tree target_value = gg_define_variable(work_type);
+  gg_assign(target_value, gg_cast(work_type, target));
+  target = target_value;
+  tree magnitude = gg_cast(work_type, source);
+  tree negative = NULL_TREE;
+  if( !TYPE_UNSIGNED(source_type) )
+    {
+    negative = gg_logical_lt(source, build_zero_cst(source_type));
+    tree source_magnitude = gg_define_variable(work_type);
+    gg_assign(source_magnitude,
+                if_condition(negative, gg_negate(magnitude), magnitude,
+                              work_type));
+    magnitude = source_magnitude;
+    }
+  tree sum = gg_add(target, magnitude);
+  tree difference = if_condition(gg_logical_ge(target, magnitude),
+                                  gg_subtract(target, magnitude),
+                                  gg_subtract(magnitude, target), work_type);
+  if( negative )
+    {
+    return if_condition(negative,
+                          subtract ? sum : difference,
+                          subtract ? difference : sum, work_type);
+    }
+  return subtract ? difference : sum;
+  }
+
 static bool
 fast_add( size_t nC, cbl_num_result_t *C,
           size_t nA, const cbl_refer_t *A,
@@ -487,6 +528,27 @@ fast_add( size_t nC, cbl_num_result_t *C,
     tree term_type = largest_binary_term(nA, A);
     if( term_type )
       {
+      if( format == corresponding_e )
+        {
+        gcc_assert(nA == nC);
+        for(size_t i=0; i<nC; i++)
+          {
+          tree dest_type = tree_type_from_refer(C[i].refer);
+          tree source_type = TYPE_UNSIGNED(dest_type)
+                              ? tree_type_from_refer(A[i]) : dest_type;
+          tree source_value = get_binary_value(A[i], source_type);
+          tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node,
+                                        "data"),
+                                  refer_offset(C[i].refer));
+          tree dest_value = safe_load(dest_addr, dest_type);
+          tree result = TYPE_UNSIGNED(dest_type)
+                          ? unsigned_binary_arith_result(dest_value,
+                                                          source_value, false)
+                          : gg_add(dest_value, source_value);
+          safe_store(dest_addr, dest_type, result);
+          }
+        return true;
+        }
       tree dest_type = tree_type_from_refer(C[0].refer);
       // All the numbers are integers without rdigits
       if(    nC == 1
@@ -638,6 +700,27 @@ fast_subtract(size_t nC, cbl_num_result_t *C,
     if( term_type )
       {
       // All the terms are things we can work with.
+      if( format == corresponding_e )
+        {
+        gcc_assert(nA == nC);
+        for(size_t i=0; i<nC; i++)
+          {
+          tree dest_type = tree_type_from_refer(C[i].refer);
+          tree source_type = TYPE_UNSIGNED(dest_type)
+                              ? tree_type_from_refer(A[i]) : dest_type;
+          tree source_value = get_binary_value(A[i], source_type);
+          tree dest_addr = gg_add(member(C[i].refer.field->var_decl_node,
+                                        "data"),
+                                  refer_offset(C[i].refer));
+          tree dest_value = safe_load(dest_addr, dest_type);
+          tree result = TYPE_UNSIGNED(dest_type)
+                          ? unsigned_binary_arith_result(dest_value,
+                                                          source_value, true)
+                          : gg_subtract(dest_value, source_value);
+          safe_store(dest_addr, dest_type, result);
+          }
+        return true;
+        }
       // All the numbers are integers without rdigits
       if(    nC == 1
           && nA == 1
@@ -2201,6 +2284,11 @@ parser_add( size_t nC, cbl_num_result_t *C,
             void        *compute_error_p ) // Cast this to a tree INT *
   {
   Analyze();
+  // With no corresponding fields, there is no arithmetic to generate.
+  if( format == corresponding_e && nC == 0 && nA == 0 )
+    {
+    return;
+    }
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER

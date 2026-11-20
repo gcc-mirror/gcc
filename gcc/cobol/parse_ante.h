@@ -3738,7 +3738,11 @@ parser_move_carefully( const char */*F*/, int /*L*/,
   std::vector <cbl_refer_t>  tgts(ntgt);
   std::transform( tgt_list->targets.begin(), tgt_list->targets.end(), tgts.begin(),
                   []( const cbl_num_result_t& res ) { return res.refer; } );
-  parser_move(ntgt, tgts.data(), src);
+  if( is_index ) {
+    parser_set_indices(ntgt, tgts.data(), src);
+  } else {
+    parser_move(ntgt, tgts.data(), src);
+  }
   delete tgt_list;
   return true;
 }
