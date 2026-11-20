@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rva23u64 -mtune=generic-ooo -Ofast -S" } */
+/* { dg-options "-march=rva23u64 -mtune=generic-ooo -Ofast -fno-vect-cost-model -S" } */
 
 void vmult(
     double* dst,

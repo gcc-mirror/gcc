@@ -399,8 +399,8 @@ const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
 static const common_vector_cost rvv_vls_vector_cost = {
   1, /* int_stmt_cost  */
   1, /* fp_stmt_cost  */
-  1, /* gather_load_cost  */
-  1, /* scatter_store_cost  */
+  2, /* gather_load_cost (per element)  */
+  2, /* scatter_store_cost (per element)  */
   1, /* segment_permute (2) */
   3, /* segment_permute (3) */
   4, /* segment_permute (4) */
@@ -432,8 +432,8 @@ static const scalable_vector_cost rvv_vla_vector_cost = {
   {
     1, /* int_stmt_cost  */
     1, /* fp_stmt_cost  */
-    1, /* gather_load_cost  */
-    1, /* scatter_store_cost  */
+    2, /* gather_load_cost (per element)  */
+    2, /* scatter_store_cost (per element)  */
     1, /* segment_permute (2) */
     3, /* segment_permute (3) */
     4, /* segment_permute (4) */
@@ -745,8 +745,8 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
 static const common_vector_cost xt_c9501_vls_vector_cost = {
   3, /* int_stmt_cost  */
   4, /* fp_stmt_cost  */
-  99, /* gather_load_cost  */
-  32, /* scatter_store_cost  */
+  4, /* gather_load_cost (per element)  */
+  1, /* scatter_store_cost (per element)  */
   8, /* segment_permute (2) */
   9, /* segment_permute (3) */
   9, /* segment_permute (4) */

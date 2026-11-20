@@ -56,6 +56,8 @@ private:
 			      stmt_vec_info stmt_info, slp_tree node,
 			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
+  unsigned int add_slp_cost (slp_tree node,
+			     const array_slice<stmt_info_for_cost> &v) override;
   void finish_cost (const vector_costs *) override;
 
   /* True if we have performed one-time initialization based on the

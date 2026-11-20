@@ -1268,8 +1268,12 @@ segment_loadstore_group_size (enum vect_cost_for_stmt kind,
    the factor represents the relative cost increase (2x, 4x, 8x).
    For LMUL <= 1, returns 1 (no scaling).  */
 static unsigned
-get_lmul_cost_scaling (machine_mode mode)
+get_lmul_cost_scaling (vect_cost_for_stmt kind, machine_mode mode)
 {
+  /* Already scaled by element count.  */
+  if (kind == vector_gather_load || kind == vector_scatter_store)
+    return 1;
+
   enum vlmul_type vlmul = get_vlmul (mode);
 
   /* Cost scaling based on LMUL and data processed.
@@ -1520,7 +1524,7 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
 	    stmt_cost = costs->vls->permute_cost[vlmul];
 	}
       else
-	stmt_cost *= get_lmul_cost_scaling (mode);
+	stmt_cost *= get_lmul_cost_scaling (kind, mode);
     }
 
   return stmt_cost;
@@ -1632,6 +1636,33 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				 vectype, where, stmt_cost);
 
   return record_stmt_cost (stmt_info, where, count * stmt_cost);
+}
+
+unsigned int
+costs::add_slp_cost (slp_tree node,
+		     const array_slice<stmt_info_for_cost> &cost_vec)
+{
+  if (SLP_TREE_MEMORY_ACCESS_TYPE (node) != VMAT_GATHER_SCATTER_IFN)
+    return vector_costs::add_slp_cost (node, cost_vec);
+
+  auto *ls = static_cast<vect_load_store_data *> (node->data);
+  tree vectype = ls->ls_type ? ls->ls_type : SLP_TREE_VECTYPE (node);
+
+  unsigned int sum = 0;
+  for (auto item : cost_vec)
+    {
+      /* Recover the actual vectype and map to gather/scatter costs.  */
+      if (item.kind == scalar_load || item.kind == scalar_store)
+	{
+	  item.vectype = vectype;
+	  item.kind = (item.kind == scalar_load
+		       ? vector_gather_load : vector_scatter_store);
+	}
+      sum += ::add_stmt_cost (this, item.count, item.kind, item.stmt_info,
+			      item.node, item.vectype, item.misalign,
+			      item.where);
+    }
+  return sum;
 }
 
 unsigned

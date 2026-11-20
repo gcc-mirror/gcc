@@ -251,7 +251,7 @@ struct common_vector_cost
      specially below.  */
   const int fp_stmt_cost;
 
-  /* Gather/scatter vectorization cost.  */
+  /* Gather/scatter vectorization cost per element.  */
   const int gather_load_cost;
   const int scatter_store_cost;
 
