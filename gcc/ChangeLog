@@ -1,3 +1,13 @@
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-06  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/126063
+	* config/aarch64/aarch64-sve-builtins.cc (function_instance::hash):
+	Use ptr diff for hash instead of ptr.
+	(gt_pch_nx): Add the pointers to PCH tracking.
+
 2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:
