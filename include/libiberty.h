@@ -114,7 +114,7 @@ extern char *expandargstr (const char *, const char *);
  || defined (__FreeBSD__) || defined (__OpenBSD__) || defined (__NetBSD__) \
  || defined (__CYGWIN__) || defined (__CYGWIN32__) || defined (__MINGW32__) \
  || defined (__DragonFly__) || defined (HAVE_DECL_BASENAME)
-extern char *basename (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
+extern char *(basename) (const char *) ATTRIBUTE_RETURNS_NONNULL ATTRIBUTE_NONNULL(1);
 #else
 /* Do not allow basename to be used if there is no prototype seen.  We
    either need to use the above prototype or have one from
@@ -213,17 +213,17 @@ extern int fdmatch (int fd1, int fd2);
 /* Prototypes vary from system to system, so we only provide a
    prototype on systems where we know that we need it.  */
 #if defined (HAVE_DECL_FFS) && !HAVE_DECL_FFS
-extern int ffs(int);
+extern int (ffs) (int);
 #endif
 
 #if defined (HAVE_DECL_MKSTEMPS) && !HAVE_DECL_MKSTEMPS
-extern int mkstemps(char *, int);
+extern int (mkstemps) (char *, int);
 #endif
 
 /* Make memrchr available on systems that do not have it.  */
 #if !defined (__GNU_LIBRARY__ ) && !defined (__linux__) && \
     !defined (HAVE_MEMRCHR)
-extern void *memrchr(const void *, int, size_t);
+extern void *(memrchr) (const void *, int, size_t);
 #endif
 
 /* Get the working directory.  The result is cached, so don't call
@@ -675,11 +675,11 @@ extern void *bsearch_r (const void *, const void *,
 			int (*)(const void *, const void *, void *),
 			void *);
 
-#if defined(HAVE_DECL_ASPRINTF) && !HAVE_DECL_ASPRINTF
+#if defined (HAVE_DECL_ASPRINTF) && !HAVE_DECL_ASPRINTF
 /* Like sprintf but provides a pointer to malloc'd storage, which must
    be freed by the caller.  */
 
-extern int asprintf (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
+extern int (asprintf) (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
 #endif
 
 /* Like asprintf but allocates memory without fail. This works like
@@ -687,11 +687,11 @@ extern int asprintf (char **, const char *, ...) ATTRIBUTE_PRINTF_2;
 
 extern char *xasprintf (const char *, ...) ATTRIBUTE_MALLOC ATTRIBUTE_PRINTF_1;
 
-#if defined(HAVE_DECL_VASPRINTF) && !HAVE_DECL_VASPRINTF
+#if defined (HAVE_DECL_VASPRINTF) && !HAVE_DECL_VASPRINTF
 /* Like vsprintf but provides a pointer to malloc'd storage, which
    must be freed by the caller.  */
 
-extern int vasprintf (char **, const char *, va_list) ATTRIBUTE_PRINTF(2,0);
+extern int (vasprintf) (char **, const char *, va_list) ATTRIBUTE_PRINTF(2,0);
 #endif
 
 /* Like vasprintf but allocates memory without fail. This works like
@@ -699,49 +699,49 @@ extern int vasprintf (char **, const char *, va_list) ATTRIBUTE_PRINTF(2,0);
 
 extern char *xvasprintf (const char *, va_list) ATTRIBUTE_MALLOC ATTRIBUTE_PRINTF(1,0);
 
-#if defined(HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
+#if defined (HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
 /* Like sprintf but prints at most N characters.  */
-extern int snprintf (char *, size_t, const char *, ...) ATTRIBUTE_PRINTF_3;
+extern int (snprintf) (char *, size_t, const char *, ...) ATTRIBUTE_PRINTF_3;
 #endif
 
-#if defined(HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
+#if defined (HAVE_DECL_VSNPRINTF) && !HAVE_DECL_VSNPRINTF
 /* Like vsprintf but prints at most N characters.  */
-extern int vsnprintf (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,0);
+extern int (vsnprintf) (char *, size_t, const char *, va_list) ATTRIBUTE_PRINTF(3,0);
 #endif
 
 #if defined (HAVE_DECL_STRNLEN) && !HAVE_DECL_STRNLEN
-extern size_t strnlen (const char *, size_t);
+extern size_t (strnlen) (const char *, size_t);
 #endif
 
-#if defined(HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
+#if defined (HAVE_DECL_STRVERSCMP) && !HAVE_DECL_STRVERSCMP
 /* Compare version strings.  */
-extern int strverscmp (const char *, const char *);
+extern int (strverscmp) (const char *, const char *);
 #endif
 
-#if defined(HAVE_DECL_STRTOL) && !HAVE_DECL_STRTOL
-extern long int strtol (const char *nptr,
-                        char **endptr, int base);
+#if defined (HAVE_DECL_STRTOL) && !HAVE_DECL_STRTOL
+extern long int (strtol) (const char *nptr,
+			  char **endptr, int base);
 #endif
 
-#if defined(HAVE_DECL_STRTOUL) && !HAVE_DECL_STRTOUL
-extern unsigned long int strtoul (const char *nptr,
-                                  char **endptr, int base);
+#if defined (HAVE_DECL_STRTOUL) && !HAVE_DECL_STRTOUL
+extern unsigned long int (strtoul) (const char *nptr,
+				    char **endptr, int base);
 #endif
 
 /* hppa64-hp-hpux11.11 GCC bootstrap pass with this and
    declare strto{u,}ll if at least C++11.  */
-#if (defined(HAVE_LONG_LONG) \
-     || (defined(__cplusplus) && __cplusplus >= 201103L))
-# if defined(HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
+#if (defined (HAVE_LONG_LONG) \
+     || (defined (__cplusplus) && __cplusplus >= 201103L))
+# if defined (HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
 __extension__
-extern long long int strtoll (const char *nptr,
-                              char **endptr, int base);
+extern long long int (strtoll) (const char *nptr,
+				char **endptr, int base);
 # endif
 
-# if defined(HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
+# if defined (HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
 __extension__
-extern unsigned long long int strtoull (const char *nptr,
-                                        char **endptr, int base);
+extern unsigned long long int (strtoull) (const char *nptr,
+					  char **endptr, int base);
 # endif
 #endif
 
