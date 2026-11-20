@@ -3022,8 +3022,6 @@ symbol_field( size_t program, size_t parent, const char name[] )
       const auto& field = *cbl_field_of(&sym);
 
       if( parent > 0 && parent != field.parent ) return false;
-      if( field.is_typedef() ) return false;
-
       return 0 == strcasecmp(name, field.name);
     }
   };
