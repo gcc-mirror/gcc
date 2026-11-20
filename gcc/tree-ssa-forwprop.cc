@@ -3917,7 +3917,6 @@ long_mul_summand::set (long_mul_kind kind, const tree *res_ops)
       break;
     case LMK_CARRY_CROSS_SUM:
       n_hilos = 3;
-      shift_idx = 3;
       break;
     case LMK_CARRY_LOW_SUM:
       n_ops = 2;
