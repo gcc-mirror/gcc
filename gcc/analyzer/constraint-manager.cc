@@ -1083,7 +1083,7 @@ equiv_class::to_json () const
 }
 
 std::unique_ptr<text_art::tree_widget>
-equiv_class::make_dump_widget (const text_art::dump_widget_info &dwi,
+equiv_class::make_dump_widget (symbolic::node_dump_state &nds,
 			       unsigned id) const
 {
   using text_art::tree_widget;
@@ -1093,23 +1093,18 @@ equiv_class::make_dump_widget (const text_art::dump_widget_info &dwi,
     pretty_printer pp;
     pp_string (&pp, "Equivalence class ");
     equiv_class_id (id).print (&pp);
-    ec_widget = tree_widget::make (dwi, &pp);
+    ec_widget = tree_widget::make (nds, &pp);
   }
 
   for (const svalue *sval : m_vars)
-    {
-      pretty_printer pp;
-      pp_format_decoder (&pp) = default_tree_printer;
-      sval->dump_to_pp (&pp, true);
-      ec_widget->add_child (tree_widget::make (dwi, &pp));
-    }
+    ec_widget->add_child (sval->make_dump_widget (nds));
 
   if (m_constant)
     {
       pretty_printer pp;
       pp_format_decoder (&pp) = default_tree_printer;
       pp_printf (&pp, "%qE", m_constant);
-      ec_widget->add_child (tree_widget::make (dwi, &pp));
+      ec_widget->add_child (tree_widget::make (nds, &pp));
     }
 
   return ec_widget;
@@ -1341,14 +1336,14 @@ constraint::to_json () const
 }
 
 std::unique_ptr<text_art::widget>
-constraint::make_dump_widget (const text_art::dump_widget_info &dwi,
+constraint::make_dump_widget (symbolic::node_dump_state &nds,
 			      const constraint_manager &cm) const
 {
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_show_color (&pp) = true;
   print (&pp, cm);
-  return text_art::tree_widget::make (dwi, &pp);
+  return text_art::tree_widget::make (nds, &pp);
 }
 
 /* Generate a hash value for this constraint.  */
@@ -1429,13 +1424,13 @@ bounded_ranges_constraint::to_json () const
 
 std::unique_ptr<text_art::tree_widget>
 bounded_ranges_constraint::
-make_dump_widget (const text_art::dump_widget_info &dwi) const
+make_dump_widget (symbolic::node_dump_state &nds) const
 {
   using text_art::tree_widget;
   std::unique_ptr<tree_widget> brc_widget
-    (tree_widget::from_fmt (dwi, nullptr,
+    (tree_widget::from_fmt (nds, nullptr,
 			    "ec%i bounded ranges", m_ec_id.as_int ()));
-  m_ranges->add_to_dump_widget (*brc_widget.get (), dwi);
+  m_ranges->add_to_dump_widget (*brc_widget.get (), nds);
   return brc_widget;
 }
 
@@ -1714,7 +1709,7 @@ constraint_manager::dump (FILE *fp) const
 DEBUG_FUNCTION void
 constraint_manager::dump () const
 {
-  dump (stderr);
+  symbolic::dump_node_tree_to_stderr<constraint_manager> (*this);
 }
 
 /* Dump a multiline representation of CM to stderr.  */
@@ -1762,25 +1757,25 @@ constraint_manager::to_json () const
 }
 
 std::unique_ptr<text_art::tree_widget>
-constraint_manager::make_dump_widget (const text_art::dump_widget_info &dwi) const
+constraint_manager::make_dump_widget (symbolic::node_dump_state &nds) const
 {
   using text_art::tree_widget;
   std::unique_ptr<tree_widget> cm_widget
-    (tree_widget::make (dwi, "Constraints"));
+    (tree_widget::make (nds, "Constraints"));
 
   /* Equivalence classes.  */
   unsigned i;
   equiv_class *ec;
   FOR_EACH_VEC_ELT (m_equiv_classes, i, ec)
-    cm_widget->add_child (ec->make_dump_widget (dwi, i));
+    cm_widget->add_child (ec->make_dump_widget (nds, i));
 
   /* Constraints.  */
   for (const constraint &c : m_constraints)
-    cm_widget->add_child (c.make_dump_widget (dwi, *this));
+    cm_widget->add_child (c.make_dump_widget (nds, *this));
 
   /* m_bounded_ranges_constraints.  */
   for (const auto &brc : m_bounded_ranges_constraints)
-    cm_widget->add_child (brc.make_dump_widget (dwi));
+    cm_widget->add_child (brc.make_dump_widget (nds));
 
   if (cm_widget->get_num_children () == 0)
     return nullptr;
