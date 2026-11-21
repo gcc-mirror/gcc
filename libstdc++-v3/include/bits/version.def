@@ -2712,7 +2712,7 @@ ftms = {
 ftms = {
   name = clmul;
   values = {
-    v = 202610;
+    v = 202611;
     cxxmin = 29;
   };
 };

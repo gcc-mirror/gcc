@@ -4,7 +4,7 @@
 
 #ifndef __cpp_lib_clmul
 # error "Feature-test macro for clmul missing in <numeric>"
-#elif __cpp_lib_clmul != 202610L
+#elif __cpp_lib_clmul != 202611L
 # error "Feature-test macro for clmul has wrong value in <numeric>"
 #endif
 

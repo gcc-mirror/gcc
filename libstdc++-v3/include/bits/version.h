@@ -2993,9 +2993,9 @@
 
 #if !defined(__cpp_lib_clmul)
 # if (__cplusplus >  202603L)
-#  define __glibcxx_clmul 202610L
+#  define __glibcxx_clmul 202611L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_clmul)
-#   define __cpp_lib_clmul 202610L
+#   define __cpp_lib_clmul 202611L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_clmul) */

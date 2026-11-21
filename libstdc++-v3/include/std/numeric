@@ -766,7 +766,7 @@ namespace ranges
 } // namespace ranges
 #endif // __glibcxx_ranges_iota
 
-#if __glibcxx_clmul >= 202610L // C++29
+#ifdef __glibcxx_clmul // C++29
   template<typename _Tp>
     class wide_result {
     public:
