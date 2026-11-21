@@ -2726,6 +2726,15 @@ exp_equiv_p (const_rtx x, const_rtx y, int validate, bool for_gcse)
 	}
       break;
 
+    case SUBREG:
+      /* Two SUBREGs of the same REG are not interchangeable if they differ
+	 in their promotion state.  */
+      if (SUBREG_PROMOTED_VAR_P (x) != SUBREG_PROMOTED_VAR_P (y)
+	  || (SUBREG_PROMOTED_VAR_P (x)
+	      && SUBREG_PROMOTED_GET (x) != SUBREG_PROMOTED_GET (y)))
+	return false;
+      break;
+
     /*  For commutative operations, check both orders.  */
     case PLUS:
     case MULT:
