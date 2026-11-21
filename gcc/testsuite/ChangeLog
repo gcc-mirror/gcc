@@ -1,3 +1,29 @@
+2026-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2026-11-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/128682
+	* gfortran.dg/transpose_reshape_char.f90: New test.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-11-05  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/acmp-tst.cc: New test.
+	* gcc.target/powerpc/acmp-tst-32bit.cc: New test.
+	* gcc.target/powerpc/acmp-tst-indexed.cc: New test.
+	* gcc.target/powerpc/powerpc.exp: Accept c++ tests.
+
+2026-11-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128770
+	* gcc.target/i386/pr128770.c: New test.
+
 2026-11-19  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

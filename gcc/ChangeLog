@@ -1,3 +1,20 @@
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-11-05  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Use
+	signed types intead of unsigned for atomic_cas_local builtin casts.
+
+2026-11-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128770
+	* config/i386/i386-expand.cc (ix86_expand_fp_compare): Use
+	UNSPEC_OPTCOMX only if HONOR_NANS.
+
 2026-11-19  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

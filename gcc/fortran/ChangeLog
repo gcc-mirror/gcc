@@ -1,3 +1,12 @@
+2026-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2026-11-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/128682
+	* trans-expr.cc (gfc_get_expr_charlen): Get character length also
+	from functions.
+
 2026-11-17  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
