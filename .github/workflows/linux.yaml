@@ -1,0 +1,113 @@
+name: Linux
+on:
+  push:
+    branches: 
+      - master
+      - releases/gcc-*
+    tags:
+      - releases/gcc-*
+  pull_request:
+    branches: 
+      - master
+      - releases/gcc-*
+    tags:
+      - releases/gcc-*
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: ${{ matrix.name }}-build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - name: ubuntu-x64
+            target: x86_64
+        
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get -qq update
+          sudo apt install -y gcc-multilib build-essential flex zlib1g-dev gnat gdc
+
+      - name: Install dependencies for aarch64
+        if: success() && contains(matrix.target, 'aarch64')
+        run: |
+          sudo apt-get -y install gcc-aarch64-linux-gnu g++-aarch64-linux-gnu binutils-aarch64-linux-gnu
+
+      - name: Download prerequisites
+        if: success()
+        run: |
+          ./contrib/download_prerequisites    
+
+      - name: Configure x86_64
+        if: success() && matrix.target == 'x86_64'
+        run: |
+          unset ADA_INCLUDE_PATH
+          unset ADA_OBJECT_PATH
+          cd ../
+          mkdir build
+          cd build
+          ../gcc/configure \
+                --enable-languages=c,c++,go,d,fortran,objc,obj-c++,m2 \
+                --prefix=/usr \
+                --with-gcc-major-version-only \
+                --program-prefix=x86_64-linux-gnu- \
+                --enable-shared \
+                --enable-linker-build-id \
+                --libexecdir=/usr/lib \
+                --without-included-gettext \
+                --enable-threads=posix \
+                --libdir=/usr/lib \
+                --enable-nls \
+                --enable-clocale=gnu \
+                --enable-libstdcxx-debug \
+                --enable-libstdcxx-time=yes \
+                --with-default-libstdcxx-abi=new \
+                --enable-gnu-unique-object \
+                --disable-vtable-verify \
+                --enable-plugin \
+                --enable-default-pie \
+                --with-system-zlib \
+                --with-target-system-zlib=auto \
+                --enable-objc-gc=auto \
+                --enable-multiarch \
+                --disable-werror \
+                --with-arch-32=i686 \
+                --with-abi=m64 \
+                --with-multilib-list=m32,m64,mx32 \
+                --enable-multilib \
+                --with-tune=generic \
+                --without-cuda-driver \
+                --enable-checking=release \
+                --build=x86_64-linux-gnu \
+                --host=x86_64-linux-gnu \
+                --target=x86_64-linux-gnu
+
+      - name: Make bootstrap
+        if: success()
+        run: |
+          cd ../build
+          make bootstrap -j$(nproc)
+
+      - name: Make install
+        if: success()
+        run: |
+          cd ../build
+          sudo make install
+
+      - name: Tests
+        if: success()
+        run: |
+          /usr/bin/x86_64-linux-gnu-gcc --version
+          /usr/bin/x86_64-linux-gnu-gcc -v
+          cd ../build
+          make -k check
