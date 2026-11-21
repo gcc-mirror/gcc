@@ -1039,6 +1039,7 @@ struct cbl_refer_t {
   cbl_field_t *field;
   cbl_label_t *prog_func;
   bool all, addr_of;
+  bool arithmetic_expression = false;
   std::vector<cbl_refer_t> subscripts;  // indices
   cbl_span_t refmod;        // substring bounds
 
@@ -1085,6 +1086,7 @@ struct cbl_refer_t {
     prog_func = that.prog_func;
     all = that.all;
     addr_of = that.addr_of;
+    arithmetic_expression = that.arithmetic_expression;
     subscripts = that.subscripts;
     refmod = that.refmod;
     return *this;

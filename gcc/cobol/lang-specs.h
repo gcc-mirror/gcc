@@ -82,6 +82,7 @@
 	"%{Wvalue-clause} %{Wno-value-clause} "
 	"%{Winspect-trailing} %{Wno-inspect-trailing} "
 	"%{Wlength-of} %{Wno-length-of} "
+	"%{Wrefmod} %{Wno-refmod} "
 	"%{Wlevel-1-occurs} %{Wno-level-1-occurs} "
 	"%{Wlevel-78} %{Wno-level-78} "
 	"%{Wlevel-78-defined} %{Wno-level-78-defined} "

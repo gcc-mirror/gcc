@@ -980,11 +980,11 @@ skip_string(char delimiter) {
   int ch;
   std::string found;
 
-  while ((ch = yyinput()) != EOF ) {
+  while ((ch = yyinput()) != 0 && ch != EOF ) {
     dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
     found += ch;
     if (ch == delimiter) {
-      if( (ch = yyinput()) == EOF ) break;
+      if( (ch = yyinput()) == 0 || ch == EOF ) break;
       dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
       if (ch == delimiter) {
         found += ch;
@@ -1025,6 +1025,8 @@ is_refmod() {
     int input() {
       int ch = yyinput();
       dbgmsg("%s:%d: input '%c'", __func__, __LINE__, ch);
+      // Flex returns zero at end of input, rather than stdio's EOF.
+      if( ch == 0 ) return EOF;
       if( ch != EOF) text += ch;
       return ch;
     }

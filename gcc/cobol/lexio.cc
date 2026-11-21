@@ -1282,14 +1282,15 @@ bytespan_t::append( const char *input, const char *eoinput ) {
 
 const char * cobol_filename();
 
+static std::map<int, filespan_t> lexer_inputs;
+
 static filespan_t&
 mapped_file( FILE *input ) {
-  static std::map<int, filespan_t> inputs;
 
   int fd = fileno(input);
   gcc_assert(fd > 0);
 
-  filespan_t& mfile = inputs[fd];
+  filespan_t& mfile = lexer_inputs[fd];
   if( mfile.data ) {
     return mfile;
   }
@@ -1323,6 +1324,16 @@ static void unmap_file( filespan_t& mfile  ) {
     munmap(mfile.data, mfile.size() - 1);
   }
   mfile = filespan_t();
+}
+
+int
+lexer_input_close( FILE *input ) {
+  auto p = lexer_inputs.find(fileno(input));
+  if( p != lexer_inputs.end() ) {
+    if( p->second.data ) unmap_file(p->second);
+    lexer_inputs.erase(p);
+  }
+  return fclose(input);
 }
 
 extern int yylineno;
@@ -1362,7 +1373,14 @@ lexer_input( char buf[], int max_size, FILE *input ) {
   filespan_t& mfile( mapped_file(input) );
 
   if( mfile.cur == mfile.eodata ) {
-    if( mfile.cur ) unmap_file(mfile);
+    if( mfile.cur && !mfile.nada() ) {
+      unmap_file(mfile);
+      // Lookahead can reach EOF before Flex finishes consuming pushed-back
+      // characters.  Keep an exhausted sentinel so a subsequent read does
+      // not map the same input again and restart it from the beginning.
+      mfile.use_nada();
+      mfile.cur = mfile.eodata;
+    }
     return 0;
   }
 

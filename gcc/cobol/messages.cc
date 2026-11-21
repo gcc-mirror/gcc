@@ -131,6 +131,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { IbmLengthOf, "-Wlength-of", diagnostics::kind::error, dialect_ibm_mf_gnu },
   { IbmEqualAssignE, "-Wequal-assign", diagnostics::kind::error, dialect_ibm_e },
   { IbmProcedurePointer, "-Wprocedure-pointer", diagnostics::kind::error, dialect_ibm_mf_gnu },
+  { IbmRefmod, "-Wrefmod", diagnostics::kind::error, dialect_ibm_mf_gnu },
   { IbmSectionNegE, "-Wsegment-negative", diagnostics::kind::error, dialect_ibm_e },
   { IbmSectionRangeE, "-Wsegment-error", diagnostics::kind::error, dialect_ibm_e },
   { IbmSectionSegmentW, "-Wsegment", diagnostics::kind::warning, dialect_ibm_e },

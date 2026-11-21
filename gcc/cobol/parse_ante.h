@@ -638,11 +638,20 @@ struct arith_t {
     return "???";
   }
 
-  void numeric_ok( bool index_acceptable = false ) {
-    are_numeric(locs.A, A, false);
-    are_numeric(locs.B, B, index_acceptable);
-    are_numeric(locs.tgts, tgts, index_acceptable);
-    is_numeric(locs.remainder, cbl_num_result_t{prohibited_e,remainder}, false);
+  bool numeric_ok( bool index_acceptable = false ) {
+    bool ok = are_numeric(locs.A, A, false);
+    ok = are_numeric(locs.B, B, index_acceptable) && ok;
+    for( const auto& tgt : tgts ) {
+      // Without GIVING, a receiving field also supplies an input value.
+      if( format != giving_e && tgt.refer.field
+          && !::is_numeric(tgt.refer.field) ) {
+        ok = is_numeric(tgt.refer.loc, tgt.refer, index_acceptable) && ok;
+      } else {
+        ok = is_numeric(tgt.refer.loc, tgt, index_acceptable) && ok;
+      }
+    }
+    return is_numeric(locs.remainder,
+                      cbl_num_result_t{prohibited_e,remainder}, false) && ok;
   }
 
  protected:
@@ -676,7 +685,7 @@ struct arith_t {
   static bool are_numeric( const cbl_loc_t& loc, const T& args, bool index_acceptable ) {
     bool ok = true;
     for (const auto& elem : args) {
-      ok = ok && is_numeric(loc, elem, index_acceptable);
+      ok = is_numeric(loc, elem, index_acceptable) && ok;
     }
     return ok;
   }
@@ -704,6 +713,10 @@ struct ast_op_t : private std::stack<rpn_t>{
 
   static bool op_ok( const cbl_loc_t& loc, char op, const ast_op_t *rhs );
 
+  void mark_arithmetic_expression() {
+    if( c.size() == 1 ) top().term.arithmetic_expression = true;
+  }
+
   cbl_refer_t * expr( cbl_refer_t * term ) {
     dbgmsg("ast_op_t::%s:%d: %s", __func__, __LINE__, field_str(term->field));
     push( rpn_t(*term) );
@@ -726,7 +739,9 @@ struct ast_op_t : private std::stack<rpn_t>{
   }
 
   cbl_refer_t * compute( ast_op_t *operand ) {
-    return c.size() == 1 ? &operand->top().term : compute();
+    auto result = c.size() == 1 ? &operand->top().term : compute();
+    result->arithmetic_expression |= c.size() != 1;
+    return result;
   }
 
   /*
@@ -890,6 +905,9 @@ class eval_subject_t {
   cbl_field_t *subject() const {
     if( pcol == columns.end() ) return nullptr;
     return pcol->field;
+  }
+  const cbl_refer_t *subject_reference() const {
+    return pcol == columns.end() ? nullptr : &*pcol;
   }
   size_t subject_count() const { return columns.size(); }
   size_t  object_count() { return  std::distance(columns.begin(), pcol); }
@@ -2850,6 +2868,70 @@ static relop_t relop_of(int);
 static relop_t relop_invert(relop_t op);
 
 static enum classify_t classify_of( int token );
+
+static bool
+valid_sign_condition( const cbl_loc_t& loc, const cbl_refer_t& operand ) {
+  const auto field = operand.field;
+  // The field overload of is_numeric also recognizes figurative ZERO.
+  // INDEX is computable, but is not a numeric sign-condition operand.
+  if( !operand.is_pointer() && !operand.is_refmod_reference()
+      && field->level != 88 && field->type != FldIndex
+      && is_numeric(field) ) {
+    return true;
+  }
+  error_msg(loc, "%qs (%s) is not a valid operand for a sign condition; "
+            "a numeric operand is required",
+            nice_name_of(field), cbl_field_type_name(field->type));
+  return false;
+}
+
+static bool
+valid_class_condition( const cbl_loc_t& loc, const cbl_refer_t& operand,
+                       classify_t type ) {
+  const char *name;
+  switch( type ) {
+  case ClassNumericType:    name = "NUMERIC"; break;
+  case ClassAlphabeticType: name = "ALPHABETIC"; break;
+  case ClassLowerType:      name = "ALPHABETIC-LOWER"; break;
+  case ClassUpperType:      name = "ALPHABETIC-UPPER"; break;
+  default: return true; // Preserve DBCS and KANJI handling.
+  }
+
+  auto field = operand.field;
+  if( operand.arithmetic_expression ) {
+    error_msg(loc, "arithmetic expression is not a valid operand for IS %s",
+              name);
+    return false;
+  }
+  bool invalid = is_literal(field)
+    || operand.is_pointer() || field->type == FldIndex;
+  if( operand.is_refmod_reference() ) {
+    // Only character representations can supply a character reference.
+    switch( field->type ) {
+    case FldGroup:
+    case FldAlphanumeric:
+    case FldAlphaEdited:
+    case FldNumericDisplay:
+    case FldNumericEdited:
+      break;
+    default:
+      invalid = true;
+      break;
+    }
+  }
+  if( type != ClassNumericType ) {
+    // Reference modification supplies character data, including when the
+    // underlying item is numeric-edited.  is_numeric handles numeric DISPLAY
+    // reference modification as well.
+    invalid |= !operand.is_refmod_reference()
+      && (is_numeric(operand) || field->type == FldNumericEdited);
+  }
+  if( invalid ) {
+    error_msg(loc, "%qs (%s) is not a valid operand for IS %s",
+              field->name, cbl_field_type_str(field->type) + 3, name);
+  }
+  return !invalid;
+}
 
 static void subscript_dimension_error( cbl_loc_t loc, size_t, const cbl_refer_t *name );
 

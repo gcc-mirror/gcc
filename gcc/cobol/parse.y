@@ -6159,9 +6159,26 @@ add_body:       sum TO rnames
                 }
         |       CORRESPONDING sum TO rnames
                 {
+                  bool valid = true;
+                  const auto& src = $sum->refers.front();
+                  const auto& tgt = rhs.front().refer;
+                  if( is_literal(src.field) ) {
+                    error_msg(src.loc, "syntax error, unexpected numeric literal");
+                    valid = false;
+                  } else if( src.field->type != FldGroup ) {
+                    error_msg(src.loc, "%s does not name a group", src.name());
+                    valid = false;
+                  }
+                  if( tgt.field->type != FldGroup ) {
+                    error_msg(tgt.loc, "%s does not name a group", tgt.name());
+                    valid = false;
+                  }
+                  if( !valid ) {
+                    rhs.clear();
+                    YYERROR;
+                  }
                   corresponding_fields_t pairs =
-                    corresponding_arith_fields( $sum->refers.front().field,
-                                                rhs.front().refer.field );
+                    corresponding_arith_fields( src.field, tgt.field );
                     if( pairs.empty() ) {
                       cbl_message( @$, ParNoCorrespondingW,
                                    "%s and %s have no corresponding fields",
@@ -6357,6 +6374,20 @@ compute_expr:   _EQ expr {
                   if( $1[0] == 'E' ) { // lexer found EQUALS keyword
                     dialect_ok(@1, IbmEqualAssignE,
                                "EQUAL as assignment operator" );
+                  }
+                  bool valid = true;
+                  for( const auto& op : $expr->as_deque() ) {
+                    if( op.term.field && !is_numeric(op.term.field) ) {
+                      error_msg(op.term.loc, "%qs (%s) is not numeric",
+                                nice_name_of(op.term.field),
+                                cbl_field_type_name(op.term.field->type));
+                      valid = false;
+                    }
+                  }
+                  if( !valid ) {
+                    $expr->reset();
+                    rhs.clear();
+                    YYERROR;
                   }
                   current.compute_begin();
                   $$ = $expr;
@@ -6856,10 +6887,7 @@ simple_cond:    kind_of_name
                   $$ = new_reference(new_temporary(FldConditional));
                   relop_t op = static_cast<relop_t>($op);
                   cbl_field_t *zero = constant_of(constant_index(ZERO));
-                  if( $1->field->type == FldPointer ) {
-                    error_msg(@cexpr, "cannot compare %qs (%s) to zero",
-                              nice_name_of($1->field),
-                              cbl_field_type_name($1->field->type));
+                  if( !valid_sign_condition(@cexpr, *$cexpr) ) {
                     YYERROR;
                   }
                   ast_relop(@$, $$->cond(), *$1, op, zero);
@@ -6884,7 +6912,12 @@ kind_of_name:   cexpr might_be variable_type
                   enum classify_t type = classify_of($3);
                   assert(type != ClassInvalidType );
 
-                  parser_classify( $$, *$1, type );
+                  auto operand = $1;
+                  if( !valid_class_condition(@1, *operand, type) ) {
+                    YYERROR;
+                  }
+
+                  parser_classify( $$, *operand, type );
                   if( $2 == NOT ) {
                     parser_logop($$, NULL, not_op, $$);
                   }
@@ -7123,7 +7156,10 @@ value:          value POW factor
                   $$ = &$1->push_op('^', *$3);
                 }
         |       '-' value[operand]  %prec NEG { $$ = &$operand->push_op('!'); }
-        |       '+' factor          %prec NEG { $$ = $2;}
+        |       '+' factor          %prec NEG {
+                  $$ = $2;
+                  $$->mark_arithmetic_expression();
+                }
         |       factor
                 ;
 
@@ -7301,6 +7337,9 @@ eval_obj_col:    ANY {
 			     relop_str(op), ev.subject_count());
 		    YYERROR;
 		  }
+                  if( !valid_sign_condition(@1, *ev.subject_reference()) ) {
+                    YYERROR;
+                  }
 		  ev.decide(op, zero, false);
                 }
 	|	bool_expr {
@@ -8053,7 +8092,10 @@ sum:                num_operand     { $$ = new refer_list_t($num_operand); }
                 ;
 
 num_operand:    scalar
-        |       signed_literal { $$ = new_reference($1); }
+        |       signed_literal {
+                  $$ = new_reference($1);
+                  $$->loc = @1;
+                }
         |       function_call
                 ;
 
@@ -8848,9 +8890,26 @@ subtract_body:  sum FROM rnames
                 }
         |       CORRESPONDING sum FROM rnames
                 {
+                  bool valid = true;
+                  const auto& src = $sum->refers.front();
+                  const auto& tgt = rhs.front().refer;
+                  if( is_literal(src.field) ) {
+                    error_msg(src.loc, "syntax error, unexpected numeric literal");
+                    valid = false;
+                  } else if( src.field->type != FldGroup ) {
+                    error_msg(src.loc, "%s does not name a group", src.name());
+                    valid = false;
+                  }
+                  if( tgt.field->type != FldGroup ) {
+                    error_msg(tgt.loc, "%s does not name a group", tgt.name());
+                    valid = false;
+                  }
+                  if( !valid ) {
+                    rhs.clear();
+                    YYERROR;
+                  }
                   corresponding_fields_t pairs =
-                    corresponding_arith_fields( $sum->refers.front().field,
-                                                rhs.front().refer.field );
+                    corresponding_arith_fields( src.field, tgt.field );
                     if( pairs.empty() ) {
                       cbl_message(@$, ParNoCorrespondingW,
                                   "%qs and %qs have no corresponding fields",
@@ -11142,6 +11201,10 @@ end_string:     %empty %prec LITERAL
 string_body:    str_delimiteds[inputs] str_into[into]
                 {
                   statement_begin(@$, STRING_kw);
+                  if( $into.first->is_refmod_reference() ) {
+                    dialect_ok($into.first->loc, IbmRefmod,
+                               "reference-modified target");
+                  }
                   $$.inputs = $inputs;
                   $$.into = $into;
                 }
@@ -13923,7 +13986,8 @@ ast_op_t:: op_ok( const cbl_loc_t& loc, char op, const ast_op_t *rhstack )
       }
     }
 
-    error_msg(loc, "%qs is not numeric", rhs.field->name);
+    error_msg(loc, "%qs (%s) is not numeric",
+              nice_name_of(rhs.field), cbl_field_type_name(rhs.field->type));
     return false;
   }
   return true;
@@ -13957,7 +14021,7 @@ ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
 
 static void
 ast_add( arith_t *arith ) {
-  arith->numeric_ok(true);
+  if( !arith->numeric_ok(true) ) return;
   size_t nC = arith->tgts.size(), nA = arith->A.size();
   std::vector <cbl_num_result_t> C(nC);
   cbl_num_result_t *pC;
@@ -13975,7 +14039,7 @@ ast_add( arith_t *arith ) {
 
 static bool
 ast_subtract( arith_t *arith ) {
-  arith->numeric_ok(true);
+  if( !arith->numeric_ok(true) ) return false;
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -13994,7 +14058,7 @@ ast_subtract( arith_t *arith ) {
 
 static bool
 ast_multiply( arith_t *arith ) {
-  arith->numeric_ok();
+  if( !arith->numeric_ok() ) return false;
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -14013,7 +14077,7 @@ ast_multiply( arith_t *arith ) {
 
 static bool
 ast_divide( arith_t *arith ) {
-  arith->numeric_ok();
+  if( !arith->numeric_ok() ) return false;
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);
@@ -14023,7 +14087,6 @@ ast_divide( arith_t *arith ) {
   cbl_refer_t *pB = use_any(arith->B, B);
   cbl_num_result_t *pC = use_any(arith->tgts, C);
 
-  arith->numeric_ok();
   parser_divide( nC, pC, nA, pA, nB, pB, arith->remainder,
                  arith->on_error, arith->not_error );
 

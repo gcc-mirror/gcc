@@ -2915,7 +2915,12 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   <<EOF>> 	{
 		    error_msg(yylloc, "syntax error: unterminated string %<%s%>",
 			     tmpstring);
-		    return NO_CONDITION;
+                    // No token remains to recover from at physical EOF.
+                    // Leave the quote state so subsequent requests cannot
+                    // report the same unterminated literal indefinitely.
+                    tmpstring = NULL;
+                    yy_pop_state();
+                    return YYEOF;
 		}
 }
 

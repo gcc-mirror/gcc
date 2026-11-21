@@ -83,6 +83,7 @@
 .Op Fl Wno-preprocessor-error
 .Op Fl Wno-procedure-not-found
 .Op Fl Wno-procedure-pointer
+.Op Fl Wno-refmod
 .Op Fl Wno-replace-error
 .Op Fl Wno-redefines-first
 .Op Fl Wno-redefines-table
@@ -747,6 +748,8 @@ Warn if PROCEDURE POINTER is used.
 Warn if a referenced procedure is not found (instead of error).
 .It Fl Wno-redefines-grow
 Warn if REDEFINES data item is larger.
+.It Fl Wno-refmod
+Allow a reference-modified STRING target without selecting the IBM, MF, or GNU dialect.
 .It Fl Wno-replace-error
 Warn if REPLACE cannot be processed (instead of error).
 .It Fl Wno-segment-error

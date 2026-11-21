@@ -44,6 +44,8 @@
 #define SPACE ' '
 
 bool lexer_echo();
+// Release cached input, including persistent EOF, before closing the stream.
+int lexer_input_close( FILE *input );
 bool is_reference_format();
 
 static inline bool isquote( char ch ) {

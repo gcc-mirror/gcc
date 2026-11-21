@@ -77,15 +77,15 @@
       *> FIX8NUMEDT
 
             DISPLAY     "COMPUTE FIX4DISPLAY = FIX8NUMEDT without SIZE ERROR"
-            COMPUTE     FIX4DISPLAY = FIX8NUMEDT
+            COMPUTE     FIX4DISPLAY = FUNCTION NUMVAL(FIX8NUMEDT)
             DISPLAY     "FIX4DISPLAY is " FIX4DISPLAY
             DISPLAY     "Should      be 5678"
             DISPLAY     "."
 
             DISPLAY     "COMPUTE FIX4DISPLAY = FIX8NUMEDT with SIZE ERROR"
-            COMPUTE     FIX4DISPLAY = FIX8NUMEDT
+            COMPUTE     FIX4DISPLAY = FUNCTION NUMVAL(FIX8NUMEDT)
             MOVE        9876        TO FIX4DISPLAY
-            COMPUTE     FIX4DISPLAY = FIX8NUMEDT
+            COMPUTE     FIX4DISPLAY = FUNCTION NUMVAL(FIX8NUMEDT)
                             ON SIZE ERROR Display "Proper size error"
                         NOT ON SIZE ERROR Display "Improper no error"
             END-COMPUTE

@@ -304,6 +304,11 @@ Wprocedure-pointer
 Cobol Warning Var(procedure_pointer, 1) Init(1)
 Warn if PROCEDURE POINTER is used.
 
+; IbmRefmod
+Wrefmod
+Cobol Warning Var(cobol_refmod, 1) Init(1)
+Warn if a STRING target is reference-modified.
+
 ; IbmSectionSegmentW
 Wsegment
 Cobol Warning Var(cobol_segment, 1) Init(1)

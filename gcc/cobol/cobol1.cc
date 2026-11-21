@@ -783,6 +783,10 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(ParUnresolvedProcE, procedure_not_found, warning_as_error);
           return true;
 
+        case OPT_Wrefmod:
+          cobol_warning(IbmRefmod, cobol_refmod, warning_as_error);
+          return true;
+
         case OPT_Wreplace_error:
           cobol_warning(LexReplaceE, replace_error, warning_as_error);
           return true;

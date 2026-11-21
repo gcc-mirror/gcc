@@ -3915,6 +3915,7 @@ parse_file( const char filename[] )
 
   if( input_filenames.option() == 'M' ) {
     input_filenames.print();
+    lexer_input_close(yyin);
     return 0;
   }
 
@@ -3932,7 +3933,7 @@ parse_file( const char filename[] )
 
   parser_leave_file();
 
-  fclose (yyin);
+  lexer_input_close(yyin);
 
   if( erc ) {
     error_at (UNKNOWN_LOCATION, "failed compiling %s", filename);

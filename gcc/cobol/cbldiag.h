@@ -192,6 +192,7 @@ enum cbl_diag_id_t : uint64_t {
   IbmEqualAssignE,
   IbmLengthOf,
   IbmProcedurePointer,
+  IbmRefmod,
   IbmSectionNegE,
   IbmSectionRangeE,
   IbmSectionSegmentW,
