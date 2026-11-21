@@ -11951,6 +11951,54 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (cfn == CFN_BUILT_IN_POPCOUNTLL)
        (BUILT_IN_POPCOUNTLL (convert:type0 @0))))))))
 
+/* popcount (X) -> popcount ((narrower unsigned) X) when the range of X
+   fits the narrower type.  */
+(simplify
+ (POPCOUNT @0)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+      && TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (unsigned_type_node))
+  (with { combined_fn cfn = CFN_LAST;
+	  tree type0 = NULL_TREE;
+	  int_range_max vr0;
+	  if (gimple_match_range_of_expr (vr0, @0))
+	    for (unsigned prec = TYPE_PRECISION (unsigned_type_node);
+		 prec < TYPE_PRECISION (TREE_TYPE (@0))
+		 && prec <= MAX_FIXED_MODE_SIZE;
+		 prec *= 2)
+	      if (range_fits_type_p (&vr0, prec, UNSIGNED))
+		{
+		  type0 = build_nonstandard_integer_type (prec, 1);
+		  break;
+		}
+	  if (type0
+	      && direct_internal_fn_supported_p (IFN_POPCOUNT, type0,
+						 OPTIMIZE_FOR_BOTH))
+	    cfn = CFN_POPCOUNT;
+	  if (type0 && cfn == CFN_LAST
+	      && TYPE_PRECISION (TREE_TYPE (@0)) > BITS_PER_WORD
+	      && !direct_internal_fn_supported_p (IFN_POPCOUNT, TREE_TYPE (@0),
+						  OPTIMIZE_FOR_BOTH))
+	    {
+	      if (TYPE_PRECISION (type0)
+		  == TYPE_PRECISION (unsigned_type_node))
+		{
+		  cfn = CFN_BUILT_IN_POPCOUNT;
+		  type0 = unsigned_type_node;
+		}
+	      else if (TYPE_PRECISION (type0)
+		       == TYPE_PRECISION (long_long_unsigned_type_node))
+		{
+		  cfn = CFN_BUILT_IN_POPCOUNTLL;
+		  type0 = long_long_unsigned_type_node;
+		}
+	    } }
+   (if (cfn == CFN_POPCOUNT)
+    (IFN_POPCOUNT (convert:type0 @0))
+    (if (cfn == CFN_BUILT_IN_POPCOUNT)
+     (BUILT_IN_POPCOUNT (convert:type0 @0))
+     (if (cfn == CFN_BUILT_IN_POPCOUNTLL)
+      (BUILT_IN_POPCOUNTLL (convert:type0 @0))))))))
+
 /* popcount (X ^ (X - 1)) is the same as ffs(x) when x is nonzero, and
    using ctz+1 will generate better code.  */
 (simplify

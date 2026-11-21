@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "attribs.h"
 #include "asan.h"
+#include "vr-values.h"
 
 tree do_valueize (tree, tree (*)(tree), bool &);
 tree do_valueize (tree (*)(tree), tree);
