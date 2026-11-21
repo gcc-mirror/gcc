@@ -1,3 +1,268 @@
+2026-11-20  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	PR middle-end/127984
+	* builtins.cc (expand_builtin_crc_table_based): Update call to
+	pass bit size instead of mode.
+	* config/aarch64/aarch64.md (crc_rev<ALLI:mode><ALLX:mode>4): Likewise.
+	* config/i386/i386.md (crc_rev<SWI1248x:mode><SWI248x:mode>4): Likewise.
+	* config/loongarch/loongarch.md (crc_rev<mode>si4): Likewise.
+	* config/riscv/bitmanip.md (crc_rev<ANY1:mode><ANYI:mode>4): Likewise.
+	* expr.cc (calculate_table_based_CRC): Modified API to take
+	bit size instead of mode.
+	(calculate_table_based_reversed_CRC): Likewise.
+	(expand_crc_table_based): Likewise.
+	(expand_reversed_crc_table_based): Likewise.
+	* expr.h (expand_crc_table_based): Update function declaration.
+	(expand_reversed_crc_table_based): Likewise.
+	* internal-fn.cc (expand_crc_optab_fn): Update call to pass bit
+	size instead of mode.
+
+2026-11-20  Jim Lin  <jim@andestech.com>
+	    Jeff Law   <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.md (type): Add fminmax.
+	(fminm<mode>3, fmaxm<mode>3, fmin<mode>3, fmax<mode>3)
+	(smin<mode>3, smax<mode>3): Use fminmax type.
+	* config/riscv/andes-23-series.md (andes_23_fpu_move): Add fminmax.
+	* config/riscv/andes-25-series.md (andes_25_fpu_move): Likewise.
+	* config/riscv/andes-45-series.md (andes_45_fpu_move): Likewise.
+	* config/riscv/arcv-rhx100.md (arcv_rhx100_xfer): Likewise.
+	* config/riscv/arcv-rmx100.md (arcv_rmx100_xfer): Likewise.
+	* config/riscv/generic-ooo.md (generic_ooo_float_move): Likewise.
+	* config/riscv/generic.md (generic_xfer): Likewise.
+	* config/riscv/mips-p8700.md (mips_p8700_fpu_fabs): Likewise.
+	* config/riscv/sifive-7.md (sifive_7_fp_other): Likewise.
+	* config/riscv/sifive-p400.md (sifive_p400_fmove): Likewise.
+	* config/riscv/sifive-p600.md (sifive_p600_fmove): Likewise.
+	* config/riscv/spacemit-x60.md (spacemit_x60_fcvt): Likewise.
+	* config/riscv/tt-ascalon-d8.md (tt_ascalon_d8_float_move): Likewise.
+	* config/riscv/xiangshan.md (xiangshan_f2f): Likewise.
+	* config/riscv/xt-c908.md (xt_c908_fcvt): Likewise.
+	* config/riscv/mips-i8500.md: Split out fminmax to its own 2c reservation.
+	Change basic move reservation to 1c.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+	    Zhijin Zeng  <zhijin.zeng@spacemit.com>
+
+	* config/riscv/constraints.md (th_m_fpr): New constraint for FPR
+	load/store.
+	* config/riscv/riscv.cc (riscv_hard_regno_mode_ok): Allow SImode
+	and DImode in GPRs.
+	(riscv_can_change_mode_class): Allow mode changing between
+	integer and FP modes.
+	* config/riscv/riscv.md: Add f,f constraints to SI and HI moves.
+	* config/riscv/thead.cc (th_fmemidx_output_index): Take into
+	account the scenario where MODE is integral.
+	(th_output_move): Remove instruction class conditions.
+	* config/riscv/vector.md: Restore X constraint for vr,vr LRA
+	move patterns to prevent ICE caused by FPR-allocated scratch.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+	    Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* config/riscv/riscv-fusion.cc (riscv_fuse_mem_direction): New function.
+	(riscv_sched_fusion_priority): Likewise.
+	* config/riscv/riscv-protos.h (riscv_sched_fusion_priority): Declare.
+	* config/riscv/riscv.cc (TARGET_SCHED_FUSION_PRIORITY): Define.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-string.cc (riscv_expand_block_clear): Check the
+	memset threshold.
+	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p): Honor
+	the memset threshold before considering by-pieces expansion.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-string.cc
+	(emit_memcmp_scalar_load_and_compare): Load only the remaining bytes.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (crc_rev<ANYI1:mode><ANYI:mode>4):
+	Use Zbkc for 32- and 64-bit inputs to CRC64.
+	* config/riscv/riscv.cc (riscv_optab_supported_p): Update comment.
+	(expand_reversed_crc_using_clmul): Correct the high product for
+	a full-width polynomial when clmulr is unavailable.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	PR target/127086
+	* config/riscv/riscv.cc (singleton_vxrm_need): Allow calls to be
+	ignored.
+
+2026-11-20  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR tree-optimization/128689
+	* tree-vect-data-refs.cc (vect_find_stmt_data_reference): New
+	param.
+	* tree-vect-loop.cc (vect_get_datarefs_in_loop): Pass
+	vect_loop_form_info.
+	(vect_build_assumptions): Assert that niters was analyzed if we
+	have bounds.
+	(vect_analyze_loop): Pass loop_form_info.
+	* tree-vectorizer.h (vect_find_stmt_data_reference): Change
+	param to loop_form_info.
+
+2026-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128884
+	* tree-ssa-sccvn.cc (vn_nary_result_avail_or_insertable_p): Remove.
+	(vn_nary_build_or_lookup_avail): New.
+	(visit_nary_op): Use it for the masked conversion and the
+	PLUS_EXPR/MINUS_EXPR special cases instead of checking
+	vn_nary_result_avail_or_insertable_p and simplifying with
+	a possibly not available value.  Use the wider operation
+	directly for the unmasked conversion case.  Check availability
+	directly for the negated operand of the MULT_EXPR/RDIV_EXPR case.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/crypto.md (UNSPEC_DMSHA3HASH): New unspec entry.
+	(UNSPEC_DMSHA3DW): Likewise.
+	(UNSPEC_DMCRYSHASH): Likewise.
+	(SHA3_code): Iterator for sha3 extended mnemonics.
+	(SHA3_insn): Attribute for sha3 extended mnemonics.
+	(<SHA3_insn>): New define_insn for sha3 extended mnemonics.
+	* config/rs6000/rs6000-builtins.def: Add new builtin definitions.
+	* doc/extend.texi: Document sha3 related builtins.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/mma.md (movqdo): New define_expand.
+	(*movqdo): New define_insn_and_split.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Add __dmr2048.
+	(rs6000_init_builtins): Register dmr2048 type.
+	(rs6000_gimple_fold_mma_builtin): Handle QDOmode.
+	* config/rs6000/rs6000-call.cc (rs6000_return_in_memory): Reject
+	QDOmode and emit "Dense Math" diagnostics.
+	(rs6000_function_arg): Likewise.
+	* config/rs6000/rs6000-gen-builtins.cc (enum basetype): Add DMR2048.
+	(match_type): Likewise.
+	(complete_vector_type): Likewise.
+	* config/rs6000/rs6000-modes.def: Define QDO mode.
+	* config/rs6000/rs6000.cc (rs6000_hard_regno_mode_ok_uncached): Allow
+	even number DMR regno for QDOmode.
+	(rs6000_modes_tieable_p): Do not allow QDO with other mode.
+	(rs6000_debug_reg_global): Add QDOmode.
+	(rs6000_setup_reg_addr_masks): Allow QDOmode.
+	(reg_offset_addressing_ok_p): QDOmode return TARGET_DMF.
+	(rs6000_emit_move): Do not allow QDO mode to set to constants.
+	(rs6000_secondary_reload_simple_move): Allow QDOmode.
+	(rs6000_preferred_reload_class): QDOmode prefers VSX_REGS.
+	(rs6000_mangle_type): Add __dmr2048 type.
+	(rs6000_dmr_register_move_cost): QDOmode move cost is double of TDOmode.
+	(rs6000_register_move_cost): Allow QDOmode.
+	(rs6000_invalid_conversion): Handle QDOmode.
+	* config/rs6000/rs6000.h (VECTOR_ALIGNMENT_P): True if mode is QDOmode.
+	(enum rs6000_builtin_type_index): Add dmr2048 and its ptr type.
+	(dmr2048_type_node): Define __dmr2048 node.
+	(ptr_dmr2048_type_node): Define pointer type for __dmr2048 node.
+
+2026-11-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128641
+	* tree-predcom.cc (refs_tbaa_equivalent_p): New.
+	(pcom_worker::determine_offset): Use it.
+	(pcom_worker::valid_initializer_p): Also require the initializer and
+	ROOT to be TBAA-equivalent.
+
+2026-11-20  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	PR target/127538
+	* config/aarch64/aarch64.md
+	(*aarch64_conditional_subtract<mode>): New pattern.
+
+2026-11-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-phiopt.cc (move_reset_debug_binds): New function.
+	(replace_phi_edge_with_variable): Call it for removed blocks.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc (enum class sew_lmul_demand_type):
+	Add legal_vtype.
+	(vsetvl_info::normalize_demand): Handle it.
+	(vsetvl_info::parse_insn): Give whole-register moves an unconstrained
+	valid demand.
+	(vsetvl_info::dump): Print the legal-VTYPE demand.
+	(pre_vsetvl::preds_all_same_avl_and_ratio_p): Reject legal-VTYPE-only
+	demands when inferring the incoming ratio.
+	(pre_vsetvl::pre_global_vsetvl_info): Likewise for local inference.
+	* config/riscv/riscv-vsetvl.def: New rules.
+
+2026-11-20  Dmitrii Vovdenko  <vov.dm.an@gmail.com>
+
+	* match.pd: Combine constant factors across signed
+	non-narrowing conversions in multiplication and division chains.
+
+2026-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90241
+	* tree-ssa-alias.cc (ao_ref_init_from_ptr_and_range): Add
+	missing range check before multiplying byte offset by 8.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128869
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_complexexpr_stmt):
+	Also handle COMPLEX_CST.
+	(bitint_large_huge::lower_stmt): Likewise.
+	(gimple_lower_bitint): Handle COMPLEX_TYPE of BITINT_TYPE_P as well.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128302
+	* expr.cc (count_type_elements): For unions compare
+	DECL_SIZE (f) rather than TYPE_SIZE (TREE_TYPE (f)).
+	(categorize_ctor_elements_1): Similarly.  Also force
+	p_compate->sparse for ZERO_INIT_PADDING_BITS_UNIONS
+	or above if active union member is a bit-field with
+	padding.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128302
+	* gimple-fold.cc (clear_padding_bitfield): New function, mostly
+	moved code from clear_padding_type.
+	(clear_padding_union): Use it to handle DECL_BIT_FIELD inside
+	of a union.
+	(clear_padding_type): Handle DECL_BIT_FIELD using the outlined
+	new clear_padding_bitfield function.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128302
+	* gimple-fold.cc (clear_padding_type): Handle very large
+	_BitInt bit-fields in RECORD_TYPEs.
+
+2026-11-20  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR gcov-profile/128667
+	* tree-cfg.cc (make_blocks_1): Do not update coverage suppression
+	state for debug statements.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.md: Enable the rotate-and-invert splitter
+	for Zbkb.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*zero_extendhi<GPR:mode>2_bitmanip):
+	Enable for Zbkb.
+	* config/riscv/riscv.cc (riscv_extend_cost): Account for zext.h
+	with Zbkb.
+	* config/riscv/riscv.md (zero_extendhi<GPR:mode>2)
+	(*zero_extendhi<GPR:mode>2): Use the bitmanip pattern with Zbkb.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md: Enable the constant IOR/XOR splitter
+	for Zbkb.
+	* config/riscv/riscv.cc (riscv_rtx_costs, synthesize_ior_xor,
+	synthesize_and): Handle inverted logical operations with Zbkb.
+
 2026-11-19  Stian Halseth  <stian@itx.no>
 	    Eric Botcazou   <ebotcazou@adacore.com>
 

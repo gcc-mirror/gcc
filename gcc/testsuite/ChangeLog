@@ -1,3 +1,141 @@
+2026-11-20  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	PR middle-end/127984
+	* gcc.dg/pr127984.c: New test.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+	    Zhijin Zeng  <zhijin.zeng@spacemit.com>
+
+	* gcc.target/riscv/fmv-lgamma.c: New test.
+	* gcc.target/riscv/xtheadmemidx-fpr-int-1.c: New test.
+	* gcc.target/riscv/xtheadmemidx-fpr-int-2.c: New test.
+	* gcc.target/riscv/xtheadmemidx-fpr-int.h: New test.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+	    Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* gcc.target/riscv/sched-fusion-priority.c: New test.
+	* gcc.target/riscv/sched-fusion-priority-extended.c: Likewise.
+	* gcc.target/riscv/sched-fusion-priority-off.c: Likewise.
+	* gcc.target/riscv/sched-fusion-default.c: New test.
+	* gcc.target/riscv/sched-fusion-option-restore.c: Likewise.
+	* gcc.target/riscv/sched-fusion-unsupported-tune.c: Likewise.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/setmem-cbo-threshold.c: New test.
+	* gcc.target/riscv/setmem-pieces-threshold.c: New test.
+
+2026-11-20  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/cmpmemsi-tail-safe.c: New test.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/crc-rev-zbkc.c: New test.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	PR target/127086
+	* gcc.target/riscv/rvv/autovec/pr127086.c: New test.
+
+2026-11-20  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/graphite/block-1.f90: Change constant to
+	avoid memset and unresolved (vs. failing) test case.
+
+2026-11-20  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR tree-optimization/128689
+	* gcc.dg/vect/pr128689-2.c: New test.
+	* gcc.dg/vect/pr128689.c: New test.
+
+2026-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128884
+	* gcc.dg/torture/pr128884.c: New testcase.
+
+2026-11-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/128855
+	* g++.dg/reflect/crash24.C: New test.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/sha-builtins-5.c: New test.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/dmr2048-copy.c: New test.
+	* gcc.target/powerpc/dmr2048-spill.c: New test.
+
+2026-11-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128641
+	* gcc.dg/torture/pr128641-3.c: New test.
+	* gcc.dg/torture/pr128641-4.c: Likewise.
+	* gcc.dg/torture/pr128641-5.c: Likewise.
+
+2026-11-20  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	* gcc.target/aarch64/pr127538.c: New test.
+
+2026-11-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/phi-opt-62.c: New test.
+
+2026-11-20  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/whole-move-vtype-1.c: New test.
+	* gcc.target/riscv/rvv/base/whole-move-vtype-2.c: New test.
+
+2026-11-20  Dmitrii Vovdenko  <vov.dm.an@gmail.com>
+
+	* gcc.dg/tree-ssa/widen-mult-const-1.c: New test.
+	* gcc.dg/tree-ssa/widen-mult-const-2.c: Likewise.
+	* gcc.dg/tree-ssa/widen-mult-const-3.c: Likewise.
+	* gcc.dg/tree-ssa/widen-mult-const-4.c: Likewise.
+	* gcc.dg/tree-ssa/widen-mult-const-5.c: Likewise.
+	* gcc.dg/tree-ssa/widen-mult-const-6.c: Likewise.
+	* gcc.dg/tree-ssa/widen-mult-const-7.c: Likewise.
+
+2026-11-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/90241
+	* gcc.dg/pr90241.c: New testcase.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128869
+	* gcc.dg/bitint-150.c: New test.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128302
+	* gcc.dg/builtin-clear-padding-3.c: New test.
+
+2026-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128302
+	* gcc.dg/builtin-clear-padding-4.c: New test.
+
+2026-11-20  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR gcov-profile/128667
+	* gcc.misc-tests/gcov-pr128667.c: New test.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/pr121778-3.c: New test.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbkb-zext-h.c: New test.
+
+2026-11-20  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbkb-logic-imm.c: New test.
+
 2026-11-19  Stian Halseth  <stian@itx.no>
 	    Eric Botcazou   <ebotcazou@adacore.com>
 

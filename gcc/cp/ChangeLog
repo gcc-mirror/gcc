@@ -1,3 +1,18 @@
+2026-11-20  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/128855
+	* reflect.cc (eval_reflect_constant): Set *non_constant_p after
+	giving an error.  Guard the error_at call with
+	cxx_constexpr_quiet_p.
+	(eval_reflect_object): Likewise.  Print type rather than
+	TREE_TYPE (type) in the error.
+	(eval_reflect_function): Likewise.
+
+2026-11-20  Marek Polacek  <polacek@redhat.com>
+
+	* reflect.cc (get_meta_exception_object): Set *non_constant_p
+	after giving an error.
+
 2026-11-19  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.cc (modifiable_tracker): Add push parm to ctor.

@@ -1,3 +1,8 @@
+2026-11-20  Sun, Qin  <qin.sun@intel.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add myself.
+
 2026-11-17  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	* Makefile.in: Regenerate.

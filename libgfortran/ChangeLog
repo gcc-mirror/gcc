@@ -1,3 +1,9 @@
+2026-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* caf/shmem/shared_memory.c (shared_memory_init): Check the result
+	of mmap against MAP_FAILED before comparing it with the requested
+	address.
+
 2026-11-12  Hans-Peter Nilsson  <hp@axis.com>
 
 	PR libfortran/128618

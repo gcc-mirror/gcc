@@ -1,3 +1,9 @@
+2026-11-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR modula2/128683
+	* gcc_update (files_and_dependencies): Update gm2-libs/config-host.in to
+	gm2-libs/config-host.ac
+
 2026-11-10  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
 
 	* gcc-changelog/git_commit.py: Use posixpath for repository paths.

@@ -1,3 +1,11 @@
+2026-11-20  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (is_alpha_a_number): Bug fix; calculate offset
+	properly.
+	(__gg__parser_set_conditional): Likewise
+	(__gg__match_exception): Match exact EC before category, and match
+	category before EC-ALL.
+
 2026-11-19  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (__gg__refer_from_string): Accept correct value.

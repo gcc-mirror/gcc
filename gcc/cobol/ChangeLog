@@ -1,3 +1,30 @@
+2026-11-20  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (parser_set_conditional88): Honor subscripts when
+	setting tables of named-conditionals.
+	(parser_lsearch_start): Fix a bug by following the search index, not
+	the VARYING value.
+	* genapi.h (parser_set_indices): New declaration.
+	(parser_adjust_indices): New declaration.
+	* genmath.cc (unsigned_binary_arith_result): New function for
+	handling fast binary arithmetic of mixed sign or mixed size
+	variables.
+	(fast_add): Handle mixed sign and size variables.
+	(fast_subtract): Likewise.
+	(parser_add): Properly handle ADD CORRESPONDING when there are no
+	corresponding fields.
+	* genutil.cc (parser_set_indices): Raise EC-BOUND-SUBSCRIPT for
+	fractional indices.
+	(parser_adjust_indices): Likewise.
+	* parse.y: Evaluate subscripts only once for ADD, SUBTRACT, and MOVE
+	CORRESPONDING.
+	* parse_ante.h (parser_move_carefully): Use parser_set_indices for
+	indices.
+	* util.cc (save_subscripts): Evaluate subscripts before
+	CORRESPONDING actions.
+	(move_corresponding): Likewise.
+	* util.h (save_subscripts): Likewise.
+
 2026-11-19  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (save_debug_perform_site): Whitespace.
