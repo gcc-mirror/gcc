@@ -5232,7 +5232,7 @@ simplify_ashift:
 	return op1;
       /* Simplify x h* 1 to 0.  */
       if (trueop1 == CONST1_RTX (mode)
-	  && !side_effects_p (op1))
+	  && !side_effects_p (op0))
 	return CONST0_RTX (mode);
       /* Simplify UMUL_HIGHPART by power of two as LSHIFRT.  */
       if (CONST_INT_P (trueop1)
