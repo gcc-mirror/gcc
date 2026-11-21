@@ -389,7 +389,7 @@ RISCV_CORE("andes-ax45",      "rv64imafdc_zicsr_zifencei_xandesperf",
 			      /* MARCHID */ UNKNOWN_ID,
 			      /* MIMPID */ UNKNOWN_ID)
 
-RISCV_CORE("spacemit-x60",    "rva22u64_v_zicond_zifencei_zihintntl_zihpm_zfh_zbc_"
+RISCV_CORE("spacemit-x60",    "rva22u64_v_zicond_zifencei_zihintntl_zfh_zbc_"
 			      "zbkc_zvfh_zvfhmin_zvkt_zvl256b_smepmp_sscofpmf_sstc_"
 			      "svinval_svnapot_svpbmt_xsmtvdot",
 			      "spacemit-x60",
