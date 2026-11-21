@@ -617,7 +617,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    SYNTAX_ERROR_AT (virtual_location,
 			     "digit separator after base indicator");
 	}
-      else if ((*str == 'o' || *str == 'O') && !CPP_OPTION (pfile, cplusplus))
+      else if (*str == 'o' || *str == 'O')
 	{
 	  if (ISDIGIT (str[1]))
 	    {
@@ -969,10 +969,20 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
     {
       bool warned = false;
       if (!CPP_OPTION (pfile, octal_constants) && CPP_PEDANTIC (pfile))
-	warned
-	  = cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC, virtual_location,
-				      0, "%<0o%> prefixed constants are a C2Y "
-					 "feature or GCC extension");
+	{
+	  if (CPP_OPTION (pfile, cplusplus))
+	    warned
+	      = cpp_pedwarning_with_line (pfile, CPP_W_CXX29_EXTENSIONS,
+					  virtual_location, 0,
+					  "%<0o%> prefixed constants are a "
+					  "C++29 feature or GCC extension");
+	  else
+	    warned
+	      = cpp_pedwarning_with_line (pfile, CPP_W_PEDANTIC,
+					  virtual_location, 0,
+					  "%<0o%> prefixed constants are a "
+					  "C2Y feature or GCC extension");
+	}
       if (!warned && CPP_OPTION (pfile, cpp_warn_c23_c2y_compat) > 0)
 	cpp_warning_with_line (pfile, CPP_W_C23_C2Y_COMPAT,
 			       virtual_location, 0,

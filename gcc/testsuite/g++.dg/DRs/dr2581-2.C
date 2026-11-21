@@ -26,6 +26,7 @@
 #define __STDC_ISO_10646__			// { dg-error "'__STDC_ISO_10646__' redefined" "" { xfail { ! *-*-linux* } } }
 #define __STDCPP_THREADS__			// { dg-message "'__STDCPP_THREADS__' (?:re)?defined" "" { target c++11 } }
 #define __STDCPP_STRICT_POINTER_SAFETY__	// { dg-warning "'__STDCPP_STRICT_POINTER_SAFETY__' defined" "" { target { c++11 && c++20_down } } }
+#define __cpp_0o_octals 202611L			// { dg-error "'__cpp_0o_octals' redefined" "" { target c++29 } }
 #define __cpp_aggregate_bases 201603L		// { dg-error "'__cpp_aggregate_bases' redefined" "" { target c++20 } }
 #define __cpp_aggregate_nsdmi 201304L		// { dg-error "'__cpp_aggregate_nsdmi' redefined" "" { target c++20 } }
 #define __cpp_aggregate_paren_init 201902L	// { dg-error "'__cpp_aggregate_paren_init' redefined" "" { target c++20 } }

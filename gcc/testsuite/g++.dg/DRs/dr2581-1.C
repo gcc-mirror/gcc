@@ -25,6 +25,7 @@
 #undef __STDC_ISO_10646__		// { dg-warning "undefining '__STDC_ISO_10646__'" "" { xfail { ! *-*-linux* } } }
 #undef __STDCPP_THREADS__		// { dg-warning "undefining '__STDCPP_THREADS__'" "" { target c++11 } }
 #undef __STDCPP_STRICT_POINTER_SAFETY__	// { dg-warning "undefining '__STDCPP_STRICT_POINTER_SAFETY__'" "" { target { c++11 && c++20_down } } }
+#undef __cpp_0o_octals			// { dg-warning "undefining '__cpp_0o_octals'" "" { target c++29 } }
 #undef __cpp_aggregate_bases		// { dg-warning "undefining '__cpp_aggregate_bases'" "" { target c++20 } }
 #undef __cpp_aggregate_nsdmi		// { dg-warning "undefining '__cpp_aggregate_nsdmi'" "" { target c++20 } }
 #undef __cpp_aggregate_paren_init	// { dg-warning "undefining '__cpp_aggregate_paren_init'" "" { target c++20 } }

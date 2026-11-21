@@ -1138,6 +1138,7 @@ c_cpp_builtins (cpp_reader *pfile)
 	  /* Set feature test macros for C++29.  */
 	  cpp_define (pfile, "__cpp_pp_embed=202606L");
 	  cpp_define (pfile, "__cpp_designated_initializers=202606L");
+	  cpp_define (pfile, "__cpp_0o_octals=202611L");
 	}
       if (flag_concepts && cxx_dialect > cxx14)
 	{

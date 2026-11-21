@@ -670,3 +670,9 @@
 #else
 #  error "__has_cpp_attribute"
 #endif
+
+#ifndef __cpp_0o_octals
+#  error "__cpp_0o_octals"
+#elif __cpp_0o_octals != 202611
+#  error "__cpp_0o_octals != 202611"
+#endif
