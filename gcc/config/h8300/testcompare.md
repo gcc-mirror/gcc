@@ -524,8 +524,7 @@
       }
     gcc_unreachable ();
   }
-;; XXXSImode is 2 bytes longer
-  [(set_attr "length" "8")])
+  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 10 : 8"))])
 
 (define_insn "*store_z_<mode>_sb"
   [(set (match_operand:HSI 0 "register_operand" "=r")
@@ -543,14 +542,13 @@
     else if (<MODE>mode == SImode)
       {
 	if (<CODE> == NE)
-	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%T0,%T0\;rotxr.l\t%S0";
+	  return "stc\tccr,%X0\;bld\t#2,%X0\;xor.l\t%S0,%S0\;rotxr.l\t%S0";
 	else
-	  return "stc\tccr,%X0\;bild\t#2,%X0\;xor.l\t%T0,%T0\;rotxr.l\t%S0";
+	  return "stc\tccr,%X0\;bild\t#2,%X0\;xor.l\t%S0,%S0\;rotxr.l\t%S0";
       }
     gcc_unreachable ();
   }
-  ;; XXX SImode is larger
-  [(set_attr "length" "8")])
+  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 10 : 8"))])
 
 (define_insn "*store_z_<mode>_neg"
   [(set (match_operand:HSI 0 "register_operand" "=r")
@@ -573,8 +571,7 @@
       }
     gcc_unreachable ();
   }
-  ;; XXX simode is an instruction longer
-  [(set_attr "length" "8")])
+  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 10 : 8"))])
 
 (define_insn "*store_z_<mode>_and"
   [(set (match_operand:HSI 0 "register_operand" "=r")
@@ -587,19 +584,18 @@
 	if (<CODE> == NE)
 	  return "bld\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.w\t%T0,%T0\;bst\t#0,%X0";
 	else
-	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,X0";
+	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.w\t%T0,%T0\;bist\t#0,%X0";
       }
     else if (<MODE>mode == SImode)
       {
 	if (<CODE> == NE)
 	  return "bld\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.l\t%S0,%S0\;bst\t#0,%X0";
 	else
-	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.l\t%S0,%S0\;bist\t#0,X0";
+	  return "bild\t#0,%X1\;stc\tccr,%X0\;band\t#2,%X0\;xor.l\t%S0,%S0\;bist\t#0,%X0";
       }
     gcc_unreachable ();
   }
-  ;; XXX simode is an instruction longer
-  [(set_attr "length" "8")])
+  [(set (attr "length") (symbol_ref "<MODE>mode == SImode ? 12 : 10"))])
 
 ;; We can test the upper byte of a HImode register and the upper word
 ;; of a SImode register
