@@ -68,8 +68,8 @@ int callee1 (struct A a)
 
 int callee2 (short *p)
 {
-  if ((*p ^ 1)  <  8)
-    large_code;      
+  if ((*p ^ 1)  <  7)
+    large_code;
 
   return 2;
 }
