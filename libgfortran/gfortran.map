@@ -2077,4 +2077,6 @@ GFORTRAN_17 {
     _gfortran_specific__tand_r17;
     _gfortran_specific__tand_r4;
     _gfortran_specific__tand_r8;
+    _gfortran_transfer_array_span;
+    _gfortran_transfer_array_span_write;
 } GFORTRAN_16;
