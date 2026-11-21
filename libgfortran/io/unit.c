@@ -139,9 +139,8 @@ locale_t c_locale;
    traditional setlocale().  To prevent multiple concurrent threads
    doing formatted I/O from messing up the locale, we need to store a
    global old_locale, and a counter keeping track of how many threads
-   are currently doing formatted I/O.  The first thread saves a copy of
-   the old locale name (NULL if it was already "C"), and the last one
-   restores it.  */
+   are currently doing formatted I/O.  The first thread saves the old
+   locale, and the last one restores it.  */
 char *old_locale;
 int old_locale_ctr;
 #ifdef __GTHREAD_MUTEX_INIT
