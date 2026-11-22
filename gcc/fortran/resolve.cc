@@ -6109,10 +6109,10 @@ reset_array_ref_to_scalar (gfc_expr *expr, gfc_ref *array_ref)
       else
 	array_ref->u.ar.start[dim] = gfc_copy_expr (unity);
 
-      if (array_ref->u.ar.end[dim])
-	gfc_free_expr (array_ref->u.ar.end[dim]);
-      if (array_ref->u.ar.stride[dim])
-	gfc_free_expr (array_ref->u.ar.stride[dim]);
+      gfc_free_expr (array_ref->u.ar.end[dim]);
+      array_ref->u.ar.end[dim] = NULL;
+      gfc_free_expr (array_ref->u.ar.stride[dim]);
+      array_ref->u.ar.stride[dim] = NULL;
     }
   gfc_free_expr (unity);
 }

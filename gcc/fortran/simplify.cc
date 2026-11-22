@@ -5086,12 +5086,33 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 	    }
 	  else
 	    {
+	      /* Replace the string component and what follows it by the
+		 LEN parameter, keeping the array reference of the base,
+		 which resolution makes scalar.  */
 	      gfc_expr *len_expr = gfc_copy_expr (e);
-	      gfc_free_ref_list (len_expr->ref);
-	      len_expr->ref = NULL;
+	      gfc_ref **ref = &len_expr->ref;
+	      while (*ref && (*ref)->type == REF_ARRAY)
+		ref = &(*ref)->next;
+	      gfc_free_ref_list (*ref);
+	      *ref = NULL;
 	      gfc_find_component (len_expr->symtree->n.sym->ts.u.derived,
-				  name, false, true, &len_expr->ref);
-	      len_expr->ts = len_expr->ref->u.c.component->ts;
+				  name, false, true, ref);
+	      len_expr->ts = (*ref)->u.c.component->ts;
+	      gfc_free_shape (&len_expr->shape, len_expr->rank);
+	      if (!gfc_resolve_ref (len_expr))
+		{
+		  gfc_free_expr (len_expr);
+		  return NULL;
+		}
+	      gfc_expression_rank (len_expr);
+	      if (len_expr->ts.kind != k)
+		{
+		  gfc_typespec ts;
+		  gfc_clear_ts (&ts);
+		  ts.type = BT_INTEGER;
+		  ts.kind = k;
+		  gfc_convert_type_warn (len_expr, &ts, 2, 0);
+		}
 	      return len_expr;
 	    }
 	}
