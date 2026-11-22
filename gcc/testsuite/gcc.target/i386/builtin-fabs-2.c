@@ -8,9 +8,9 @@
 **foo:
 **...
 **	ja	.L[0-9]+
-**	movss	4\(%(e|r)di\), %xmm1
-**	orps	%xmm1, %xmm0
-**	comiss	%xmm0, %xmm2
+**	movss	4\(%(e|r)di\), %xmm[0-9]+
+**	orps	%xmm[0-9]+, %xmm[0-9]+
+**	comiss	%xmm[0-9]+, %xmm[0-9]+
 **	seta	%al
 **	ret
 **...

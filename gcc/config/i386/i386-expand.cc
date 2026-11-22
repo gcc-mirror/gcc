@@ -2368,6 +2368,21 @@ ix86_expand_copysign (rtx operands[])
       return;
     }
 
+  /* copysign (a, negative) is -fabs (a).  */
+  if ((mode == SFmode || mode == DFmode)
+      && CONST_DOUBLE_P (operands[2])
+      && real_isneg (CONST_DOUBLE_REAL_VALUE (operands[2])))
+    {
+      rtx src = gen_rtx_NEG (mode,
+			     gen_rtx_ABS (mode,
+					  force_reg (mode, operands[1])));
+      mask = ix86_build_signbit_mask (vmode, false, false);
+      rtvec par = gen_rtvec (2, gen_rtx_SET (operands[0], src),
+			     gen_rtx_USE (VOIDmode, mask));
+      emit_insn (gen_rtx_PARALLEL (VOIDmode, par));
+      return;
+    }
+
   dest = operands[0];
   vdest = lowpart_subreg (vmode, dest, mode);
   if (vdest == NULL_RTX)
