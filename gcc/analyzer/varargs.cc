@@ -169,7 +169,8 @@ get_va_copy_arg (const region_model *model,
       /* va_list_arg_type_node is a pointer to a va_list.  */
       const svalue *arg_sval = model->get_rvalue (arg, ctxt);
       if (const svalue *cast = arg_sval->maybe_undo_cast ())
-	arg_sval = cast;
+	if (cast->get_type () && POINTER_TYPE_P (cast->get_type ()))
+	  arg_sval = cast;
       src_reg = model->deref_rvalue (arg_sval, arg, ctxt);
     }
   else
@@ -183,7 +184,8 @@ get_va_copy_arg (const region_model *model,
   const region *cast_reg = rmm->get_cast_region (src_reg, ptr_type_node);
   const svalue *src_reg_sval = model->get_store_value (cast_reg, ctxt);
   if (const svalue *cast = src_reg_sval->maybe_undo_cast ())
-    src_reg_sval = cast;
+    if (cast->get_type () && POINTER_TYPE_P (cast->get_type ()))
+      src_reg_sval = cast;
   return src_reg_sval;
 }
 
