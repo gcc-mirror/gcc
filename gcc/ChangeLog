@@ -1,3 +1,36 @@
+2026-11-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/127142
+	* config/pa/pa.cc (pa_preferred_reload_class): New function.
+	(TARGET_PREFERRED_RELOAD_CLASS): Define.
+	(hppa_register_move_cost): Set cost to 2 for moves between
+	R1_REGS and GENERAL_REGS, and 8 for moves between
+	GENERAL_REGS/R1_REGS and FP_REGS.
+	(pa_secondary_reload): Remove redundant sri->icode assignment.
+	(pa_spill_class): Return GENERAL_REGS when spilling R1_REGS.
+	* config/pa/pa.md: Merge 32-bit and 64-bit PIC label address
+	patterns into a single Pmode define_insn, fix %r1 operand in
+	addil sequences, and add a disparaged 'r' alternative.
+	Add disparaged 'r' alternatives to 32-bit and 64-bit PIC HIGH
+	patterns.  Split 32-bit non-PIC HIGH pattern into
+	TARGET_LONG_LOAD_STORE and !TARGET_LONG_LOAD_STORE patterns with
+	disparaged 'r' alternatives.  Add define_peephole2 patterns to
+	use %r1 for HIGH and PIC label loads when %r1 is dead.
+	(call_symref, call_symref_pic, call_symref_pic_post_reload)
+	(call_symref_64bit, call_symref_64bit_post_reload, call_reg)
+	(call_reg_pic, call_reg_pic_post_reload, call_value_symref)
+	(call_value_symref_pic, call_value_symref_pic_post_reload)
+	(call_value_symref_64bit, call_value_symref_64bit_post_reload)
+	(call_value_reg, call_value_reg_pic, call_value_reg_pic_post_reload)
+	(sibcall_internal_symref, sibcall_internal_symref_64bit)
+	(sibcall_value_internal_symref, sibcall_value_internal_symref_64bit):
+	Remove (clobber (reg 1)) and update corresponding define_splits.
+
+2026-11-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/predicates.md (read_only_operand): Check !TARGET_HPUX
+	when considering CONSTANT_POOL_ADDRESS_P for SYMBOL_REF.
+
 2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	Backported from master:
