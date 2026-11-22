@@ -604,6 +604,41 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr2))
     (minmax @1 (plus @2 @0))))))
 
+/* (T)((I)x & ~signbit) -> abs (x), (T)((I)x ^ signbit) -> -x and
+   (T)((I)x | signbit) -> -abs (x) when the sign bit is the MSB, as these
+   only change the sign bit.  -abs (x) becomes copysign (x, -1) where the
+   target has copysign.  Without abs and neg patterns expand turns them
+   back into the same mask.  Not with signaling NaNs honored: the integer
+   operation keeps them as they are, while the abs or neg can go through
+   an FP unit that quiets them (x87).  Decimal floats are left alone.
+   GIMPLE only: in GENERIC @0 can be a reference with reverse storage
+   order, whose VIEW_CONVERT_EXPR reads the bytes without swapping them,
+   so the MSB of the integer is not the sign bit of the value.  */
+(for bitop (bit_and bit_xor bit_ior)
+ (simplify
+  (view_convert (bitop:s (view_convert @0) INTEGER_CST@1))
+  (if (SCALAR_FLOAT_TYPE_P (type)
+       && !DECIMAL_FLOAT_TYPE_P (type)
+       && !HONOR_SNANS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (with { scalar_float_mode fmode = SCALAR_FLOAT_TYPE_MODE (type);
+	   unsigned int prec = TYPE_PRECISION (TREE_TYPE (@1)); }
+    /* No padding bits (m68k XFmode has some), the sign bit where the
+       integer has its MSB, and words in the same order.  */
+    (if (known_eq (GET_MODE_BITSIZE (fmode), prec)
+	 && known_eq (GET_MODE_PRECISION (fmode), prec)
+	 && REAL_MODE_FORMAT (fmode)->signbit_rw == (int) prec - 1
+	 && (FLOAT_WORDS_BIG_ENDIAN == WORDS_BIG_ENDIAN
+	     || known_le (GET_MODE_SIZE (fmode), UNITS_PER_WORD)))
+     (with { wide_int sign = wi::set_bit_in_zero (prec - 1, prec); }
+      (switch
+       (if (bitop == BIT_AND_EXPR && wi::to_wide (@1) == ~sign)
+	(abs @0))
+       (if (bitop == BIT_XOR_EXPR && wi::to_wide (@1) == sign)
+	(negate @0))
+       (if (bitop == BIT_IOR_EXPR && wi::to_wide (@1) == sign)
+	(negate (abs @0))))))))))
+
 #endif
 
 /* X * 1, X / 1 -> X.  */
