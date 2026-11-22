@@ -1838,21 +1838,21 @@ apply_constraints (const superedge *,
   const svalue *index_sval = model.get_rvalue (index, ctxt);
   bool check_index_type = true;
 
-  /* With -fshort-enum, there may be a type cast.  */
+  /* With -fshort-enums, there may be a type cast.  */
   if (ctxt && index_sval->get_kind () == SK_UNARYOP
       && TREE_CODE (index_sval->get_type ()) == INTEGER_TYPE)
     {
       const unaryop_svalue *unaryop = as_a <const unaryop_svalue *> (index_sval);
+      const svalue *arg = unaryop->get_arg ();
       if (unaryop->get_op () == NOP_EXPR
-	  && is_a <const initial_svalue *> (unaryop->get_arg ()))
-	if (const initial_svalue *initvalop = (as_a <const initial_svalue *>
-					       (unaryop->get_arg ())))
-	  if (initvalop->get_type ()
-	      && TREE_CODE (initvalop->get_type ()) == ENUMERAL_TYPE)
-	    {
-	      index_sval = initvalop;
-	      check_index_type = false;
-	    }
+	  && arg->get_type ()
+	  && TREE_CODE (arg->get_type ()) == ENUMERAL_TYPE
+	  && (TYPE_PRECISION (arg->get_type ())
+	      <= TYPE_PRECISION (index_sval->get_type ())))
+	{
+	  index_sval = arg;
+	  check_index_type = false;
+	}
     }
 
   /* If we're switching based on an enum type, assume that the user is only
