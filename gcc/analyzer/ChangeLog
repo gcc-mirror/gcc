@@ -1,3 +1,22 @@
+2026-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* constraint-manager.cc (equiv_class::make_dump_widget): Update
+	signature.  Use dump_widgets for dumping the svalues within the
+	equivalence class, rather than dump_to_pp.
+	(constraint::make_dump_widget): Update to use
+	symbolic::node_dump_state.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::dump): Implement using dump_widget
+	implementation, rather than dump_to_pp, so that we can
+	clearly see node IDs and types.
+	(constraint_manager::make_dump_widget): Update to use
+	symbolic::node_dump_state.
+	* constraint-manager.h (equiv_class::make_dump_widget): Update to
+	use symbolic::node_dump_state.
+	(constraint::make_dump_widget): Likewise.
+	(bounded_ranges_constraint::make_dump_widget): Likewise.
+	(constraint_manager::make_dump_widget): Likewise.
+
 2026-11-19  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* concrete-ranges.cc (concrete_byte_range::dump_to_pp_pretty)

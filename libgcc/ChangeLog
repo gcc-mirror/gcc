@@ -1,3 +1,12 @@
+2026-11-21  Olivier Hainque  <hainque@adacore.com>
+
+	* config/i386/cygwin.S (__alloca, __x86_64__): Remove cfi_ macro
+	calls, add .seh start/endproc/endprologue directives and amend
+	comments at spots where stack state alterations are not reflected.
+	(___chkstk_ms): Likewise. Also rework the code to match the
+	expected patterns for prologue/epilogue sequences and mark the
+	stack space allocation.
+
 2026-11-13  LIU Hao  <lh_mouse@126.com>
 
 	* config/i386/cygwin.S: Fix a typo in `___chkstk`.

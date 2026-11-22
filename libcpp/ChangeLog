@@ -1,3 +1,11 @@
+2026-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	P0085R5
+	* init.cc (lang_defaults): Set octal_constants for C++29.
+	* expr.cc (cpp_classify_number): Parse 0o and 0O prefixes even for
+	C++.  Emit different diagnostics for C++ if octal_constants is
+	false.
+
 2026-11-15  Kael Andrew Franco  <kaelfandrew@gmail.com>
 
 	PR bootstrap/112422

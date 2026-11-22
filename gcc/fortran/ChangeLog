@@ -1,3 +1,46 @@
+2026-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128478
+	* trans-expr.cc (conv_class_value_copy): New function.
+	(gfc_conv_expr_op): Use it to copy a parenthesized scalar CLASS
+	variable.
+	(gfc_conv_procedure_call): Do not copy or free the allocatable
+	components of the copy of a parenthesized scalar CLASS variable.
+	(gfc_conv_expr_reference): Keep the free of that copy in se->post.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128886
+	* trans-expr.cc (gfc_trans_class_array_init_assign): The check
+	for a NULL rhs is needed for class PDTs as well as unlimited
+	polymorphis expressions.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128876
+	* trans-decl.cc (gfc_trans_deferred_vars): Replace CLASS_DATA (
+	sym)->attr.pointer with CLASS_DATA (sym)->attr.class_pointer.
+	Delete CLASS_DATA (sym)->attr.pointer for dummies. The hidden
+	DECL_LANG_SPECIFIC declaration should be used for class objects
+	if it is available.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128877
+	* decl.cc (gfc_trans_deferred_vars): Defer updating type and
+	simplification of component initalizers to the end of the loop.
+	Only update the typespec of the initializer to that of the
+	component if it is of unknown type or the same type.
+	* resolve.cc (resolve_component): Do not pass real PDT template
+	components with kind=0 through gfc_check_assign_symbol.
+
+2026-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/54322
+	* primary.cc (gfc_variable_attr): Clear POINTER and ALLOCATABLE for
+	an associate name, except for SELECT RANK.  Take TARGET from a
+	SELECT TYPE selector rather than from its _data component.
+
 2026-11-19  Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/128682

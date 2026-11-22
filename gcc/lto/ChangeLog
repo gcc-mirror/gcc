@@ -1,3 +1,22 @@
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* lto-common.cc (lto_read_in_decl_state): Derive slot references
+	from original inputs or read an explicit list.
+	(lto_read_decls): Read the saved-reference stream.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* lto-common.cc (unify_scc): Discard pending origins for merged trees.
+	(lto_read_decls): Register origins for retained trees at the end of
+	each iteration.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* lto-common.cc (process_dref, lto_read_decls): Specify DEBUG_DIE_REF.
+
 2026-09-16  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/127273

@@ -1,3 +1,26 @@
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h: Name 'enum's, name aliased types (opaque) in
+	'typedef's.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h (cuDeviceGetUuid, cuDeviceGetUuid_v2): Remove.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h (CU_MEMHOSTALLOC_DEVICEMAP): '#define' to '0x02'.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h (cuPointerGetAttribute): Change first formal
+	parameter to 'void *'.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h (CUresult): Remove
+	'CUDA_ERROR_COOPERATIVE_LAUNCH_TOO_LARGE'.
+
 2026-11-11  Matt Turner  <mattst88@gmail.com>
 
 	* longlong.h (__ll_check_output): New macro.

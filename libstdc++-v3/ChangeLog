@@ -1,3 +1,29 @@
+2026-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (clmul): Bump FTM to 202611.
+	* include/bits/version.h: Regenerate.
+	* include/std/numeric: Use #ifdef __glibcxx_clmul rather than
+	#if __glibcxx_clmul > 202610L.
+	* testsuite/26_numerics/clmul/1.cc: Expect __cpp_lib_clmul 202611.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* libsupc++/eh_call.cc [__ARM_EABI_UNWINDER__]: Disable deprecated
+	warnings.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/locale/newlib/ctype_members.cc (use_table): New function.
+	(ctype<wchar_t>::do_narrow): Use use_table.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* src/filesystem/ops.cc (fs::create_directory_symlink): Tag 'to',
+	'path' as '[[maybe_unused]]'.
+	(fs::create_symlink): Tag 'to', 'new_symlink' as
+	'[[maybe_unused]]'.
+
 2026-11-19  Jason Merrill  <jason@redhat.com>
 
 	* include/ext/pb_ds/detail/bin_search_tree_/rotate_fn_imps.hpp

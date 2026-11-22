@@ -1,3 +1,9 @@
+2026-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	P0085R5
+	* c-cppbuiltin.cc (c_cpp_builtins): Predefine __cpp_0o_octals
+	for C++29.
+
 2026-11-12  Jason Merrill  <jason@redhat.com>
 
 	* c-opts.cc (c_common_post_options): Adjust comment.

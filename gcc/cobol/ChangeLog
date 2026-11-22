@@ -1,3 +1,29 @@
+2026-11-21  Robert Dubner  <rdubner@symas.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): -Wrefmod.
+	* cobol1.cc (cobol_langhook_handle_option): Likewise.
+	* gcobol.1: Likewise.
+	* lang-specs.h: Likewise.
+	* lang.opt: Likewise.
+	* lexio.cc (cobol_filename): Handle missing closing characters.
+	(mapped_file): Likewise.
+	(lexer_input_close): Likewise.
+	(lexer_input): Likewise.
+	* lexio.h (lexer_input_close): Likewise.
+	* messages.cc: -Wrefmod.
+	* parse.y: Fix ADD/SUBTRACT CORRESPONDING; handle IF <object class>
+	properly.
+	* parse_ante.h (struct arith_t): handle IF <object class>.
+	(struct ast_op_t): Likewise.
+	(class eval_subject_t): Likewise.
+	(valid_sign_condition): Likewise.
+	(valid_class_condition): Likewise.
+	* scan.l:  Handle missing closing characters.
+	* scan_ante.h (skip_string): Handle missing closing characters.
+	(is_refmod): -Wrefmod.
+	* symbols.h (struct cbl_refer_t): handle IF <object class>.
+	* util.cc (parse_file): Handle missing closing characters.
+
 2026-11-20  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (parser_set_conditional88): Honor subscripts when

@@ -1,3 +1,199 @@
+2026-11-21  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR middle-end/128611
+	* gcc.dg/torture/stackalign/dwarf-cfa-1.c: New test.
+
+2026-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128478
+	* gfortran.dg/asan/paren_class_copy_1.f90: New test.
+
+2026-11-21  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* g++.dg/vect/vect-uniform-broadcast-neg.cc: New test.
+	* g++.dg/vect/vect-uniform-broadcast-op2-var.cc: New test.
+	* g++.dg/vect/vect-uniform-broadcast.cc: New test.
+	* gcc.dg/vect/vect-gather-uniform-and.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-epil-1.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-mpeel-1.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-neg-and.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-peel-1.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-peel-2.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-peel-3.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-run-1.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-run-2.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-run-3.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-slp-1.c: New test.
+	* gcc.dg/vect/vect-gather-uniform-slp-2.c: New test.
+
+2026-11-21  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/COMPUTE_multiplication_to_FIX4.cob: Use NUMVAL
+	to convert a numeric-edited value to a numeric value.
+
+2026-11-21  Daniel Petrovic  <daniel-dev@hotmail.de>
+
+	PR tree-optimization/115392
+	* gcc.dg/tree-ssa/pr115392-1.c: New test.
+	* gcc.dg/tree-ssa/pr115392-2.c: New test.
+	* gcc.dg/tree-ssa/pr115392-3.c: New test.
+	* gcc.dg/tree-ssa/pr115392-4.c: New test.
+	* gcc.dg/tree-ssa/pr115392-5.c: New test.
+	* gcc.dg/ipa/pr91088.c: Use a constant that the new fold does not
+	simplify, so that the XOR is still visible to ipa-cp.
+
+2026-11-21  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/125221
+	* gcc.dg/popcountll-narrow.c: New test.
+	* gcc.dg/popcountg-narrow-bitint.c: New test.
+	* gcc.target/aarch64/popcountg-narrow-128.c: New test.
+
+2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128910
+	* gcc.dg/torture/pr128910.c: New test.
+
+2026-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	P0085R5
+	* g++.dg/DRs/dr2581-1.C: Add __cpp_0o_octals test.
+	* g++.dg/DRs/dr2581-2.C: Likewise.
+	* g++.dg/cpp29/feat-cxx29.C: Likewise.
+	* g++.dg/cpp29/octal1.C: New test.
+	* g++.dg/cpp29/octal2.C: New test.
+	* g++.dg/cpp29/octal3.C: New test.
+	* g++.dg/cpp29/octal4.C: New test.
+
+2026-11-21  Kael Andrew Franco  <kaelfandrew@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/128119
+	* gcc.target/i386/pr128119.c: New test.
+
+2026-11-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/base/cpymem-size-threshold.c: New test.
+	* gcc.target/riscv/rvv/base/cpymem-size-threshold-move.c: New test.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128886
+	* gfortran.dg/pdt_bug31.f90: New test.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128876
+	* gfortran.dg/pdt_bug28.f90: New test.
+	* gfortran.dg/pdt_bug29.f90: New test.
+	* gfortran.dg/pdt_bug30.f90: New test.
+
+2026-11-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128877
+	* gfortran.dg/pdt_bug27.f90: New test.
+
+2026-11-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/case-values-threshold-1.c: New test.
+	* gcc.target/riscv/case-values-threshold-2.c: New test.
+	* gcc.target/riscv/case-values-threshold-3.c: New test.
+	* gcc.target/riscv/case-values-threshold-4.c: New test.
+	* gcc.target/riscv/case-values-threshold-5.c: New test.
+	* gcc.target/riscv/case-values-threshold-6.c: New test.
+	* gcc.target/riscv/rvv/vsetvl/pr126236.c: Keep the shared jump table.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* g++.dg/lto/pr126348_0.C: Also check the inline instance's origin.
+	* g++.dg/lto/pr126348-2_0.C: New test.
+	* g++.dg/lto/pr126348-2_1.C: Likewise.
+	* g++.dg/lto/pr126348-2_2.C: Likewise.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* g++.dg/lto/pr126348.h: New test header.
+	* g++.dg/lto/pr126348_0.C: New test.
+	* g++.dg/lto/pr126348_1.C: Likewise.
+	* g++.dg/lto/pr126348_2.C: Likewise.
+	* g++.dg/lto/pr126348-3.h: New test header.
+	* g++.dg/lto/pr126348-3_0.C: New test.
+	* g++.dg/lto/pr126348-3_1.C: Likewise.
+	* g++.dg/lto/pr126348-3_2.C: Likewise.
+
+2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* gcc.target/h8300/pr128906.c: New test.
+	* gcc.target/h8300/pr128906-2.c: New test.
+
+2026-11-21  Jonathan Yong  <10walls@gmail.com>
+
+	Revert:
+	2026-11-21  Julien Marrec  <julien.marrec@gmail.com>
+
+	PR libfortran/128183
+	* gfortran.dg/pr128183.f90: New test.
+	* gfortran.dg/pr128183_aux.c: New file.
+
+2026-11-21  Julien Marrec  <julien.marrec@gmail.com>
+
+	PR libfortran/128183
+	* gfortran.dg/pr128183.f90: New test.
+	* gfortran.dg/pr128183_aux.c: New file.
+
+2026-11-21  LIU Hao  <lh_mouse@126.com>
+
+	* gcc.target/i386/visibility-hidden-mingw-32.c: Add new testcases.
+	* gcc.target/i386/dllexport-custom-symbol-mingw-32.c: New test.
+
+2026-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109197
+	* gcc.dg/analyzer/bitfields-pr109197.c: New test.
+
+2026-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/109199
+	PR analyzer/124703
+	* c-c++-common/analyzer/pointer-comparison-pr109199.c: New test.
+	* gcc.dg/analyzer/glibc-free-of-non-heap-pr124703.c: New test.
+
+2026-11-21  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/94365
+	PR analyzer/106454
+	PR analyzer/109736
+	PR analyzer/114920
+	PR analyzer/126885
+	PR analyzer/127593
+	* c-c++-common/analyzer/null-terminated-strings-pr114920.c: New test.
+	* c-c++-common/analyzer/pointer-comparison-pr109736.c: New test.
+	* gcc.dg/analyzer/container-of-pr127593.c: New test.
+	* gcc.dg/analyzer/container-of-pr94365.c: New test.
+	* gcc.dg/analyzer/malloc-pr106454.c: New test.
+	* gcc.dg/analyzer/switch-pr126885.c: New test.
+
+2026-11-21  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/long-mul-two-carry-1a.c: New test.
+
+2026-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/54322
+	* gfortran.dg/associate_42.f90: Pointer-assign the selector, not
+	the associate name.
+	* gfortran.dg/select_type_30.f03: Make the POINTER dummy
+	INTENT(IN).
+	* gfortran.dg/pr54322.f90: New test.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* lib/prune.exp (prune_gcc_output): Ignore 'ld' diagnostics for
+	glibc plus '-static' plus 'dlopen'.
+
 2026-11-20  Shreesh Adiga  <16567adigashreesh@gmail.com>
 
 	PR middle-end/127984

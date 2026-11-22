@@ -1,3 +1,22 @@
+2026-11-21  Jonathan Yong  <10walls@gmail.com>
+
+	Revert:
+	2026-11-21  Julien Marrec  <julien.marrec@gmail.com>
+
+	PR libfortran/128183
+	* io/transfer.c (data_transfer_init_worker): Save a copy of the
+	LC_NUMERIC name, and only switch to "C" if it is not already "C".
+	(finalize_transfer): Only restore if a name was saved, and free it.
+	* io/unit.c (old_locale): Update comment.
+
+2026-11-21  Julien Marrec  <julien.marrec@gmail.com>
+
+	PR libfortran/128183
+	* io/transfer.c (data_transfer_init_worker): Save a copy of the
+	LC_NUMERIC name, and only switch to "C" if it is not already "C".
+	(finalize_transfer): Only restore if a name was saved, and free it.
+	* io/unit.c (old_locale): Update comment.
+
 2026-11-20  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* caf/shmem/shared_memory.c (shared_memory_init): Check the result

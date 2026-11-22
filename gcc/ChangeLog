@@ -1,3 +1,185 @@
+2026-11-21  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR middle-end/128611
+	* function.cc (instantiate_new_reg): Instantiate virtual_cfa_rtx
+	from the DRAP pseudo in a realigned frame.
+
+2026-11-21  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* tree-vect-data-refs.cc (vect_check_gather_load_offset_uniform): New.
+	Return whether the gather offset is the same for all lanes of
+	each vector of N = CONST_NUNITS lanes in LOOP.
+	* tree-vect-stmts.cc (get_load_store_type): Initialize
+	gs_offset_uniform_p. Call vect_check_gather_load_offset_uniform
+	and set gs_offset_uniform_p.
+	(vectorizable_load): Generate broadcast for uniform gather offsets.
+	* tree-vectorizer.h (struct vect_load_store_data): New field gs_offset_
+	uniform_p for flagging uniformity.
+
+2026-11-21  Daniel Petrovic  <daniel-dev@hotmail.de>
+
+	PR tree-optimization/115392
+	* match.pd: Fold (X | A) cmp C and (X ^ A) cmp C into X cmp C
+	when A is known to be in [0, 2^m-1] and the low m bits of C are
+	all ones (le, gt) or all zeros (lt, ge).
+
+2026-11-21  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/125221
+	* gimple-match-head.cc: Include vr-values.h.
+	* match.pd (POPCOUNT): Narrow the argument when its value range
+	fits in a narrower unsigned type.
+
+2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128910
+	* cse.cc (exp_equiv_p): Return false for SUBREGs that have different
+	promotion states.
+
+2026-11-21  Kael Andrew Franco  <kaelfandrew@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/128119
+	* simplify-rtx.cc (simplify_binary_operation_1) <UMUL_HIGHPART>:
+	Fix side_effects_p argument for x h* 1 to 0 simplification.
+
+2026-11-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-string.cc
+	(expand_block_move): Select the threshold for the operation.
+
+2026-11-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_tune_param): Add case_values_threshold.
+	(generic_ooo_tune_info): Use the generic threshold.
+	(xt_c9501_tune_info, spacemit_x100_tune_info): Use 11.
+	(riscv_case_values_threshold): New function.
+	(TARGET_CASE_VALUES_THRESHOLD): Define.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* lto-streamer.h (lto_decl_header): Add debug_ref_size.
+	(lto_decl_origin_ref): New.
+	(lto_in_decl_state, lto_out_decl_state): Add origin_refs.
+	(lto_decl_origin_ref_at): Declare.
+	* lto-streamer-in.cc (data_in::register_origin_refs): Resolve
+	decl-state slot references.
+	* lto-streamer-out.cc (copy_function_or_variable): Copy slot origins.
+	(lto_output_decl_origin_refs): New function.
+	(produce_asm_for_decls): Write the saved-reference stream.
+	* lto-section-in.cc (lto_decl_origin_ref_at): New function.
+	(lto_delete_in_decl_state, lto_free_function_in_decl_state):
+	Free origin records.
+	* lto-section-out.cc (lto_delete_out_decl_state): Likewise.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* lto-streamer.h (lto_die_ref, lto_die_ref_map, lto_origin_ref_kind,
+	lto_pending_origin_ref): New.
+	(lto_origin_ref_node_p): New function.
+	(data_in): Add reader-cache DIE references, pending origins and
+	methods to save and register them.
+	(stream_read_tree_ref): Adjust declaration.
+	* lto-streamer-in.cc (data_in::save_die_ref,
+	data_in::register_origin_refs): New methods.
+	(lto_read_tree_1): Save input DIEs and encoded origins.  Read explicit
+	saved origins.
+	(lto_read_tree, lto_input_scc): Pass the reader-cache index.
+	(stream_read_tree_ref): Optionally return the encoded reference.
+	(lto_input_tree): Register saved origins after reading the input trees.
+	(lto_data_in_delete): Delete the temporary DIE-reference map.
+	* lto-streamer-out.cc (lto_write_tree_1): Stream saved origins and
+	distinguish absent origins from original tree references.
+	* tree-streamer.h (streamer_read_tree_body): Adjust declaration.
+	* tree-streamer-in.cc (lto_input_ts_decl_common_tree_pointers,
+	lto_input_ts_block_tree_pointers, streamer_read_tree_body): Capture
+	encoded abstract-origin references.
+
+2026-11-21  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR debug/126348
+	* debug.h (debug_external_ref_kind): New enum.
+	(gcc_debug_hooks): Add the kind parameter and document saved references.
+	(debug_false_tree_charstarstar_uhwistar,
+	debug_nothing_tree_charstar_uhwi): Add the kind parameter.
+	(copy_debug_abstract_origin): Declare.
+	* debug.cc (debug_false_tree_charstarstar_uhwistar,
+	debug_nothing_tree_charstar_uhwi): Adjust signatures.
+	(copy_debug_abstract_origin): New function.
+	* dwarf2out.cc (saved_die_ref, saved_die_ref_traits, saved_die_ref_map,
+	external_abstract_origin_map): New.
+	(dwarf2out_die_ref_for_decl, dwarf2out_register_external_die): Take
+	the kind parameter.  Query and register saved origins separately from
+	declaration references.
+	(add_abstract_origin_attribute): Take the instance and prefer its saved
+	origin.  Fall back to the origin tree's DIE.
+	(gen_entry_point_die, gen_formal_parameter_die, gen_subprogram_die,
+	gen_variable_die, gen_label_die, gen_lexical_block_die,
+	gen_inlined_subroutine_die): Pass the instance tree.
+	* cgraphclones.cc: Include debug.h.
+	(cgraph_node::create_virtual_clone): Copy the saved origin.
+	* tree-inline.cc (remap_block, expand_call_inline,
+	tree_function_versioning): Likewise.
+	* lto-streamer-in.cc (lto_input_tree): Specify DEBUG_DIE_REF.
+	* lto-streamer-out.cc (lto_write_tree_1): Likewise.
+
+2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv-cores.def (spacemit-x60): Drop Zihmp that is now
+	a duplicate.
+
+2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* config/h8300/testcompare.md (store_z_<mode>): Fix length calculation
+	for SI case.
+	(store_z_<mode>_neg): Likewise.
+	(store_z_<mode>_sb): Fix length calculation for SI case.  Also fix
+	output templates.
+	(store_z_<mode>_and): Likewise.
+
+2026-11-21  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* config/i386/mingw-w64.h (LIB_SPEC): Note empty spec for
+	SPEC_PTHREAD2.  Fix indentation.
+	* config/mingw/mingw32.h (LIB_SPEC): Likewise.
+	(CPP_SPEC): Remove empty spec for SPEC_PTHREAD2.
+
+2026-11-21  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* config/i386/cygwin.h (SHARED_LIBGCC_SPEC): Simplify using
+	%{S:X;T:Y;:D} syntax.
+	* config/mingw/mingw32.h (SHARED_LIBGCC_SPEC): Likewise.
+
+2026-11-21  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* config/i386/mingw-w64.h (CPP_SPEC): Never undef _REENTRANT.
+
+2026-11-21  LIU Hao  <lh_mouse@126.com>
+
+	* config/mingw/winnt.cc (i386_pe_drectve_name): Change parameter to take a
+	string, and only check for a user label prefix if the name is supplied by
+	an `asm` label.
+	(i386_pe_assemble_visibility): Update call to `i386_pe_drectve_name()`.
+	(mingw_pe_file_end): Call `i386_pe_drectve_name()` instead of the default.
+
+2026-11-21  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_carry_low_sum): Add a `:c` on the gt.
+	(mul_carry_cross_sum): Likewise.
+
+2026-11-21  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (mul_carry_cross_sum): Remove @0 from the capture lists.
+	* tree-ssa-forwprop.cc (long_mul_summand::set): For
+	LMK_CARRY_CROSS_SUM don't set the shift_idx.
+
+2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* config/aarch64/t-aarch64-rtems: Don't build ILP32 multilibs.
+
 2026-11-20  Shreesh Adiga  <16567adigashreesh@gmail.com>
 
 	PR middle-end/127984
