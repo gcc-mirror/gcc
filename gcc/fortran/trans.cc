@@ -48,6 +48,10 @@ const char gfc_msg_fault[] = N_("Array reference out of bounds");
 /* Nonzero if we're translating a defined assignment call. */
 int is_assign_call = 0;
 
+/* Incremented by gfc_conv_procedure_call while it evaluates actual
+   arguments.  */
+int actual_arg_level = 0;
+
 /* Advance along TREE_CHAIN n times.  */
 
 tree
@@ -1669,8 +1673,9 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
   /* Derived type function results with components that have defined
      assignments are handled in resolve.cc(generate_component_assignments),
      unless the assignment was replaced by a subroutine call to the
-     subroutine associated with the assignment operator. */
-  if ( ! is_assign_call
+     subroutine associated with the assignment operator.  An actual
+     argument is never the right-hand side of such an assignment.  */
+  if ( ! is_assign_call && ! actual_arg_level
        && derived && (derived->attr.is_c_interop
        || derived->attr.is_iso_c
        || derived->attr.is_bind_c

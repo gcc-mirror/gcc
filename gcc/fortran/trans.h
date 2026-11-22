@@ -1237,4 +1237,6 @@ extern const char gfc_msg_fault[];
 #define OMPWS_NOWAIT		16	/* Use NOWAIT on OMP_FOR.  */
 extern int ompws_flags;
 
+extern int actual_arg_level;
+
 #endif /* GFC_TRANS_H */

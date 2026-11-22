@@ -105,6 +105,7 @@ contains
 
     ! Check that the cleanup code for the evaluation of TO is properly
     ! executed after MOVE_ALLOC: the result of GET_U should be finalized.
+    ! GET_U also finalizes its result variable on assignment.
     call move_alloc(tmp, x(idx(get_u(y)))%a)
 
     do i=1,n
@@ -115,7 +116,7 @@ contains
     if (any(shape(x(2)%a) /= [1])) error stop 23
     if (any(x(2)%a /= [37])) error stop 24
     if (allocated(tmp)) error stop 25
-    if (finalization_count /= 1) error stop 26
+    if (finalization_count /= 2) error stop 26
 
     ! Check that the cleanup code for the evaluation of FROM is properly
     ! executed after MOVE_ALLOC: the result of GET_U should be finalized.
@@ -124,7 +125,7 @@ contains
     if (.not. allocated(tmp)) error stop 31
     if (any(shape(tmp) /= [1])) error stop 32
     if (any(tmp /= [37])) error stop 33
-    if (finalization_count /= 2) error stop 34
+    if (finalization_count /= 4) error stop 34
     do i=1,n
       if (allocated(x(i)%a)) error stop 35
     end do

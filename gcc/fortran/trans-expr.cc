@@ -7384,6 +7384,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
     }
 
   /* Evaluate the arguments.  */
+  actual_arg_level++;
   for (arg = args, argc = 0; arg != NULL;
        arg = arg->next, formal = formal ? formal->next : NULL, ++argc)
     {
@@ -9023,6 +9024,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	}
       vec_safe_push (arglist, parmse.expr);
     }
+  actual_arg_level--;
 
   gfc_add_block_to_block (&se->pre, &dealloc_blk);
   gfc_add_block_to_block (&se->pre, &clobbers);
@@ -9361,6 +9363,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		    sym->ts.type == BT_DERIVED ? sym->ts.u.derived : NULL;
   bool finalizable = der != NULL && der->ns->proc_name
 			    && gfc_is_finalizable (der, NULL);
+
+  /* Finalize the function results passed as arguments with the post code
+     of the arguments, so that any enclosing expression keeps them.  */
+  if (!byref && (comp ? comp->attr.function : sym->attr.function))
+    {
+      gfc_add_block_to_block (&se->finalblock, &post);
+      gfc_add_block_to_block (&post, &se->finalblock);
+    }
 
   if (!byref && finalizable)
     gfc_finalize_tree_expr (se, der, attr, expr->rank);
