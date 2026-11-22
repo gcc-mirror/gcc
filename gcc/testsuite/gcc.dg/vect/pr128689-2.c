@@ -1,5 +1,3 @@
-/* { dg-do run } */
-
 struct
 {
   unsigned char ring[256];
