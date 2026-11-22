@@ -1762,16 +1762,32 @@ region_model::check_region_for_taint (const region *reg,
 	    gcc_assert (state);
 	    /* Handle implicit cast to sizetype.  */
 	    tree effective_type = offset->get_type ();
+	    const svalue *effective_offset = offset;
 	    if (const svalue *cast = offset->maybe_undo_cast ())
-	      if (cast->get_type ())
-		effective_type = cast->get_type ();
+	      {
+		effective_offset = cast;
+		if (cast->get_type ())
+		  effective_type = cast->get_type ();
+	      }
+	    /* Same-width casts can't be undone; recover the original
+	       type from the representative tree.  */
+	    tree arg = NULL_TREE;
+	    if (effective_offset->dyn_cast_svalue_from_bit_vector ())
+	      {
+		arg = get_representative_tree (effective_offset);
+		if (arg
+		    && INTEGRAL_TYPE_P (TREE_TYPE (arg))
+		    && effective_type
+		    && INTEGRAL_TYPE_P (effective_type)
+		    && (TYPE_PRECISION (TREE_TYPE (arg))
+			== TYPE_PRECISION (effective_type)))
+		  effective_type = TREE_TYPE (arg);
+	      }
 	    enum bounds b;
 	    if (taint_sm.get_taint (state, effective_type, &b))
 	      {
-		const svalue *effective_offset = offset;
-		if (const svalue *cast = offset->maybe_undo_cast ())
-		  effective_offset = cast;
-		tree arg = get_representative_tree (effective_offset);
+		if (!arg)
+		  arg = get_representative_tree (effective_offset);
 		ctxt->warn (std::make_unique<tainted_offset> (taint_sm, arg, b,
 							      offset));
 	      }
