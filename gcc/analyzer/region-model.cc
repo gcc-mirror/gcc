@@ -5346,7 +5346,13 @@ region_model::get_representative_tree (const svalue *sval, logger *logger) const
   while (expr && TREE_CODE (expr) == NOP_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
-  return fixup_tree_for_diagnostic (expr);
+  expr = fixup_tree_for_diagnostic (expr);
+
+  /* The fixup can add a cast; strip it too.  */
+  while (expr && TREE_CODE (expr) == NOP_EXPR)
+    expr = TREE_OPERAND (expr, 0);
+
+  return expr;
 }
 
 tree
