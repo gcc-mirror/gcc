@@ -4477,8 +4477,18 @@ write_lf_enum (codeview_custom_type *t)
   fprint_whex (asm_out_file, t->lf_enum.fieldlist);
   putc ('\n', asm_out_file);
 
-  name_len = strlen (t->lf_enum.name) + 1;
-  ASM_OUTPUT_ASCII (asm_out_file, t->lf_enum.name, name_len);
+  if (t->lf_enum.name)
+    {
+      name_len = strlen (t->lf_enum.name) + 1;
+      ASM_OUTPUT_ASCII (asm_out_file, t->lf_enum.name, name_len);
+    }
+  else
+    {
+      static const char unnamed_enum[] = "<unnamed-tag>";
+
+      name_len = sizeof (unnamed_enum);
+      ASM_OUTPUT_ASCII (asm_out_file, unnamed_enum, name_len);
+    }
 
   leaf_len = 14 + name_len;
   write_cv_padding (4 - (leaf_len % 4));
