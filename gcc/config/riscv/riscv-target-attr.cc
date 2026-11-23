@@ -61,7 +61,6 @@ public:
 
   void update_settings (struct gcc_options *opts) const;
 private:
-  const char *m_raw_attr_str;
   bool parse_arch (const char *);
 
   bool m_found_arch_p;
