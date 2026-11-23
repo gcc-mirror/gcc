@@ -1,3 +1,56 @@
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/51284
+	* gfortran.dg/asan/value_dummy_copy_1.f90: New test.
+	* gfortran.dg/value_19.f90: New test.
+	* gfortran.dg/value_21.f90: New test.
+	* gfortran.dg/value_22.f90: New test.
+
+2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
+
+	* gcc.target/i386/record-mcount-2.c: New test.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/hetero-widen-const.c: New test.
+	* gcc.target/loongarch/vector/lsx/hetero-widen-const.c: New test.
+
+2026-11-22  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/vect/pr128689-2.c: Remove explict "dg-do run".
+
+2026-11-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Matteo Concas  <matteo.concas@gaisler.com>
+
+	* gcc.target/sparc/fix-gr712rc-1.c: Add lost divide tests.
+	* gcc.target/sparc/fix-at697f-1.c: New test.
+	* gcc.target/sparc/fix-ut699-1.c: New test.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/vbit-imm-range.c: New test.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128856
+	* gfortran.dg/move_alloc_20.f03: Count the finalization of the
+	result of GET_U.
+	* gfortran.dg/finalize_65.f90: New test.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/naked-1.c: New test.
+	* gcc.target/loongarch/naked-2.c: New test.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/is_contiguous_8.f90: New test.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128833
+	* gfortran.dg/defined_assignment_pointer_lhs_1.f90: New test.
+
 2026-11-21  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
 
 	PR middle-end/128611

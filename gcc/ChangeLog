@@ -1,3 +1,57 @@
+2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
+
+	* config/i386/i386.cc (x86_function_profiler): Align the
+	__mcount_loc entries to their size.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/simd.md
+	(simd_<optab>w_evod_<mode>_hetero): Use <WVEC_HALF> instead of
+	<WVEC> for the result of the sign extension.
+
+2026-11-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+	    Matteo Concas  <matteo.concas@gaisler.com>
+
+	* config/sparc/sparc.cc (sparc_do_work_around_errata): Use
+	next_active_non_empty_insn to walk the instruction windows of the
+	lost divide/square root, the AT697F and the UT699 workarounds.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (bitimm256): Remove.  Update all
+	instruction templates to use bitimm.
+	* config/loongarch/lsx.md (lsx_vbitrevi_<lsxfmt>): Use
+	const_<bitimm>_operand instead of const_lsx_branch_operand.
+	* config/loongarch/predicates.md (const_lsx_branch_operand):
+	Remove.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_compute_frame_info): Do not compute the saved
+	registers masks for naked functions.
+	(loongarch_naked_function_p): New function.
+	(loongarch_expand_prologue): Do not emit a prologue for
+	naked functions and report a zero static stack size.
+	(loongarch_expand_epilogue): Do not emit an epilogue for
+	naked functions.
+	(loongarch_function_ok_for_sibcall): Return false for naked
+	functions.
+	(loongarch_allocate_stack_slots_for_args): New function.
+	(loongarch_warn_func_return): New function.
+	(loongarch_set_current_function): Record whether the current
+	function is naked in machine_function.
+	(loongarch_handle_fndecl_attribute): New function.
+	(TARGET_GNU_ATTRIBUTES): Add naked attribute.
+	(TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS): Define.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* config/loongarch/loongarch.h (machine_function):
+	Add naked_p field.
+	* config/loongarch/loongarch.md (*<optab>): Emit no assembly
+	for the	return instruction of a naked function.
+	* doc/extend.texi (Common Attributes): Document LoongArch
+	support for the naked attribute.
+
 2026-11-21  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
 
 	PR middle-end/128611

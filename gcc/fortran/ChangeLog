@@ -1,3 +1,45 @@
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/51284
+	* trans-expr.cc (gfc_maybe_dereference_var): Dereference a VALUE
+	dummy that gfc_value_dummy_passed_byref passes by reference.
+	(value_actual_shares_storage): New function.
+	(conv_class_value_arg): New function.
+	(conv_dummy_value): Pass a derived type with allocatable components
+	by reference to a copy of a variable, or to the temporary.  Pass the
+	copy of a PDT by reference when the dummy is.  Pass a null pointer
+	for an absent argument to a dummy passed by reference.
+	(gfc_conv_procedure_call): Use conv_class_value_arg for a scalar
+	CLASS dummy with VALUE, repackaging an element of a class array as a
+	class container.  Copy an intrinsic actual argument for a CLASS(*)
+	dummy with VALUE.
+	* trans-types.cc (gfc_value_dummy_passed_byref): New function.
+	(gfc_sym_type): Use it.
+	* trans-types.h (gfc_value_dummy_passed_byref): Declare.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128856
+	* trans-expr.cc (gfc_conv_procedure_call): Increment
+	actual_arg_level while evaluating the arguments.  For a function
+	result not returned by reference, move the finalization of the
+	arguments to the post block.
+	* trans.cc (actual_arg_level): New.
+	(gfc_finalize_tree_expr): Do not skip a type with a
+	defined-assignment component for an actual argument.
+	* trans.h (actual_arg_level): Declare.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* simplify.cc (gfc_simplify_is_contiguous): Return .false. for an
+	array section with a vector subscript.
+
+2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128833
+	* resolve.cc (generate_component_assignments): Do not give a scalar
+	temporary for the lhs the POINTER attribute.
+
 2026-11-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/128478

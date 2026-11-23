@@ -1,3 +1,9 @@
+2026-11-22  Nick Alcock  <nix@esperi.org.uk>
+
+	PR bootstrap/127914
+	* libiberty.h: Wrap POSIX-specified function redeclarations in
+	parens to protect against prior declaration as macros.
+
 2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* cuda/cuda.h: Name 'enum's, name aliased types (opaque) in

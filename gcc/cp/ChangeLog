@@ -1,3 +1,10 @@
+2026-11-22  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	PR target/128734
+	* cp-objcp-common.cc (cp_type_quals_as_set): Remove.
+	* cp-objcp-common.h (cp_type_quals_as_set): Remove.
+	(LANG_HOOKS_TREE_DUMP_TYPE_QUALS_FN): Leave as default.
+
 2026-11-20  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/128855
