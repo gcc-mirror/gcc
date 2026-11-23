@@ -288,40 +288,37 @@ package body Mutably_Tagged is
       --  Allow "forcing" the rewrite to an unchecked conversion
 
       if Force
+        or else No (Parent (N))
 
         --  Otherwise, don't make the conversion when N is on the left-hand
         --  side of the assignment, in cases where we need the actual type
-        --  such as a subtype or object renaming declaration, or a generic or
-        --  parameter specification.
+        --  such as an access definition, or a subtype or object renaming
+        --  declaration, or a generic association or a parameter specification.
 
         --  Additionally, prevent generation of the conversion if N is already
-        --  part of an unchecked conversion or a part of a selected component.
+        --  part of an unchecked conversion, or a part of a selected component
+        --  or part of the subtype mark of a qualified expression.
+
+        --  Exclude the case where we have a 'Size so that we get the proper
+        --  size of the class-wide equivalent type. Are there other cases ???
 
         or else (not Known_To_Be_Assigned (N, Only_LHS => True)
-                  and then (No (Parent (N))
-                             or else Nkind (Parent (N))
-                               not in N_Selected_Component
-                                    | N_Subtype_Declaration
-                                    | N_Parameter_Specification
-                                    | N_Generic_Association
-                                    | N_Unchecked_Type_Conversion
-                                    | N_Object_Renaming_Declaration))
+                  and then Nkind (Parent (N))
+                             not in N_Access_To_Object_Definition
+                                  | N_Subtype_Declaration
+                                  | N_Object_Renaming_Declaration
+                                  | N_Generic_Association
+                                  | N_Parameter_Specification
+                                  | N_Unchecked_Type_Conversion
+                                  | N_Selected_Component
+                  and then not
+                    (Nkind (Parent (N)) = N_Qualified_Expression
+                      and then N = Subtype_Mark (Parent (N)))
+                  and then not
+                    (Nkind (Parent (N)) = N_Attribute_Reference
+                      and then Attribute_Name (Parent (N)) in Name_Size))
       then
-         --  Exclude the case where we have a 'Size so that we get the proper
-         --  size of the class-wide equivalent type. Are there other cases ???
-
-         if Present (Parent (N))
-           and then Nkind (Parent (N)) = N_Attribute_Reference
-           and then Attribute_Name (Parent (N)) in Name_Size
-         then
-            return;
-         end if;
-
-         --  Create the conversion
-
-         Rewrite (N,
-           Unchecked_Convert_To
-             (Conv_Typ, Relocate_Node (N)));
+         Rewrite (N, Unchecked_Convert_To (Conv_Typ, N));
       end if;
    end Make_Mutably_Tagged_Conversion;
 
