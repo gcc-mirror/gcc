@@ -150,7 +150,8 @@ by type.  Explanations are in the following sections.
 and warnings}.
 @gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
 -Wc-binding-type -Wcharacter-truncation -Wconversion
--Wno-deprecated-openmp -Wdo-subscript -Wfunction-elimination
+-Wno-deprecated-openmp -Wdo-subscript -Wformat-width
+-Wfunction-elimination
 -Wimplicit-interface -Wimplicit-procedure -Wintrinsic-shadow
 -Wuse-without-only -Wintrinsics-std -Wline-truncation -Wno-align-commons
 -Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising
@@ -995,6 +996,7 @@ Enables commonly used warning options pertaining to usage that
 we recommend avoiding and that we believe are easy to avoid.
 This currently includes @option{-Waliasing}, @option{-Wampersand},
 @option{-Wconversion}, @option{-Wsurprising}, @option{-Wc-binding-type},
+@option{-Wformat-width},
 @option{-Wintrinsics-std}, @option{-Wtabs}, @option{-Wintrinsic-shadow},
 @option{-Wline-truncation}, @option{-Wtarget-lifetime},
 @option{-Winteger-division}, @option{-Wreal-q-constant}, @option{-Wunused},
@@ -1099,6 +1101,14 @@ Enables some warning options for usages of language features that
 may be problematic. This currently includes @option{-Wcompare-reals},
 @option{-Wunused-parameter}, @option{-Wdo-subscript},
 @option{-Wunused-intent-out} and @option{-Wunused-read}.
+
+@opindex Wformat-width
+@cindex warnings, format width
+@item -Wformat-width
+Warn when the field width of a @code{D}, @code{E}, @code{EN},
+@code{ES}, @code{F} or @code{G} edit descriptor used for output is too
+small for its digits, so that every value is written as asterisks.  This option is implied by
+@option{-Wall}.
 
 @opindex Wfrontend-loop-interchange
 @cindex warnings, loop interchange

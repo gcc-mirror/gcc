@@ -253,6 +253,10 @@ Wextra
 Fortran Warning
 ; Documented in common
 
+Wformat-width
+Fortran Warning Var(warn_format_width) LangEnabledBy(Fortran,Wall)
+Warn about D, E, EN, ES, F and G output edit descriptors too narrow for their digits.
+
 Wfrontend-loop-interchange
 Fortran Var(flag_warn_frontend_loop_interchange)
 Warn if loops have been interchanged.

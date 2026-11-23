@@ -29,7 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 
 gfc_st_label
 format_asterisk = {0, NULL, NULL, -1, ST_LABEL_FORMAT, ST_LABEL_FORMAT, NULL,
-		   0, {NULL, {NULL}}, NULL, 0};
+		   0, {NULL, {NULL}}, NULL, 0, false};
 
 typedef struct
 {
@@ -140,6 +140,9 @@ static enum
 { MODE_STRING, MODE_FORMAT, MODE_COPY }
 mode;
 
+/* Set by check_format_string during an FMT_CHECK_WIDTH pass.  */
+static bool checking_width_only = false;
+
 
 /* Return the next character in the format string.  */
 
@@ -206,7 +209,7 @@ next_char_not_space ()
   do
     {
       error_element = c = next_char (NONSTRING);
-      if (c == '\t')
+      if (c == '\t' && !checking_width_only)
 	gfc_warning (OPT_Wtabs, "Nonconforming tab character in format at %C");
     }
   while (gfc_is_whitespace (c));
@@ -617,13 +620,68 @@ token_to_string (format_token t)
     }
 }
 
+/* Minimum F-style field width for D fractional digits.  */
+
+static int
+f_min_width (int d)
+{
+  return d == 0 ? 2 : d + 1;
+}
+
+/* Warn at WHERE if the field width W of the D, E, EN, ES or G edit
+   descriptor T with D digits and exponent width E is too small for every
+   output value.  E is 2 if not given.  */
+
+static void
+check_real_width (format_token t, int w, int d, int e, locus *where)
+{
+  /* Letter, sign and digits; Ee with E zero writes at least one digit.  */
+  int exp = (e == 0 ? 1 : e) + 2;
+  int min_w;
+  switch (t)
+    {
+    case FMT_D:
+    case FMT_E:
+      min_w = d + 1 + exp;
+      break;
+    case FMT_EN:
+    case FMT_ES:
+      /* A nonzero digit precedes the decimal symbol.  */
+      min_w = d + 2 + exp;
+      break;
+    case FMT_G:
+      /* G with D == 0 edits like E.  Otherwise a value in range edits
+	 as F(w-n).(d-1) followed by n blanks, n being 4 for E zero or
+	 not given and E + 2 otherwise, and one out of range like E.  */
+      min_w = d + 1 + exp;
+      if (d != 0)
+	min_w = MIN (min_w, (e == 0 ? 4 : e + 2) + f_min_width (d - 1));
+      break;
+    default:
+      return;
+    }
+  if (w < min_w)
+    gfc_warning (OPT_Wformat_width, "Field width of the %s edit "
+		 "descriptor at %L too small for the number of digits",
+		 token_to_string (t), where);
+}
+
+/* Which diagnostics check_format issues.  */
+
+enum format_check_kind
+{
+  FMT_CHECK_NORMAL,	/* All of them.  */
+  FMT_CHECK_DECL,	/* No width warnings; I/O direction unknown.  */
+  FMT_CHECK_WIDTH	/* Only the width warnings, after FMT_CHECK_DECL.  */
+};
+
 /* Check a format statement.  The format string, either from a FORMAT
    statement or a constant in an I/O statement has already been parsed
    by itself, and we are checking it for validity.  The dual origin
    means that the warning message is a little less than great.  */
 
 static bool
-check_format (bool is_input)
+check_format (bool is_input, format_check_kind kind = FMT_CHECK_NORMAL)
 {
   const char *posint_required
     = G_("Positive width required in format string at %L");
@@ -640,6 +698,7 @@ check_format (bool is_input)
   format_token t, u;
   int level;
   int repeat;
+  int value_w, value_d, value_e;
   bool rv;
 
   use_last_char = 0;
@@ -764,8 +823,9 @@ format_item_1:
 	return false;
       if (t != FMT_RPAREN || level > 0)
 	{
-	  gfc_warning (0, "$ should be the last specifier in format at %L",
-		       &format_locus);
+	  if (kind != FMT_CHECK_WIDTH)
+	    gfc_warning (0, "$ should be the last specifier in format at %L",
+			 &format_locus);
 	  goto optional_comma_1;
 	}
 
@@ -877,8 +937,9 @@ data_desc:
 	  switch (gfc_notification_std (GFC_STD_GNU))
 	    {
 	      case WARNING:
-		gfc_warning (0, "Extension: Zero width after L "
-			     "descriptor at %L", &format_locus);
+		if (kind != FMT_CHECK_WIDTH)
+		  gfc_warning (0, "Extension: Zero width after L "
+			       "descriptor at %L", &format_locus);
 		break;
 	      case ERROR:
 		gfc_error ("Extension: Zero width after L "
@@ -917,10 +978,12 @@ data_desc:
     case FMT_G:
     case FMT_EN:
     case FMT_ES:
+      value_w = value_d = 0;
+      value_e = 2;
       u = format_lex ();
       if (t == FMT_G && u == FMT_ZERO)
 	{
-	  if (is_input)
+	  if (is_input && kind != FMT_CHECK_WIDTH)
 	    {
 	      error = zero_width;
 	      goto syntax;
@@ -987,6 +1050,8 @@ data_desc:
 	    }
 	}
 
+      value_w = value;
+
       u = format_lex ();
       if (u == FMT_ERROR)
 	goto fail;
@@ -1002,7 +1067,7 @@ data_desc:
 	      saved_token = u;
               goto fail;
 	    }
-	  else
+	  else if (kind != FMT_CHECK_WIDTH)
 	    gfc_warning (0, "Period required in format "
 			 "specifier %s at %L", token_to_string (t),
 			  &format_locus);
@@ -1022,8 +1087,14 @@ data_desc:
 	  goto syntax;
 	}
 
+      value_d = value;
+
       if (t == FMT_D)
-	break;
+	{
+	  if (kind != FMT_CHECK_DECL && !is_input && value_w != 0)
+	    check_real_width (t, value_w, value_d, value_e, &format_locus);
+	  break;
+	}
 
       /* Look for optional exponent.  */
       u = format_lex ();
@@ -1047,6 +1118,7 @@ data_desc:
 		      saved_token = u;
 		      goto fail;
 		    }
+		  value_e = 0;
 		}
 	      else
 		{
@@ -1055,8 +1127,12 @@ data_desc:
 		  goto syntax;
 		}
 	    }
+	  else
+	    value_e = value;
 	}
 
+      if (kind != FMT_CHECK_DECL && !is_input && value_w != 0)
+	check_real_width (t, value_w, value_d, value_e, &format_locus);
       break;
 
     case FMT_DT:
@@ -1126,11 +1202,13 @@ data_desc:
 	  error = nonneg_required;
 	  goto syntax;
 	}
-      else if (is_input && t == FMT_ZERO)
+      else if (is_input && kind != FMT_CHECK_WIDTH && t == FMT_ZERO)
 	{
 	  error = posint_required;
 	  goto syntax;
 	}
+
+      value_w = value;
 
       t = format_lex ();
       if (t == FMT_ERROR)
@@ -1146,8 +1224,9 @@ data_desc:
 	    }
 	  if (mode != MODE_FORMAT)
 	    format_locus.nextc += format_string_pos;
-	  gfc_warning (0, "Period required in format specifier at %L",
-		       &format_locus);
+	  if (kind != FMT_CHECK_WIDTH)
+	    gfc_warning (0, "Period required in format specifier at %L",
+			 &format_locus);
 	  saved_token = t;
 	  break;
 	}
@@ -1161,6 +1240,13 @@ data_desc:
 	  goto syntax;
 	}
 
+      value_d = value;
+
+      if (kind != FMT_CHECK_DECL && !is_input && value_w != 0
+	  && value_w < f_min_width (value_d))
+	gfc_warning (OPT_Wformat_width, "Field width of the F edit "
+		     "descriptor at %L too small for the number of digits",
+		     &format_locus);
       break;
 
     case FMT_H:
@@ -1172,8 +1258,9 @@ data_desc:
 	}
       if (mode != MODE_FORMAT)
 	format_locus.nextc += format_string_pos;
-      gfc_warning (0, "The H format specifier at %L is"
-		   " a Fortran 95 deleted feature", &format_locus);
+      if (kind != FMT_CHECK_WIDTH)
+	gfc_warning (0, "The H format specifier at %L is"
+		     " a Fortran 95 deleted feature", &format_locus);
       if (mode == MODE_STRING)
 	{
 	  format_string += value;
@@ -1208,7 +1295,7 @@ data_desc:
 	      goto syntax;
 	    }
 	}
-      else if (is_input && t == FMT_ZERO)
+      else if (is_input && kind != FMT_CHECK_WIDTH && t == FMT_ZERO)
 	{
 	  error = posint_required;
 	  goto syntax;
@@ -1361,7 +1448,8 @@ finished:
    like a format string.  */
 
 static bool
-check_format_string (gfc_expr *e, bool is_input)
+check_format_string (gfc_expr *e, bool is_input,
+		      format_check_kind kind = FMT_CHECK_NORMAL)
 {
   bool rv;
   int i;
@@ -1375,12 +1463,24 @@ check_format_string (gfc_expr *e, bool is_input)
      format string that has been calculated, but that's probably not worth the
      effort.  */
   format_locus = e->where;
-  rv = check_format (is_input);
+  /* The first pass already reported the errors and standard notes.  */
+  if (kind == FMT_CHECK_WIDTH)
+    {
+      gfc_push_suppress_errors ();
+      checking_width_only = true;
+    }
+  rv = check_format (is_input, kind);
+  if (kind == FMT_CHECK_WIDTH)
+    {
+      gfc_pop_suppress_errors ();
+      checking_width_only = false;
+    }
   /* check for extraneous characters at the end of an otherwise valid format
      string, like '(A10,I3)F5'
      start at the end and move back to the last character processed,
      spaces are OK */
-  if (rv && e->value.character.length > format_string_pos)
+  if (kind != FMT_CHECK_WIDTH
+      && rv && e->value.character.length > format_string_pos)
     for (i=e->value.character.length-1;i>format_string_pos-1;i--)
       if (e->value.character.string[i] != ' ')
         {
@@ -1433,7 +1533,7 @@ gfc_match_format (void)
 
   start = gfc_current_locus;
 
-  if (!check_format (false))
+  if (!check_format (false, FMT_CHECK_DECL))
     return MATCH_ERROR;
 
   if (gfc_match_eos () != MATCH_YES)
@@ -1456,7 +1556,7 @@ gfc_match_format (void)
   gfc_statement_label->format = e;
 
   mode = MODE_COPY;
-  check_format (false);		/* Guaranteed to succeed */
+  check_format (false, FMT_CHECK_DECL);	/* Guaranteed to succeed */
   gfc_match_eos ();		/* Guaranteed to succeed */
 
   return MATCH_YES;
@@ -3552,6 +3652,16 @@ gfc_resolve_dt (gfc_code *dt_code, gfc_dt *dt, locus *loc)
       gfc_error ("FORMAT label %d at %L not defined", dt->format_label->value,
 		 loc);
       return false;
+    }
+
+  /* A labeled FORMAT's width warnings apply only to output; issue them
+     once per FORMAT.  */
+  if (warn_format_width && k != M_READ
+      && dt->format_label && dt->format_label != &format_asterisk
+      && !dt->format_label->output_width_checked)
+    {
+      dt->format_label->output_width_checked = true;
+      check_format_string (dt->format_label->format, false, FMT_CHECK_WIDTH);
     }
 
   return true;

@@ -1971,6 +1971,9 @@ typedef struct gfc_st_label
 
   gfc_namespace *ns;
   int omp_region;
+
+  /* Set by gfc_resolve_dt once a FORMAT's output width warnings are done.  */
+  bool output_width_checked;
 }
 gfc_st_label;
 
