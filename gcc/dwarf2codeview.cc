@@ -5107,7 +5107,7 @@ write_lf_methodlist (codeview_custom_type *t)
 static void
 write_custom_types (void)
 {
-  targetm.asm_out.named_section (".debug$T", SECTION_DEBUG, NULL);
+  switch_to_section (get_section (".debug$T", SECTION_DEBUG, NULL));
 
   fputs (integer_asm_op (4, false), asm_out_file);
   fprint_whex (asm_out_file, CV_SIGNATURE_C13);
@@ -5194,7 +5194,7 @@ write_custom_types (void)
 void
 codeview_debug_finish (void)
 {
-  targetm.asm_out.named_section (".debug$S", SECTION_DEBUG, NULL);
+  switch_to_section (get_section (".debug$S", SECTION_DEBUG, NULL));
 
   fputs (integer_asm_op (4, false), asm_out_file);
   fprint_whex (asm_out_file, CV_SIGNATURE_C13);
