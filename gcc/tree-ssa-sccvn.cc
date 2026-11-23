@@ -5946,12 +5946,12 @@ visit_nary_op (tree lhs, gassign *stmt)
 				      NOP_EXPR, type, narrow_val);
 	    result = vn_nary_build_or_lookup_avail (&match_op, narrow_val);
 	    if (result)
-	      {
-		const bool changed = set_ssa_val_to (lhs, result);
-		if (TREE_CODE (result) == SSA_NAME)
-		  vn_nary_op_insert_stmt (stmt, result);
-		return changed;
-	      }
+	      /* Do not insert (stmt, result) into the VN tables: result is
+		 derived from narrow_val which is only valid where narrow_val
+		 is available (and may have undefined overflow).  Inserting
+		 stmt globally would leak narrow_val to blocks not dominated
+		 by it and allow PRE to hoist narrow_val across guards.  */
+	      return set_ssa_val_to (lhs, result);
 	  }
       }
       break;
@@ -6052,12 +6052,16 @@ visit_nary_op (tree lhs, gassign *stmt)
 	  tree rhs[2];
 	  rhs[0] = rhs1;
 	  rhs[1] = gimple_assign_rhs2 (stmt);
+	  /* With undefined overflow the identity relies on -rhs[i] not
+	     overflowing, which is only known where the negation is
+	     executed.  */
+	  const bool overflow_undef_p = (ANY_INTEGRAL_TYPE_P (type)
+					 && !TYPE_OVERFLOW_WRAPS (type));
 	  for (unsigned i = 0; i <= 1; ++i)
 	    {
 	      unsigned j = i == 0 ? 1 : 0;
 	      tree ops[2];
-	      if (!ANY_INTEGRAL_TYPE_P (type)
-		  || TYPE_OVERFLOW_WRAPS (type))
+	      if (!overflow_undef_p)
 		{
 		  gimple_match_op match_op (gimple_match_cond::UNCOND,
 					    NEGATE_EXPR, type, rhs[i]);
@@ -6086,7 +6090,12 @@ visit_nary_op (tree lhs, gassign *stmt)
 		  if (result)
 		    {
 		      bool changed = set_ssa_val_to (lhs, result);
-		      if (TREE_CODE (result) == SSA_NAME)
+		      /* When the equivalence is only valid where the
+			 negation ops[i] is executed do not record it for
+			 the expression of stmt, that would make it
+			 available to computations not dominated by
+			 ops[i].  */
+		      if (!overflow_undef_p && TREE_CODE (result) == SSA_NAME)
 			vn_nary_op_insert_stmt (stmt, result);
 		      return changed;
 		    }
