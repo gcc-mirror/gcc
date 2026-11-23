@@ -2987,7 +2987,7 @@
     DONE;
   })
 
-(define_insn_and_split "one_cmpl<mode>2<exec>"
+(define_insn_and_split "one_cmpl<mode>2"
   [(set (match_operand:V_DI 0 "register_operand"  "=   v")
         (not:V_DI
           (match_operand:V_DI 1 "gcn_alu_operand" "vSvDB")))]
@@ -3001,6 +3001,43 @@
     operands[4] = gcn_operand_part (<VnDI>mode, operands[0], 1);
     operands[5] = gcn_operand_part (<VnDI>mode, operands[1], 0);
     operands[6] = gcn_operand_part (<VnDI>mode, operands[1], 1);
+  }
+  [(set_attr "type" "mult")])
+
+; This can't use the <exec> substitution: define_subst does not apply to the
+; split part of a define_insn_and_split.
+(define_insn_and_split "one_cmpl<mode>2_exec"
+  [(set (match_operand:V_DI 0 "register_operand"		 "=   v")
+	(vec_merge:V_DI
+	  (not:V_DI
+	    (match_operand:V_DI 1 "gcn_alu_operand"		 "vSvDB"))
+	  (match_operand:V_DI 2 "gcn_register_or_unspec_operand" "   U0")
+	  (match_operand:DI 3 "gcn_exec_reg_operand"		 "    e")))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out_lo = gcn_operand_part (<MODE>mode, operands[0], 0);
+    rtx out_hi = gcn_operand_part (<MODE>mode, operands[0], 1);
+    rtx in_lo = gcn_operand_part (<MODE>mode, operands[1], 0);
+    rtx in_hi = gcn_operand_part (<MODE>mode, operands[1], 1);
+    rtx exec = operands[3];
+
+    rtx old_lo, old_hi;
+    if (GET_CODE (operands[2]) == UNSPEC)
+      {
+	old_lo = old_hi = gcn_gen_undef (<VnSI>mode);
+      }
+    else
+      {
+	old_lo = gcn_operand_part (<MODE>mode, operands[2], 0);
+	old_hi = gcn_operand_part (<MODE>mode, operands[2], 1);
+      }
+
+    emit_insn (gen_one_cmpl<vnsi>2_exec (out_lo, in_lo, old_lo, exec));
+    emit_insn (gen_one_cmpl<vnsi>2_exec (out_hi, in_hi, old_hi, exec));
+    DONE;
   }
   [(set_attr "type" "mult")])
 
