@@ -547,18 +547,12 @@ find_single_block_region (bool ebbs_p)
 static int
 rgn_estimate_number_of_insns (basic_block bb)
 {
-  int count;
+  int count = 0;
+  rtx_insn *insn;
 
-  count = INSN_LUID (BB_END (bb)) - INSN_LUID (BB_HEAD (bb));
-
-  if (MAY_HAVE_DEBUG_INSNS)
-    {
-      rtx_insn *insn;
-
-      FOR_BB_INSNS (bb, insn)
-	if (DEBUG_INSN_P (insn))
-	  count--;
-    }
+  FOR_BB_INSNS (bb, insn)
+    if (NONDEBUG_INSN_P (insn))
+      count++;
 
   return count;
 }
