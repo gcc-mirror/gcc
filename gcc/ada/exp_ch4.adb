@@ -877,13 +877,26 @@ package body Exp_Ch4 is
             return;
          end if;
 
-         --  For a class wide allocation generate the following code:
+         --  If the designated type is a mutably tagged type, then allocate
+         --  the specified maximum size by means of the CW-equivalent type.
+
+         if Is_Mutably_Tagged_Type (DesigT) then
+            declare
+               CW_Equiv : constant Entity_Id :=
+                            Class_Wide_Equivalent_Type (DesigT);
+            begin
+               Rewrite (Indic, New_Occurrence_Of (CW_Equiv, Loc));
+               Rewrite (Exp, Unchecked_Convert_To (CW_Equiv, Exp));
+               Analyze_And_Resolve (Expression (N), CW_Equiv);
+            end;
+
+         --  For a regular class-wide allocation generate the following code:
 
          --    type Equiv_Record is record ... end record;
-         --    implicit subtype CW is <Class_Wide_Subytpe>;
+         --    [subtype CW is <Class_Wide_Subtype>];
          --    Temp : PtrT := new CW'(CW!(expr));
 
-         if Is_Class_Wide_Type (T) then
+         elsif Is_Class_Wide_Type (T) then
             Expand_Subtype_From_Expr (Empty, T, Indic, Exp);
 
             --  Ada 2005 (AI-251): If the expression is a class-wide interface
@@ -912,7 +925,6 @@ package body Exp_Ch4 is
             end if;
 
             Analyze_And_Resolve (Expression (N), Entity (Indic));
-         end if;
 
          --  If the designated type is class-wide, then the alignment and the
          --  controlled nature of the expression are computed dynamically by
@@ -921,7 +933,7 @@ package body Exp_Ch4 is
          --  test on Exp needs to have its final form to decide whether or not
          --  to generate an Adjust call, so we preventively remove them here.
 
-         if Is_Class_Wide_Type (DesigT)
+         elsif Is_Class_Wide_Type (DesigT)
            and then Nkind (Exp) = N_Function_Call
            and then not Special_Pool
          then
@@ -4843,13 +4855,22 @@ package body Exp_Ch4 is
       if Nkind (Expression (N)) = N_Qualified_Expression then
          Expand_Allocator_Expression (N);
 
-      --  If no initialization is necessary, just create a custom Allocate if
-      --  the context requires it; that is the case only for allocators built
-      --  for the special return objects because, in other cases, the custom
-      --  Allocate will be created later during the expansion of the original
-      --  allocator without the No_Initialization flag.
+      --  If no initialization is necessary, perform minimal processing
 
       elsif No_Initialization (N) then
+         --  If the designated type is a mutably tagged type, then allocate
+         --  the specified maximum size by means of the CW-equivalent type.
+
+         if Is_Mutably_Tagged_Type (Dtyp) then
+            Rewrite (Expression (N),
+              New_Occurrence_Of (Class_Wide_Equivalent_Type (Dtyp), Loc));
+         end if;
+
+         --  Create a custom Allocate if the context requires it; that is the
+         --  case only for the allocators built for the special return objects
+         --  because, in other cases, the custom Allocate will be created later
+         --  during the expansion of the original allocator.
+
          if For_Special_Return_Object (N) then
             Build_Allocate_Deallocate_Proc (Parent (N));
          end if;
@@ -5048,7 +5069,12 @@ package body Exp_Ch4 is
 
             Temp := Make_Temporary (Loc, 'P');
 
+            --  If the designated type is a mutably tagged type, then allocate
+            --  the specified maximum size by means of the CW-equivalent type.
+
             if Is_Mutably_Tagged_Type (Dtyp) then
+               Rewrite (Expression (N),
+                 New_Occurrence_Of (Class_Wide_Equivalent_Type (Dtyp), Loc));
                Init_Stmts :=
                  Build_Default_Initialization (N, Etype (Etyp), Temp,
                    For_CW     => False,
