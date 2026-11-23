@@ -9316,8 +9316,12 @@ ix86_finalize_stack_frame_flags (void)
       if (cfun->machine->stack_frame_required)
 	{
 	  /* Stack frame is required.  If stack alignment needed is less
-	     than incoming stack boundary, don't realign stack.  */
-	  stack_realign = incoming_stack_boundary < stack_alignment;
+	     than incoming stack boundary, don't realign stack.  Never turn
+	     stack realignment on here: crtl isn't updated, so the next
+	     call, e.g. from the epilogue, would compute a different
+	     STACK_REALIGN from crtl.  */
+	  if (stack_realign)
+	    stack_realign = incoming_stack_boundary < stack_alignment;
 	  if (!stack_realign)
 	    {
 	      crtl->max_used_stack_slot_alignment
