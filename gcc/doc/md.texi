@@ -8434,7 +8434,8 @@ This pattern is not allowed to @code{FAIL}.
 @mdindex cmls@var{m}4
 @item @samp{cmls@var{m}4}
 Perform a vector multiply and subtract that is semantically the same as
-a multiply and subtract of complex numbers.
+a multiply and subtract of complex numbers, where the product is subtracted
+from the accumulator operand 3.
 
 @smallexample
   complex TYPE op0[N];
@@ -8443,7 +8444,7 @@ a multiply and subtract of complex numbers.
   complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      op0[i] = op1[i] * op2[i] - op3[i];
+      op0[i] = op3[i] - op1[i] * op2[i];
     @}
 @end smallexample
 
@@ -8458,7 +8459,8 @@ This pattern is not allowed to @code{FAIL}.
 @item @samp{cmls_conj@var{m}4}
 Perform a vector multiply by conjugate and subtract that is semantically
 the same as a multiply and subtract of complex numbers where the second
-multiply arguments is conjugated.
+multiply arguments is conjugated and the product is subtracted from the
+accumulator operand 3.
 
 @smallexample
   complex TYPE op0[N];
@@ -8467,7 +8469,7 @@ multiply arguments is conjugated.
   complex TYPE op3[N];
   for (int i = 0; i < N; i += 1)
     @{
-      op0[i] = op1[i] * conj (op2[i]) - op3[i];
+      op0[i] = op3[i] - op1[i] * conj (op2[i]);
     @}
 @end smallexample
 
