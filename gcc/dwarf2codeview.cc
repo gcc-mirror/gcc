@@ -1177,7 +1177,8 @@ struct codeview_function
 {
   codeview_function *next;
   codeview_function *htab_next;
-  function *func;
+  dw_die_ref die;
+  int funcdef_no;
   unsigned int end_label;
   codeview_line_block *blocks, *last_block;
   codeview_function *parent;
@@ -1470,9 +1471,14 @@ struct cv_func_hasher : nofree_ptr_hash <struct codeview_function>
 {
   typedef dw_die_ref compare_type;
 
+  static hashval_t hash (const codeview_function *f)
+  {
+    return htab_hash_pointer (f->die);
+  }
+
   static bool equal (const codeview_function *f, dw_die_ref die)
   {
-    return lookup_decl_die (f->func->decl) == die;
+    return f->die == die;
   }
 };
 
@@ -1544,13 +1550,13 @@ static codeview_function *
 new_codeview_function (void)
 {
   codeview_function **slot;
-  dw_die_ref die;
   codeview_function *f = (codeview_function *)
 			    xmalloc (sizeof (codeview_function));
 
   f->next = NULL;
   f->htab_next = NULL;
-  f->func = cfun;
+  f->die = lookup_decl_die (cfun->decl);
+  f->funcdef_no = current_function_funcdef_no;
   f->end_label = 0;
   f->blocks = f->last_block = NULL;
   f->inline_block = 0;
@@ -1566,10 +1572,8 @@ new_codeview_function (void)
   if (!cv_func_htab)
     cv_func_htab = new hash_table<cv_func_hasher> (10);
 
-  die = lookup_decl_die (cfun->decl);
-
-  slot = cv_func_htab->find_slot_with_hash (die, htab_hash_pointer (die),
-					    INSERT);
+  slot = cv_func_htab->find_slot_with_hash (f->die,
+					    htab_hash_pointer (f->die), INSERT);
   if (*slot)
     f->htab_next = *slot;
 
@@ -1589,7 +1593,7 @@ codeview_source_line (unsigned int line_no, const char *filename)
 
   targetm.asm_out.internal_label (asm_out_file, LINE_LABEL, label_num);
 
-  if (!cur_func || cur_func->func != cfun)
+  if (!cur_func || cur_func->funcdef_no != current_function_funcdef_no)
     {
       codeview_function *f = new_codeview_function ();
 
