@@ -116,17 +116,9 @@ enum calling_abi ix86_abi = SYSV_ABI
 TargetSave
 enum asm_dialect x_ix86_asm_dialect
 
-;; -mbranch-cost=
-TargetSave
-int x_ix86_branch_cost
-
 ;; -mdump-tune-features=
 TargetSave
 int x_ix86_dump_tunes
-
-;; -mstackrealign=
-TargetSave
-int x_ix86_force_align_arg_pointer
 
 ;; -mforce-drap=
 TargetSave
@@ -159,10 +151,6 @@ int x_ix86_section_threshold
 ;; -msse2avx=
 TargetSave
 int x_ix86_sse2avx
-
-;; -mstack-protector-guard=
-TargetSave
-enum stack_protector_guard x_ix86_stack_protector_guard
 
 ;; -mstringop-strategy=
 TargetSave
@@ -280,7 +268,7 @@ EnumValue
 Enum(asm_dialect) String(att) Value(ASM_ATT)
 
 mbranch-cost=
-Target Undocumented RejectNegative Joined UInteger Var(ix86_branch_cost) IntegerRange(0, 5)
+Target Save Undocumented RejectNegative Joined UInteger Var(ix86_branch_cost) IntegerRange(0, 5)
 Branches are this expensive (arbitrary units).
 
 mlarge-data-threshold=
@@ -465,7 +453,7 @@ Target RejectNegative Mask(SSEREGPARM) Save
 Use SSE register passing conventions for SF and DF mode.
 
 mstackrealign
-Target Var(ix86_force_align_arg_pointer)
+Target Save Var(ix86_force_align_arg_pointer)
 Realign stack in prologue.
 
 mstack-arg-probe
@@ -1008,7 +996,7 @@ Target Mask(ISA_PKU) Var(ix86_isa_flags) Save
 Support PKU built-in functions and code generation.
 
 mstack-protector-guard=
-Target RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)
+Target Save RejectNegative Joined Enum(stack_protector_guard) Var(ix86_stack_protector_guard) Init(SSP_TLS)
 Use given stack-protector guard.
 
 Enum
