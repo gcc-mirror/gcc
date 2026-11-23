@@ -3471,6 +3471,9 @@ write_binary_annotations (codeview_function *line_func, uint32_t func_id)
   codeview_function *top_parent;
   unsigned int line_no, label_num;
 
+  if (!inlinee_lines_htab)
+    return;
+
   slot = inlinee_lines_htab->find_slot_with_hash (func_id, func_id, NO_INSERT);
   if (!slot || !*slot)
     return;
@@ -7291,9 +7294,6 @@ codeview_abstract_function (tree decl)
   dw_die_ref die;
   uint32_t func_id;
   struct dwarf_file_data *file;
-
-  if (!DECL_DECLARED_INLINE_P (decl))
-    return;
 
   die = lookup_decl_die (decl);
   if (!die)
