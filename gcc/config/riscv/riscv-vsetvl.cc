@@ -2897,6 +2897,7 @@ pre_vsetvl::compute_vsetvl_def_data ()
 
   compute_reaching_definition (def_loc, m_reg_def_loc, m_vsetvl_avl_reach_in,
 			       m_vsetvl_avl_reach_out);
+  sbitmap_vector_free (def_loc);
 }
 
 /* Subroutine of compute_lcm_local_properties which Compute local transparent
