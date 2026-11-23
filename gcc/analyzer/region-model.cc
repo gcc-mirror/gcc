@@ -3799,7 +3799,8 @@ struct_or_union_with_inheritance_p (tree struc)
   return false;
 }
 
-/* Return true if the lhs and rhs of an assignment have different types.  */
+/* Return true if the lhs and rhs of an assignment have different types,
+   ignoring qualifiers and typedefs.  */
 
 static bool
 is_any_cast_p (const gimple *stmt)
@@ -3807,14 +3808,14 @@ is_any_cast_p (const gimple *stmt)
   if (const gassign *assign = dyn_cast <const gassign *> (stmt))
     return gimple_assign_cast_p (assign)
 	   || !pending_diagnostic::same_tree_p (
-		  TREE_TYPE (gimple_assign_lhs (assign)),
-		  TREE_TYPE (gimple_assign_rhs1 (assign)));
+		  TYPE_MAIN_VARIANT (TREE_TYPE (gimple_assign_lhs (assign))),
+		  TYPE_MAIN_VARIANT (TREE_TYPE (gimple_assign_rhs1 (assign))));
   else if (const gcall *call = dyn_cast <const gcall *> (stmt))
     {
       tree lhs = gimple_call_lhs (call);
       return lhs != NULL_TREE && !pending_diagnostic::same_tree_p (
-				    TREE_TYPE (gimple_call_lhs (call)),
-				    gimple_call_return_type (call));
+		  TYPE_MAIN_VARIANT (TREE_TYPE (lhs)),
+		  TYPE_MAIN_VARIANT (gimple_call_return_type (call)));
     }
 
   return false;
