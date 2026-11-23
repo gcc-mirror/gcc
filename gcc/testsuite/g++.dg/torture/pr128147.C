@@ -11,9 +11,14 @@ on_segv (int)
   throw 1;
 }
 
+// Load p from *pp first so that the trapping load *p is not the first
+// instruction of f.  Unwinders that look up a signal frame with PC - 2
+// (ARM EHABI) would otherwise find the preceding function.
+
 __attribute__((noipa)) int
-f (int *p, int c)
+f (int **pp, int c)
 {
+  int *p = *pp;
   int x = *p;
   if (c)
     return x;
@@ -29,7 +34,7 @@ main ()
     return 0;
   try
     {
-      f (p, 0);
+      f (&p, 0);
     }
   catch (int)
     {
