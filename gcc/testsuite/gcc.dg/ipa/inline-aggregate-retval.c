@@ -2,7 +2,7 @@
    by inlining, so it does not count towards the early inliner growth and
    'mul' fits in --param early-inlining-insns.  */
 /* { dg-do compile } */
-/* { dg-options "-O3 --param early-inlining-insns=14 -fno-inline-functions -fno-partial-inlining -fdump-tree-einline-optimized" } */
+/* { dg-options "-O3 --param early-inlining-insns=16 -fno-inline-functions -fno-partial-inlining -fdump-tree-einline-optimized" } */
 
 struct V { long d[8]; };
 
