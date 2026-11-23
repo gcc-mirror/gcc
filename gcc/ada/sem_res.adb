@@ -3553,6 +3553,22 @@ package body Sem_Res is
             Mark_Use_Clauses (Original_Node (N));
          end if;
 
+         --  Ada 2005 (AI95-0230): Apply an (implicit) conversion to an
+         --  expression of an anonymous access-to-subprogram type that occurs
+         --  in the context of a named access-to-subprogram type. This ensures
+         --  proper legality checking in terms of allowed conversions.
+
+         if Ada_Version >= Ada_2005
+           and then Ekind (Ctx_Type) in E_Access_Subprogram_Type
+                                      | E_Access_Protected_Subprogram_Type
+           and then
+             Ekind (Etype (N)) in E_Anonymous_Access_Subprogram_Type
+                                | E_Anonymous_Access_Protected_Subprogram_Type
+         then
+            Rewrite (N, Convert_To (Ctx_Type, Relocate_Node (N)));
+            Analyze_And_Resolve (N, Ctx_Type);
+         end if;
+
          --  Ada 2012 (AI05-0149): Apply an (implicit) conversion to an
          --  expression of an anonymous access type that occurs in the context
          --  of a named general access type, except when the expression is that
@@ -14415,24 +14431,24 @@ package body Sem_Res is
         --  branch in the case of a remote access to subprogram type, which
         --  is internally represented as an E_Record_Type.
 
-        and then Is_Access_Type (Opnd_Type)
+        and then Is_Access_Subprogram_Type (Opnd_Type)
       then
-         if Ekind (Base_Type (Opnd_Type)) = E_Anonymous_Access_Subprogram_Type
+         if Ekind (Opnd_Type) in E_Anonymous_Access_Subprogram_Type
+                               | E_Anonymous_Access_Protected_Subprogram_Type
            and then Is_Entity_Name (Operand)
            and then Ekind (Entity (Operand)) = E_In_Parameter
-           and then
-             (Nkind (Parent (N)) /= N_Assignment_Statement
-               or else not Is_Entity_Name (Name (Parent (N)))
-               or else not Is_Return_Object (Entity (Name (Parent (N)))))
+           and then not
+             (Nkind (Parent (N)) = N_Assignment_Statement
+               and then Is_Entity_Name (Name (Parent (N)))
+               and then Is_Return_Object (Entity (Name (Parent (N)))))
          then
             Report_Error_N
               ("illegal attempt to store anonymous access to subprogram",
                Operand, Report_Errs);
             Report_Error_N
               ("\value has deeper accessibility than any master "
-               & "(RM 3.10.2 (13))",
+               & "(RM 3.10.2(13.1))",
                Operand, Report_Errs);
-
             Error_Msg_NE
              ("\use named access type for& instead of access parameter",
                Operand, Entity (Operand));
