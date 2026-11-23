@@ -6038,7 +6038,8 @@ visit_nary_op (tree lhs, gassign *stmt)
       break;
     case TRUNC_DIV_EXPR:
       /* (-a) / b == -(a / b) does not hold for INT_MIN.  */
-      if (!TYPE_OVERFLOW_UNDEFINED (type))
+      if (!ANY_INTEGRAL_TYPE_P (type)
+	  || !TYPE_OVERFLOW_UNDEFINED (type))
 	break;
       /* Fallthru.  */
     case RDIV_EXPR:
