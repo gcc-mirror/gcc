@@ -1,3 +1,11 @@
+2026-11-22  Konrad Schwarz  <konrad.schwarz@siemens.com>
+
+	PR ada/128510
+	* doc/gnat_rm.rst: Remove FDL Front-Cover Text.
+	* doc/gnat_ugn.rst: Likewise.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Likewise.
+
 2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/128723
