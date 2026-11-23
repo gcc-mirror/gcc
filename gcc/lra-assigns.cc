@@ -325,7 +325,8 @@ static bitmap_obstack live_hard_reg_pseudos_bitmap_obstack;
 /* reg_renumber corresponding to pseudos marked in
    live_hard_reg_pseudos.  reg_renumber might be not matched to
    live_hard_reg_pseudos but live_pseudos_reg_renumber always reflects
-   live_hard_reg_pseudos.  */
+   live_hard_reg_pseudos, except that during a spill_for trial a spill
+   candidate stays in live_hard_reg_pseudos with a value of -1 here.  */
 static int *live_pseudos_reg_renumber;
 
 /* Sparseset used to calculate living hard reg pseudos for some program
@@ -525,7 +526,8 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   for (r = lra_reg_info[regno].live_ranges; r != NULL; r = r->next)
     {
       EXECUTE_IF_SET_IN_BITMAP (&live_hard_reg_pseudos[r->start], 0, k, bi)
-	if (rclass_intersect_p[regno_allocno_class_array[k]])
+	if (live_pseudos_reg_renumber[k] >= 0
+	    && rclass_intersect_p[regno_allocno_class_array[k]])
 	  sparseset_set_bit (live_range_hard_reg_pseudos, k);
       EXECUTE_IF_SET_IN_BITMAP (&live_reload_and_inheritance_pseudos[r->start],
 				0, k, bi)
@@ -967,7 +969,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 {
   int i, j, n, p, hard_regno, best_hard_regno, cost, best_cost, rclass_size;
   int reload_hard_regno, reload_cost;
-  bool static_p, best_static_p;
+  bool static_p, best_static_p, too_many_p;
   machine_mode mode;
   enum reg_class rclass;
   unsigned int spill_regno, reload_regno, uid;
@@ -1026,6 +1028,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
       if (lra_dump_file != NULL)
 	fprintf (lra_dump_file, "	 Trying %d:", hard_regno);
       sparseset_clear (live_range_reload_inheritance_pseudos);
+      too_many_p = false;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	{
 	  if (bitmap_bit_p (&insn_conflict_pseudos, spill_regno))
@@ -1033,10 +1036,10 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	  if (spill_regno >= (unsigned int) lra_bad_spill_regno_start)
 	    bad_spills_num++;
 	  for (r = lra_reg_info[spill_regno].live_ranges;
-	       r != NULL;
+	       r != NULL && ! too_many_p;
 	       r = r->next)
 	    {
-	      for (p = r->start; p <= r->finish; p++)
+	      for (p = r->start; p <= r->finish && ! too_many_p; p++)
 		{
 		  lra_live_range_t r2;
 
@@ -1046,12 +1049,15 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 		    if (r2->regno >= lra_constraint_new_regno_start)
 		      sparseset_set_bit (live_range_reload_inheritance_pseudos,
 					 r2->regno);
+		  too_many_p
+		    = (sparseset_cardinality
+		       (live_range_reload_inheritance_pseudos)
+		       > (unsigned) param_lra_max_considered_reload_pseudos);
 		}
 	    }
 	}
       n = 0;
-      if (sparseset_cardinality (live_range_reload_inheritance_pseudos)
-	  <= (unsigned)param_lra_max_considered_reload_pseudos)
+      if (! too_many_p)
 	EXECUTE_IF_SET_IN_SPARSESET (live_range_reload_inheritance_pseudos,
 				     reload_regno)
 	  if ((int) reload_regno != regno
@@ -1062,7 +1068,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	    sorted_reload_pseudos[n++] = reload_regno;
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
 	{
-	  update_lives (spill_regno, true);
+	  if (reg_renumber[spill_regno] >= 0)
+	    live_pseudos_reg_renumber[spill_regno] = -1;
 	  if (lra_dump_file != NULL)
 	    fprintf (lra_dump_file, " spill %d(freq=%d)",
 		     spill_regno, lra_reg_info[spill_regno].freq);
@@ -1133,7 +1140,8 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
 	fprintf (lra_dump_file, "\n");
       /* Restore the live hard reg pseudo info for spilled pseudos.  */
       EXECUTE_IF_SET_IN_BITMAP (&spill_pseudos_bitmap, 0, spill_regno, bi)
-	update_lives (spill_regno, false);
+	if (reg_renumber[spill_regno] >= 0)
+	  live_pseudos_reg_renumber[spill_regno] = reg_renumber[spill_regno];
     fail:
       ;
     }
