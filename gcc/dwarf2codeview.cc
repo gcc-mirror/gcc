@@ -2331,6 +2331,9 @@ write_local_s_ldata32 (dw_die_ref die, dw_loc_descr_ref loc_ref)
   const char *name = get_AT_string (die, DW_AT_name);
   uint32_t type;
 
+  if (!name)
+    return;
+
   /* This is struct datasym in binutils:
 
       struct datasym
@@ -2522,6 +2525,9 @@ write_s_register (dw_die_ref die, dw_loc_descr_ref loc_ref)
   uint16_t regno;
   uint32_t type;
 
+  if (!name)
+    return;
+
   /* This is struct regsym in binutils and REGSYM in Microsoft's cvinfo.h:
 
     struct regsym
@@ -2583,6 +2589,9 @@ write_fbreg_variable (dw_die_ref die, dw_loc_descr_ref loc_ref,
   uint32_t type;
   uint16_t regno;
   int offset;
+
+  if (!name)
+    return;
 
   /* This is struct regrel in binutils and REGREL32 in Microsoft's cvinfo.h:
 
@@ -2907,6 +2916,9 @@ write_optimized_local_variable (dw_die_ref die, dw_loc_descr_ref fbloc,
 {
   dw_attr_node *loc;
   dw_loc_list_ref loc_list;
+
+  if (!get_AT_string (die, DW_AT_name))
+    return;
 
   loc = get_AT (die, DW_AT_location);
   if (!loc)
