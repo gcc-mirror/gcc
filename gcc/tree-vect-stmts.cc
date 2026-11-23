@@ -6040,7 +6040,7 @@ vect_nop_conversion_p (stmt_vec_info stmt_info)
   tree_code code = gimple_assign_rhs_code (stmt);
   tree rhs = gimple_assign_rhs1 (stmt);
 
-  if (code == SSA_NAME || code == VIEW_CONVERT_EXPR)
+  if (code == SSA_NAME || code == VIEW_CONVERT_EXPR || code == PAREN_EXPR)
     return true;
 
   if (CONVERT_EXPR_CODE_P (code))
