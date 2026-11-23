@@ -5873,10 +5873,10 @@ flush_deferred_types (void)
     {
       codeview_deferred_type *next;
 
-      next = deferred_types->next;
-
       get_type_num (deferred_types->type, false, true);
 
+      /* Completing a nested type can defer its containing type.  */
+      next = deferred_types->next;
       free (deferred_types);
       deferred_types = next;
     }
@@ -6346,19 +6346,21 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
   uint16_t num_members = 0;
   uint32_t last_type = 0;
 
-  parent = dw_get_die_parent(type);
-
-  if (parent && (dw_get_die_tag (parent) == DW_TAG_structure_type
-      || dw_get_die_tag (parent) == DW_TAG_class_type
-      || dw_get_die_tag (parent) == DW_TAG_union_type))
-    get_type_num (parent, true, false);
-
   if ((in_struct && get_AT_string (type, DW_AT_name))
       || get_AT_flag (type, DW_AT_declaration))
     {
       *is_fwd_ref = true;
       return add_struct_forward_def (type);
     }
+
+  parent = dw_get_die_parent (type);
+
+  if (parent && (dw_get_die_tag (parent) == DW_TAG_structure_type
+      || dw_get_die_tag (parent) == DW_TAG_class_type
+      || dw_get_die_tag (parent) == DW_TAG_union_type))
+    /* An unnamed parent may still be building the member that led here.
+       Complete this type before visiting the parent.  */
+    add_deferred_type (parent);
 
   *is_fwd_ref = false;
 
