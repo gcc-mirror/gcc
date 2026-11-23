@@ -158,9 +158,8 @@ package body Sem_Cat is
 
          --  Ignore Pure specification if set by pragma Pure_Function
 
-         if Is_Pure (E)
-           and then not
-            (Has_Pragma_Pure_Function (E) and not Has_Pragma_Pure (E))
+         if Has_Pragma_Pure (E)
+           or else (Is_Pure (E) and then not Has_Pragma_Pure_Function (E))
          then
             return Pure;
 
