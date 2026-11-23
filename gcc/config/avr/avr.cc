@@ -19,6 +19,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define IN_TARGET_CODE 1
+#define INCLUDE_ALGORITHM
 
 #include "config.h"
 #include "system.h"
