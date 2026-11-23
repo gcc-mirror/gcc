@@ -4627,7 +4627,7 @@ match_saturation_trunc (gimple_stmt_iterator *gsi, gphi *phi)
    # iftmp.0_3 = PHI <_10(3), 0(2)>
    and replace it with
    _7 = .MUL_OVERFLOW (x, y);
-   z = IMAGPART_EXPR <_7>;
+   z = REALPART_EXPR <_7>;
    _8 = IMAGPART_EXPR <_7>;
    _9 = _8 != 0;
    iftmp.0_3 = (int) _9;  */
@@ -5010,6 +5010,7 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	continue;
 
       gimple *orig_use_stmt = use_stmt;
+      bool remove_use_stmt = false;
       int ovf_use = arith_overflow_check_p (stmt, cast_stmt, use_stmt,
 					    maxval, NULL);
       if (ovf_use == 0)
@@ -5093,6 +5094,37 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 		  gimple_assign_set_rhs_code (use_stmt,
 					      ovf_use == 1
 					      ? NE_EXPR : EQ_EXPR);
+		  if (ovf_use == 1
+		      && (TYPE_UNSIGNED (type) || TYPE_PRECISION (type) > 1))
+		    {
+		      /* Try to optimize further.
+			 _6 = ovf != 0;
+			 _7 = (unsigned long int) _6;
+			 where we know ovf is in [0, 1] range can be
+			 optimized into
+			 _7 = (unsigned long int) ovf;
+			 Normally, vrp pass can do this, but there is
+			 no vrp after widening_mul.  */
+		      imm_use_iterator use2_iter;
+		      gimple *use2_stmt;
+		      tree cmp_lhs = gimple_assign_lhs (use_stmt);
+
+		      FOR_EACH_IMM_USE_STMT (use2_stmt, use2_iter, cmp_lhs)
+			{
+			  if (!gimple_assign_cast_p (use2_stmt))
+			    continue;
+			  tree cvt_lhs = gimple_assign_lhs (use2_stmt);
+			  tree cvt_rhs = gimple_assign_rhs1 (use2_stmt);
+			  if (INTEGRAL_TYPE_P (TREE_TYPE (cvt_lhs))
+			      && cvt_rhs == cmp_lhs)
+			    {
+			      gimple_assign_set_rhs1 (use2_stmt, ovf);
+			      update_stmt (use2_stmt);
+			    }
+			}
+		      if (has_zero_uses (cmp_lhs))
+			remove_use_stmt = true;
+		    }
 		}
 	    }
 	  else
@@ -5123,6 +5155,12 @@ match_arith_overflow (gimple_stmt_iterator *gsi, gimple *stmt,
 	    }
 	  gsi_remove (&gsi2, true);
 	  release_ssa_name (gimple_assign_lhs (orig_use_stmt));
+	}
+      if (remove_use_stmt)
+	{
+	  gimple_stmt_iterator gsi2 = gsi_for_stmt (use_stmt);
+	  gsi_remove (&gsi2, true);
+	  release_ssa_name (gimple_assign_lhs (use_stmt));
 	}
     }
   if (maxval)
