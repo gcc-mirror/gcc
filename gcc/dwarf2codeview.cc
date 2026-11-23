@@ -6732,7 +6732,7 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
   /* We need to know the size of our base type.  Loop through until we find
      it.  */
   t = base_type;
-  while (t && size == 0)
+  do
     {
       switch (dw_get_die_tag (t))
 	{
@@ -6751,12 +6751,14 @@ get_type_num_array_type (dw_die_ref type, bool in_struct)
 	case DW_TAG_reference_type:
 	case DW_TAG_rvalue_reference_type:
 	  size = get_AT_unsigned (t, DW_AT_byte_size);
+	  t = NULL;
 	  break;
 
 	default:
 	  return 0;
 	}
     }
+  while (t);
 
   if (size == 0)
     return 0;
