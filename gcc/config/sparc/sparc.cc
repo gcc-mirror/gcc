@@ -7031,6 +7031,7 @@ compute_fp_layout (const_tree field, int bitpos, assign_data_t *data,
 		   int *pnregs, machine_mode *pmode)
 {
   const int this_slotno = data->slotno + bitpos / BITS_PER_WORD;
+  const int this_offset = (bitpos % BITS_PER_WORD) / BITS_PER_UNIT;
   machine_mode mode = DECL_MODE (field);
   int nregs, nslots;
 
@@ -7056,12 +7057,12 @@ compute_fp_layout (const_tree field, int bitpos, assign_data_t *data,
   else
     nregs = 1;
 
-  nslots = CEIL_NWORDS (nregs * GET_MODE_SIZE (mode));
+  nslots = CEIL_NWORDS (this_offset + nregs * GET_MODE_SIZE (mode));
 
   if (nslots > SPARC_FP_ARG_MAX - this_slotno)
     {
       nslots = SPARC_FP_ARG_MAX - this_slotno;
-      nregs = (nslots * UNITS_PER_WORD) / GET_MODE_SIZE (mode);
+      nregs = (nslots * UNITS_PER_WORD - this_offset) / GET_MODE_SIZE (mode);
 
       /* We need to pass this field (partly) on the stack.  */
       data->stack = 1;
