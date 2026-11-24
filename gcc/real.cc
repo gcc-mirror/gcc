@@ -1424,6 +1424,31 @@ real_can_shorten_arithmetic (machine_mode imode, machine_mode tmode)
 	  && !MODE_COMPOSITE_P (imode));
 }
 
+/* Return true if every value of scalar floating-point mode FROM is exactly
+   representable in scalar floating-point mode TO.  Return false if FROM
+   is a composite format (IBM extended), since its value set is not
+   described by the exponent range and precision of the format.  */
+
+bool
+real_exact_conversion_p (machine_mode to, machine_mode from)
+{
+  gcc_checking_assert (SCALAR_FLOAT_MODE_P (from)
+		       && SCALAR_FLOAT_MODE_P (to));
+  if (from == to)
+    return true;
+  const struct real_format *ffmt = REAL_MODE_FORMAT (from);
+  const struct real_format *tfmt = REAL_MODE_FORMAT (to);
+  return (tfmt->b == ffmt->b
+	  && tfmt->p >= ffmt->p
+	  && tfmt->emin <= ffmt->emin
+	  && tfmt->emax >= ffmt->emax
+	  && tfmt->has_nans >= ffmt->has_nans
+	  && tfmt->has_inf >= ffmt->has_inf
+	  && tfmt->has_signed_zero >= ffmt->has_signed_zero
+	  && tfmt->has_denorm >= ffmt->has_denorm
+	  && !MODE_COMPOSITE_P (from));
+}
+
 /* Render R as an integer.  */
 
 HOST_WIDE_INT

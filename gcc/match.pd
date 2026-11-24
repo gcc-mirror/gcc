@@ -6520,9 +6520,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (((GIMPLE && useless_type_conversion_p (type, inside_type))
 	  || (GENERIC
 	      && TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (inside_type)))
-	 && (((inter_int || inter_ptr) && final_int)
-	     || (inter_float && final_float))
-	 && inter_prec >= final_prec
+	 && (((inter_int || inter_ptr) && final_int
+	      && inter_prec >= final_prec)
+	     || (inter_float && final_float
+		 && real_exact_conversion_p (element_mode (inter_type),
+					     element_mode (type))))
 	 && (! is_vec
 	     || supportable_convert_operation (ocvt, type, TREE_TYPE (@0))))
      (ocvt @0))
@@ -6532,7 +6534,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        former is wider than the latter and doesn't change the signedness
        (for integers).  Avoid this if the final type is a pointer since
        then we sometimes need the middle conversion.  */
-    (if (((inter_int && inside_int) || (inter_float && inside_float))
+    (if (((inter_int && inside_int)
+	  || (inter_float && inside_float
+	      && real_exact_conversion_p (element_mode (inter_type),
+					  element_mode (inside_type))))
 	 && (final_int || final_float)
 	 && inter_prec >= inside_prec
 	 && (inter_float || inter_unsignedp == inside_unsignedp)

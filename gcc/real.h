@@ -514,6 +514,10 @@ extern bool exact_real_inverse (format_helper, REAL_VALUE_TYPE *);
    in TMODE.  */
 bool real_can_shorten_arithmetic (machine_mode, machine_mode);
 
+/* Return true if every value in mode FROM is exactly representable in
+   mode TO.  Note that TO comes first.  */
+extern bool real_exact_conversion_p (machine_mode to, machine_mode from);
+
 /* In tree.cc: wrap up a REAL_VALUE_TYPE in a tree node.  */
 extern tree build_real (tree, REAL_VALUE_TYPE);
 
