@@ -5289,6 +5289,175 @@ get_bit_field_ref_def (tree val, enum tree_code &conv_code)
   return gimple_assign_rhs1 (def_stmt);
 }
 
+/* Rewrite a chain of BIT_INSERT_EXPRs that each insert one element into
+   a vector, like
+     v_1 = BIT_INSERT_EXPR <v_0, a_2, 0>;
+     v_3 = BIT_INSERT_EXPR <v_1, b_4, 32>;
+     ...
+   into a single CONSTRUCTOR {a_2, b_4, ...} (or a VECTOR_CST) when the
+   inserts overwrite every element of the vector, or when the vector at
+   the start of the chain is a VECTOR_CST or a CONSTRUCTOR that provides
+   the remaining elements.  A CONSTRUCTOR is expanded with vec_init, which
+   for instance turns a broadcast written element by element into a single
+   splat instruction.  The statements of the chain that become dead are
+   queued in SIMPLE_DCE_WORKLIST.  Returns true if there were any
+   changes.  */
+
+static bool
+simplify_bit_insert_chain (gimple_stmt_iterator *gsi,
+			   bitmap simple_dce_worklist)
+{
+  gassign *stmt = as_a <gassign *> (gsi_stmt (*gsi));
+  tree lhs = gimple_assign_lhs (stmt);
+  tree type = TREE_TYPE (lhs);
+  unsigned HOST_WIDE_INT nelts;
+
+  if (TREE_CODE (type) != VECTOR_TYPE
+      || VECTOR_BOOLEAN_TYPE_P (type)
+      || !TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts))
+    return false;
+
+  /* Handle the chain once, from its last statement.  */
+  use_operand_p use_p;
+  gimple *use_stmt;
+  if (single_imm_use (lhs, &use_p, &use_stmt)
+      && is_gimple_assign (use_stmt)
+      && gimple_assign_rhs_code (use_stmt) == BIT_INSERT_EXPR
+      && gimple_assign_rhs1 (use_stmt) == lhs)
+    return false;
+
+  tree elt_type = TREE_TYPE (type);
+  unsigned HOST_WIDE_INT elt_bits = vector_element_bits (type);
+  auto_vec<tree, 16> elts;
+  elts.safe_grow_cleared (nelts, true);
+  unsigned HOST_WIDE_INT filled = 0;
+  unsigned HOST_WIDE_INT ninserts = 0;
+  gassign *def = stmt;
+  tree base = NULL_TREE;
+  do
+    {
+      tree val = gimple_assign_rhs2 (def);
+      tree pos = gimple_assign_rhs3 (def);
+      if (!types_compatible_p (TREE_TYPE (val), elt_type)
+	  || !tree_fits_uhwi_p (pos)
+	  || tree_to_uhwi (pos) % elt_bits != 0)
+	break;
+      unsigned HOST_WIDE_INT lane = tree_to_uhwi (pos) / elt_bits;
+      if (lane >= nelts)
+	break;
+      /* A later insert into the same lane wins.  */
+      if (!elts[lane])
+	{
+	  elts[lane] = val;
+	  filled++;
+	}
+      ninserts++;
+      base = gimple_assign_rhs1 (def);
+      /* Continue with the previous insert of the chain while some lanes
+	 are still unknown.  Only look through inserts used by the chain
+	 alone, the others have to stay anyway.  */
+      def = NULL;
+      if (filled < nelts && TREE_CODE (base) == SSA_NAME)
+	{
+	  /* Bound the walk if the same lanes are written many times.  */
+	  if (ninserts >= 2 * nelts)
+	    return false;
+	  gassign *prev = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (base));
+	  if (prev
+	      && gimple_assign_rhs_code (prev) == BIT_INSERT_EXPR
+	      && has_single_use (base))
+	    def = prev;
+	}
+    }
+  while (def);
+  /* A single insert is already a single operation, and other
+     simplifications (like extracting part of the inserted value with a
+     BIT_FIELD_REF) only handle BIT_INSERT_EXPR.  Requiring two inserts
+     also means that the first operand of STMT is defined by an insert of
+     the chain, which is what is queued for DCE below.  */
+  if (ninserts < 2)
+    return false;
+
+  /* Take the elements that are not overwritten from the start of the
+     chain.  */
+  if (filled < nelts)
+    {
+      if (TREE_CODE (base) == VECTOR_CST)
+	{
+	  for (unsigned HOST_WIDE_INT i = 0; i < nelts; i++)
+	    if (!elts[i])
+	      elts[i] = VECTOR_CST_ELT (base, i);
+	}
+      else if (TREE_CODE (base) == SSA_NAME)
+	{
+	  gassign *bdef = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (base));
+	  if (!bdef || gimple_assign_rhs_code (bdef) != CONSTRUCTOR)
+	    return false;
+	  tree ctor = gimple_assign_rhs1 (bdef);
+	  if (!types_compatible_p (TREE_TYPE (ctor), type))
+	    return false;
+	  /* Elements that are vectors themselves are not handled.  */
+	  if (CONSTRUCTOR_NELTS (ctor) != 0
+	      && TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (ctor, 0)->value))
+		 == VECTOR_TYPE)
+	    return false;
+	  for (unsigned HOST_WIDE_INT i = 0; i < nelts; i++)
+	    if (!elts[i])
+	      {
+		if (i < CONSTRUCTOR_NELTS (ctor))
+		  {
+		    constructor_elt *ce = CONSTRUCTOR_ELT (ctor, i);
+		    if (ce->index
+			&& (!tree_fits_uhwi_p (ce->index)
+			    || tree_to_uhwi (ce->index) != i))
+		      return false;
+		    elts[i] = ce->value;
+		  }
+		else
+		  /* Trailing elements of a CONSTRUCTOR are zero.  */
+		  elts[i] = build_zero_cst (elt_type);
+	      }
+	}
+      else
+	return false;
+    }
+
+  /* The CONSTRUCTOR uses the elements at the place of the last insert,
+     which can extend their live range.  Do not do that for SSA names
+     that occur in abnormal PHIs.  */
+  bool all_constant = true;
+  for (tree elt : elts)
+    if (TREE_CODE (elt) == SSA_NAME
+	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (elt))
+      return false;
+    else if (!CONSTANT_CLASS_P (elt))
+      all_constant = false;
+
+  tree new_rhs;
+  if (all_constant)
+    {
+      tree_vector_builder builder (type, nelts, 1);
+      for (tree elt : elts)
+	builder.quick_push (elt);
+      new_rhs = builder.build ();
+    }
+  else
+    {
+      vec<constructor_elt, va_gc> *ce;
+      vec_alloc (ce, nelts);
+      for (tree elt : elts)
+	CONSTRUCTOR_APPEND_ELT (ce, NULL_TREE, elt);
+      new_rhs = build_constructor (type, ce);
+    }
+
+  tree old_vec = gimple_assign_rhs1 (stmt);
+  if (TREE_CODE (old_vec) == SSA_NAME)
+    bitmap_set_bit (simple_dce_worklist, SSA_NAME_VERSION (old_vec));
+  gimple_assign_set_rhs_from_tree (gsi, new_rhs);
+  update_stmt (gsi_stmt (*gsi));
+  return true;
+}
+
 /* Recognize a VEC_PERM_EXPR.  Returns true if there were any changes.  */
 
 static bool
@@ -7271,6 +7440,9 @@ pass_forwprop::execute (function *fun)
 		    else if (code == CONSTRUCTOR
 			     && TREE_CODE (TREE_TYPE (rhs1)) == VECTOR_TYPE)
 		      changed |= simplify_vector_constructor (&gsi);
+		    else if (code == BIT_INSERT_EXPR)
+		      changed |= simplify_bit_insert_chain (&gsi,
+							   simple_dce_worklist);
 		    else if (code == ARRAY_REF)
 		      changed |= simplify_count_zeroes (&gsi);
 		    else if (get_gimple_rhs_class (code) == GIMPLE_BINARY_RHS
