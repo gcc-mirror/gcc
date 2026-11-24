@@ -1,3 +1,12 @@
+2026-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128936
+	* resolve.cc (reset_array_ref_to_scalar): Clear the end and stride
+	after freeing them.
+	* simplify.cc (gfc_simplify_len): Keep the array references of the
+	base object for a LEN-parameter string component, resolve the
+	result and convert it to the requested kind.
+
 2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/51284

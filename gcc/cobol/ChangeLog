@@ -1,3 +1,17 @@
+2026-11-23  James K. Lowden  <jklowden@cobolworx.com>
+
+	* symbols.cc (symbol_field): Match whether or not a typedef.
+
+2026-11-23  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cdf-copy.cc (copybook_elem_t::open_file): Recognize leading slash.
+
+2026-11-23  James K. Lowden  <jklowden@cobolworx.com>
+
+	* scan.l: Return NAME token if new function reports non-numeric.
+	* scan_ante.h (dot_like): Check for comma/dot.
+	(lex_numeric_literal): New function.
+
 2026-11-21  Robert Dubner  <rdubner@symas.com>
 
 	* cbldiag.h (enum cbl_diag_id_t): -Wrefmod.

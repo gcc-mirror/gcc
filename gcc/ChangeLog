@@ -1,3 +1,235 @@
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (write_custom_types): Use switch_to_section.
+	(codeview_debug_finish): Likewise.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (write_binary_annotations): Return if the inlinee
+	lines hash table is unavailable.
+	(codeview_abstract_function): Record functions inlined by the optimizer.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (get_type_num_array_type): Terminate the
+	type-chain walk after processing the element type.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (get_type_num_struct): Create forward references
+	before visiting the parent and defer parent definitions.
+	(flush_deferred_types): Process types appended during completion.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (codeview_function): Replace func with die and
+	funcdef_no.
+	(cv_func_hasher::hash): New function.
+	(cv_func_hasher::equal): Compare the stored DIE directly.
+	(new_codeview_function): Store the DIE and function definition number.
+	(codeview_source_line): Compare function definition numbers.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (write_lf_enum): Emit a placeholder name for
+	anonymous enums.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR debug/126910
+	* dwarf2codeview.cc (get_type_num_enumeration_type): Check for an
+	empty field list.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR debug/124432
+	* dwarf2codeview.cc (write_local_s_ldata32): Skip unnamed variables.
+	(write_s_register): Likewise.
+	(write_fbreg_variable): Likewise.
+	(write_optimized_local_variable): Likewise, including their location
+	ranges.
+
+2026-11-23  Matt Jacobson  <mhjacobson@me.com>
+
+	* config/avr/avr.cc (INCLUDE_ALGORITHM): Define.
+
+2026-11-23  Ard Biesheuvel  <ardb@kernel.org>
+
+	* config/s390/s390.cc (s390_function_profiler): Align the
+	__mcount_loc entries to their size.
+
+2026-11-23  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/128860
+	* sched-rgn.cc (rgn_estimate_number_of_insns): Count the
+	non-debug insns instead of using the LUID span.
+
+2026-11-23  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range-pretty-print.cc (vrange_printer::print_addr): Remove
+	base, offset and size.
+	* value-range.cc (prange::set_addr): Remove.
+	(prange::addr_base): Remove.
+	(prange::addr_offset): Remove.
+	(prange::addr_size): Remove.
+	* value-range.h (addr_base, addr_offset, addr_size): Remove prototypes.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128943
+	* tree-ssa-sccvn.cc (visit_nary_op): Do not insert the
+	statement into the nary table when it was value-numbered
+	using an available narrow operation or an available negated
+	operand with undefined overflow.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128931
+	* tree-ssa-sccvn.cc (visit_nary_op): Defend against TRUNC_DIV_EXPR
+	used on non-integral types.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128946
+	* tree-vect-stmts.cc (vect_nop_conversion_p): PAREN_EXPR
+	is also a nop.
+
+2026-11-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* reg-stack.cc: Move to config/i386/i386-reg-stack.cc.
+	* config/i386/i386-reg-stack.cc: New file, moved from reg-stack.cc.
+	Include tm_p.h.  Remove STACK_REGS conditionals.
+	(regstack_completed): Make bool.
+	(rest_of_handle_stack_regs): Update.
+	(pass_data_stack_regs, pass_stack_regs)
+	(make_pass_stack_regs): Remove the old gating pass.
+	(pass_data_stack_regs_run, pass_stack_regs_run)
+	(make_pass_stack_regs_run): Rename to pass_data_stack_regs,
+	pass_stack_regs and make_pass_stack_regs.
+	* Makefile.in (OBJS): Remove reg-stack.o.
+	(GTFILES): Remove reg-stack.cc.
+	* config.gcc (extra_objs) <i[34567]86-*-* | x86_64-*-*>:
+	Add i386-reg-stack.o.
+	* config/i386/t-i386 (i386-reg-stack.o): New rule.
+	* config/i386/i386-passes.def (pass_split_before_regstack)
+	(pass_stack_regs): Insert after pass_sched2.
+	* config/i386/i386-protos.h (make_pass_stack_regs): Declare.
+	* passes.def (pass_stack_regs, pass_split_before_regstack)
+	(pass_stack_regs_run): Remove.
+	* tree-pass.h (make_pass_stack_regs)
+	(make_pass_stack_regs_run): Remove.
+	* cfgcleanup.cc (old_insns_match_p): Update comment.
+	* ira-build.cc (loop_with_complex_edge_p): Update comment.
+	* rtl.h (regstack_completed): Make bool.  Update comment.
+	* final.cc (rest_of_clean_state): Update.
+	* config/i386/i386.h (STACK_REGS): Ditto.
+	* doc/passes.texi (RTL passes): Remove
+	Register-to-stack conversion item.
+	* doc/tm.texi.in (Stack Registers): Remove advice
+	on porting the stack register pass to a new architecture.
+	(STACK_REG_COVER_CLASS): Remove.
+	* doc/tm.texi: Regenerate.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128058
+	* config/aarch64/aarch64.cc (aarch64_movk_plus_p): New function.
+	(aarch64_rtx_costs): Use it to cost MOVK patterns in the PLUS case.
+
+2026-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/128834
+	* tree-ssa-math-opts.cc (match_arith_overflow): When we optimize
+	binary assignment into lhs = ovf != 0 attempt to adjust immediate
+	uses which cast the result of the comparison to some integer type
+	and when optimizing all of them, remove the ovf != 0 comparison
+	afterwards.
+	Fix pasto in function comment.
+	* match-sat-alu.pd (unsigned_integer_sat_add): Handle the case
+	where imag of IFN_ADD_OVERFLOW is just converted instead of
+	conversion of imag != 0.
+	* config/i386/i386.md (peephole2 after @add<mode>3_cc_overflow_1): New
+	define_peephole2.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_noce_conversion_profitable_p):
+	Skip the cost check for an increment only if the sequence is that
+	increment and one conditional select that uses it.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_parallel_seq_cost): Remove static.
+	* ifcvt.h (noce_parallel_seq_cost): Declare.
+	* config/aarch64/aarch64.cc
+	(aarch64_noce_conversion_profitable_p): Use noce_parallel_seq_cost.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc: Include rtlanal.h and selftest.h.
+	(noce_parallel_cost_node): Remove.
+	(noce_parallel_costed_insn_p): Check the complete pattern and
+	reject multiple SETs.  Remove the SET output parameter.
+	(noce_ready_map): New typedef.
+	(noce_dependency_level): Use register properties and an
+	availability map.
+	(noce_parallel_seq_cost): Collect complete instruction references.
+	Reject asms.
+	(selftest::test_noce_level): New function.
+	(selftest::test_noce_pseudo_dependencies): New test.
+	(selftest::test_noce_parallel_references): Likewise.
+	(selftest::test_noce_hard_register_dependencies): Likewise.
+	(selftest::test_noce_parallel_cost_gates): Likewise.
+	(selftest::ifcvt_cc_tests): New function.
+	* selftest.h (ifcvt_cc_tests): Declare.
+	* selftest-run-tests.cc (selftest::run_tests): Call it.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.h (noce_if_info): Add in_loop.
+	* ifcvt.cc (bbs_in_loops): New bitmap.
+	(noce_find_if_block): Set in_loop.
+	(find_if_case_1): Assert that the replacement block has one
+	successor.
+	(if_convert): Record loop membership before finalizing loops.
+	Release the bitmap at the end of the pass.
+	* config/aarch64/aarch64.cc
+	(aarch64_noce_conversion_profitable_p): Use in_loop, and only when
+	optimizing for speed.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1)
+	<case VEC_CONCAT>: Check targetm.modes_tieable_p before merging
+	subregs of the same register.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* config/i386/i386.md (@ccmp<mode>): Compare operands 2 and 3
+	directly.  Use operand 5 for the flags register in operand 1.
+	* config/i386/i386-expand.cc (ix86_gen_ccmp_next): Keep the CC
+	mode of the previous compare and pass it as operand 5.
+
+2026-11-23  Sun, Qin  <qin.sun@intel.com>
+
+	* config/i386/sse.md (ssePSmode, ssePSmodelower): Add BF modes.
+	(sdot_prod<ssePSmodelower><mode>): New expanders.
+
+2026-11-23  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs):
+	<IF_THEN_ELSE>: New case.
+
+2026-11-23  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_conditional_move):
+	Allow conditional move FP via integer condition codes.
+	(loongarch_move_to_gpr_cost): Use actual FCC->GPR move cost.
+	(loongarch_move_from_gpr_cost): Use actual GPR->FCC move cost.
+	(loongarch_secondary_reload): Adjust.
+	* config/loongarch/loongarch.md (mov<mode>cc): Adjust.
+
 2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
 
 	* config/i386/i386.cc (x86_function_profiler): Align the

@@ -1,3 +1,15 @@
+2026-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/128618
+	* acinclude.m4 (LIBGFOR_CHECK_ATOMIC_FETCH_ADD): Revert
+	r17-6152; test int again.  Note that 64-bit atomics are not
+	covered.
+	* configure: Regenerate.
+	* io/io.h (GFC_ATOMIC_FILE_ID): Define if 64-bit atomics are
+	lock-free.
+	(set_unit_file_id, unit_file_id_matches): Use it instead of
+	HAVE_ATOMIC_FETCH_ADD.
+
 2026-11-21  Jonathan Yong  <10walls@gmail.com>
 
 	Revert:

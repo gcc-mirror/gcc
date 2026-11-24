@@ -1,3 +1,27 @@
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Allocate the maximum
+	size when the designated type is a mutably tagged type.
+	(Expand_N_Allocator): Likewise.
+	* mutably_tagged.adb (Make_Mutably_Tagged_Conversion): Simplify
+	the existing condition and also reject the cases of an access to
+	object definition and the subtype mark of a qualified expression.
+
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/115666
+	* sem_ch5.adb (Analyze_Assignment): In Ada 2005 and later, do not
+	add an implicit conversion when the RHS is of an anonymous access-
+	to-subprogram type here...
+	* sem_res.adb (Resolve): ...but here instead.
+	(Valid_Conversion): Fix reference to RM rule in error message.
+
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/108610
+	* sem_cat.adb (Get_Categorization): Always return Pure if a pragma
+	Pure is present on the unit.
+
 2026-11-22  Konrad Schwarz  <konrad.schwarz@siemens.com>
 
 	PR ada/128510

@@ -1,3 +1,158 @@
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/eh-indirect-1.C: New test.
+	* gcc.dg/debug/codeview/codeview-2.c: Likewise.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/inline-nondeclared-1.C: New test.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/array-decl-1.C: New test.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/anon-struct-parent-1.C: New test.
+	* g++.dg/debug/codeview/anon-struct-parent-2.C: Likewise.
+	* g++.dg/debug/codeview/anon-struct-members-1.C: Likewise.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/func-lifetime-1.C: New test.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/anon-enum-1.C: New test.
+	* g++.dg/debug/codeview/anon-enum-2.C: New test.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR debug/126910
+	* g++.dg/debug/codeview/pr126910.C: New test.
+
+2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR debug/124432
+	* g++.dg/debug/codeview/codeview.exp: New test driver.
+	* g++.dg/debug/codeview/pr124432.C: New test.
+	* g++.dg/debug/codeview/pr124432-2.C: Likewise.
+
+2026-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128936
+	* gfortran.dg/pdt_99.f90: New test.
+
+2026-11-23  Ard Biesheuvel  <ardb@kernel.org>
+
+	* gcc.target/s390/mrecord-mcount.c: Check the alignment.
+
+2026-11-23  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/128860
+	* gcc.dg/pr128860.c: New test.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128943
+	* gcc.dg/torture/pr128943.c: New testcase.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128147
+	* g++.dg/torture/pr128147.C (f): Take a pointer to the pointer and
+	load it first so that the trapping load is not the first instruction.
+	(main): Update call.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128931
+	* gcc.dg/pr128931.c: New testcase.
+
+2026-11-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128946
+	* gfortran.dg/vect/cost-model-pr128946.f90: New testcase.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128058
+	* gcc.target/aarch64/movk_5.c: New test.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR testsuite/128950
+	* g++.dg/ipa/inline-aggregate-retval.C: Raise --param
+	early-inlining-insns to 16.
+	* gcc.dg/ipa/inline-aggregate-retval.c: Likewise.
+
+2026-11-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/128834
+	* gcc.target/i386/pr128834.c: New test.
+
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/access13.ads, gnat.dg/access13.adb: New test.
+
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/pure_subp_body2a.adb: New test.
+	* gnat.dg/pure_subp_body2b.adb: New helper subprogram.
+	* gnat.dg/pure_subp_body2_pkg.ads: New helper package.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/pr123017_8.c: New test.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/noce-parallel-cost-1.c: New test.
+	* gcc.target/aarch64/noce-parallel-cost-2.c: Likewise.
+	* gcc.target/aarch64/noce-parallel-cost-3.c: Likewise.
+	* gcc.target/aarch64/noce-parallel-cost-4.c: Likewise.
+	* gcc.target/aarch64/noce-parallel-cost-5.c: Likewise.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/if_conv_outside_loop_1.c: New test.
+	* gcc.target/aarch64/if_conv_outside_loop_2.c: Likewise.
+	* gcc.target/aarch64/if_conv_outside_loop_3.c: Likewise.
+
+2026-11-23  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/neon/vtbl.c: Expect zip1 instead of a stack
+	round trip for vtbl2.
+	* gcc.target/aarch64/neon/vtbx.c: Likewise for vtbx2.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* gcc.target/i386/pr128911-1.c: New test.
+	* gcc.target/i386/pr128911-2.c: Likewise.
+	* gcc.target/i386/pr128911-3.c: Likewise.
+
+2026-11-23  Sun, Qin  <qin.sun@intel.com>
+
+	* gcc.target/i386/avx10_2-fp16-dotprod-1.c: New test.
+	* gcc.target/i386/avx10_2-fp16-dotprod-2.c: Ditto.
+	* gcc.target/i386/avx10_2-fp16-dotprod-3.c: Ditto.
+	* gcc.target/i386/avx10_2-fp16-dotprod-4.c: Ditto.
+	* gcc.target/i386/avx512bf16-dotprod-1.c: Ditto.
+	* gcc.target/i386/avx512bf16-dotprod-2.c: Ditto.
+	* gcc.target/i386/avx512bf16-dotprod-3.c: Ditto.
+	* gcc.target/i386/avx512bf16-dotprod-4.c: Ditto.
+	* gcc.target/i386/avx512bf16-dotprod-5.c: Ditto.
+
+2026-11-23  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/ifcvt-1.c: New test.
+
+2026-11-23  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* gcc.target/loongarch/la64/ifcvt-double-1.c: New test.
+	* gcc.target/loongarch/la64/ifcvt-double-2.c: New test.
+
 2026-11-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/51284
