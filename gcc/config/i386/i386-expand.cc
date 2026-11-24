@@ -2840,6 +2840,18 @@ ix86_prepare_fp_compare_args (enum rtx_code code, rtx *pop0, rtx *pop1)
   machine_mode op_mode = GET_MODE (op0);
   bool is_sse = SSE_FLOAT_MODE_SSEMATH_OR_HFBF_P (op_mode);
 
+  /* vcomisbf16 sets the flags like comiss, so EQ and NE would need both
+     ZF and PF when NaNs are honored; compare them in SFmode instead.  */
+  if (op_mode == BFmode
+      && TARGET_AVX10_2
+      && (code == EQ || code == NE)
+      && HONOR_NANS (BFmode))
+    {
+      *pop0 = ix86_expand_fast_convert_bf_to_sf (op0);
+      *pop1 = ix86_expand_fast_convert_bf_to_sf (op1);
+      return ix86_prepare_fp_compare_args (code, pop0, pop1);
+    }
+
   if (op_mode == BFmode && (!TARGET_AVX10_2 || flag_trapping_math))
     {
       rtx op = gen_lowpart (HImode, op0);
