@@ -2668,7 +2668,9 @@ maybe_make_one_only (tree decl)
   if (! flag_weak)
     return;
 
-  gcc_checking_assert (!consteval_only_p (decl));
+  /* Don't output reflection variables.  */
+  if (consteval_only_p (decl))
+    return;
 
   /* We can't set DECL_COMDAT on functions, or cp_finish_file will think
      we can get away with not emitting them if they aren't used.  We need
@@ -2826,7 +2828,9 @@ var_finalized_p (tree var)
 void
 mark_needed (tree decl)
 {
-  gcc_checking_assert (!consteval_only_p (decl));
+  /* Don't output reflection variables.  */
+  if (consteval_only_p (decl))
+    return;
 
   TREE_USED (decl) = 1;
   if (TREE_CODE (decl) == FUNCTION_DECL)
