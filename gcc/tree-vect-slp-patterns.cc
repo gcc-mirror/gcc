@@ -1443,20 +1443,20 @@ complex_fms_pattern::matches (complex_operation_t op,
   ops->truncate (0);
   ops->create (4);
 
-  complex_perm_kinds_t kind = linear_loads_p (perm_cache, res_ops[2]);
+  complex_perm_kinds_t kind = linear_loads_p (perm_cache, res_ops[0]);
   if (kind == PERM_EVENODD)
     {
       ops->quick_push (l0node[0]);
-      ops->quick_push (res_ops[2]);
-      ops->quick_push (res_ops[3]);
+      ops->quick_push (res_ops[0]);
       ops->quick_push (res_ops[1]);
+      ops->quick_push (res_ops[3]);
     }
   else
     {
       ops->quick_push (l0node[0]);
-      ops->quick_push (res_ops[3]);
-      ops->quick_push (res_ops[2]);
+      ops->quick_push (res_ops[1]);
       ops->quick_push (res_ops[0]);
+      ops->quick_push (res_ops[2]);
     }
 
   return ifn;
