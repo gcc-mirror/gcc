@@ -1,3 +1,35 @@
+2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* gcc.dg/opt-ordered-and-nonequal-1.c: Add -fno-trapping-math and
+	scan the optimized dump.
+	* gcc.dg/opt-ordered-and-nonequal-2.c: New test.
+	* gcc.dg/torture/cmp-of-cmp-fenv-1.c: New test.
+	* gcc.target/i386/opt-comi-1.c: Add -fno-trapping-math.
+	* gcc.target/i386/avx10_2-compare-1b.c: Likewise.
+
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* gcc.target/h8300/pr128906.c: New test.
+	* gcc.target/h8300/pr128906-2.c: New test.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* gcc.target/i386/pr128911-1.c: New test.
+	* gcc.target/i386/pr128911-2.c: Likewise.
+	* gcc.target/i386/pr128911-3.c: Likewise.
+
 2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,12 @@
+2026-11-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_Allocator_Expression): Allocate the maximum
+	size when the designated type is a mutably tagged type.
+	(Expand_N_Allocator): Likewise.
+	* mutably_tagged.adb (Make_Mutably_Tagged_Conversion): Simplify
+	the existing condition and also reject the cases of an access to
+	object definition and the subtype mark of a qualified expression.
+
 2026-11-22  Konrad Schwarz  <konrad.schwarz@siemens.com>
 
 	PR ada/128510
