@@ -6360,7 +6360,8 @@ get_type_num_struct (dw_die_ref type, bool in_struct, bool *is_fwd_ref)
 
   if (parent && (dw_get_die_tag (parent) == DW_TAG_structure_type
       || dw_get_die_tag (parent) == DW_TAG_class_type
-      || dw_get_die_tag (parent) == DW_TAG_union_type))
+      || dw_get_die_tag (parent) == DW_TAG_union_type)
+      && !get_AT_flag (parent, DW_AT_declaration))
     /* An unnamed parent may still be building the member that led here.
        Complete this type before visiting the parent.  */
     add_deferred_type (parent);
