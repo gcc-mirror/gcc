@@ -712,13 +712,14 @@ simplify_context::simplify_truncation (machine_mode mode, rtx op,
       rtx shift_op = XEXP (XEXP (op, 0), 1);
       rtx mask_op = XEXP (op, 1);
       unsigned HOST_WIDE_INT shift = UINTVAL (shift_op);
-      unsigned HOST_WIDE_INT mask = UINTVAL (mask_op);
+      unsigned HOST_WIDE_INT mask
+	= UINTVAL (mask_op) & GET_MODE_MASK (op_mode);
 
       if (shift < precision
-	  /* If doing this transform works for an X with all bits set,
-	     it works for any X.  */
-	  && ((GET_MODE_MASK (mode) >> shift) & mask)
-	     == ((GET_MODE_MASK (op_mode) >> shift) & mask)
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  /* Every bit selected by the mask must be produced by the narrowed
+	     shift, not by bits of X above the truncated mode.  */
+	  && (mask & ~(GET_MODE_MASK (mode) >> shift)) == 0
 	  && (op0 = simplify_gen_unary (TRUNCATE, mode, op0, op_mode))
 	  && (op0 = simplify_gen_binary (LSHIFTRT, mode, op0, shift_op)))
 	{
