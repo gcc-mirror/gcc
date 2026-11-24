@@ -558,6 +558,7 @@ powerpc*-*-*)
 	extra_objs="rs6000-string.o rs6000-p8swap.o rs6000-logue.o"
 	extra_objs="${extra_objs} rs6000-call.o rs6000-pcrel-opt.o"
 	extra_objs="${extra_objs} rs6000-builtins.o rs6000-builtin.o"
+	extra_objs="${extra_objs} float16.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
 	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h emmintrin.h"
@@ -5898,6 +5899,16 @@ case "${target}" in
 
 		elif test x$with_long_double_format = xibm; then
 		    tm_defines="${tm_defines} TARGET_IEEEQUAD_DEFAULT=0"
+		fi
+
+		# Test if we should enable 16-bit floating point on the
+		# PowerPC platforms where we can support __bf16 and
+		# _Float16.
+		if test x$with_powerpc_float16 = xyes; then
+		    tm_defines="${tm_defines} POWERPC_FLOAT16_DEFAULT=1"
+
+		elif test x$with_powerpc_16bit_floating_point = xyes; then
+		    tm_defines="${tm_defines} POWERPC_FLOAT16_DEFAULT=1"
 		fi
 		;;
 

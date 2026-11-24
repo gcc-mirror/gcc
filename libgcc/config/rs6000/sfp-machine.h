@@ -22,6 +22,9 @@ typedef unsigned int UTItype __attribute__ ((mode (TI)));
 #define _FP_I_TYPE		int
 #endif	/* 32-bits  */
 
+#define _FP_NANFRAC_H           _FP_QNANBIT_H
+#define _FP_NANFRAC_B           _FP_QNANBIT_B
+
 /* The type of the result of a floating point comparison.  This must
    match `__libgcc_cmp_return__' in GCC for the target.  */
 typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
@@ -62,6 +65,8 @@ typedef int __gcc_CMPtype __attribute__ ((mode (__libgcc_cmp_return__)));
 #define _FP_NANFRAC_Q		((_FP_QNANBIT_Q << 1) - 1), -1, -1, -1
 #endif
 
+#define _FP_NANSIGN_H		1
+#define _FP_NANSIGN_B		1
 #define _FP_NANSIGN_S		0
 #define _FP_NANSIGN_D		0
 #define _FP_NANSIGN_Q		0
@@ -161,3 +166,70 @@ void __sfp_handle_exceptions (int);
 # define strong_alias(name, aliasname) _strong_alias(name, aliasname)
 # define _strong_alias(name, aliasname) \
   extern __typeof (name) aliasname __attribute__ ((alias (#name)));
+
+/* Add prototypes for the HFmode and BFmode functions.  */
+typedef double DFtype2;
+typedef float SFtype2;
+typedef int DItype2 __attribute__ ((mode (DI)));
+typedef unsigned int UDItype2 __attribute__ ((mode (DI)));
+typedef int SItype2 __attribute__ ((mode (SI)));
+typedef unsigned int USItype2 __attribute__ ((mode (SI)));
+#ifdef _ARCH_PPC64
+typedef int TItype2 __attribute__ ((mode (TI)));
+typedef unsigned int UTItype2 __attribute__ ((mode (TI)));
+#endif
+
+#ifdef __FLOAT16__
+typedef float HFtype2 __attribute__ ((mode (HF)));
+
+extern CMPtype __eqhf2 (HFtype2, HFtype2);
+extern DFtype2 __extendhfdf2 (HFtype2);
+extern SFtype2 __extendhfsf2 (HFtype2);
+extern DItype2 __fixhfdi (HFtype2);
+extern SItype2 __fixhfsi (HFtype2);
+extern UDItype2 __fixunshfdi (HFtype2);
+extern USItype2 __fixunshfsi (HFtype2);
+extern HFtype2 __floatdihf (DItype2);
+extern HFtype2 __floatsihf (SItype2);
+extern HFtype2 __floatundihf (UDItype2);
+extern HFtype2 __floatunsihf (USItype2);
+extern HFtype2 __truncdfhf2 (DFtype2);
+extern HFtype2 __truncsfhf2 (SFtype2);
+
+#ifdef _ARCH_PPC64
+extern TItype2 __fixhfti (HFtype2);
+extern UTItype2 __fixunshfti (HFtype2);
+extern HFtype2 __floattihf (TItype2);
+extern HFtype2 __floatuntihf (UTItype2);
+#endif
+#endif
+
+#ifdef __BFLOAT16__
+typedef float BFtype2 __attribute__ ((mode (BF)));
+
+extern CMPtype __eqbf2 (BFtype2, BFtype2);
+extern SFtype2 __extendbfsf2 (BFtype2);
+extern DFtype2 __extendbfdf2 (BFtype2);
+extern DItype2 __fixbfdi (BFtype2);
+extern SItype2 __fixbfsi (BFtype2);
+extern UDItype2 __fixunsbfdi (BFtype2);
+extern USItype2 __fixunsbfsi (BFtype2);
+extern BFtype2 __floatdibf (DItype2);
+extern BFtype2 __floatsibf (SItype2);
+extern BFtype2 __floatundibf (UDItype2);
+extern BFtype2 __floatunsibf (USItype2);
+extern BFtype2 __truncdfbf2 (DFtype2);
+extern BFtype2 __truncsfbf2 (SFtype2);
+
+#ifdef _ARCH_PPC64
+extern TItype2 __fixbfti (BFtype2);
+extern UTItype2 __fixunsbfti (BFtype2);
+extern BFtype2 __floattibf (TItype2);
+extern BFtype2 __floatuntibf (UTItype2);
+#endif
+#endif
+
+#if defined(__FLOAT16__) && defined(__BFLOAT16__)
+extern HFtype2 __truncbfhf2 (BFtype2);
+extern BFtype2 __trunchfbf2 (HFtype2);
+#endif

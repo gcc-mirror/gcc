@@ -295,28 +295,64 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #define ASSEMBLER_DIALECT 1
 
 /* Debug support */
-#define MASK_DEBUG_STACK	0x01	/* debug stack applications */
-#define	MASK_DEBUG_ARG		0x02	/* debug argument handling */
-#define MASK_DEBUG_REG		0x04	/* debug register handling */
-#define MASK_DEBUG_ADDR		0x08	/* debug memory addressing */
-#define MASK_DEBUG_COST		0x10	/* debug rtx codes */
-#define MASK_DEBUG_TARGET	0x20	/* debug target attribute/pragma */
-#define MASK_DEBUG_BUILTIN	0x40	/* debug builtins */
-#define MASK_DEBUG_ALL		(MASK_DEBUG_STACK \
-				 | MASK_DEBUG_ARG \
-				 | MASK_DEBUG_REG \
-				 | MASK_DEBUG_ADDR \
-				 | MASK_DEBUG_COST \
-				 | MASK_DEBUG_TARGET \
+#define MASK_DEBUG_NUMBER	0x0000ff	/* debug number value.  */
+#define MASK_DEBUG_EXTRA1	0x000100	/* random testing #1.  */
+#define MASK_DEBUG_EXTRA2	0x000200	/* random testing #2.  */
+#define MASK_DEBUG_EXTRA3	0x000400	/* random testing #3.  */
+#define MASK_DEBUG_EXTRA4	0x000800	/* random testing #4.  */
+#define MASK_DEBUG_REG		0x001000	/* register handling.  */
+#define MASK_DEBUG_STACK	0x002000	/* stack applications.  */
+#define MASK_DEBUG_ARG		0x004000	/* argument handling.  */
+#define MASK_DEBUG_ADDR		0x008000	/* memory addressing.  */
+#define MASK_DEBUG_COST		0x010000	/* rtx costs.  */
+#define MASK_DEBUG_TARGET	0x020000	/* target attr./pragma.  */
+#define MASK_DEBUG_BUILTIN	0x040000	/* builtins */
+
+/* All mask bits, but the bottom 8 bits for passing a number.  */
+#define MASK_DEBUG_ALL		(MASK_DEBUG_EXTRA1			\
+				 | MASK_DEBUG_EXTRA2			\
+				 | MASK_DEBUG_EXTRA3			\
+				 | MASK_DEBUG_EXTRA4			\
+				 | MASK_DEBUG_STACK			\
+				 | MASK_DEBUG_ARG			\
+				 | MASK_DEBUG_REG			\
+				 | MASK_DEBUG_ADDR			\
+				 | MASK_DEBUG_COST			\
+				 | MASK_DEBUG_TARGET			\
 				 | MASK_DEBUG_BUILTIN)
 
-#define	TARGET_DEBUG_STACK	(rs6000_debug & MASK_DEBUG_STACK)
-#define	TARGET_DEBUG_ARG	(rs6000_debug & MASK_DEBUG_ARG)
-#define TARGET_DEBUG_REG	(rs6000_debug & MASK_DEBUG_REG)
-#define TARGET_DEBUG_ADDR	(rs6000_debug & MASK_DEBUG_ADDR)
-#define TARGET_DEBUG_COST	(rs6000_debug & MASK_DEBUG_COST)
-#define TARGET_DEBUG_TARGET	(rs6000_debug & MASK_DEBUG_TARGET)
-#define TARGET_DEBUG_BUILTIN	(rs6000_debug & MASK_DEBUG_BUILTIN)
+#define TARGET_DEBUG_NUMBER	((signed char)rs6000_debug)
+#define TARGET_DEBUG_EXTRA1	((rs6000_debug & MASK_DEBUG_EXTRA1)  != 0)
+#define TARGET_DEBUG_EXTRA2	((rs6000_debug & MASK_DEBUG_EXTRA2)  != 0)
+#define TARGET_DEBUG_EXTRA3	((rs6000_debug & MASK_DEBUG_EXTRA3)  != 0)
+#define TARGET_DEBUG_EXTRA4	((rs6000_debug & MASK_DEBUG_EXTRA4)  != 0)
+#define TARGET_DEBUG_STACK	((rs6000_debug & MASK_DEBUG_STACK)   != 0)
+#define TARGET_DEBUG_ARG	((rs6000_debug & MASK_DEBUG_ARG)     != 0)
+#define TARGET_DEBUG_REG	((rs6000_debug & MASK_DEBUG_REG)     != 0)
+#define TARGET_DEBUG_ADDR	((rs6000_debug & MASK_DEBUG_ADDR)    != 0)
+#define TARGET_DEBUG_COST	((rs6000_debug & MASK_DEBUG_COST)    != 0)
+#define TARGET_DEBUG_TARGET	((rs6000_debug & MASK_DEBUG_TARGET)  != 0)
+#define TARGET_DEBUG_BUILTIN	((rs6000_debug & MASK_DEBUG_BUILTIN) != 0)
+
+/* Is this a valid 16-bit scalar floating point mode?  */
+#define FP16_SCALAR_MODE_P(MODE)					\
+  (TARGET_FLOAT16 && ((MODE) == HFmode || (MODE) == BFmode))
+
+/* Is this a valid 16-bit scalar floating point mode?  */
+#define FP16_VECTOR_MODE_P(MODE)					\
+  (TARGET_FLOAT16 && ((MODE) == V8HFmode || (MODE) == V8BFmode))
+
+/* Do we have conversion support in hardware for the 16-bit floating point?  */
+#define TARGET_BFLOAT16_HW	(TARGET_FLOAT16 && TARGET_POWER10)
+#define TARGET_FLOAT16_HW	(TARGET_FLOAT16 && TARGET_P9_VECTOR)
+
+/* Macro to say that we have the minimum hardware to enable 16-bit floating
+   point.  We require a little endian 64-bit machine that supports at least
+   power8 with VSX support.  */
+#define TARGET_FLOAT16_MIN_HARDWARE	(TARGET_P8_VECTOR		\
+					 && TARGET_POWERPC64		\
+					 && !BYTES_BIG_ENDIAN		\
+					 && TARGET_HARD_FLOAT)
 
 /* Helper macros for TFmode.  Quad floating point (TFmode) can be either IBM
    long double format that uses a pair of doubles, or IEEE 128-bit floating
@@ -1003,6 +1039,8 @@ enum data_align { align_abi, align_opt, align_both };
 #define ALTIVEC_VECTOR_MODE(MODE)					\
   ((MODE) == V16QImode							\
    || (MODE) == V8HImode						\
+   || (MODE) == V8HFmode						\
+   || (MODE) == V8BFmode						\
    || (MODE) == V4SFmode						\
    || (MODE) == V4SImode						\
    || VECTOR_ALIGNMENT_P (MODE))

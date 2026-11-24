@@ -203,6 +203,8 @@
 ;; otherwise handled by altivec (v2df, v2di, ti)
 (define_mode_iterator VM [V4SI
 			  V8HI
+			  V8BF
+			  V8HF
 			  V16QI
 			  V4SF
 			  V2DF
@@ -215,6 +217,8 @@
 ;; Like VM, except don't do TImode
 (define_mode_iterator VM2 [V4SI
 			   V8HI
+			   V8BF
+			   V8HF
 			   V16QI
 			   V4SF
 			   V2DF
@@ -234,18 +238,38 @@
 			       V1TI
 			       TI])
 
-(define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
-(define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
+(define_mode_attr VI_char [(V2DI "d")
+			   (V4SI "w")
+			   (V8HI "h")
+			   (V8BF "h")
+			   (V8HF "h")
+			   (V16QI "b")])
+(define_mode_attr VI_scalar [(V2DI "DI")
+			     (V4SI "SI")
+			     (V8HI "HI")
+			     (V8BF "BF")
+			     (V8HF "HF")
+			     (V16QI "QI")])
 (define_mode_attr VI_unit [(V16QI "VECTOR_UNIT_ALTIVEC_P (V16QImode)")
 			   (V8HI "VECTOR_UNIT_ALTIVEC_P (V8HImode)")
+			   (V8BF "VECTOR_UNIT_ALTIVEC_P (V8BFmode)")
+			   (V8HF "VECTOR_UNIT_ALTIVEC_P (V8HFmode)")
 			   (V4SI "VECTOR_UNIT_ALTIVEC_P (V4SImode)")
 			   (V2DI "VECTOR_UNIT_P8_VECTOR_P (V2DImode)")])
 
 ;; Vector pack/unpack
 (define_mode_iterator VP [V2DI V4SI V8HI])
-(define_mode_attr VP_small [(V2DI "V4SI") (V4SI "V8HI") (V8HI "V16QI")])
-(define_mode_attr VP_small_lc [(V2DI "v4si") (V4SI "v8hi") (V8HI "v16qi")])
-(define_mode_attr VU_char [(V2DI "w") (V4SI "h") (V8HI "b")])
+(define_mode_attr VP_small [(V2DI "V4SI")
+			    (V4SI "V8HI")
+			    (V8HI "V16QI")])
+(define_mode_attr VP_small_lc [(V2DI "v4si")
+			       (V4SI "v8hi")
+			       (V8HI "v16qi")])
+(define_mode_attr VU_char [(V2DI "w")
+			   (V4SI "h")
+			   (V8HI "b")
+			   (V8BF "b")
+			   (V8HF "b")])
 
 ;; Vector negate
 (define_mode_iterator VNEG [V4SI V2DI])

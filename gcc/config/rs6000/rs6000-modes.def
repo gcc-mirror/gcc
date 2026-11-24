@@ -45,6 +45,13 @@ FLOAT_MODE (TF, 16, ieee_quad_format);
 /* IBM 128-bit floating point.  */
 FLOAT_MODE (IF, 16, ibm_extended_format);
 
+/* Explicit IEEE 16-bit floating point.  */
+FLOAT_MODE (HF, 2, ieee_half_format);
+
+/* Explicit bfloat16 floating point.  */
+FLOAT_MODE (BF, 2, arm_bfloat_half_format);
+ADJUST_FLOAT_FORMAT (BF, &arm_bfloat_half_format);
+
 /* Add any extra modes needed to represent the condition code.
 
    For the RS/6000, we need separate modes when unsigned (logical) comparisons
@@ -70,6 +77,8 @@ VECTOR_MODES (FLOAT, 32);     /*       V16HF V8SF V4DF */
 /* Half VMX/VSX vector (for internal use)  */
 VECTOR_MODE (FLOAT, SF, 2);   /*                 V2SF  */
 VECTOR_MODE (INT, SI, 2);     /*                 V2SI  */
+VECTOR_MODE (FLOAT, BF, 4);   /*                 V4BF  */
+VECTOR_MODE (FLOAT, HF, 4);   /*                 V4HF  */
 
 /* Replacement for TImode that only is allowed in GPRs.  We also use PTImode
    for quad memory atomic operations to force getting an even/odd register

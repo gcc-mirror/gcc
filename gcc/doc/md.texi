@@ -3406,6 +3406,9 @@ A signed integer constant that can be used with the paddis instruction.
 @item eV
 A signed integer constant that paddis and paddi instructions generate.
 
+@item eZ
+The floating point constant -0.0.
+
 @ifset INTERNALS
 @item G
 A floating point constant that can be loaded into a register with one

@@ -3880,6 +3880,140 @@ proc check_ppc_recip_hw_available { } {
     }]
 }
 
+# Return true if the PowerPC has hardware support for doing _Float16
+# conversions
+proc check_ppc_float16_hw_available { } {
+    return [check_cached_effective_target ppc_float16_hw_available {
+	# Some simulators may not support XSCVHPDP
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mfloat16"
+	    check_runtime_nocache ppc_float16_hw_available {
+		extern void abort (void);
+		volatile _Float16 x = 3.0F16;
+		volatile union {
+		  _Float16 five_f16;
+		  unsigned short five_us;
+		} u = { 5.0F16 };
+		int main()
+		{
+		  double y;
+		  asm ("xscvhpdp %x0,%x1" : "=wa" (y) : "wa" (x));
+		  if (y != 3.0)
+		    abort ();
+		  if (u.five_us != 0x4500)
+		    abort ();
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
+# Return true if the PowerPC can do _Float16 calculations via either
+# software or hardware support.
+proc check_ppc_float16_runtime_available { } {
+    return [check_cached_effective_target ppc_float16_runtime_available {
+	# Some simulators may not support XSCVHPDP
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mfloat16"
+	    check_runtime_nocache ppc_float16_runtime_available {
+		extern void abort (void);
+		volatile _Float16 x = 3.0F16;
+		volatile _Float16 y = 4.0F16;
+		volatile _Float16 z;
+		volatile union {
+		  _Float16 five_f16;
+		  unsigned short five_us;
+		} u = { 5.0F16 };
+		int main()
+		{
+		  z = x + y;
+		  if (((double)z) != 7.0)
+		    abort ();
+		  if (u.five_us != 0x4500)
+		    abort ();
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
+# Return true if the PowerPC has hardware support for doing __bf16
+# conversions
+proc check_ppc_bf16_hw_available { } {
+    return [check_cached_effective_target ppc_bf16_hw_available {
+	# Some simulators may not support XVCVBF16SPN/XVADDSP
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mfloat16"
+	    check_runtime_nocache ppc_float16_hw_available {
+		extern void abort (void);
+		typedef __bf16 vbf16 __attribute__ ((vector_size (16)));
+		volatile vbf16 x = { 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0 };
+		volatile vector float y = { 2.0f, 2.0f, 2.0f, 2.0f };
+		volatile vector float z;
+		volatile vector float r;
+		volatile union {
+		  __bf16 five_bf16;
+		  unsigned short five_us;
+		} u = { 5.0 };
+		int main()
+		{
+		  asm ("xvcvbf16spn %x0,%x1" : "=wa" (z) : "wa" (x));
+		  r = y + z;
+		  if (r[0] != 3.0 || r[1] != 3.0 || r[2] != 3.0 || r[3] != 3.0)
+		    abort ();
+		  if (u.five_us != 0x40a0)
+		    abort ();
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
+# Return true if the PowerPC can do __bf16 calculations via either
+# software or hardware support.
+proc check_ppc_bf16_runtime_available { } {
+    return [check_cached_effective_target ppc_bf16_runtime_available {
+	# Some simulators may not support XVCVBF16SPN
+	# For now, disable on Darwin
+	if { [istarget powerpc-*-eabi] || [istarget *-*-darwin*]} {
+	    expr 0
+	} else {
+	    set options "-mfloat16"
+	    check_runtime_nocache ppc_bf16_runtime_available {
+		extern void abort (void);
+		volatile __bf16 x = 3.0;
+		volatile __bf16 y = 4.0;
+		volatile __bf16 z;
+		volatile union {
+		  __bf16 five_bf16;
+		  unsigned short five_us;
+		} u = { 5.0 };
+		int main()
+		{
+		  z = x + y;
+		  if (((double)z) != 7.0)
+		    abort ();
+		  if (u.five_us != 0x40a0)
+		    abort ();
+		  return 0;
+		}
+	    } $options
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AltiVec and Cell PPU
 # instructions, 0 otherwise.  Cache the result.
 
@@ -11292,6 +11426,10 @@ proc is-effective-target { arg } {
 	  "ppc_recip_hw"   { set selected [check_ppc_recip_hw_available] }
 	  "ppc_cpu_supports_hw" { set selected [check_ppc_cpu_supports_hw_available] }
 	  "ppc_mma_hw"     { set selected [check_ppc_mma_hw_available] }
+	  "ppc_float16_hw"       { set selected [check_ppc_float16_hw_available] }
+	  "ppc_float16_runtime"  { set selected [check_ppc_float16_runtime_available] }
+	  "ppc_bf16_hw"      { set selected [check_ppc_bf16_hw_available] }
+	  "ppc_bf16_runtime" { set selected [check_ppc_bf16_runtime_available] }
 	  "dfp_hw"         { set selected [check_dfp_hw_available] }
 	  "htm_hw"         { set selected [check_htm_hw_available] }
 	  "named_sections" { set selected [check_named_sections_available] }

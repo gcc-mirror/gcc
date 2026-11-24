@@ -50,11 +50,31 @@
 (define_mode_iterator VEC_K [V16QI V8HI V4SI V4SF])
 
 ;; Vector logical modes
-(define_mode_iterator VEC_L [V16QI V8HI V4SI V2DI V4SF V2DF V1TI TI KF TF])
+(define_mode_iterator VEC_L [V16QI
+			     V8HI
+			     V8BF
+			     V8HF
+			     V4SI
+			     V2DI
+			     V4SF
+			     V2DF
+			     V1TI
+			     TI
+			     KF
+			     TF])
 
 ;; Vector modes for moves.  Don't do TImode or TFmode here, since their
 ;; moves are handled elsewhere.
-(define_mode_iterator VEC_M [V16QI V8HI V4SI V2DI V4SF V2DF V1TI KF])
+(define_mode_iterator VEC_M [V16QI
+			     V8HI
+			     V4SI
+			     V2DI
+			     V8BF
+			     V8HF
+			     V4SF
+			     V2DF
+			     V1TI
+			     KF])
 
 ;; Vector modes for types that don't need a realignment under VSX
 (define_mode_iterator VEC_N [V4SI V4SF V2DI V2DF V1TI KF TF])
@@ -63,7 +83,14 @@
 (define_mode_iterator VEC_C [V16QI V8HI V4SI V2DI V4SF V2DF V1TI])
 
 ;; Vector init/extract modes
-(define_mode_iterator VEC_E [V16QI V8HI V4SI V2DI V4SF V2DF])
+(define_mode_iterator VEC_E [V16QI
+			     V8HI
+			     V4SI
+			     V2DI
+			     V8BF
+			     V8HF
+			     V4SF
+			     V2DF])
 
 ;; Vector modes for 64-bit base types
 (define_mode_iterator VEC_64 [V2DI V2DF])
@@ -76,6 +103,8 @@
 			    (V8HI  "HI")
 			    (V4SI  "SI")
 			    (V2DI  "DI")
+			    (V8BF  "BF")
+			    (V8HF  "HF")
 			    (V4SF  "SF")
 			    (V2DF  "DF")
 			    (V1TI  "TI")
@@ -86,6 +115,8 @@
 			      (V8HI  "hi")
 			      (V4SI  "si")
 			      (V2DI  "di")
+			      (V8BF  "bf")
+			      (V8HF  "hf")
 			      (V4SF  "sf")
 			      (V2DF  "df")
 			      (V1TI  "ti")

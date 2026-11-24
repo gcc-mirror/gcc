@@ -1597,10 +1597,10 @@ rs6000_gen_stvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
     stvx = gen_altivec_stvx_v16qi (src_exp, dest_exp);
   else if (mode == V8HImode)
     stvx = gen_altivec_stvx_v8hi (src_exp, dest_exp);
-#ifdef HAVE_V8HFmode
   else if (mode == V8HFmode)
     stvx = gen_altivec_stvx_v8hf (src_exp, dest_exp);
-#endif
+  else if (mode == V8BFmode)
+    stvx = gen_altivec_stvx_v8bf (src_exp, dest_exp);
   else if (mode == V4SImode)
     stvx = gen_altivec_stvx_v4si (src_exp, dest_exp);
   else if (mode == V4SFmode)
@@ -1721,10 +1721,10 @@ rs6000_gen_lvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
     lvx = gen_altivec_lvx_v16qi (dest_exp, src_exp);
   else if (mode == V8HImode)
     lvx = gen_altivec_lvx_v8hi (dest_exp, src_exp);
-#ifdef HAVE_V8HFmode
   else if (mode == V8HFmode)
     lvx = gen_altivec_lvx_v8hf (dest_exp, src_exp);
-#endif
+  else if (mode == V8BFmode)
+    lvx = gen_altivec_lvx_v8bf (dest_exp, src_exp);
   else if (mode == V4SImode)
     lvx = gen_altivec_lvx_v4si (dest_exp, src_exp);
   else if (mode == V4SFmode)
@@ -1929,11 +1929,7 @@ replace_swapped_load_constant (swap_web_entry *insn_entry, rtx_insn *swap_insn)
       rtx new_const_vector = gen_rtx_CONST_VECTOR (mode, XVEC (vals, 0));
       new_mem = force_const_mem (mode, new_const_vector);
     }
-  else if ((mode == V8HImode)
-#ifdef HAVE_V8HFmode
-	   || (mode == V8HFmode)
-#endif
-	   )
+  else if (mode == V8HImode || mode == V8HFmode || mode == V8BFmode)
     {
       rtx vals = gen_rtx_PARALLEL (mode, rtvec_alloc (8));
       int i;

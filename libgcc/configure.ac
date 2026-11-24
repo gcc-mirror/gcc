@@ -402,6 +402,8 @@ case ${host} in
 # check if we have VSX (ISA 2.06) support to build the software libraries, and
 # whether the assembler can handle xsaddqp for hardware support.  Also check if
 # a new glibc is being used so that __builtin_cpu_supports can be used.
+#
+# Add float16 support also
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -459,6 +461,15 @@ powerpc*-*-linux*)
 	__attribute__ ((__ifunc__ ("conv_resolver")));])],
     [libgcc_cv_powerpc_3_1_float128_hw=yes],
     [libgcc_cv_powerpc_3_1_float128_hw=no])])
+  CFLAGS="$saved_CFLAGS"
+
+  CFLAGS="$CFLAGS -mfloat16 -Wno-psabi"
+  AC_CACHE_CHECK([whether the PowerPC can build the _Float16 libraries],
+		 [libgcc_cv_powerpc_float16],
+		 [AC_COMPILE_IFELSE(
+    [AC_LANG_SOURCE([_Float16 addf16 (_Float16 a, _Float16 b) { return a + b; }])],
+    [libgcc_cv_powerpc_float16=yes],
+    [libgcc_cv_powerpc_float16=no])])
   CFLAGS="$saved_CFLAGS"
 esac
 

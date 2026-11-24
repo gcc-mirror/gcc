@@ -1,0 +1,93 @@
+# _Float16 library support
+
+fp16_funcs	= eqhf2 extendhfdf2 extendhfsf2 \
+		  fixhfsi  fixhfdi fixunshfsi fixunshfdi \
+		  floatsihf floatdihf floatunsihf floatundihf \
+		  truncsfhf2 truncdfhf2 trunctfhf2
+
+fp16_src	= $(addprefix $(srcdir)/soft-fp/,$(addsuffix .c,$(fp16_funcs)))
+fp16_obj	= $(addsuffix $(objext),$(fp16_funcs))
+
+fp16_funcs2	= float16-fixhfti float16-fixunshfti \
+		  float16-floattihf float16-floatuntihf
+
+fp16_src2	= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix .c,$(fp16_funcs2)))
+fp16_obj2	= $(addsuffix $(objext),$(fp16_funcs2))
+
+FP16_CFLAGS	= -mfloat16 -Wno-psabi \
+		  -I$(srcdir)/soft-fp -I$(srcdir)/config/rs6000
+
+$(fp16_obj)	: INTERNAL_CFLAGS += $(FP16_CFLAGS)
+$(fp16_obj2)	: INTERNAL_CFLAGS += $(FP16_CFLAGS)
+
+# __bfloat16 library support
+
+bfp16_funcs	= extendbfsf2 floatdibf floatsibf floatundibf floatunsibf \
+		  truncsfbf2 truncdfbf2 trunctfbf2
+
+bfp16_src	= $(addprefix $(srcdir)/soft-fp/,$(addsuffix .c,$(bfp16_funcs)))
+bfp16_obj	= $(addsuffix $(objext),$(bfp16_funcs))
+
+bfp16_funcs2	= float16-eqbf2 float16-extendbfdf2 \
+		  float16-fixbfsi float16-fixbfdi float16-fixbfti \
+		  float16-fixunsbfsi float16-fixunsbfdi float16-fixunsbfti \
+		  float16-floattibf float16-floatuntibf
+
+bfp16_src2	= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix .c,$(bfp16_funcs2)))
+bfp16_obj2	= $(addsuffix $(objext),$(bfp16_funcs2))
+
+$(bfp16_obj)	: INTERNAL_CFLAGS += $(FP16_CFLAGS)
+$(bfp16_obj2)	: INTERNAL_CFLAGS += $(FP16_CFLAGS)
+
+# Conversion between __bfloat16 and _Float16
+
+both_fp16_funcs	 = truncbfhf2 trunchfbf2
+both_fp16_src	 = $(addprefix $(srcdir)/soft-fp/,$(addsuffix .c,$(both_fp16_funcs)))
+both_fp16_obj	 = $(addsuffix $(objext),$(both_fp16_funcs))
+
+$(both_fp16_obj) : INTERNAL_CFLAGS += $(FP16_CFLAGS)
+
+# For now, only put it in the static library
+# LIB2ADD	+= $(fp16_src) $(fp16_src2) \
+#		   $(bfp16_src) $(bfp16_src2) \
+#		   $(both_fp16_src)
+
+LIB2ADD_ST	+= $(fp16_src) $(fp16_src2) \
+		   $(bfp16_src) $(bfp16_src2) \
+		   $(both_fp16_src)
+
+.PHONY: test-float16 clean-float16
+
+test-float16:
+	@echo "fp16_src:"; \
+	for x in $(fp16_src); do echo "    $$x"; done; \
+	echo; \
+	echo "fp16_src2:"; \
+	for x in $(fp16_src2); do echo "    $$x"; done; \
+	echo; \
+	echo "bfp16_src:"; \
+	for x in $(bfp16_src); do echo "    $$x"; done; \
+	echo; \
+	echo "bfp16_src2:"; \
+	for x in $(bfp16_src2); do echo "    $$x"; done; \
+	echo; \
+	echo "both_fp16_src:"; \
+	for x in $(both_fp16_src); do echo "    $$x"; done; \
+	echo; \
+	echo "fp16_obj:"; \
+	for x in $(fp16_obj); do echo "    $$x"; done; \
+	echo; \
+	echo "fp16_obj2:"; \
+	for x in $(fp16_obj2); do echo "    $$x"; done; \
+	echo; \
+	echo "bfp16_obj:"; \
+	for x in $(bfp16_obj); do echo "    $$x"; done; \
+	echo; \
+	echo "bfp16_obj2:"; \
+	for x in $(bfp16_obj2); do echo "    $$x"; done; \
+	echo; \
+	echo "both_fp16_obj:"; \
+	for x in $(bfp16_obj); do echo "    $$x"; done;
+
+clean-float16:
+	@$(MULTICLEAN) multi-clean DO=clean-float16

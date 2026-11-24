@@ -233,6 +233,11 @@
   (and (match_code "const_int")
        (match_operand 0 "paddis_paddi_operand")))
 
+;; A negative 0 constant
+(define_constraint "eZ"
+  "A floating point -0.0 constant."
+  (match_operand 0 "minus_zero_constant"))
+
 ;; Floating-point constraints.  These two are defined so that insn
 ;; length attributes can be calculated exactly.
 

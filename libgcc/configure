@@ -5122,6 +5122,8 @@ case ${host} in
 # check if we have VSX (ISA 2.06) support to build the software libraries, and
 # whether the assembler can handle xsaddqp for hardware support.  Also check if
 # a new glibc is being used so that __builtin_cpu_supports can be used.
+#
+# Add float16 support also
 powerpc*-*-linux*)
   saved_CFLAGS="$CFLAGS"
   CFLAGS="$CFLAGS -mabi=altivec -mvsx -mfloat128"
@@ -5215,6 +5217,27 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_3_1_float128_hw" >&5
 $as_echo "$libgcc_cv_powerpc_3_1_float128_hw" >&6; }
+  CFLAGS="$saved_CFLAGS"
+
+  CFLAGS="$CFLAGS -mfloat16 -Wno-psabi"
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the PowerPC can build the _Float16 libraries" >&5
+$as_echo_n "checking whether the PowerPC can build the _Float16 libraries... " >&6; }
+if ${libgcc_cv_powerpc_float16+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+_Float16 addf16 (_Float16 a, _Float16 b) { return a + b; }
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_powerpc_float16=yes
+else
+  libgcc_cv_powerpc_float16=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_powerpc_float16" >&5
+$as_echo "$libgcc_cv_powerpc_float16" >&6; }
   CFLAGS="$saved_CFLAGS"
 esac
 

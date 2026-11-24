@@ -513,6 +513,10 @@ const char *rs6000_type_string (tree type_node)
     return "voidc*";
   else if (type_node == float128_type_node)
     return "_Float128";
+  else if (type_node == float16_type_node)
+    return "_Float16";
+  else if (TARGET_FLOAT16 && type_node == bfloat16_type_node)
+    return "__bf16";
   else if (type_node == vector_pair_type_node)
     return "__vector_pair";
   else if (type_node == vector_quad_type_node)
@@ -797,6 +801,23 @@ rs6000_init_builtins (void)
       lang_hooks.types.register_builtin_type (uintPTI_type_internal_node,
 					      "__upti_internal");
     }
+
+  /* __bf16 support.  */
+  if (TARGET_FLOAT16)
+    {
+      if (!bfloat16_type_node)
+	{
+	  bfloat16_type_node = make_node (REAL_TYPE);
+	  TYPE_PRECISION (bfloat16_type_node) = 16;
+	  SET_TYPE_MODE (bfloat16_type_node, BFmode);
+	  layout_type (bfloat16_type_node);
+	  t = build_qualified_type (bfloat16_type_node, TYPE_QUAL_CONST);
+	}
+
+      lang_hooks.types.register_builtin_type (bfloat16_type_node,
+					      "__bf16");
+    }
+
   /* Vector pair and vector quad support.  */
   vector_pair_type_node = make_node (OPAQUE_TYPE);
   SET_TYPE_MODE (vector_pair_type_node, OOmode);

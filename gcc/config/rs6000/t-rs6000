@@ -87,6 +87,10 @@ rs6000-c.o: $(srcdir)/config/rs6000/rs6000-c.cc rs6000-builtins.h
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+float16.o: $(srcdir)/config/rs6000/float16.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 #$(srcdir)/config/rs6000/fusion.md: $(srcdir)/config/rs6000/genfusion.pl
 #	$(srcdir)/config/rs6000/genfusion.pl > $(srcdir)/config/rs6000/fusion.md
 
