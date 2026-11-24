@@ -3168,6 +3168,43 @@ simplify_rotate_op (rtx op0, rtx op1, machine_mode mode)
   return NULL_RTX;
 }
 
+/* Try to combine two unsigned comparisons against the same value, OP0 and
+   OP1, joined by CODE (IOR or AND), into one comparison of a UMIN/UMAX:
+
+     (A <=u C) | (B <=u C)  ->  umin (A, B) <=u C
+     (A <=u C) & (B <=u C)  ->  umax (A, B) <=u C
+     (A >u C) | (B >u C)    ->  umax (A, B) >u C
+     (A >u C) & (B >u C)    ->  umin (A, B) >u C
+
+   and likewise for LTU and GEU.
+
+   Return the combined RTX or NULL_RTX otherwise.  */
+
+static rtx
+simplify_unsigned_cmp_minmax (rtx_code code, machine_mode mode,
+			      rtx op0, rtx op1)
+{
+  rtx_code cmp = GET_CODE (op0);
+  if (STORE_FLAG_VALUE != 1
+      || GET_CODE (op1) != cmp
+      || (cmp != LEU && cmp != LTU && cmp != GEU && cmp != GTU)
+      || !SCALAR_INT_MODE_P (mode)
+      || !rtx_equal_p (XEXP (op0, 1), XEXP (op1, 1))
+      || side_effects_p (op0)
+      || side_effects_p (op1))
+    return NULL_RTX;
+
+  machine_mode cmp_mode = GET_MODE (XEXP (op0, 0));
+  if (!SCALAR_INT_MODE_P (cmp_mode) || GET_MODE (XEXP (op1, 0)) != cmp_mode)
+    return NULL_RTX;
+
+  bool less = cmp == LEU || cmp == LTU;
+  rtx_code minmax = (less == (code == IOR)) ? UMIN : UMAX;
+  rtx m = simplify_gen_binary (minmax, cmp_mode,
+			       XEXP (op0, 0), XEXP (op1, 0));
+  return simplify_gen_relational (cmp, mode, cmp_mode, m, XEXP (op0, 1));
+}
+
 /* Returns true if OP0 and OP1 match the pattern (OP (plus (A - 1)) (neg A)),
    and the pattern can be simplified (there are no side effects).  */
 
@@ -3877,6 +3914,9 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	return CONSTM1_RTX (mode);
 
+      if (rtx tem = simplify_unsigned_cmp_minmax (IOR, mode, op0, op1))
+	return tem;
+
       /* IOR of two single bit bitfields extracted from the same object.
 	 Bitfields are represented as an AND based extraction */
       if (GET_CODE (op0) == AND
@@ -4484,6 +4524,9 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && ! side_effects_p (op0)
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	return CONST0_RTX (mode);
+
+      if (rtx tem = simplify_unsigned_cmp_minmax (AND, mode, op0, op1))
+	return tem;
 
       /* Convert (and (xor A 1) B) to (and (not A) B) when B is known to be
 	 0 or 1.  Only bit 0 of the XOR matters, and the NOT may be folded
