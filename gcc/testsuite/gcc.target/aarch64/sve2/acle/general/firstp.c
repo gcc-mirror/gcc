@@ -1,6 +1,6 @@
 /* { dg-do assemble { target aarch64_asm_sve2p2_ok } } */
 /* { dg-do compile { target { ! aarch64_asm_sve2p2_ok } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -save-temps" } */
 /* { dg-final { check-function-bodies "**" "" } } */
 
 #include <arm_sve.h>
