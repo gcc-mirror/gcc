@@ -12664,6 +12664,7 @@ of the following functions for working with file descriptors:
 @itemize @bullet
 @item @code{open}
 @item @code{close}
+@item @code{closefrom}
 @item @code{creat}
 @item @code{dup}, @code{dup2} and @code{dup3}
 @item @code{isatty}

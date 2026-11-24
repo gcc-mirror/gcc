@@ -2826,6 +2826,162 @@ public:
   }
 };
 
+/* Handler for "closefrom".
+     void closefrom (int lowfd);  (glibc / FreeBSD)
+     int closefrom (int lowfd);   (NetBSD / OpenBSD)
+   Negative lowfd handling varies across C libraries (glibc clamps to 0,
+   whereas NetBSD fails with EBADF).  */
+
+class kf_closefrom : public known_function
+{
+public:
+  bool matches_call_types_p (const call_details &cd) const final override
+  {
+    if (cd.num_args () != 1)
+      return false;
+    if (!types_compatible_p (cd.get_arg_type (0), integer_type_node))
+      return false;
+
+    const gcall &call = cd.get_call_stmt ();
+    if (!gimple_call_fntype (&call))
+      return false;
+    tree ret_type = gimple_call_return_type (&call);
+    return (VOID_TYPE_P (ret_type)
+	    || types_compatible_p (ret_type, integer_type_node));
+  }
+
+  void impl_call_pre (const call_details &cd) const final override
+  {
+    cd.set_any_lhs_with_defaults ();
+
+    region_model *model = cd.get_model ();
+    const region *errno_reg = cd.get_manager ()->get_errno_region ();
+    const svalue *new_errno_sval
+      = cd.get_or_create_conjured_svalue (errno_reg);
+    model->set_value (errno_reg, new_errno_sval, cd.get_ctxt ());
+  }
+
+  void impl_call_post (const call_details &cd) const final override
+  {
+    sm_state_map *smap;
+    const fd_state_machine *fd_sm;
+    if (!get_fd_state (cd.get_ctxt (), &smap, &fd_sm, nullptr, nullptr))
+      return;
+
+    const extrinsic_state *ext_state = cd.get_ctxt ()->get_ext_state ();
+    if (!ext_state)
+      return;
+
+    region_model *model = cd.get_model ();
+    region_model_manager *mgr = cd.get_manager ();
+    const svalue *lowfd = cd.get_arg_svalue (0);
+    const svalue *zero = mgr->get_or_create_int_cst (integer_type_node, 0);
+    const bool lowfd_known_nonnegative
+      = model->eval_condition (lowfd, GE_EXPR, zero).is_true ();
+    const bool lowfd_known_eq_zero
+      = model->eval_condition (lowfd, EQ_EXPR, zero).is_true ();
+
+    symbolic::node_set<svalue> fds_to_close;
+    symbolic::node_set<svalue> fds_to_stop_tracking;
+
+    auto should_close_fd
+      = [&] (const svalue *fd_sval, bool valid,
+	     bool speculative_socket) -> tristate
+      {
+	/* Valid fds are guaranteed >= 0 by state-machine semantics even when
+	   constraint_manager lacks fd >= 0 (such as fd != -1 or pipe ()).  */
+	if (valid && lowfd_known_eq_zero)
+	  return tristate::TS_TRUE;
+
+	tristate ts_in_range = model->eval_condition (fd_sval, GE_EXPR, lowfd);
+	if (ts_in_range.is_false ())
+	  return tristate::TS_FALSE;
+
+	/* These socket states are shared by successful calls and speculative
+	   inference from m_start on failed bind, connect, listen, or accept.
+	   Because their origin is not distinguished, stop tracking them here,
+	   accepting some precision loss on double-close diagnostics.  */
+	if (speculative_socket)
+	  return tristate::TS_UNKNOWN;
+
+	/* Close fds proven >= lowfd >= 0.  Valid fds are guaranteed
+	   nonnegative; for other states (such as unchecked fds or sockets),
+	   also require fd >= 0 so negative values are not treated as
+	   closed.  */
+	if (ts_in_range.is_true () && lowfd_known_nonnegative)
+	  {
+	    if (valid)
+	      return tristate::TS_TRUE;
+	    return model->eval_condition (fd_sval, GE_EXPR, zero);
+	  }
+
+	return tristate::TS_UNKNOWN;
+      };
+
+    symbolic::node_set<svalue> fd_svals;
+    for (auto kv : *smap)
+      {
+	const auto state = kv.second.m_state;
+	if (fd_sm->is_valid_fd_p (state)
+	    || fd_sm->is_unchecked_fd_p (state)
+	    || fd_sm->is_socket_fd_p (state))
+	  fd_svals.add (kv.first);
+      }
+
+    for (const svalue *fd_sval : fd_svals)
+      {
+	const auto state = smap->get_state (fd_sval, *ext_state);
+	const bool valid = fd_sm->is_valid_fd_p (state);
+	const bool speculative_socket
+	  = (state == fd_sm->m_new_unknown_socket
+	     || state == fd_sm->m_bound_stream_socket
+	     || state == fd_sm->m_listening_stream_socket);
+
+	const svalue *fd_for_comparison = fd_sval;
+
+	/* sm_state_map::canonicalize_svalue strips the type from
+	   svalue_from_bit_vector; restore integer_type_node for comparison
+	   when the bit-vector width matches int.  */
+	if (auto *from_bv = fd_sval->dyn_cast_svalue_from_bit_vector ())
+	  {
+	    concrete_bit_size type_size;
+	    concrete_bit_size bv_size;
+	    const auto &bv = from_bv->get_bit_vector ();
+	    if (get_type_size (integer_type_node, &type_size)
+		&& bv.maybe_get_concrete_size_in_bits (&bv_size)
+		&& type_size == bv_size)
+	      fd_for_comparison
+		= mgr->get_svalue_from_bit_vector (integer_type_node, bv);
+	  }
+
+	tristate ts_should_close
+	  = should_close_fd (fd_for_comparison, valid, speculative_socket);
+
+	if (ts_should_close.is_true ())
+	  fds_to_close.add (fd_for_comparison);
+	else if (ts_should_close.is_unknown ())
+	  fds_to_stop_tracking.add (fd_for_comparison);
+      }
+
+    /* Only conclude a 0 return when we have proved at least one genuinely
+       open fd is closed (ensuring lowfd >= 0 and a non-empty range).
+       This single-path model ignores EINTR, pruning failure-cleanup paths
+       for such calls.  */
+    tree lhs_type = cd.get_lhs_type ();
+    if (!fds_to_close.empty ()
+	&& cd.get_lhs_region ()
+	&& lhs_type
+	&& INTEGRAL_TYPE_P (lhs_type))
+      cd.maybe_set_lhs (mgr->get_or_create_int_cst (lhs_type, 0));
+
+    /* set_state updates all equivalent svalues.  Apply m_closed last so
+       that a proven closure takes precedence over m_stop.  */
+    for (const svalue *fd_sval : fds_to_stop_tracking)
+      smap->set_state (model, fd_sval, fd_sm->m_stop, nullptr, *ext_state);
+    for (const svalue *fd_sval : fds_to_close)
+      smap->set_state (model, fd_sval, fd_sm->m_closed, nullptr, *ext_state);
+  }
+};
 
 /* Populate KFM with instances of known functions relating to
    file descriptors.  */
@@ -2835,6 +2991,7 @@ register_known_fd_functions (known_function_manager &kfm)
 {
   kfm.add ("accept", std::make_unique<kf_accept> ());
   kfm.add ("bind", std::make_unique<kf_bind> ());
+  kfm.add ("closefrom", std::make_unique<kf_closefrom> ());
   kfm.add ("connect", std::make_unique<kf_connect> ());
   kfm.add ("isatty", std::make_unique<kf_isatty> ());
   kfm.add ("listen", std::make_unique<kf_listen> ());
