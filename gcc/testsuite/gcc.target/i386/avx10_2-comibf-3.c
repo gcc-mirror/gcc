@@ -1,7 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-march=x86-64-v3 -O2" } */
 
-/* { dg-final { scan-assembler-times "vcomisbf16\[ \\t\]+\[^{}\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 6 } } */
+/* { dg-final { scan-assembler-times "vcomisbf16\[ \\t\]+\[^{}\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 4 } } */
+/* { dg-final { scan-assembler-times "vucomxss\[ \\t\]+\[^{}\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
 /* { dg-final { scan-assembler-times "set\[aeglnb\]+" 6 } } */
 
 #define AVX10_ATTR \

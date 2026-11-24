@@ -96,7 +96,8 @@ main (void)
     return 0;
 
   float test_values[] = {
-    -10.0f, -1.0f, -0.5f, 0.0f, 0.5f, 1.0f, 10.0f, 100.0f, -100.0f
+    -10.0f, -1.0f, -0.5f, 0.0f, 0.5f, 1.0f, 10.0f, 100.0f, -100.0f,
+    __builtin_nanf ("")
   };
 
   size_t num_values = sizeof (test_values) / sizeof (test_values[0]);
