@@ -5936,7 +5936,9 @@ expand_clz_ctz (internal_fn fn, gcall *stmt, direct_optab optab)
 	       ? CLZ_DEFINED_VALUE_AT_ZERO (mode, val)
 	       : CTZ_DEFINED_VALUE_AT_ZERO (mode, val));
   if (gimple_call_num_args (stmt) == 1
-      || (defined == 2 && wi::to_widest (gimple_call_arg (stmt, 1)) == val))
+      || (defined == 2
+	  && wi::to_widest (gimple_call_arg (stmt, 1)) == val
+	  && direct_optab_handler (optab, mode) != CODE_FOR_nothing))
     {
       expand_unary_optab_fn (fn, stmt, optab);
       return;

@@ -1208,6 +1208,11 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
 	if (gimple_call_builtin_p (stmt, BUILT_IN_PREFETCH))
 	  return true;
 
+	/* A CLZ or CTZ call is made defined for a zero argument when it is
+	   executed unconditionally.  */
+	if (gimple_needing_rewrite_undefined (stmt))
+	  need_to_rewrite_undefined = true;
+
 	/* There are some IFN_s that are used to replace builtins but have the
 	   same semantics.  Even if MASK_CALL cannot handle them vectorable_call
 	   will insert the proper selection, so do not block conversion.  */
@@ -3050,7 +3055,8 @@ predicate_statements (loop_p loop)
 	{
 	  gimple *stmt = gsi_stmt (gsi);
 	  if (!is_gimple_assign (stmt)
-	      && !gimple_call_builtin_p (stmt))
+	      && !gimple_call_builtin_p (stmt)
+	      && !gimple_needing_rewrite_undefined (stmt))
 	    ;
 	  else if (is_false_predicate (cond)
 		   && gimple_vdef (stmt))

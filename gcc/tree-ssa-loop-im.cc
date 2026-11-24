@@ -789,7 +789,8 @@ extract_true_false_args_from_phi (basic_block dom, gphi *phi,
 static bool
 shift_needs_mask_p (gimple *stmt, class loop *loop)
 {
-  if (!gimple_needing_rewrite_undefined (stmt, true))
+  if (!is_gimple_assign (stmt)
+      || !gimple_needing_rewrite_undefined (stmt, true))
     return false;
   enum tree_code code = gimple_assign_rhs_code (stmt);
   if ((code != LSHIFT_EXPR

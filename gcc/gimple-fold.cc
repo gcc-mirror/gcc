@@ -69,6 +69,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-strlen.h"
 #include "varasm.h"
 #include "internal-fn.h"
+#include "case-cfn-macros.h"
 #include "gimple-range.h"
 
 enum strlen_range_kind {
@@ -11127,13 +11128,25 @@ arith_code_with_undefined_signed_overflow (tree_code code)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.
    Also returns true if STMT is a VCE that needs to be rewritten
-   if moved to be executed unconditionally.
+   if moved to be executed unconditionally, or a CLZ or CTZ call
+   with no defined result for a zero argument.  STMT may be a call
+   only in that last case, otherwise it must be an assignment.
    SHIFT_COUNT additionally asks for a shift or rotate whose count may be
    out of range; rewrite_to_defined_unconditional reduces such a count.  */
 
 bool
 gimple_needing_rewrite_undefined (gimple *stmt, bool shift_count)
 {
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    switch (gimple_call_combined_fn (call))
+      {
+      CASE_CFN_CLZ:
+      CASE_CFN_CTZ:
+	return (gimple_call_num_args (call) == 1
+		&& INTEGRAL_TYPE_P (TREE_TYPE (gimple_call_arg (call, 0))));
+      default:
+	return false;
+      }
   if (!is_gimple_assign (stmt))
     return false;
   tree lhs = gimple_assign_lhs (stmt);
@@ -11191,6 +11204,10 @@ gimple_needing_rewrite_undefined (gimple *stmt, bool shift_count)
    operation that can be transformed to unsigned arithmetic by converting
    its operand, carrying out the operation in the corresponding unsigned
    type and converting the result back to the original type.
+   STMT may also be a one-argument CLZ or CTZ call, which is replaced by
+   the two-argument internal function whose result for a zero argument is
+   the value defined by the target, or the precision of the argument if
+   the target defines none.
 
    If IN_PLACE is true, *GSI points to STMT, adjust the stmt in place and
    return NULL.
@@ -11208,6 +11225,48 @@ rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
       print_gimple_stmt (dump_file, stmt, 0, TDF_SLIM);
     }
   gimple_seq stmts = NULL;
+
+  /* Give a CLZ or CTZ call a defined result for a zero argument.  */
+  if (gcall *call = dyn_cast <gcall *> (stmt))
+    {
+      gcc_checking_assert (gimple_call_num_args (call) == 1);
+      tree arg = gimple_call_arg (call, 0);
+      gcc_checking_assert (INTEGRAL_TYPE_P (TREE_TYPE (arg)));
+      scalar_int_mode mode;
+      int val = 0, defined = 0;
+      internal_fn ifn;
+      switch (gimple_call_combined_fn (call))
+	{
+	CASE_CFN_CLZ:
+	  ifn = IFN_CLZ;
+	  break;
+	CASE_CFN_CTZ:
+	  ifn = IFN_CTZ;
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+      /* Large _BitInt types have no scalar integer mode and no target
+	 defined value.  */
+      if (is_a <scalar_int_mode> (TYPE_MODE (TREE_TYPE (arg)), &mode))
+	defined = (ifn == IFN_CLZ
+		   ? CLZ_DEFINED_VALUE_AT_ZERO (mode, val)
+		   : CTZ_DEFINED_VALUE_AT_ZERO (mode, val));
+      if (defined != 2)
+	val = TYPE_PRECISION (TREE_TYPE (arg));
+      tree zero_val = build_int_cst (integer_type_node, val);
+      gcall *new_call = gimple_build_call_internal (ifn, 2, arg, zero_val);
+      gimple_call_set_lhs (new_call, gimple_call_lhs (call));
+      gimple_set_location (new_call, gimple_location (call));
+      if (in_place)
+	{
+	  gsi_replace (gsi, new_call, true);
+	  return NULL;
+	}
+      gimple_seq_add_stmt (&stmts, new_call);
+      return stmts;
+    }
+
   tree lhs = gimple_assign_lhs (stmt);
 
   /* Boolean loads need to be rewritten to be a load from the same mode
