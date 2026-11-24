@@ -30,8 +30,8 @@ unsigned func2(bool a, bool b)
 
 /*
 **func3:
-**	bic	w([0-9]+), w1, w0
-**	and	w0, w\1, 1
+**	and	w([0-9]+), w1, 1
+**	bic	w0, w\1, w0
 **      ret
 */
 bool func3(bool a, unsigned char b)

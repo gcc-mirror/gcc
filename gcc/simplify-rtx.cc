@@ -4485,6 +4485,25 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	return CONST0_RTX (mode);
 
+      /* Convert (and (xor A 1) B) to (and (not A) B) when B is known to be
+	 0 or 1.  Only bit 0 of the XOR matters, and the NOT may be folded
+	 into an and-not instruction.  */
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && HWI_COMPUTABLE_MODE_P (int_mode))
+	for (int i = 0; i < 2; i++)
+	  {
+	    rtx x = i ? op1 : op0;
+	    rtx y = i ? op0 : op1;
+	    if (GET_CODE (x) == XOR
+		&& XEXP (x, 1) == CONST1_RTX (mode)
+		&& (nonzero_bits (y, int_mode) & ~HOST_WIDE_INT_1U) == 0)
+	      return simplify_gen_binary (AND, mode,
+					  simplify_gen_unary (NOT, mode,
+							      XEXP (x, 0),
+							      mode),
+					  y);
+	  }
+
       /* Convert (and (plus (A - 1)) (neg A)) to 0.  */
       if (match_plus_neg_pattern (op0, op1, mode))
 	return CONST0_RTX (mode);
