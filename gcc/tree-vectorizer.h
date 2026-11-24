@@ -2663,7 +2663,7 @@ extern tree vect_create_data_ref_ptr (vec_info *,
 				      tree = NULL_TREE);
 extern tree bump_vector_ptr (vec_info *, tree, gimple_stmt_iterator *,
 			     stmt_vec_info, tree);
-extern void vect_copy_ref_info (tree, tree);
+extern void vect_copy_ref_info (tree, stmt_vec_info);
 extern tree vect_create_destination_var (tree, tree);
 extern bool vect_grouped_store_supported (tree, unsigned HOST_WIDE_INT);
 extern internal_fn vect_store_lanes_supported (tree, unsigned HOST_WIDE_INT, bool);

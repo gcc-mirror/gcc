@@ -8001,6 +8001,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
       std::swap (rhs1, rhs2);
       std::swap (var1, var2);
       std::swap (load1_dr_info, load2_dr_info);
+      std::swap (load1_stmt_info, load2_stmt_info);
     }
 
   tree *init = loop_vinfo->scan_map->get (var1);
@@ -8097,7 +8098,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  tree data_ref = fold_build2 (MEM_REF, vectype,
 				       unshare_expr (ldataref_ptr),
 				       dataref_offset);
-	  vect_copy_ref_info (data_ref, DR_REF (load1_dr_info->dr));
+	  vect_copy_ref_info (data_ref, load1_stmt_info);
 	  gimple *g = gimple_build_assign (vec_oprnd2, data_ref);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
 	}
@@ -8175,7 +8176,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	  tree data_ref = fold_build2 (MEM_REF, vectype,
 				       unshare_expr (dataref_ptr),
 				       dataref_offset);
-	  vect_copy_ref_info (data_ref, DR_REF (dr_info->dr));
+	  vect_copy_ref_info (data_ref, stmt_info);
 	  g = gimple_build_assign (data_ref, new_temp);
 	  vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
 	}
@@ -8190,7 +8191,7 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	tree data_ref = fold_build2 (MEM_REF, vectype,
 				     unshare_expr (dataref_ptr),
 				     dataref_offset);
-	vect_copy_ref_info (data_ref, DR_REF (dr_info->dr));
+	vect_copy_ref_info (data_ref, stmt_info);
 	gimple *g = gimple_build_assign (data_ref, orig);
 	vect_finish_stmt_generation (vinfo, stmt_info, g, gsi);
       }
@@ -8719,7 +8720,7 @@ vectorizable_store (vec_info *vinfo,
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
 					     group_el * elsz);
 	      newref = build2 (MEM_REF, ltype, running_off, this_off);
-	      vect_copy_ref_info (newref, DR_REF (first_dr_info->dr));
+	      vect_copy_ref_info (newref, first_stmt_info);
 
 	      /* And store it to *running_off.  */
 	      assign = gimple_build_assign (newref, elem);
@@ -9623,7 +9624,7 @@ vectorizable_store (vec_info *vinfo,
 	    TREE_TYPE (data_ref)
 	      = build_aligned_type (TREE_TYPE (data_ref),
 				    align * BITS_PER_UNIT);
-	  vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+	  vect_copy_ref_info (data_ref, first_stmt_info);
 	  new_stmt = gimple_build_assign (data_ref, vec_oprnd);
 	  vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	}
@@ -10525,7 +10526,7 @@ vectorizable_load (vec_info *vinfo,
 	      tree this_off = build_int_cst (TREE_TYPE (alias_off),
 					     load_el * elsz + cst_offset);
 	      tree data_ref = build2 (MEM_REF, ltype, running_off, this_off);
-	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+	      vect_copy_ref_info (data_ref, first_stmt_info);
 	      new_temp = make_ssa_name (ltype);
 	      new_stmt = gimple_build_assign (new_temp, data_ref);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
@@ -11424,7 +11425,7 @@ vectorizable_load (vec_info *vinfo,
 	  /* DATA_REF is null if we've already built the statement.  */
 	  if (data_ref)
 	    {
-	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+	      vect_copy_ref_info (data_ref, first_stmt_info);
 	      new_stmt = gimple_build_assign (vec_dest, data_ref);
 	    }
 	  new_temp = (need_zeroing
@@ -11843,8 +11844,7 @@ vectorizable_load (vec_info *vinfo,
 		  data_ref = build_constructor (vectype, NULL);
 		else if (ltype != vectype)
 		  {
-		    vect_copy_ref_info (data_ref,
-					DR_REF (first_dr_info->dr));
+		    vect_copy_ref_info (data_ref, first_stmt_info);
 		    tree tem = make_ssa_name (ltype);
 		    new_stmt = gimple_build_assign (tem, data_ref);
 		    vect_finish_stmt_generation (vinfo, stmt_info, new_stmt,
@@ -11926,7 +11926,7 @@ vectorizable_load (vec_info *vinfo,
 	    vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
 	    data_ref = build2 (MEM_REF, vectype,
 			       ptr, build_int_cst (ref_type, 0));
-	    vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+	    vect_copy_ref_info (data_ref, first_stmt_info);
 	    vec_dest = vect_create_destination_var (scalar_dest, vectype);
 	    new_stmt = gimple_build_assign (vec_dest, data_ref);
 	    new_temp = make_ssa_name (vec_dest, new_stmt);
@@ -12004,7 +12004,7 @@ vectorizable_load (vec_info *vinfo,
 	  /* DATA_REF is null if we've already built the statement.  */
 	  if (data_ref)
 	    {
-	      vect_copy_ref_info (data_ref, DR_REF (first_dr_info->dr));
+	      vect_copy_ref_info (data_ref, first_stmt_info);
 	      new_stmt = gimple_build_assign (vec_dest, data_ref);
 	    }
 
