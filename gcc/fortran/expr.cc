@@ -6954,8 +6954,9 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	      && sym->assoc->target && sym->assoc->target->symtree
 	      && sym->assoc->target->symtree->n.sym->attr.intent == INTENT_IN)))
     {
-      const char *name = (sym->attr.select_type_temporary
-			  ? sym->assoc->target->symtree->name : sym->name);
+      gfc_symtree *dummy = (sym->attr.select_type_temporary
+			    ? sym->assoc->target->symtree : e->symtree);
+      const char *name = dummy->name;
       if (pointer && is_pointer)
 	{
 	  if (context)
@@ -6964,7 +6965,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 		       name, context, &e->where);
 	  return false;
 	}
-      if (!pointer && !is_pointer && !sym->attr.pointer)
+      /* Only a nonpointer INTENT(IN) object is barred here (F2023:C846).  */
+      if (!pointer && !is_pointer && !IS_POINTER (dummy->n.sym))
 	{
 	  if (context)
 	    gfc_error ("Dummy argument %qs with INTENT(IN) in variable"
