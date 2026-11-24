@@ -23,5 +23,5 @@ operator ""_lenraw(const char* digits)
 
 static_assert(123_lenraw == 3, "Ouch");
 static_assert(1_lenraw == 1, "Ouch");
-static_assert(012_lenraw == 3, "Ouch");
+static_assert(012_lenraw == 3, "Ouch");	// { dg-warning "octal literals without '0o' or '0O' prefix other than '0' are deprecated" "" { target c++29 } }
 static_assert(0_lenraw == 1, "Ouch");

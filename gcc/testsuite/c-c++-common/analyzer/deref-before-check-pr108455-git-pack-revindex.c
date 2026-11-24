@@ -69,7 +69,7 @@ int load_revindex_from_disk(char *revindex_name, uint32_t num_objects,
   size_t revindex_size;
   struct revindex_header *hdr;
 
-  fd = git_open_cloexec(revindex_name, 00);
+  fd = git_open_cloexec(revindex_name, 0);
 
   if (fd < 0) {
     ret = -1;

@@ -1,6 +1,6 @@
 // PR sanitizer/80349
 // { dg-do compile }
-// { dg-options "-fsanitize=undefined" }
+// { dg-options "-fsanitize=undefined -Wno-deprecated-octal-literal" }
 
 extern const long long int v;
 

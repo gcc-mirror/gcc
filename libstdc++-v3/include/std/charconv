@@ -248,12 +248,21 @@ namespace __detail
 
       if constexpr (__gnu_cxx::__int_traits<_Tp>::__digits <= 16)
 	{
+#if __cpp_0o_octals >= 202611L
+	  __len = __val > 0o77777u ? 6u
+	    : __val > 0o7777u ? 5u
+	    : __val > 0o777u ? 4u
+	    : __val > 0o77u ? 3u
+	    : __val > 0o7u ? 2u
+	    : 1u;
+#else
 	  __len = __val > 077777u ? 6u
 	    : __val > 07777u ? 5u
 	    : __val > 0777u ? 4u
 	    : __val > 077u ? 3u
 	    : __val > 07u ? 2u
 	    : 1u;
+#endif
 	}
       else
 	__len = (__to_chars_len_2(__val) + 2) / 3;
@@ -266,7 +275,7 @@ namespace __detail
 	}
 
       unsigned __pos = __len - 1;
-      while (__val >= 0100)
+      while (__val >= 8 * 8)
 	{
 	  auto __num = __val & 7;
 	  __val >>= 3;
@@ -276,7 +285,7 @@ namespace __detail
 	  __first[__pos - 1] = '0' + __num;
 	  __pos -= 2;
 	}
-      if (__val >= 010)
+      if (__val >= 8)
 	{
 	  auto const __num = __val & 7;
 	  __val >>= 3;

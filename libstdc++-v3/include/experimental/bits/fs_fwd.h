@@ -151,6 +151,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
   /// @}
 
   /// Bitmask type representing file access permissions
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-octal-literal"
   enum class perms : unsigned {
       none		=  0,
       owner_read	=  0400,
@@ -175,6 +177,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       remove_perms	= 0x20000,
       symlink_nofollow	= 0x40000
   };
+#pragma GCC diagnostic pop
 
   /// @{
   /// @relates std::experimental::filesystem::perms

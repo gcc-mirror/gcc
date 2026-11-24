@@ -1,4 +1,5 @@
 // { dg-do compile { target c++14 } }
+// { dg-additional-options "-Wno-deprecated-octal-literal" { target c++29 } }
 
 #define assert(E) if(!(E))__builtin_abort();
 

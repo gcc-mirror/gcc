@@ -96,7 +96,7 @@ corge (int n)
   #pragma omp for ordered
   for (i = 0; i < 8; i += n)
     {
-      #pragma omp ordered doacross(sink:omp_cur_iteration - 001)
+      #pragma omp ordered doacross(sink:omp_cur_iteration - 001)	// { dg-warning "octal literals without '0o' or '0O' prefix other than '0' are deprecated" "" { target c++29 } }
     }
   #pragma omp for ordered
   for (i = 0; i < 8; i += n)

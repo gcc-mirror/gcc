@@ -1,5 +1,5 @@
 // { dg-do assemble  }
-// { dg-options "-fshort-enums" }
+// { dg-options "-fshort-enums -Wno-deprecated-octal-literal" }
 // GROUPS passed enums
 // enum file
 // From: Jeff Gehlhaar <jbg@qualcomm.com>

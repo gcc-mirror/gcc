@@ -637,6 +637,9 @@ struct cpp_options
   /* -Wtrailing-whitespace= value.  */
   unsigned char cpp_warn_trailing_whitespace;
 
+  /* Nonzero means complain about deprecated octal literals.  */
+  unsigned char cpp_warn_deprecated_octal_literal;
+
   /* -ftabstop= value.  */
   unsigned int cpp_tabstop;
 
@@ -770,7 +773,8 @@ enum cpp_warning_reason {
   CPP_W_PRAGMA_ONCE_OUTSIDE_HEADER,
   CPP_W_LEADING_WHITESPACE,
   CPP_W_TRAILING_WHITESPACE,
-  CPP_W_KEYWORD_MACRO
+  CPP_W_KEYWORD_MACRO,
+  CPP_W_DEPRECATED_OCTAL_LITERAL
 };
 
 /* Callback for header lookup for HEADER, which is the name of a

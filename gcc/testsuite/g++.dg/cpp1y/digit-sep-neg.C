@@ -31,3 +31,4 @@ main()
 // { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 15 }
 // { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 19 }
 // { dg-error "expected ';' before" "expected ';' before" { target *-*-* } 26 }
+// { dg-warning "octal literals without '0o' or '0O' prefix other than '0' are deprecated" "" { target c++29 } 12 }

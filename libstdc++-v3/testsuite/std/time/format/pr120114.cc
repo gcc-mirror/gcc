@@ -16,7 +16,7 @@ test_from_format_string()
 {
   std::basic_string<CharT> res;
   using namespace std::chrono_literals;
-  auto date = 2025y/std::chrono::May/05d;
+  auto date = 2025y/std::chrono::May/05d;	// { dg-warning "octal literals without '0o' or '0O' prefix other than '0' are deprecated" "" { target c++29 } }
 
   res = std::format(WIDEN("{:+<13%F\U0001f921}"), date);
   VERIFY( res == WIDEN("2025-05-05\U0001f921+") );

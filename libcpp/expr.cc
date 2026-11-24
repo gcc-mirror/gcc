@@ -920,6 +920,28 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	    }
 	}
 
+      if (radix == 8
+	  && CPP_OPTION (pfile, cpp_warn_deprecated_octal_literal)
+	  && !zero_o_prefix
+	  && str > token->val.str.text + 1)
+	{
+	  bool warned
+	    = (CPP_OPTION (pfile, cplusplus)
+	       ? cpp_warning_with_line (pfile, CPP_W_DEPRECATED_OCTAL_LITERAL,
+					virtual_location, 0,
+					"octal literals without %<0o%> or "
+					"%<0O%> prefix other than %<0%> are "
+					"deprecated in C++29")
+	       : cpp_warning_with_line (pfile, CPP_W_DEPRECATED_OCTAL_LITERAL,
+					virtual_location, 0,
+					"octal literals without %<0o%> or "
+					"%<0O%> prefix other than %<0%> are "
+					"deprecated in C2Y"));
+	  if (warned)
+	    cpp_error_with_line (pfile, CPP_DL_NOTE, virtual_location, 0,
+				 "use %<0o%> or %<0O%> prefix instead");
+	}
+
       result |= CPP_N_INTEGER;
     }
 

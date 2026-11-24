@@ -695,6 +695,10 @@ Wdeprecated-non-prototype
 C ObjC Var(warn_deprecated_non_prototype) Init(-1) Warning
 Warn about calls with arguments to functions declared without parameters.
 
+Wdeprecated-octal-literal
+C ObjC C++ ObjC++ Warning Var(warn_deprecated_octal_literal) CPP(cpp_warn_deprecated_octal_literal) CppReason(CPP_W_DEPRECATED_OCTAL_LITERAL) Init(0)
+Warn on octal literals with 0 prefix rather than 0o or 0O.
+
 Wdeprecated-openmp
 C ObjC C++ ObjC++ Warning Var(warn_deprecated_openmp) Init(1)
 Warn about deprecated OpenMP code.

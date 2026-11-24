@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-O3" }
+// { dg-additional-options "-O3 -Wno-deprecated-octal-literal" }
 
 const long long &min(const long long &__a, long long &__b) {
   if (__b < __a)

@@ -22,7 +22,7 @@ test_1 (char const *name, ...)
 void
 call_test_1 ()
 {
-  test_1 ("nonexist.ent/", 0600);
+  test_1 ("nonexist.ent/", 0600); /* { dg-warning "octal literals without '0o' or '0O' prefix other than '0' are deprecated" "" { target c++29 } } */
 }
 
 /* Not the same size: small enough for int promotion.  */

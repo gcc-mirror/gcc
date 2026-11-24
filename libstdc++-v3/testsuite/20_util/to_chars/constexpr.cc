@@ -80,13 +80,25 @@ test_base8()
 {
   std::to_chars_result res;
   char buf[10] = "XXXXXXXXX";
+#if __cpp_0o_octals >= 202611L
+  res = std::to_chars(buf, buf+2, 0o1234, 8);
+#else
   res = std::to_chars(buf, buf+2, 01234, 8);
+#endif
   VERIFY( res.ptr == buf+2 );
   VERIFY( res.ec == std::errc::value_too_large );
+#if __cpp_0o_octals >= 202611L
+  res = std::to_chars(buf, buf+3, -0o1234, 8);
+#else
   res = std::to_chars(buf, buf+3, -01234, 8);
+#endif
   VERIFY( res.ptr == buf+3 );
   VERIFY( res.ec == std::errc::value_too_large );
+#if __cpp_0o_octals >= 202611L
+  res = std::to_chars(buf, buf+4, 0o1234, 8);
+#else
   res = std::to_chars(buf, buf+4, 01234, 8);
+#endif
   VERIFY( res.ptr == buf+4 );
   VERIFY( res.ec == std::errc{} );
   VERIFY( buf[0] == '1' );
@@ -94,7 +106,11 @@ test_base8()
   VERIFY( buf[2] == '3' );
   VERIFY( buf[3] == '4' );
   VERIFY( buf[4] == 'X' );
+#if __cpp_0o_octals >= 202611L
+  res = std::to_chars(buf, buf+10, -0o567, 8);
+#else
   res = std::to_chars(buf, buf+10, -0567, 8);
+#endif
   VERIFY( res.ptr == buf+4 );
   VERIFY( res.ec == std::errc{} );
   VERIFY( buf[0] == '-' );

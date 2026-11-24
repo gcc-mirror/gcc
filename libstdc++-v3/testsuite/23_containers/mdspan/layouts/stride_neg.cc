@@ -71,16 +71,16 @@ constexpr auto m20 = mapping<4>(array{3, 4, 5, 6}, array{1, 5, 12, 60});  // { d
 // Any stride values are allowed for extents 1
 constexpr auto m21 = mapping<2>(array{1, 1}, array{88, 99}); // { dg-bogus "expansion of" }
 constexpr auto m2a = mapping<2>(array{5, 1}, array{88, 99}); // { dg-bogus "expansion of" }
-constexpr auto m22 = mapping<3>(array{1, 1, 1}, array{88, 99, 00}); // { dg-bogus "expansion of" }
+constexpr auto m22 = mapping<3>(array{1, 1, 1}, array{88, 99, 0}); // { dg-bogus "expansion of" }
 constexpr auto m2b = mapping<3>(array{1, 5, 1}, array{88, 99, 77}); // { dg-bogus "expansion of" }
-constexpr auto m23 = mapping<4>(array{1, 1, 1, 1}, array{77, 99, 00, 88}); // { dg-bogus "expansion of" }
+constexpr auto m23 = mapping<4>(array{1, 1, 1, 1}, array{77, 99, 0, 88}); // { dg-bogus "expansion of" }
 constexpr auto m2c = mapping<4>(array{1, 1, 5, 1}, array{77, 99, 1, 88}); // { dg-bogus "expansion of" }
 constexpr auto m24 = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 3, 3, 45}); // { dg-bogus "expansion of" }
 constexpr auto m25 = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 3, 10, 45}); // { dg-bogus "expansion of" }
 constexpr auto m26 = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 10, 3, 45}); // { dg-bogus "expansion of" }
 constexpr auto m27 = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 10, 10, 45}); // { dg-bogus "expansion of" }
-constexpr auto m2d = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 00, 99, 45}); // { dg-bogus "expansion of" }
-constexpr auto m2e = mapping<5>(array{1, 1, 1, 1, 1}, array{00, 77, 88, 99, 00}); // { dg-bogus "expansion of" }
+constexpr auto m2d = mapping<5>(array{3, 4, 1, 1, 5}, array{3, 10, 0, 99, 45}); // { dg-bogus "expansion of" }
+constexpr auto m2e = mapping<5>(array{1, 1, 1, 1, 1}, array{0, 77, 88, 99, 0}); // { dg-bogus "expansion of" }
 
 // { dg-prune-output "non-constant condition for static assertion" }
 // { dg-prune-output "__glibcxx_assert_fail()" }

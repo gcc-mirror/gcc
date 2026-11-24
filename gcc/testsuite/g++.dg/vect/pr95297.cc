@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-additional-options "-O3 -fvect-cost-model=dynamic" }
+// { dg-additional-options "-O3 -fvect-cost-model=dynamic -Wno-deprecated-octal-literal" }
 
 extern bool var_10;
 extern int var_16;

@@ -392,7 +392,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}
 -Wdate-time
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init
--Wno-deprecated-openmp
+-Wdeprecated-octal-literal -Wno-deprecated-openmp
 -Wdisabled-optimization
 -Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers
 -Wno-div-by-zero  -Wdouble-promotion
@@ -11614,6 +11614,16 @@ Requires @option{-flto} to be enabled.  Enabled by default.
 Suppress warnings when a positional initializer is used to initialize
 a structure that has been marked with the @code{designated_init}
 attribute.
+
+@opindex Wdeprecated-octal-literal
+@opindex Wno-deprecated-octal-literal
+@item -Wdeprecated-octal-literal
+Warn on 0 prefixed octal literals other than 0.  In C++29 and C2Y
+octal literals should be specified with 0o or 0O prefix and the older
+0 prefixed octal literals are deprecated.  0 is not deprecated, but
+00 or 0177 is and should be written in C++29 or C2Y as 0o0 (or in this
+case 0) or 0o177 (or 0O177).
+This flag is enabled by default for @option{-std=c++29}.
 
 @opindex Wzero-init-padding-bits=
 @item -Wzero-init-padding-bits=@var{value}

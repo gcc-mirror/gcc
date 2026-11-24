@@ -1107,6 +1107,23 @@ c_common_post_options (const char **pfilename)
 		       warn_template_id_cdtor,
 		       cxx_dialect >= cxx20 || warn_cxx20_compat);
 
+  /* For C++29 default to -Wdeprecated-octal-literal.  At least
+     for the time being, don't use deprecated_in (cxx29) here, warning
+     with -Wdeprecated in C++26 and older modes for octal literal means
+     we warn even on correctly portable code using
+     #if __cpp_0o_octals >= 202611L
+       0o4561375437615437
+     #else
+       04561375437615437
+     #endif
+     and one can't easily use 0o prefixed octal literals in C++26 and
+     older code because there will be pedwarn for those or no support
+     in older compilers at all.  So, that just tells developers not to use
+     octal literals at all.  */
+  SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+		       warn_deprecated_octal_literal, cxx_dialect >= cxx29);
+  cpp_opts->cpp_warn_deprecated_octal_literal = warn_deprecated_octal_literal;
+
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
     flag_declone_ctor_dtor = optimize_size;

@@ -141,6 +141,8 @@ _GLIBCXX_END_NAMESPACE_CXX11
 
 
   /// Bitmask type representing file access permissions
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-octal-literal"
   enum class perms : unsigned {
       none		=  0,
       owner_read	=  0400,
@@ -162,6 +164,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
       mask		= 07777,
       unknown		=  0xFFFF,
   };
+#pragma GCC diagnostic pop
 
   /// @{
   /// @relates perms
