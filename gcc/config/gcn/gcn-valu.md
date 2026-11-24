@@ -559,14 +559,23 @@
 	  offset = XEXP (offset, 0);
 	if (CONST_VECTOR_P (offset))
 	  offset = CONST_VECTOR_ELT (offset, 0);
-	if (!REG_P (addr) || !CONST_INT_P (offset))
+	/* LDS addresses are 32-bit.  */
+	bool ds_p = GET_MODE (addr) == <VnSI>mode;
+	if (!REG_P (addr) || !CONST_INT_P (offset)
+	    || (ds_p && !IN_RANGE (INTVAL (offset), 0, 65535)))
 	  {
-	    addr = force_reg (<VnDI>mode, addr);
+	    addr = force_reg (ds_p ? <VnSI>mode : <VnDI>mode,
+			      XEXP (operands[1], 0));
 	    offset = const0_rtx;
 	  }
-	emit_insn (gen_load<mode>_exec (operands[0], addr, offset,
-					GEN_INT (MEM_ADDR_SPACE (operands[1])),
-					operands[2], operands[3]));
+	if (ds_p)
+	  emit_insn (gen_load<mode>_exec_ds (operands[0], addr, offset,
+					     GEN_INT (MEM_ADDR_SPACE (operands[1])),
+					     operands[2], operands[3]));
+	else
+	  emit_insn (gen_load<mode>_exec (operands[0], addr, offset,
+					  GEN_INT (MEM_ADDR_SPACE (operands[1])),
+					  operands[2], operands[3]));
 	DONE;
       }
   })
@@ -686,8 +695,25 @@
   [&v ,v,i,Pm,U0,e ;flat ,12,*    ,on ] ^
   [^a ,v,i,Pm,U0,e ;flat ,12,cdna2,off] ^
   [&^a,v,i,Pm,U0,e ;flat ,12,cdna2,on ] ^
-  [v  ,v,i,Pl,U0,e ;ds   ,12,*    ,*  ] ds_read%b0\t%0, %1 offset:%2\;s_waitcnt\tlgkmcnt(0)
   })
+
+;; The same for LDS, which has 32-bit addresses.
+
+(define_insn "load<mode>_exec_ds"
+  [(set (match_operand:V_MOV 0 "register_operand"		     "=v")
+	(vec_merge:V_MOV
+	  (unspec:V_MOV [
+	    (plus:<VnSI> (match_operand:<VnSI> 1 "register_operand"  " v")
+			 (match_operand:SI 2 "immediate_operand"     " i"))
+	    (match_operand:SI 3 "immediate_operand"		     "Pl")
+	    (mem:BLK (const_int 0))]
+	    UNSPEC_MASKLOAD)
+	  (match_operand:V_MOV 4 "general_or_unspec_operand"	     "U0")
+	  (match_operand:DI 5 "gcn_exec_operand"		     " e")))]
+  ""
+  "ds_read%b0\t%0, %1 offset:%2\;s_waitcnt\tlgkmcnt(0)"
+  [(set_attr "type" "ds")
+   (set_attr "length" "12")])
 
 ; A SGPR-base load looks like:
 ;   <load> v, Sv
