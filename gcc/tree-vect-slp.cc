@@ -2116,6 +2116,8 @@ force_split_matches (match_elt_t *matches, unsigned group_size,
   /* With constant vector elements simulate a mismatch at the
      point we need to split.  But indicate the tail is isomorphic.  */
   unsigned tail = group_size & (const_nunits - 1);
+  for (unsigned i = 0; i < group_size - tail; ++i)
+    matches[i] = 0;
   for (unsigned i = group_size - tail; i < group_size; ++i)
     matches[i] = (int)(group_size - tail);
 }
@@ -2834,20 +2836,19 @@ out:
       }
   swap = NULL;
 
-  /* Perform delayed soft-failing only here so we can factor in mismatches
-     determined by vect_get_and_check_slp_defs.  */
-  if (soft_fail)
-    {
-      force_split_matches (matches, group_size,
-			   TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
-      return NULL;
-    }
+  /* Instead of soft-failing here, continue building up the SLP
+     graph, failing only at leafs.  Note as we don't know whether
+     we soft- or hard-failed children avoid any operand swapping
+     when we soft-failed.  */
 
   bool has_two_operators_perm = false;
   auto_vec<unsigned> two_op_perm_indices[2];
   vec<stmt_vec_info> two_op_scalar_stmts[2] = {vNULL, vNULL};
 
-  if (two_operators && oprnds_info.length () == 2 && group_size > 2)
+  if (!soft_fail
+      && two_operators
+      && oprnds_info.length () == 2
+      && group_size > 2)
     {
       unsigned idx = 0;
       hash_map<gimple *, unsigned> seen;
@@ -3044,6 +3045,13 @@ out:
 		  goto fail;
 		}
 	    }
+	  /* At leafs force soft-failing.  */
+	  if (soft_fail)
+	    {
+	      force_split_matches (matches, group_size,
+				   TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
+	      goto fail;
+	    }
 	  slp_tree invnode = vect_create_new_slp_node (oprnd_info->ops);
 	  SLP_TREE_DEF_TYPE (invnode) = oprnd_info->first_dt;
 	  oprnd_info->ops = vNULL;
@@ -3116,7 +3124,8 @@ out:
 	    def_stmts2.release ();
 	}
 
-      can_swap = (i == 0
+      can_swap = (!soft_fail
+		  && i == 0
 		  && (nops == 2 || nops == 3)
 		  && oprnds_info.length () > 1
 		  && oprnds_info[1]->first_dt == vect_internal_def
@@ -3235,7 +3244,8 @@ fail:
 
       /* If the SLP build failed and we analyze a basic-block
 	 simply treat nodes we fail to build as externally defined
-	 (and thus build vectors from the scalar defs).
+	 (and thus build vectors from the scalar defs) when not
+	 soft-failing.
 	 The cost model will reject outright expensive cases.
 	 ???  This doesn't treat cases where permutation ultimatively
 	 fails (or we don't try permutation below).  Ideally we'd
@@ -3267,14 +3277,28 @@ fail:
 	  if (!known_ge (j, TYPE_VECTOR_SUBPARTS (vectype))
 	      && vect_slp_can_convert_to_external (oprnd_info->def_stmts))
 	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Building vector operands from scalars\n");
-	      this_tree_size++;
-	      child = vect_create_new_slp_node (oprnd_info->ops);
-	      children.safe_push (child);
-	      oprnd_info->ops = vNULL;
-	      continue;
+	      /* When we'd soft-fail we do not want to build leaf nodes,
+		 we also do not want to use the matches[] from a fatal
+		 failure to guide splitting if we would build from scalars, so
+		 indicate the soft-fail split point here in that case.  */
+	      if (soft_fail)
+		{
+		  if (matches[0] == -1)
+		    force_split_matches (matches, group_size,
+					 TYPE_VECTOR_SUBPARTS
+					   (vectype).to_constant ());
+		}
+	      else
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_NOTE, vect_location,
+				     "Building vector operands from scalars\n");
+		  this_tree_size++;
+		  child = vect_create_new_slp_node (oprnd_info->ops);
+		  children.safe_push (child);
+		  oprnd_info->ops = vNULL;
+		  continue;
+		}
 	    }
 	}
 
@@ -3287,6 +3311,18 @@ fail:
     }
 
   vect_free_oprnd_info (oprnds_info);
+
+  /* Conversions might make children built successfully but we still
+     have to soft-fail the parent in that case.  */
+  if (soft_fail)
+    {
+      force_split_matches (matches, group_size,
+			   TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
+      for (slp_tree child : children)
+	if (child)
+	  vect_free_slp_tree (child);
+      return NULL;
+    }
 
   /* If we have all children of a child built up from uniform scalars
      or does more than one possibly expensive vector construction then
