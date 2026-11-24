@@ -1708,7 +1708,13 @@ default_ref_may_alias_errno (ao_ref *ref)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
       const pt_solution *pt = ssa_name_pt_solution (TREE_OPERAND (base, 0));
-      return !pt || pt->anything || pt->nonlocal;
+      /* The pointer may point to errno if its points-to set includes
+	 unknown global memory, or if it names a variable that may be
+	 defined outside this unit, which PTA marks as interposable.
+	 Variables known to be defined here, and restrict tags, cannot
+	 be errno.  */
+      return (!pt || pt->anything || pt->nonlocal
+	      || pt->vars_contains_interposable);
     }
   return false;
 }
