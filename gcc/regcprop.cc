@@ -964,6 +964,10 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  > hard_regno_nregs (regno, vd->e[regno].mode))
 		goto no_move_special_case;
 
+	      if (!ordered_p (GET_MODE_PRECISION (vd->e[regno].mode),
+				   GET_MODE_PRECISION (mode)))
+		goto no_move_special_case;
+
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
 	      if (REG_NREGS (src) < hard_regno_nregs (regno, vd->e[regno].mode)
