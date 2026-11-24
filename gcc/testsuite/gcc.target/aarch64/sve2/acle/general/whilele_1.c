@@ -1,6 +1,6 @@
 /* { dg-do compile { target { ! aarch64_asm_sve2p1_ok } } } */
 /* { dg-do assemble { target { aarch64_asm_sve2p1_ok } } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -save-temps" } */
 
 #include <arm_sve.h>
 
