@@ -12251,16 +12251,22 @@ CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 # The declaration checks include system.h, which includes gmp.h.  An
 # in-tree gmp is only configured, not built, when this script runs (see
 # configure-gcc in ../Makefile.def), so gmp.h must come from its
-# configure.  Stop here if gmp.h cannot be used.
+# configure.  Stop here if gmp.h cannot be used.  Like system.h, skip
+# the check when GENERATOR_FILE is defined, as it is in the nested
+# configure for the build machine, which must not use gmp.h.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether gmp.h can be used" >&5
 $as_echo_n "checking whether gmp.h can be used... " >&6; }
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
+#ifndef GENERATOR_FILE
 #include <gmp.h>
+#endif
 int
 main ()
 {
+#ifndef GENERATOR_FILE
 mpz_t x; mpz_init (x);
+#endif
   ;
   return 0;
 }
@@ -22059,7 +22065,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22062 "configure"
+#line 22068 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22165,7 +22171,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22168 "configure"
+#line 22174 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

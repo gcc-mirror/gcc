@@ -1563,10 +1563,16 @@ CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 # The declaration checks include system.h, which includes gmp.h.  An
 # in-tree gmp is only configured, not built, when this script runs (see
 # configure-gcc in ../Makefile.def), so gmp.h must come from its
-# configure.  Stop here if gmp.h cannot be used.
+# configure.  Stop here if gmp.h cannot be used.  Like system.h, skip
+# the check when GENERATOR_FILE is defined, as it is in the nested
+# configure for the build machine, which must not use gmp.h.
 AC_MSG_CHECKING([whether gmp.h can be used])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <gmp.h>]],
-				   [[mpz_t x; mpz_init (x);]])],
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#ifndef GENERATOR_FILE
+#include <gmp.h>
+#endif]],
+				   [[#ifndef GENERATOR_FILE
+mpz_t x; mpz_init (x);
+#endif]])],
   [AC_MSG_RESULT(yes)],
   [AC_MSG_RESULT(no)
    AC_MSG_ERROR([cannot compile with gmp.h using GMPINC ($GMPINC).
