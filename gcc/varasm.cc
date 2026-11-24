@@ -3230,7 +3230,9 @@ assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
 
   /* Put out the first word with the specified alignment.  */
   unsigned int chunk_nunits = MIN (nunits, units_per);
-  if (reverse)
+  if (reverse && nunits == 2)
+    elt = flip_storage_order (HImode, gen_int_mode (data[nelts - 1], HImode));
+  else if (reverse && nunits >= 4)
     elt = flip_storage_order (SImode, gen_int_mode (data[nelts - 1], SImode));
   else
     elt = GEN_INT (sext_hwi (data[0], chunk_nunits * BITS_PER_UNIT));
