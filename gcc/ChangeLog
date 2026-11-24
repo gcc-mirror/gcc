@@ -1,3 +1,16 @@
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* config/h8300/testcompare.md (store_z_<mode>): Fix length calculation
+	for SI case.
+	(store_z_<mode>_neg): Likewise.
+	(store_z_<mode>_sb): Fix length calculation for SI case.  Also fix
+	output templates.
+	(store_z_<mode>_and): Likewise.
+
 2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

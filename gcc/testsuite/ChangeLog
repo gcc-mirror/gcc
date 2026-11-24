@@ -1,3 +1,12 @@
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* gcc.target/h8300/pr128906.c: New test.
+	* gcc.target/h8300/pr128906-2.c: New test.
+
 2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
