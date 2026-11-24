@@ -342,8 +342,6 @@ struct ptx_device
 
 static struct ptx_device **ptx_devices;
 
-static int using_usm = -1;
-
 /* "Native" GPU thread stack size.  */
 static unsigned native_gpu_thread_stack_size = 0;
 
@@ -1238,24 +1236,6 @@ nvptx_get_current_cuda_context (void)
   return nvthd->ptx_dev->ctx;
 }
 
-#if 0  /* TODO: Use to enable self-mapping/USM automatically.  */
-/* FIXME: The auto-self-map feature depends on still mapping 'declare target'
-   variables, even if ignoring all other mappings. Cf. PR 115279.  */
-
-/* Return TRUE if the GPU is integrated with host memory, i.e. GPU and
-   host share the same memory controller.  As of Oct 2025, no such
-   Nvidia GPU seems to exist.  */
-static bool
-is_integrated_apu (struct ptx_device *ptx_dev)
-{
-  int pi;
-  CUresult r;
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_INTEGRATED, ptx_dev->dev);
-  return (r == CUDA_SUCCESS && pi == 1);
-}
-#endif
-
 /* Plugin entry points.  */
 
 const char *
@@ -1412,44 +1392,29 @@ GOMP_OFFLOAD_get_caps (void)
        when USM is supported
    * GOMP_OFFLOAD_CAP_APU_SHARED_MEM
        when USM is supported and CPU and GPU are integrated using the
-       same memory controller. As of July 2026 no such Nvidia GPU seems
-       to exist.  */
+       same memory controller.  This for instance the case for DGX Spark or
+       Tegra/Jetson systems.  It seems as one can have pagableMemoryAccess 0
+       for some older sytems of this kind, which mostly affects cache handling;
+       assume and report no USM in that case.  */
 
 unsigned int
 GOMP_OFFLOAD_get_dev_caps (int n)
 {
+  int pi;
+  CUresult r;
   unsigned int caps = 0;
 
   /* Check for USM.  */
-
-  int pi;
-  CUresult r;
   r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS,
-			 n);
-  if (r != CUDA_SUCCESS)
-    return 0;
-
-  if (pi)
+			 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS, n);
+  if (r == CUDA_SUCCESS && pi)
     {
       caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
-      if (using_usm == -1)
-	using_usm = true;
+      r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			     CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
+      if (r == CUDA_SUCCESS && pi != 0)
+	caps |= GOMP_OFFLOAD_CAP_APU_SHARED_MEM;
     }
-  else
-    using_usm = false;
-
-#if 0
-  int pi;
-  CUresult r;
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_INTEGRATED, n);
-  if (r == CUDA_SUCCESS && pi != 0)
-    {
-      caps |= GOMP_OFFLOAD_CAP_SHARED_MEM;
-      caps |= GOMP_OFFLOAD_CAP_APU_SHARED_MEM;
-    }
-#endif
 
   return caps;
 }
@@ -2020,7 +1985,12 @@ GOMP_OFFLOAD_is_accessible_ptr (int ord,
   struct ptx_device *ptx_dev = ptx_devices[ord];
 
   /* USM implies access.  */
-  if (using_usm > 0)
+  int pi;
+  CUresult r;
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS,
+			 ord);
+  if (r == CUDA_SUCCESS && pi != 0)
     return 1;
 
   CUcontext old_ctx;
