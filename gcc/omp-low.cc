@@ -1627,6 +1627,19 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      /* Done.  */
 	      OMP_CLAUSE_MAP_DECL_MAKE_ADDRESSABLE (c) = 0;
 	    }
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER)
+	    {
+	      /* Ignore GOMP_MAP_POINTER kind for arrays in regions that are
+		 not offloaded; there is nothing to map for those.  */
+	      if (!is_gimple_omp_offloaded (ctx->stmt)
+		  && !POINTER_TYPE_P (TREE_TYPE (decl))
+		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
+		break;
+	    }
+	  if (!flex_array_ptr)
+	    flex_array_ptr = lang_hooks.decls.omp_deep_mapping_p (ctx->stmt, c);
+
 	  /* Global variables with "omp declare target" attribute
 	     don't need to be copied, the receiver side will use them
 	     directly.  However, global variables with "omp declare target link"
@@ -1651,18 +1664,6 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	      && !lookup_attribute ("omp declare target link",
 				    DECL_ATTRIBUTES (decl)))
 	    break;
-	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
-	      && OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_POINTER)
-	    {
-	      /* Ignore GOMP_MAP_POINTER kind for arrays in regions that are
-		 not offloaded; there is nothing to map for those.  */
-	      if (!is_gimple_omp_offloaded (ctx->stmt)
-		  && !POINTER_TYPE_P (TREE_TYPE (decl))
-		  && !OMP_CLAUSE_MAP_ZERO_BIAS_ARRAY_SECTION (c))
-		break;
-	    }
-	  if (!flex_array_ptr)
-	    flex_array_ptr = lang_hooks.decls.omp_deep_mapping_p (ctx->stmt, c);
 	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
 	      && DECL_P (decl)
 	      && (OMP_CLAUSE_MAP_KIND (c) == GOMP_MAP_ATTACH
