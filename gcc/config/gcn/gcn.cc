@@ -3437,7 +3437,7 @@ move_callee_saved_registers_simt (rtx sp, machine_function *offsets,
 	offset += 4*64;
 	raw_offset += 4*64;
 
-	if (offset > (TARGET_11BIT_GLOBAL_OFFSET ? 1<<11 : 1<<12))
+	if (offset >= (TARGET_11BIT_GLOBAL_OFFSET ? 1<<11 : 1<<12))
 	  {
 	    /* We ran out of bits in the offset field, so reset the base.
 	       Don't edit the SP itself, because the caller will do that.  */

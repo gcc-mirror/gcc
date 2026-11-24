@@ -2030,7 +2030,8 @@
   {
     operands[3] = gcn_operand_part (DImode, operands[0], 0);
     operands[4] = gcn_operand_part (DImode, operands[0], 1);
-  })
+  }
+  [(set_attr "simt_clobber" "2")])
 
 ;; }}}
 ;; {{{ ALU: generic 128-bit binop
