@@ -1,3 +1,31 @@
+2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128142
+	* gcc.dg/torture/pr128142.c: New test.
+	* gcc.target/aarch64/pr128142.c: New test.
+
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* gcc.target/h8300/pr128906.c: New test.
+	* gcc.target/h8300/pr128906-2.c: New test.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* gcc.target/i386/pr128911-1.c: New test.
+	* gcc.target/i386/pr128911-2.c: Likewise.
+	* gcc.target/i386/pr128911-3.c: Likewise.
+
 2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
 
 	Backported from master:

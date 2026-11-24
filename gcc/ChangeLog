@@ -1,3 +1,36 @@
+2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128142
+	* match.pd ((x + y) >> 1 -> IFN_AVG_FLOOR (x, y)): Require two
+	leading zero bits for a signed type whose overflow is defined.
+
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* config/h8300/testcompare.md (store_z_<mode>): Fix length calculation
+	for SI case.
+	(store_z_<mode>_neg): Likewise.
+	(store_z_<mode>_sb): Fix length calculation for SI case.  Also fix
+	output templates.
+	(store_z_<mode>_and): Likewise.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* config/i386/i386.md (@ccmp<mode>): Compare operands 2 and 3
+	directly.  Use operand 5 for the flags register in operand 1.
+	* config/i386/i386-expand.cc (ix86_gen_ccmp_next): Keep the CC
+	mode of the previous compare and pass it as operand 5.
+
 2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
 
 	Backported from master:
