@@ -1255,8 +1255,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (if (gimple_match_range_of_expr (vr0, @0, @3)
 	  && gimple_match_range_of_expr (vr1, @1)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
-      (mult @0 (div! @1 @2))))
+      (mult @0 (div! @1 @2))
    )))
+
+   /* Otherwise simplify (t * (C + 1)) / C -> t + t / C, and for exact_div
+      only (t * (C - 1)) / C -> t - t / C.  The latter is wrong for
+      trunc_div, where the result is t - ceil (t / C).  */
+   (if (INTEGRAL_TYPE_P (type)
+	&& (div == TRUNC_DIV_EXPR || div == EXACT_DIV_EXPR)
+	&& single_use (@3))
+    (with {
+      wide_int c1 = wi::to_wide (@1);
+      wide_int c2 = wi::to_wide (@2);
+      int_range_max vr0, vr1;
+    }
+    /* C must be positive; c1 > 0 also rejects c2 + 1 wrapping.  */
+    (if (wi::gt_p (c2, 0, TYPE_SIGN (type))
+	 && wi::gt_p (c1, 0, TYPE_SIGN (type))
+	 && (c1 == c2 + 1
+	     || (div == EXACT_DIV_EXPR && c1 == c2 - 1))
+	 /* t * C1 doesn't overflow.  */
+	 && ((TYPE_OVERFLOW_UNDEFINED (type)
+	      && !TYPE_OVERFLOW_SANITIZED (type))
+	     || (gimple_match_range_of_expr (vr0, @0, @3)
+		 && gimple_match_range_of_expr (vr1, @1)
+		 && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))))
+     (if (c1 == c2 + 1)
+      (plus @0 (div @0 @2))
+      (minus @0 (div @0 @2))))))))
 #endif
  /* Simplify (t * u) / (t * v) -> (u / v) if u is multiple of v.  */
  (simplify
@@ -1304,6 +1330,29 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
          (div (mult @0 { c1; }) { c2; })))
 #endif
       )))))))
+
+#if GIMPLE
+/* Simplify (t * (2^k + 1)) >> k -> t + (t >> k).  Unsigned t / 2^k has
+   already become a shift when ranges are available, so the division
+   pattern above cannot see it.  */
+(simplify
+ (rshift (mult:s@3 @0 INTEGER_CST@1) INTEGER_CST@2)
+ (if (INTEGRAL_TYPE_P (type)
+      && TYPE_UNSIGNED (type)
+      /* Reject negative or too-large shift counts.  */
+      && wi::ltu_p (wi::to_widest (@2), TYPE_PRECISION (type)))
+  (with {
+    wide_int d = wi::lshift (wi::one (TYPE_PRECISION (type)),
+			     tree_to_uhwi (@2));
+    int_range_max vr0, vr1;
+  }
+  (if (wi::to_wide (@1) == d + 1
+       && gimple_match_range_of_expr (vr0, @0, @3)
+       && gimple_match_range_of_expr (vr1, @1)
+       /* t * C1 doesn't overflow.  */
+       && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
+   (plus @0 (rshift @0 @2))))))
+#endif
 
 /* Simplify (t * u) % u -> 0.  The product is an exact multiple of u, so
    the remainder is zero under every rounding convention as long as the
