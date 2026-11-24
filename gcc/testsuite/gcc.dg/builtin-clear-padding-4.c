@@ -5,7 +5,7 @@
 #if __BITINT_MAXWIDTH__ >= 65535
 struct C { _BitInt(65535) a : 65531; unsigned _BitInt(65535) b : 65531; } c1, c2, c3, c4;
 #else
-struct C { int a : 5; unsigned b : 5; } c1, c2;
+struct C { int a : 5; unsigned b : 5; } c1, c2, c3, c4;
 #endif
 
 __attribute__((noipa)) void
