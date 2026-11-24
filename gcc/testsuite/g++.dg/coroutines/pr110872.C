@@ -3,7 +3,7 @@
 // { dg-do compile { target c++26 } }
 // { dg-skip-if "requires hosted libstdc++ for iostream" { ! hostedlib } }
 // { dg-prune-output "during RTL pass: expand" }
-// { dg-ice "expand_expr_addr_expr_1" { lp64 || { *-*-darwin* arm*-*-* } } }
+// { dg-ice "expand_expr_addr_expr_1" { lp64 || { *-*-darwin* arm*-*-* loongarch32-*-* } } }
 
 #include <iostream>
 #include <coroutine>

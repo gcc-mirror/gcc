@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -mlasx" } */
+/* { dg-require-effective-target loongarch_asx } */
 
 typedef long unsigned int size_t;
 typedef unsigned char simde__mmask8;

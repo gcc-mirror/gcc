@@ -3,4 +3,4 @@
 /* { dg-final { scan-assembler "foo:.*\tbstrins\\.w\t\\\$r\[0-9\]+,\\\$r\[0-9\]+,31,1.*foo" } } */
 /* { dg-final { scan-assembler "bar:.*\tbstrins\\.w\t\\\$r\[0-9\]+,\\\$r\[0-9\]+,31,15.*bar" } } */
 
-#include "bstrins-6.c"
+#include "la64/bstrins-6.c"
