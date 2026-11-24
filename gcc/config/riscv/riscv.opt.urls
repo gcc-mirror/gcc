@@ -59,6 +59,12 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mzilsd-strict-align)
 mvector-strict-align
 UrlSuffix(gcc/RISC-V-Options.html#index-mvector-strict-align)
 
+mfix-sifive-mal-9174
+UrlSuffix(gcc/RISC-V-Options.html#index-mfix-sifive-mal-9174)
+
+mfix-sifive-mal-9191
+UrlSuffix(gcc/RISC-V-Options.html#index-mfix-sifive-mal-9191)
+
 mexplicit-relocs
 UrlSuffix(gcc/RISC-V-Options.html#index-mexplicit-relocs-3)
 
