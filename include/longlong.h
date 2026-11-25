@@ -1448,9 +1448,9 @@ extern UDItype __umulsidi3 (USItype, USItype);
 	     : "=r" __ll_check_output (UDItype, sh),			\
 	       "=&r" __ll_check_output (UDItype, sl),			\
 	       "+r" (__carry)				      		\
-	     : "%rJ" ((UDItype)(ah)),				     	\
+	     : "rJ" ((UDItype)(ah)),				     	\
 	       "rI" ((UDItype)(bh)),				      	\
-	       "%rJ" ((UDItype)(al)),				     	\
+	       "rJ" ((UDItype)(al)),				     	\
 	       "rI" ((UDItype)(bl))				       	\
 	     __CLOBBER_CC);						\
   } while (0)
