@@ -8648,9 +8648,9 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
       rhs = build2_loc (loc, code, nonatomic_lhs_type, old, val);
       break;
     case ERROR_MARK:
-      rhs = build2_loc (loc, BIT_AND_EXPR, nonatomic_lhs_type,
-			build1_loc (loc, BIT_NOT_EXPR,
-				    nonatomic_lhs_type, old), val);
+      rhs = build1_loc (loc, BIT_NOT_EXPR, nonatomic_lhs_type,
+			build2_loc (loc, BIT_AND_EXPR, nonatomic_lhs_type,
+				    old, val));
       break;
     default:
       gcc_unreachable ();
