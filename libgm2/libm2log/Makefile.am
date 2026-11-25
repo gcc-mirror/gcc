@@ -124,6 +124,11 @@ M2MODS = BitBlockOps.mod  BitByteOps.mod \
          Strings.mod  Termbase.mod \
          Terminal.mod  TimeDate.mod
 
+GENERATED = \
+ ../libm2pim/SYSTEM.def \
+ ../libm2pim/Builtins.def \
+ ../libm2pim/Builtins.mod \
+ ../libm2pim/cbuiltin.def
 
 libm2logdir = libm2log
 toolexeclib_LTLIBRARIES = libm2log.la
@@ -149,15 +154,49 @@ if ENABLE_DARWIN_AT_RPATH
 libm2log_la_link_flags += -nodefaultrpaths -Wl,-rpath,@loader_path/
 endif
 libm2log_la_LINK = $(LINK) -version-info $(libtool_VERSION) $(libm2log_la_link_flags) -lm
-BUILT_SOURCES = ../libm2pim/SYSTEM.def
 
 M2LIBDIR = /m2/m2log/
 
-../libm2pim/SYSTEM.def: ../libm2pim/Makefile
+../libm2pim/SYSTEM.def:
 	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) SYSTEM.def
 
+../libm2pim/Builtins.def:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.def
+
+../libm2pim/Builtins.mod:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) Builtins.mod
+
+../libm2pim/cbuiltin.def:
+	cd ../libm2pim ; $(MAKE) $(AM_MAKEFLAGS) cbuiltin.def
+
+BitBlockOps.lo: $(GENERATED) BitBlockOps.mod
+BitByteOps.lo: $(GENERATED) BitByteOps.mod
+BitWordOps.lo: $(GENERATED) BitWordOps.mod
+BlockOps.lo: $(GENERATED) BlockOps.mod
+CardinalIO.lo: $(GENERATED) CardinalIO.mod
+Conversions.lo: $(GENERATED) Conversions.mod
+DebugPMD.lo: $(GENERATED) DebugPMD.mod
+DebugTrace.lo: $(GENERATED) DebugTrace.mod
+Delay.lo: $(GENERATED) Delay.mod
+Display.lo: $(GENERATED) Display.mod
+ErrorCode.lo: $(GENERATED) ErrorCode.mod
+FileSystem.lo: $(GENERATED) FileSystem.mod
+FloatingUtilities.lo: $(GENERATED) FloatingUtilities.mod
+InOut.lo: $(GENERATED) InOut.mod
+Keyboard.lo: $(GENERATED) Keyboard.mod
+LongIO.lo: $(GENERATED) LongIO.mod
+NumberConversion.lo: $(GENERATED) NumberConversion.mod
+Random.lo: $(GENERATED) Random.mod
+RealConversions.lo: $(GENERATED) RealConversions.mod
+RealInOut.lo: $(GENERATED) RealInOut.mod
+Strings.lo: $(GENERATED) Strings.mod
+Termbase.lo: $(GENERATED) Termbase.mod
+Terminal.lo: $(GENERATED) Terminal.mod
+TimeDate.lo: $(GENERATED) TimeDate.mod
+
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+	$(LIBTOOL) --tag=CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
                    $(GM2_FOR_TARGET) -c \
                    $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2log_la_M2FLAGS) $< -o $@
 

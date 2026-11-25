@@ -1,3 +1,361 @@
+2026-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/128106
+	* g++.dg/ipa/pr128106.C: New test.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: New test.
+
+2026-11-24  Sendao Yan  <yansendao@126.com>
+
+	* gcc.target/aarch64/sve2/acle/general/whilelt_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilele_1.c: Likewise.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/torture/pr128080.c: Skip at -O0.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128080
+	* gcc.dg/torture/pr128080.c: New test.
+	* gcc.dg/torture/pr128080-2.c: New test.
+
+2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128142
+	* gcc.dg/torture/pr128142.c: New test.
+	* gcc.target/aarch64/pr128142.c: New test.
+
+2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128906
+	* gcc.target/h8300/pr128906.c: New test.
+	* gcc.target/h8300/pr128906-2.c: New test.
+
+2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-23  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128911
+	* gcc.target/i386/pr128911-1.c: New test.
+	* gcc.target/i386/pr128911-2.c: Likewise.
+	* gcc.target/i386/pr128911-3.c: Likewise.
+
+2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
+
+	Backported from master:
+	2026-11-22  Ard Biesheuvel  <ardb@kernel.org>
+
+	* gcc.target/i386/record-mcount-2.c: New test.
+
+2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128836
+	* gcc.target/i386/pr128836.c: New test.
+
+2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128533
+	* gcc.target/i386/pr128533.c: New test.
+
+2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128751
+	* gcc.target/i386/pr128751.c: New test.
+
+2026-11-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128670
+	* gcc.target/i386/pr128670.c: New test.
+
+2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	Backported from master:
+	2026-11-22  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/vbit-imm-range.c: New test.
+
+2026-11-20  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	Backported from master:
+	2026-11-19  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/128682
+	* gfortran.dg/transpose_reshape_char.f90: New test.
+
+2026-11-20  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	Backported from master:
+	2026-11-05  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/acmp-tst.cc: New test.
+	* gcc.target/powerpc/acmp-tst-32bit.cc: New test.
+	* gcc.target/powerpc/acmp-tst-indexed.cc: New test.
+	* gcc.target/powerpc/powerpc.exp: Accept c++ tests.
+
+2026-11-20  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-18  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128770
+	* gcc.target/i386/pr128770.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Update the expected
+	architecture and extensions for the generic Armv9 fallback.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: Likewise.
+	* gcc.target/aarch64/cpunative/info_37: New cpuinfo fixture for an
+	unknown CPU with SVE2.1 and missing Armv9 baseline features.
+	* gcc.target/aarch64/cpunative/info_38: New cpuinfo fixture for an
+	unknown CPU without SVE2.
+	* gcc.target/aarch64/cpunative/info_41: New cpuinfo fixture for an
+	unknown CPU with SVE2 and all reportable Armv9-A baseline features.
+	* gcc.target/aarch64/cpunative/native_cpu_37.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_38.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_39.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_40.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_41.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-07-29  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126465
+	* gcc.target/aarch64/sve/cond_fma.c: New test.
+	* gcc.target/aarch64/sve/cond_fma_neg_addend.c: New test.
+	* gcc.target/aarch64/sve/cond_fms.c: New test.
+	* gcc.target/aarch64/sve/cond_fnma.c: New test.
+	* gcc.target/aarch64/sve/cond_fnms.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126592
+	* gcc.target/aarch64/pr126592.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-08-04  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126593
+	* gcc.target/aarch64/pr126593.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-11-12  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/128665
+	* gcc.target/aarch64/sve/vect-revectorize-ptest-1.c: New test.
+
+2026-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* gcc.dg/vect/pr128095.c: New test.
+
+2026-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-11-16  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128664
+	* gfortran.dg/bind_c_assumed_rank.f90: New test.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127908
+	* gcc.target/riscv/pr127908.c: New test.
+
+2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-17  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128738
+	* gcc.dg/torture/pr128738.c: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-12  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* gdc.dg/target/i386/targetinfo_CET.d: Check for
+	the exact value 3 and for GNU_CET.
+	* gdc.dg/target/i386/targetinfo_CET_check.d: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-09  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* g++.target/i386/pr128437.C: New test.
+	* g++.target/i386/pr128437-1.C: New test.
+
+2026-11-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/125932
+	* gcc.target/i386/pr125932-1.c: New test.
+	* gcc.target/i386/pr125932-2.c: Ditto.
+
+2026-11-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr36.adb: New test.
+
+2026-11-15  Martin Uecker  <uecker@tugraz.at>
+
+	Backported from master:
+	2026-11-09  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128518
+	* gcc.dg/pr128518.c: New test.
+
+2026-11-14  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-11-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128640
+	* gcc.target/i386/pr128640-1.c: New test.
+	* gcc.target/i386/pr128640-2.c: New test.
+	* gcc.target/i386/pr128640-3.c: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127991
+	* gm2.dg/dump/pim/pass/anonymousconst.mod: New test.
+	* gm2.dg/dump/pim/pass/dg-dump-pim-pass.exp: New test.
+	Authored-by: Yongqiang Tian <yqtian668@gmail.com>
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127657
+	* gm2.dg/spell/iso/fail/valspell.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell2.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell3.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127622
+	* gm2.dg/spell/iso/fail/badspelltype.mod: New test.
+	* gm2.dg/spell/iso/fail/badspelltype2.mod: New test.
+
+2026-11-13  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-11-02  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.dg/modules/modules.exp: Reset module_do between ungrouped
+	tests.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127567
+	* gm2/imports/fail/tinybadimport.mod: New test.
+	* gm2/imports/run/pass/tinygoodimport.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127554
+	* gm2.dg/spell/iso/fail/constaggregate.mod: New test.
+
+2026-11-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/run/pass/testclock2.mod: Remove ability to
+	change the system clock.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128042
+	* gfortran.dg/transfer_simplify_17.f90: New test.
+
+2026-11-12  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* gfortran.dg/transfer_simplify_16.f90: New test.
+
+2026-11-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/125129
+	* gm2/exceptions/run/pass/exceptions-run-pass.exp: Use
+	gm2_target_compiler rather than target_compile.
+	* lib/gm2.exp (gm2_target_compile_default): Check
+	check_effective_target_pie and append -fPIE if necessary.
+
 2026-11-11  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:

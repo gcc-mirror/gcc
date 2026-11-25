@@ -1792,19 +1792,19 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	case 1:
 	  target_fcode = RS6000_BIF_PPC_ATOMIC_CAS_QI;
-	  int_type = unsigned_char_type_node;
+	  int_type = signed_char_type_node;
 	  break;
 	case 2:
 	  target_fcode = RS6000_BIF_PPC_ATOMIC_CAS_HI;
-	  int_type = short_unsigned_type_node;
+	  int_type = short_integer_type_node;
 	  break;
 	case 4:
 	  target_fcode = RS6000_BIF_PPC_ATOMIC_CAS_SI;
-	  int_type = unsigned_intSI_type_node;
+	  int_type = intSI_type_node;
 	  break;
 	case 8:
 	  target_fcode = RS6000_BIF_PPC_ATOMIC_CAS_DI;
-	  int_type = long_long_unsigned_type_node;
+	  int_type = long_long_integer_type_node;
 	  break;
 	case 16:
 	  if (!TARGET_QUAD_MEMORY_ATOMIC)
@@ -1815,7 +1815,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	      return error_mark_node;
 	    }
 	  target_fcode = RS6000_BIF_PPC_ATOMIC_CAS_TI;
-	  int_type = unsigned_intTI_type_node;
+	  int_type = intTI_type_node;
 	  break;
 	default:
 	  if (complain)

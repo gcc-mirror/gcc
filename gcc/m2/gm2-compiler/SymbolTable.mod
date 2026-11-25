@@ -2073,19 +2073,22 @@ BEGIN
       DefImpSym   : IF GetSymKey(DefImp.LocalSymbols, GetSymName(Sym))=NulKey
                     THEN
                        PutSymKey(DefImp.LocalSymbols, GetSymName(Sym), Sym)
-                    ELSE
+                    ELSIF NOT IsExternalModule (Sym)
+                    THEN
                        MetaError1 ('{%kIMPORT} name clash with symbol {%1Ead} symbol already declared ', Sym)
                     END |
       ModuleSym   : IF GetSymKey(Module.LocalSymbols, GetSymName(Sym))=NulKey
                     THEN
                        PutSymKey(Module.LocalSymbols, GetSymName(Sym), Sym)
-                    ELSE
+                    ELSIF NOT IsExternalModule (Sym)
+                    THEN
                        MetaError1 ('{%kIMPORT} name clash with symbol {%1Ead} symbol already declared ', Sym)
                     END |
       ProcedureSym: IF GetSymKey(Procedure.LocalSymbols, GetSymName(Sym))=NulKey
                     THEN
                        PutSymKey(Procedure.LocalSymbols, GetSymName(Sym), Sym)
-                    ELSE
+                    ELSIF NOT IsExternalModule (Sym)
+                    THEN
                        MetaError1 ('{%kIMPORT} name clash with symbol {%1Ead} symbol already declared ', Sym)
                     END
 
@@ -8073,6 +8076,16 @@ BEGIN
    pSym := GetPsym(Sym) ;
    RETURN( pSym^.SymbolType=ModuleSym )
 END IsModule ;
+
+
+(*
+   IsExternalModule - return TRUE if sym is an external program module or defimp module.
+*)
+
+PROCEDURE IsExternalModule (sym: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsDefImp (sym)
+END IsExternalModule ;
 
 
 (*

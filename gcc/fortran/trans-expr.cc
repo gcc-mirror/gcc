@@ -2380,16 +2380,14 @@ tree
 gfc_get_expr_charlen (gfc_expr *e)
 {
   gfc_ref *r;
-  tree length;
+  tree length = NULL_TREE;
   tree previous = NULL_TREE;
   gfc_se se;
 
-  gcc_assert (e->expr_type == EXPR_VARIABLE
-	      && e->ts.type == BT_CHARACTER);
+  gcc_assert (e->ts.type == BT_CHARACTER);
 
-  length = NULL; /* To silence compiler warning.  */
-
-  if (is_subref_array (e) && e->ts.u.cl->length)
+  if ((is_subref_array (e) || e->expr_type == EXPR_FUNCTION)
+      && e->ts.u.cl->length)
     {
       gfc_se tmpse;
       gfc_init_se (&tmpse, NULL);
@@ -10534,6 +10532,11 @@ gfc_conv_structure (gfc_se * se, gfc_expr * expr, int init)
 					se->want_coarray);
       gfc_add_expr_to_block (&se->pre, tmp);
       final_block = NULL;
+
+      /* Did we ask for a pointer to the structure temporary?  */
+      if (se->want_pointer && !POINTER_TYPE_P (TREE_TYPE (se->expr)))
+	se->expr = gfc_build_addr_expr (NULL, se->expr);
+
       return;
     }
 

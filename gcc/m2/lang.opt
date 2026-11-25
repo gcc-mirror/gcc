@@ -98,6 +98,10 @@ fdef=
 Modula-2 Joined
 Recognize the specified suffix as a definition module filename.
 
+fdump-builtins
+Modula-2
+Display all builtin procedure functions.
+
 fdump-system-exports
 Modula-2
 Display all inbuilt system items.

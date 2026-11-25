@@ -142,7 +142,6 @@ m2decl_DeclareKnownVariable (location_t location, const char *name, tree type,
 tree
 m2decl_DeclareKnownConstant (location_t location, tree type, tree value)
 {
-  tree id = make_node (IDENTIFIER_NODE); /* Ignore the name of the constant. */
   tree decl;
 
   m2assert_AssertLocation (location);
@@ -150,7 +149,7 @@ m2decl_DeclareKnownConstant (location_t location, tree type, tree value)
   type = m2tree_skip_type_decl (type);
   layout_type (type);
 
-  decl = build_decl (location, CONST_DECL, id, type);
+  decl = build_decl (location, CONST_DECL, NULL_TREE, type);
 
   value = copy_node (value);
   TREE_TYPE (value) = type;

@@ -33,6 +33,7 @@ with Ada.Exceptions; use Ada.Exceptions;
 
 with System.Address_Image;
 with System.IO;               use System.IO;
+with System.Secondary_Stack;  use System.Secondary_Stack;
 with System.Soft_Links;       use System.Soft_Links;
 with System.Storage_Elements; use System.Storage_Elements;
 
@@ -694,6 +695,75 @@ package body System.Storage_Pools.Subpools is
 
       Attach (N_Ptr, To.Subpools'Unchecked_Access);
    end Set_Pool_Of_Subpool;
+
+   --------------------------------
+   -- SS_Allocate_Any_Controlled --
+   --------------------------------
+
+   procedure SS_Allocate_Any_Controlled
+     (Addr          : out Address;
+      Storage_Size  : Storage_Count;
+      Alignment     : System.Storage_Elements.Storage_Count;
+      Is_Controlled : Boolean)
+   is
+      N_Addr      : Address;
+      N_Alignment : Storage_Count;
+      N_Size      : Storage_Count;
+
+      Header_And_Padding : Storage_Offset;
+      --  This offset includes the size of a header plus an additional padding
+      --  due to a larger alignment of the object.
+
+   begin
+      if Is_Controlled then
+         --  The size must account for the hidden header before the object.
+         --  Account for possible padding space before the header due to a
+         --  larger alignment of the object.
+
+         Header_And_Padding := Header_Size_With_Padding (Alignment);
+
+         N_Size := Storage_Size + Header_And_Padding;
+
+         --  The alignment must account for the hidden header before the object
+
+         N_Alignment :=
+           System.Storage_Elements.Storage_Count'Max
+             (Alignment, Finalization_Primitives.Header_Alignment);
+
+      --  Non-controlled allocation
+
+      else
+         N_Size      := Storage_Size;
+         N_Alignment := Alignment;
+      end if;
+
+      SS_Allocate (N_Addr, N_Size, N_Alignment);
+
+      if Is_Controlled then
+         --  Move the address from the hidden list header to the start of the
+         --  object. If there is padding due to larger alignment of the object,
+         --  the padding is placed at the beginning. This effectively hides the
+         --  list header:
+
+         --    N_Addr                  Addr
+         --    |                       |
+         --    V                       V
+         --    +-------+---------------+----------------------+
+         --    |Padding|    Header     |        Object        |
+         --    +-------+---------------+----------------------+
+         --    ^       ^               ^
+         --    |       +- Header_Size -+
+         --    |                       |
+         --    +- Header_And_Padding --+
+
+         Addr := N_Addr + Header_And_Padding;
+
+      --  Non-controlled allocation
+
+      else
+         Addr := N_Addr;
+      end if;
+   end SS_Allocate_Any_Controlled;
 
    -------------------
    -- _Adjust_Clone --

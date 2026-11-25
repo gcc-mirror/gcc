@@ -25,7 +25,7 @@ import argparse
 import os
 import sys
 
-Base_Libs = ['gm2-libs', 'Base libraries', 'Basic M2F compatible libraries']
+Base_Libs = ['gm2-libs', 'Base libraries', 'Basic PIM style compatible libraries']
 
 PIM_Log_Desc = 'PIM and Logitech 3.0 compatible libraries'
 PIM_Log = ['gm2-libs-log', 'PIM and Logitech 3.0 Compatible', PIM_Log_Desc]
@@ -33,7 +33,12 @@ PIM_Cor_Desc = 'PIM compatible process support'
 PIM_Cor = ['gm2-libs-coroutines', 'PIM coroutine support', PIM_Cor_Desc]
 ISO_Libs = ['gm2-libs-iso', 'M2 ISO Libraries', 'ISO defined libraries']
 
-library_classifications = [Base_Libs, PIM_Log, PIM_Cor, ISO_Libs]
+PIM_Common = ['gm2-libs-pim-common', 'PIM target', 'PIM target']
+ISO_Common = ['gm2-libs-iso-common', 'ISO target', 'ISO target']
+COR_Common = ['gm2-libs-cor-common', 'Coroutine target', 'Coroutine target']
+
+library_classifications = [Base_Libs, PIM_Log, PIM_Cor, ISO_Libs,
+                           PIM_Common, ISO_Common, COR_Common]
 
 # state_states
 state_none, state_var, state_type, state_const = range(4)
@@ -254,6 +259,10 @@ def check_index(line):
                     var = word.split('=')
                     if len(var) > 0:
                         emit_index(var[0], '(const)')
+    emit_procedure_index(procedure)
+
+
+def emit_procedure_index(procedure):
     if procedure != '':
         name = procedure.split('(')
         if name[0] != '':
@@ -263,18 +272,134 @@ def check_index(line):
             if proc != '':
                 emit_index(proc, '')
 
-def demangle_system_datatype(line, indent):
-    # The spaces in front align in the export qualified list.
-    indent += len ('EXPORT QUALIFIED ')
-    line = line.replace('@SYSTEM_DATATYPES@',
-                        '\n' + indent * ' ' + 'Target specific data types.')
-    line = line.replace('@SYSTEM_TYPES@',
-                        '(* Target specific data types.  *)')
-    return line
+
+def contains(line, sub):
+    # Return True if line contains sub.
+    return line.find(sub) >= 0
+
+
+def contains_builtin_tag(line):
+    # Return True if line contains a builtin tag.
+    for key in builtin_func:
+        if contains(line, key):
+            return True
+    return False
+
+
+def startWith(line, sub):
+    # Return True if line starts with sub.
+    return (len(line)>len(sub)) and (line[:len(sub)]==sub)
+
+
+def process_def_cbuiltin(line, key):
+    line = line.strip()
+    if startWith(line, "(*") and (len(line)>len("(*")):
+        line = line[2:]
+        funcname = line.split('(')[1].split(',')[0]
+        emit_procedure_index(funcname + "(")
+        output.write('(* ' + funcname + ' availability is determined by the target.  *)\n')
+
+
+def process_cbuiltin(line, key):
+    funcname = key.split("_")[2]
+    funcname = funcname.lower()[:-1]
+    emit_procedure_index(funcname + "(")
+    output.write('(* ' + funcname + ' availability is determined by the target.  *)\n')
+    keyname = "__builtin_" + funcname
+
+
+def process_mod_builtin(line, key):
+    pass
+
+
+def process_def_builtin(line, key):
+    # Issue a comment stating the procedure availability is target dependent.
+    line = line.strip()
+    if startWith(line, "(*") and (len(line)>len("(*")):
+        line = line[2:]
+        funcname = line.split('(')[1].split(',')[0]
+        keyname = line.split('(')[1].split(',')[3]
+        emit_procedure_index(funcname + "(")
+        output.write('(* ' + funcname + ' availability is determined by the target.  *)\n')
+
+
+def process_def_target_procedure(line, key):
+    line = line.strip()
+    if startWith(line, "(*") and (len(line)>len("(*")):
+        line = line[2:]
+        funcname = line.split('(')[1].split(',')[0]
+        argtype = line.split('(')[1].split(',')[1]
+        returntype = line.split('(')[1].split(',')[2]
+        keyname = line.split('(')[1].split(',')[3]
+        emit_procedure_index(funcname + "(")
+        output.write('(* ' + funcname + ' availability is determined by the target.  *)\n')
+        output.write('(* PROCEDURE ' + funcname + ' (z: ' + argtype + ') : ' + returntype + ' ;  *)\n\n')
+
+def process_cbuiltin_export(line, key):
+    pass
+
+
+def process_mod_target_procedure(line, key):
+    pass
+
+
+builtin_func = { "<DEF_CBUILTIN_PROCEDURE":process_def_cbuiltin,
+                 "<DEF_BUILTIN_PROCEDURE":process_def_builtin,
+                 "<MOD_BUILTIN_PROCEDURE":process_mod_builtin,
+                 "<CBUILTIN_EXPORT_LIST>":process_cbuiltin_export,
+                 "<DEF_TARGET_PROCEDURE":process_def_target_procedure,
+                 "<MOD_TARGET_PROCEDURE":process_mod_target_procedure}
+
+
+def process_tag(line):
+    for key in builtin_func:
+        if contains(line, key):
+            builtin_func[key](line, key)
+
+
+def process_line(line):
+    global seen_SYSTEM_DATATYPES
+    global seen_SYSTEM_TYPES
+    # process_line interpet and process any tags.
+    if contains (line, "<SYSTEM_DATATYPES>"):
+        seen_SYSTEM_DATATYPES = True
+    elif contains (line, "</SYSTEM_DATATYPES>"):
+        output_SYSTEM_DATATYPES(line)
+        seen_SYSTEM_DATATYPES = False
+    elif contains (line, "<SYSTEM_TYPES>"):
+        seen_SYSTEM_TYPES = True
+    elif contains (line, "</SYSTEM_TYPES>"):
+        output_SYSTEM_DATATYPES(line)
+        seen_SYSTEM_TYPES = False
+    elif seen_SYSTEM_DATATYPES:
+        pass
+    elif contains_builtin_tag(line):
+        process_tag(line)
+    else:
+        output.write(line + '\n')
+
+
+def output_SYSTEM_DATATYPES(line):
+    # Write a list of system datatypes into the output file.
+    indent = leadingSpaces(line)
+    output.write(" " * indent)
+    output.write("All target supported system data types.\n")
+
+
+def leadingSpaces(line):
+    # Return the leading number of spaces in line.
+    s = line.lstrip()
+    return len(line)-len(s)
 
 
 def emit_texinfo_content(f, line):
     global state_obj
+    global seen_SYSTEM_DATATYPES
+    global seen_SYSTEM_TYPES
+    global output
+
+    seen_SYSTEM_DATATYPES = False
+    seen_SYSTEM_TYPES = False
     output.write(line.rstrip() + '\n')
     line = f.readline()
     if len(line.rstrip()) == 0:
@@ -291,8 +416,7 @@ def emit_texinfo_content(f, line):
         line = line.rstrip()
         check_index(line)
         line = line.replace('{', '@{').replace('}', '@}')
-        line = demangle_system_datatype(line, 0)
-        output.write(line + '\n')
+        process_line(line)
         line = f.readline()
     return f
 

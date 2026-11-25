@@ -9585,7 +9585,7 @@ BEGIN
          (* It is sensible not to try and recover when we dont know the return type.  *)
          MetaErrorT1 (typetok,
                       'undeclared type found in builtin procedure function' +
-                      ' {%AkVAL} {%1ad} {%1&s}', Type) ;
+                      ' {%AkVAL} {%1ad} {%1&Ts}', Type) ;
          (* Non recoverable error.  *)
          UnknownReported (Type)
       ELSIF ConstExprError (ProcSym, Exp, exptok, ConstExpr)
@@ -9595,6 +9595,14 @@ BEGIN
          ReturnVar := MakeTemporary (combinedtok, AreConstant (IsConst (Exp))) ;
          PutVar (ReturnVar, Type) ;
          PushTFtok (ReturnVar, Type, combinedtok)
+      ELSIF IsUnknown (Exp)
+      THEN
+         (* Spellcheck.  *)
+         MetaErrorT1 (exptok,
+                      'undeclared variable or constant expression found in builtin procedure function' +
+                      ' {%AkVAL} {%1ad} {%1&VCs}', Exp) ;
+         (* Non recoverable error.  *)
+         UnknownReported (Exp)
       ELSIF (IsSet (Type) OR IsEnumeration (Type) OR IsSubrange (Type) OR
              IsType (Type) OR IsPointer (Type) OR IsProcType (Type)) AND
              (IsVar (Exp) OR IsConst (Exp) OR IsProcedure (Exp))
@@ -12661,18 +12669,28 @@ END SilentBuildConstructor ;
 PROCEDURE BuildConstructor (tokcbrpos: CARDINAL) ;
 VAR
    tok       : CARDINAL ;
+   name      : Name ;
+   errsym,
    constValue,
    type      : CARDINAL ;
 BEGIN
-   PopTtok (type, tok) ;
+   PopTntok (type, name, tok) ;
    constValue := MakeTemporary (tok, ImmediateValue) ;
    PutVar (constValue, type) ;
    PutConstructor (constValue) ;
    PushValue (constValue) ;
    IF type = NulSym
    THEN
-      MetaErrorT0 (tokcbrpos,
-                   '{%E}constructor requires a type before the opening %{')
+      IF tok = UnknownTokenNo
+      THEN
+         MetaErrorT0 (tokcbrpos,
+                      '{%E}constructor requires a type before the opening %{')
+      ELSE
+         (* Spellcheck.  *)
+         errsym := MakeError (tok, name) ;
+         MetaErrorT1 (tok, 'constructor type {%1Ea} is undefined {%1&s}', errsym) ;
+         UnknownReported (errsym)
+      END
    ELSE
       ChangeToConstructor (tok, type) ;
       PutConstructorFrom (constValue, type) ;
@@ -12807,8 +12825,7 @@ PROCEDURE BuildComponentValue ;
 VAR
    e1tok,
    e2tok,
-   consttok,
-   virtpos  : CARDINAL ;
+   consttok : CARDINAL ;
    const,
    e1, e2   : CARDINAL ;
    nuldotdot,
@@ -15950,6 +15967,27 @@ BEGIN
    END ;
    PushAddress (BoolStack, f)
 END PushTFntok ;
+
+
+(*
+   PopTntok - Pop a True/number/tok from the True/False stack.
+              True and False are assumed to contain Symbols.
+              The number is word sized.
+*)
+
+PROCEDURE PopTntok (VAR True, n: WORD; VAR tokno: CARDINAL) ;
+VAR
+   f: BoolFrame ;
+BEGIN
+   f := PopAddress (BoolStack) ;
+   WITH f^ DO
+      True := TrueExit ;
+      n := name ;
+      tokno := tokenno ;
+      Assert (NOT BooleanOp)
+   END ;
+   DISPOSE (f)
+END PopTntok ;
 
 
 (*

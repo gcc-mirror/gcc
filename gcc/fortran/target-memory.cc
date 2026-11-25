@@ -287,6 +287,42 @@ encode_derived (gfc_expr *source, unsigned char *buffer, size_t buffer_size)
 	  gcc_assert (size >= 0);
 	  memset (&buffer[ptr], 0, size);
 	}
+      else if (c->expr->rank == 0 && cmp->as && cmp->as->rank)
+	{
+	  /* Replicate a scalar constant initializer for an array component as
+	     many times as needed.  */
+	  gfc_constructor_base ctor_head = NULL;
+	  gfc_array_spec *as = cmp->as;
+	  gfc_typespec *ts = &c->expr->ts;
+	  HOST_WIDE_INT ctor_size;
+	  mpz_t as_size, cons_size;
+	  gfc_expr *expr;
+
+	  spec_size (as, &as_size);
+	  ctor_size = gfc_mpz_get_hwi (as_size);
+	  for (HOST_WIDE_INT k = 0; k < ctor_size; k++)
+	    gfc_constructor_append_expr (&ctor_head, gfc_copy_expr (c->expr),
+					 &gfc_current_locus);
+
+	  /* Set up expr as an array constructor.  */
+	  expr = gfc_get_array_expr (ts->type, ts->kind, &c->expr->where);
+	  expr->value.constructor = ctor_head;
+	  expr->rank = as->rank;
+	  expr->shape = gfc_get_shape (as->rank);
+	  for (int i = 0; i < as->rank; ++i)
+	    spec_dimen_size (as, i, &expr->shape[i]);
+
+	  /* Validate size of array initializer.  */
+	  if (!gfc_array_size (expr, &cons_size)
+	      || mpz_cmp (cons_size, as_size))
+	    gfc_error ("Bad size of array initializer at %C");
+	  mpz_clear (cons_size);
+	  mpz_clear (as_size);
+
+	  gfc_target_encode_expr (expr, &buffer[ptr],
+				  buffer_size - ptr);
+	  gfc_free_expr (expr);
+	}
       else
 	gfc_target_encode_expr (c->expr, &buffer[ptr],
 				buffer_size - ptr);
@@ -599,18 +635,25 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
   switch (result->ts.type)
     {
     case BT_INTEGER:
+      /* 'result->value.integer' is already mpz_initialized by the caller.  */
+      mpz_clear (result->value.integer);
       result->representation.length =
         gfc_interpret_integer (result->ts.kind, buffer, buffer_size,
 			       result->value.integer);
       break;
 
     case BT_REAL:
+      /* 'result->value.real' is already mpfr_initialized by the caller.  */
+      mpfr_clear (result->value.real);
       result->representation.length =
         gfc_interpret_float (result->ts.kind, buffer, buffer_size,
     			     result->value.real);
       break;
 
     case BT_COMPLEX:
+      /* 'result->value.complex' is already initialized by the caller.  */
+      mpfr_clear (mpc_realref (result->value.complex));
+      mpfr_clear (mpc_imagref (result->value.complex));
       result->representation.length =
         gfc_interpret_complex (result->ts.kind, buffer, buffer_size,
 			       result->value.complex);

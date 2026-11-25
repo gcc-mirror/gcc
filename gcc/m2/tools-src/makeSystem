@@ -70,38 +70,38 @@ displayExportedTypes () {
    for i in ${types} ; do
       if [ $n -eq 1 ] ; then
           n=0
-          echo -n "                 " >> ${OUTPUTFILE}
+          printf "                 " >> ${OUTPUTFILE}
       fi
-      echo -n "$i, " >> ${OUTPUTFILE}
+      printf "$i, " >> ${OUTPUTFILE}
       if [ $c -eq 4 ] ; then
-          echo " " >> ${OUTPUTFILE}
+          printf "\n" >> ${OUTPUTFILE}
           n=1
           c=0
       fi
       c=`expr $c + 1`
    done
-   echo " " >> ${OUTPUTFILE}
+   printf "\n" >> ${OUTPUTFILE}
 }
 
 displayBuiltinTypes () {
    for i in ${types} ; do
-      echo "   $i ; " >> ${OUTPUTFILE}
+      printf "   $i ; " >> ${OUTPUTFILE}
    done
 }
 
 displayStart () {
-   sed -e "1,/@SYSTEM_DATATYPES@/!d" < ${SYSTEMDEF} | \
-   sed -e "/@SYSTEM_DATATYPES@/d" >> ${OUTPUTFILE}
+   sed -e "1,/<SYSTEM_DATATYPES>/!d" < ${SYSTEMDEF} | \
+   sed -e "/<SYSTEM_DATATYPES>/d" >> ${OUTPUTFILE}
 }
 
 displayMiddle () {
-   sed -e "1,/@SYSTEM_DATATYPES@/d" < ${SYSTEMDEF} | \
-   sed -e "1,/@SYSTEM_TYPES@/!d" | \
-   sed -e "/@SYSTEM_TYPES@/d" >> ${OUTPUTFILE}
+   sed -e "1,/<\/SYSTEM_DATATYPES>/d" < ${SYSTEMDEF} | \
+   sed -e "1,/<SYSTEM_TYPES>/!d" | \
+   sed -e "/<SYSTEM_TYPES>/d" >> ${OUTPUTFILE}
 }
 
 displayEnd () {
-   sed -e "1,/@SYSTEM_TYPES@/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
+   sed -e "1,/<\/SYSTEM_TYPES>/d" < ${SYSTEMDEF} >> ${OUTPUTFILE}
 }
 
 MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-plugin"

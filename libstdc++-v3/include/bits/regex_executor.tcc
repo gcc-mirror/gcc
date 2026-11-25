@@ -165,8 +165,103 @@ namespace __detail
       _M_has_sol = false;
       *_M_get_sol_pos() = _BiIter();
       _M_cur_results = _M_results;
-      _M_dfs(__match_mode, _M_start);
+      _M_dfs<_Search_mode::_Dfs>(__match_mode, _M_start);
       return _M_has_sol;
+    }
+
+  // Return whether a prefix search at _M_current might still match after
+  // looking only through the non-consuming front of the NFA.
+  //
+  // This is not a general implementation.  It is deliberately small and
+  // conservative: when it reaches a construct whose first consuming character
+  // is hard to know cheaply, it returns true and lets the normal executor run.
+  // The important fast paths are the common negative cases.
+  //
+  // Examples:
+  // * Pattern "[0-9]+" at input 'x': the first _S_opcode_match rejects 'x',
+  //   so a full DFS search would only allocate/pop frames to fail.  Return
+  //   false and let regex_search advance the starting position.
+  //
+  // * Pattern "[01]?[0-9]" at input '9': the optional [01] branch rejects,
+  //   but the skip branch can consume '9'.  Return true and let DFS decide
+  //   the full match.
+  //
+  // * Pattern "foo|bar" at input 'b': one alternative rejects, the other can
+  //   start with 'b'.  Return true.
+  template<typename _BiIter, typename _Alloc, typename _TraitsT>
+    bool _Executor<_BiIter, _Alloc, _TraitsT>::
+    _M_maybe_start_match(_StateIdT __i, size_t __depth)
+    {
+      // Depth is bounded by the NFA size so epsilon cycles cannot make the
+      // precheck recurse forever.  Hitting the bound means "unknown", not
+      // "no match", so stay conservative and run the real executor.  This is
+      // important for patterns such as "(a*)*" where epsilon paths can cycle
+      // before a consuming state is reached.
+      if (__depth > _M_nfa.size())
+	return true;
+
+      // An invalid edge is a real dead end for the explored path.
+      if (__i == _S_invalid_state_id)
+	return false;
+
+      const auto& __state = _M_nfa[__i];
+      switch (__state._M_opcode())
+	{
+	case _S_opcode_match:
+	  return __state._M_matches(*_M_current);
+
+	case _S_opcode_accept:
+	  // Empty matches are possible, so the full executor must decide.
+	  return true;
+
+	case _S_opcode_subexpr_begin:
+	case _S_opcode_subexpr_end:
+	case _S_opcode_dummy:
+	  // Captures and dummy states do not consume input, so they cannot
+	  // affect the first-character decision.  Continue along the only
+	  // successor.
+	  return _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_line_begin_assertion:
+	  // Assertions do not consume characters, but they can reject the
+	  // current position.  For "^abc" at a non-begin position, there is no
+	  // need to run DFS merely to discover that ^ fails.
+	  return _M_at_begin()
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_line_end_assertion:
+	  // Same idea for "$": if the assertion does not hold here, this
+	  // starting position cannot match via this path.
+	  return _M_at_end()
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_word_boundary:
+	  // Word-boundary assertions are also checked before the first
+	  // consuming state.  For "\bfoo" in the middle of "xfoo", this path
+	  // rejects before testing 'f'.
+	  return _M_word_boundary() == !__state._M_neg
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_alternative:
+	  // A branch might match if either arm can start with *_M_current.
+	  // Example: "foo|bar" at 'b' rejects the "foo" arm but keeps the
+	  // search because the "bar" arm is viable.
+	  return _M_maybe_start_match(__state._M_alt, __depth + 1)
+		 || _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_repeat:
+	  // Repeats can either enter the body or skip to the exit, so inspect
+	  // both paths.  This matters for constructs such as "[01]?[0-9]": at
+	  // '9' the optional first digit can be skipped, while at 'x' both
+	  // paths reject.
+	  return _M_maybe_start_match(__state._M_alt, __depth + 1)
+		 || _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_backref:
+	case _S_opcode_subexpr_lookahead:
+	default:
+	  return true;
+	}
     }
 
   // ------------------------------------------------------------
@@ -208,7 +303,7 @@ namespace __detail
 	  for (auto& __task : __old_queue)
 	    {
 	      _M_cur_results = _ResultsVec(std::move(__task.second), __alloc);
-	      _M_dfs(__match_mode, __task.first);
+	      _M_dfs<_Search_mode::_Bfs>(__match_mode, __task.first);
 	    }
 	  if (__match_mode == _Match_mode::_Prefix)
 	    __ret |= _M_has_sol;
@@ -250,8 +345,14 @@ namespace __detail
   // infinite loop by refusing to continue when it's already been
   // visited more than twice. It's `twice` instead of `once` because
   // we need to spare one more time for potential group capture.
+  //
+  // If the node cannot be re-entered anymore from the current state then return
+  // _S_invalid_state_id otherwise return the current state without going
+  // through a vector, allowing the caller to decide what to do with the state
+  // This is beneficial for DFS since DFS can continue with the next state
+  // immediately
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+    _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_rep_once_more(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
@@ -263,7 +364,7 @@ namespace __detail
 	  _M_frames.back()._M_count = __rep_count.second;
 	  __rep_count.first = _M_current;
 	  __rep_count.second = 1;
-	  _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
+	  return __state._M_alt;
 	}
       else
 	{
@@ -271,9 +372,35 @@ namespace __detail
 	    {
 	      __rep_count.second++;
 	      _M_frames.emplace_back(_S_fopcode_decrement_rep_count, __i);
-	      _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
+	      return __state._M_alt;
 	    }
 	}
+      return _S_invalid_state_id;
+    }
+
+  // Try to consume the common repeat body shape
+  //   repeat -> match -> repeat
+  // without going through the generic state dispatch again.
+  template<typename _BiIter, typename _Alloc, typename _TraitsT>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
+    _M_match_simple_repeat_body(_StateIdT __next, _StateIdT __repeat)
+    {
+      if (__next == _S_invalid_state_id)
+	return _S_invalid_state_id;
+
+      const auto& __state = _M_nfa[__next];
+      if (__state._M_opcode() != _S_opcode_match
+	  || __state._M_next != __repeat)
+	return __next;
+
+      if (_M_current == _M_end || !__state._M_matches(*_M_current))
+	return _S_invalid_state_id;
+
+      ++_M_current;
+      return __repeat;
     }
 
   // _M_alt branch is "match once more", while _M_next is "get me out
@@ -281,29 +408,37 @@ namespace __detail
   // mean the same thing, and we need to choose the correct order under
   // given greedy mode.
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
-    _M_handle_repeat(_Match_mode, _StateIdT __i)
+  template<_Search_mode __search_mode>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
+    _M_handle_repeat(_Match_mode __match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       // Greedy.
       if (!__state._M_neg)
 	{
-	  if (_M_search_mode == _Search_mode::_DFS)
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
 	    // If it's DFS executor and already accepted, we're done.
 	    _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next,
 				   _M_current);
 	  else
 	    _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
-	  _M_frames.emplace_back(_S_fopcode_rep_once_more, __i);
+	  _StateIdT __next = _M_rep_once_more(__match_mode, __i);
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
+	    return _M_match_simple_repeat_body(__next, __i);
+	  else
+	    return __next;
 	}
       else // Non-greedy mode
 	{
-	  if (_M_search_mode == _Search_mode::_DFS)
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
 	    {
 	      // vice-versa.
 	      _M_frames.emplace_back(_S_fopcode_fallback_rep_once_more, __i,
 				     _M_current);
-	      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	      return __state._M_next;
 	    }
 	  else
 	    {
@@ -316,97 +451,125 @@ namespace __detail
 		  // accepted state *must* be better than a solution that
 		  // matches a non-greedy quantifier one more time.
 		  _M_frames.emplace_back(_S_fopcode_fallback_rep_once_more, __i);
-		  _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+		  return __state._M_next;
 		}
 	    }
 	}
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+  template<_Search_mode __search_mode>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_subexpr_begin(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       auto& __res = _M_cur_results[__state._M_subexpr];
-      _M_frames.emplace_back(_S_fopcode_restore_cur_results,
-			     static_cast<_StateIdT>(__state._M_subexpr),
-			     __res.first);
+      if (_M_nfa._M_has_backref
+	  || __state._M_subexpr != 0
+	  || __search_mode != _Search_mode::_Dfs)
+	_M_frames.emplace_back(_S_fopcode_restore_cur_results,
+			       static_cast<_StateIdT>(__state._M_subexpr),
+			       __res.first);
       __res.first = _M_current;
-      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+      return __state._M_next;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+  template<_Search_mode __search_mode>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_subexpr_end(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       auto& __res = _M_cur_results[__state._M_subexpr];
-      _M_frames.emplace_back(_S_fopcode_restore_cur_results,
-			     static_cast<_StateIdT>(__state._M_subexpr),
-			     __res.second);
-      _M_frames.back()._M_subexpr_end = true;
-      _M_frames.back()._M_matched = __res.matched;
+      if (_M_nfa._M_has_backref
+	  || __state._M_subexpr != 0
+	  || __search_mode != _Search_mode::_Dfs)
+	{
+	  _M_frames.emplace_back(_S_fopcode_restore_cur_results,
+				 static_cast<_StateIdT>(__state._M_subexpr),
+				 __res.second);
+	  _M_frames.back()._M_subexpr_end = true;
+	  _M_frames.back()._M_matched = __res.matched;
+	}
+
       __res.second = _M_current;
       __res.matched = true;
-      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+      return __state._M_next;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    inline void _Executor<_BiIter, _Alloc, _TraitsT>::
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_line_begin_assertion(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       if (_M_at_begin())
-	_M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	return __state._M_next;
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    inline void _Executor<_BiIter, _Alloc, _TraitsT>::
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_line_end_assertion(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       if (_M_at_end())
-	_M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	return __state._M_next;
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    inline void _Executor<_BiIter, _Alloc, _TraitsT>::
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_word_boundary(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       if (_M_word_boundary() == !__state._M_neg)
-	_M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	return __state._M_next;
+      return _S_invalid_state_id;
     }
 
   // Here __state._M_alt offers a single start node for a sub-NFA.
   // We recursively invoke our algorithm to match the sub-NFA.
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+    _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_subexpr_lookahead(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       if (_M_lookahead(__state._M_alt) == !__state._M_neg)
-	_M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	return __state._M_next;
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+  template<_Search_mode __search_mode>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_match(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
       if (_M_current == _M_end)
-	return;
-      if (_M_search_mode == _Search_mode::_DFS)
+	return _S_invalid_state_id;
+      if constexpr (__search_mode == _Search_mode::_Dfs)
 	{
 	  if (__state._M_matches(*_M_current))
 	    {
 	      ++_M_current;
-	      _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	      return __state._M_next;
 	    }
 	}
       else
 	if (__state._M_matches(*_M_current))
 	  _M_match_queue.emplace_back(__state._M_next, _M_cur_results);
+
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _TraitsT>
@@ -462,15 +625,15 @@ namespace __detail
   // (_M_current, _M_current + (__submatch.second - __submatch.first)).
   // If matched, keep going; else just return and try another state.
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+    _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_backref(_Match_mode, _StateIdT __i)
     {
-      __glibcxx_assert(_M_search_mode == _Search_mode::_DFS);
+      __glibcxx_assert(_M_search_mode == _Search_mode::_Dfs);
 
       const auto& __state = _M_nfa[__i];
       auto& __submatch = _M_cur_results[__state._M_backref_index];
       if (!__submatch.matched)
-	return;
+	return _S_invalid_state_id;
       auto __last = _M_current;
       for (auto __tmp = __submatch.first;
 	   __last != _M_end && __tmp != __submatch.second;
@@ -482,15 +645,21 @@ namespace __detail
 		  __submatch.first, __submatch.second, _M_current, __last))
 	{
 	  _M_current = __last;
-	  _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
+	  return __state._M_next;
 	}
+
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+  template<_Search_mode __search_mode>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_accept(_Match_mode __match_mode, _StateIdT)
     {
-      if (_M_search_mode == _Search_mode::_DFS)
+      if constexpr (__search_mode == _Search_mode::_Dfs)
 	{
 	  __glibcxx_assert(!_M_has_sol);
 	  if (__match_mode == _Match_mode::_Exact)
@@ -528,7 +697,7 @@ namespace __detail
 	{
 	  if (_M_current == _M_begin
 	      && (_M_flags & regex_constants::match_not_null))
-	    return;
+	    return _S_invalid_state_id;
 	  if (__match_mode == _Match_mode::_Prefix || _M_current == _M_end)
 	    if (!_M_has_sol)
 	      {
@@ -536,10 +705,14 @@ namespace __detail
 		_M_results = _M_cur_results;
 	      }
 	}
+      return _S_invalid_state_id;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
-    void _Executor<_BiIter, _Alloc, _TraitsT>::
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_alternative(_Match_mode, _StateIdT __i)
     {
       const auto& __state = _M_nfa[__i];
@@ -549,7 +722,7 @@ namespace __detail
 	  // Pick lhs if it matches. Only try rhs if it doesn't.
 	  _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next,
 				 _M_current);
-	  _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
+	  return __state._M_alt;
 	}
       else
 	{
@@ -557,62 +730,79 @@ namespace __detail
 	  // See "case _S_opcode_accept:" handling above.
 	  _M_frames.emplace_back(_S_fopcode_posix_alternative, __state._M_next,
 				 _M_current);
-	  _M_frames.emplace_back(_S_fopcode_next, __state._M_alt);
+	  return __state._M_alt;
 	}
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
-    inline void _Executor<_BiIter, _Alloc, _TraitsT>::
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_node(_Match_mode __match_mode, _StateIdT __i)
     {
-      if (_M_visited(__i))
-	return;
+      // DFS has no _M_visited implementation as such don't even have the branch
+      // or the check in the call graph.
+      if constexpr (__search_mode == _Search_mode::_Bfs)
+	if (_M_visited(__i))
+	  return _S_invalid_state_id;
 
+      _StateIdT __next = _S_invalid_state_id;
       switch (_M_nfa[__i]._M_opcode())
 	{
 	case _S_opcode_repeat:
-	  _M_handle_repeat(__match_mode, __i); break;
+	  __next = _M_handle_repeat<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_subexpr_begin:
-	  _M_handle_subexpr_begin(__match_mode, __i); break;
+	  __next = _M_handle_subexpr_begin<__search_mode>(__match_mode, __i);
+	  break;
 	case _S_opcode_subexpr_end:
-	  _M_handle_subexpr_end(__match_mode, __i); break;
+	  __next = _M_handle_subexpr_end<__search_mode>(__match_mode, __i);
+	  break;
 	case _S_opcode_line_begin_assertion:
-	  _M_handle_line_begin_assertion(__match_mode, __i); break;
+	  __next = _M_handle_line_begin_assertion(__match_mode, __i); break;
 	case _S_opcode_line_end_assertion:
-	  _M_handle_line_end_assertion(__match_mode, __i); break;
+	  __next = _M_handle_line_end_assertion(__match_mode, __i); break;
 	case _S_opcode_word_boundary:
-	  _M_handle_word_boundary(__match_mode, __i); break;
+	  __next = _M_handle_word_boundary(__match_mode, __i); break;
 	case _S_opcode_subexpr_lookahead:
-	  _M_handle_subexpr_lookahead(__match_mode, __i); break;
+	  __next = _M_handle_subexpr_lookahead(__match_mode, __i); break;
 	case _S_opcode_match:
-	  _M_handle_match(__match_mode, __i); break;
+	  __next = _M_handle_match<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_backref:
-	  if (_M_search_mode == _Search_mode::_DFS)
-	    _M_handle_backref(__match_mode, __i);
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
+	    __next = _M_handle_backref(__match_mode, __i);
 	  else
 	    __builtin_unreachable();
 	  break;
 	case _S_opcode_accept:
-	  _M_handle_accept(__match_mode, __i); break;
+	  __next = _M_handle_accept<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_alternative:
-	  _M_handle_alternative(__match_mode, __i); break;
+	  __next = _M_handle_alternative(__match_mode, __i); break;
 	default:
 	  __glibcxx_assert(false);
 	}
+      return __next;
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_dfs(_Match_mode __match_mode, _StateIdT __start)
     {
-      const bool __dfs_mode = (_M_search_mode == _Search_mode::_DFS);
-      _M_frames.emplace_back(_S_fopcode_next, __start);
+      _StateIdT __next = __start;
 
-      while (!_M_frames.empty())
+      while (true)
 	{
+	  // Follow immediate successors without re-entering the frame
+	  // loop until we fail.  This avoids the needless state save and
+	  // restore through memory.
+	  while (__next != _S_invalid_state_id)
+	    __next = _M_node<__search_mode>(__match_mode, __next);
+
+	  if (_M_frames.empty())
+	    break;
+
 	  _ExecutorFrame<_BiIter> __frame = std::move(_M_frames.back());
 	  _M_frames.pop_back();
 
@@ -621,27 +811,27 @@ namespace __detail
 	    case _S_fopcode_fallback_next:
 	      if (_M_has_sol)
 		break;
-	      if (__dfs_mode)
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_next:
-	      _M_node(__match_mode, __frame._M_state_id);
+	      __next = __frame._M_state_id;
 	      break;
 
 	    case _S_fopcode_fallback_rep_once_more:
 	      if (_M_has_sol)
 		break;
-	      if (__dfs_mode)
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_rep_once_more:
-	      _M_rep_once_more(__match_mode, __frame._M_state_id);
+	      __next = _M_rep_once_more(__match_mode, __frame._M_state_id);
 	      break;
 
 	    case _S_fopcode_posix_alternative:
 	      _M_frames.emplace_back(_S_fopcode_merge_sol, 0, _M_has_sol);
-	      _M_frames.emplace_back(_S_fopcode_next, __frame._M_state_id);
-	      if (__dfs_mode)
+	      __next = __frame._M_state_id;
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      _M_has_sol = false;
 	      break;

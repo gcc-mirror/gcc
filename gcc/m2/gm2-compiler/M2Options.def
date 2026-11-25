@@ -709,6 +709,20 @@ PROCEDURE SetDumpSystemExports (value: BOOLEAN) ;
 
 
 (*
+   SetDumpBuiltins - set by -fdump_builtins.
+*)
+
+PROCEDURE SetDumpBuiltins (value: BOOLEAN) ;
+
+
+(*
+   GetDumpBuiltins - return the value of -fdump_builtins.
+*)
+
+PROCEDURE GetDumpBuiltins () : BOOLEAN ;
+
+
+(*
    SetSwig -
 *)
 

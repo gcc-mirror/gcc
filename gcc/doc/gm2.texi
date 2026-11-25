@@ -230,8 +230,8 @@ such as the AVR and the ARM).
 * Semantic checking::     How to detect run time problems at compile time.
 * Extensions::            GNU Modula-2 language extensions.
 * Type compatibility::    Data type compatibility.
-* Unbounded by reference::Explanation of a language optimization.
 * Exception handling::    Example of exception handling.
+* Unbounded by reference::Explanation of a language optimization.
 * Building a shared library:: How to build a shared library.
 * Interface for Python::  How to produce swig interface files.
 * Producing a Python module::  How to produce a Python module.
@@ -405,6 +405,10 @@ recognize the specified suffix as a definition module filename.
 The default implementation and module filename suffix is @file{.def}.
 If this option is used GNU Modula-2 will still fall back to this
 default if a requested definition module is not found.
+
+@item -fdump-builtins
+Display all builtin procedure functions.
+This is an internal command line option.
 
 @item -fdump-system-exports
 display all inbuilt system items.
@@ -1493,7 +1497,7 @@ the following pairs of options:
 The option @samp{-fsources} will show the source module, path and
 pathname for each module parsed.
 
-@node Exceptions, Semantic checking, Dialect, Using
+@node Exceptions, Semantic checking, Module Search Path, Using
 @section Exception implementation
 
 This section describes how exceptions are implemented in GNU Modula-2

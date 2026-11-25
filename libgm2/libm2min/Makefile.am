@@ -89,7 +89,10 @@ AM_MAKEFLAGS = \
 	"NM_FOR_TARGET=$(NM_FOR_TARGET)" \
 	"DESTDIR=$(DESTDIR)" \
 	"WERROR=$(WERROR)" \
-        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)"
+        "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
+	"PYTHON=$(PYTHON)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
+
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
@@ -125,20 +128,28 @@ CLEANFILES = SYSTEM.def
 M2LIBDIR = /m2/m2min/
 
 .mod.lo:
-	$(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
+	$(LIBTOOL) --tag CC \
+                   $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile \
                    $(GM2_FOR_TARGET) -c \
                    $(CFLAGS_FOR_TARGET) $(LIBCFLAGS) $(libm2min_la_M2FLAGS) $< -o $@
 
 libc.o: $(GM2_SRC)/gm2-libs-min/libc.c
 
-
+if HAVE_PYTHON_INTERPRETER
 SYSTEM.def: Makefile
-	echo "CC = $(CC_FOR_BUILD)  CC_FOR_TARGET = $(CC_FOR_TARGET)  GM2 = $(GM2)  GM2_FOR_TARGET = $(GM2_FOR_TARGET) GM2_FOR_BUILD = $(GM2_FOR_BUILD)"
-	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
+	$(PYTHON) $(GM2_SRC)/tools-src/mktargetsrc.py --fpim \
+             -D=$(GM2_SRC)/gm2-libs-min/SYSTEM.def \
+             -M=$(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
+             -I=$(GM2_SRC)/gm2-libs-min -I=$(GM2_SRC)/gm2-libs \
+             -C="$(GM2_FOR_TARGET) -fno-exceptions" -o $@
+else
+SYSTEM.def: Makefile
+	$(SHELL) $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
              -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs \
              "$(GM2_FOR_TARGET) -fno-exceptions" $@
+endif
 
 install-data-local: force
 	mkdir -p $(DESTDIR)$(inst_libdir)/$(M2LIBDIR)

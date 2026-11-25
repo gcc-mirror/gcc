@@ -25,7 +25,7 @@ AUTOMAKE_OPTIONS = 1.8 foreign
 
 SUFFIXES = .c .mod .def .o .obj .lo .a
 
-ACLOCAL_AMFLAGS = -I .. -I ../config
+ACLOCAL_AMFLAGS = -I .. -I ../config -I .
 
 # Multilib support.
 MAKEOVERRIDES=
@@ -41,6 +41,7 @@ GM2_SRC = $(GCC_DIR)/m2
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
 GM2_FOR_TARGET=@GM2_FOR_TARGET@
+$(info GM2_FOR_TARGET is $(GM2_FOR_TARGET))
 
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
@@ -100,7 +101,8 @@ AM_MAKEFLAGS = \
         "TARGET_LIB_PATH=$(TARGET_LIB_PATH)" \
         "TARGET_LIB_PATH_libgm2=$(TARGET_LIB_PATH_libgm2)" \
 	"LIBTOOL=$(GM2_BUILDDIR)/libtool" \
-	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)"
+	"DARWIN_AT_RPATH=$(DARWIN_AT_RPATH)" \
+        "HAVE_PYTHON_INTERPRETER=$(HAVE_PYTHON_INTERPRETER)"
 
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)

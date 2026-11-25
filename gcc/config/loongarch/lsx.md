@@ -918,7 +918,7 @@
 (define_insn "lsx_vbitrevi_<lsxfmt>"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
-		       (match_operand 2 "const_lsx_branch_operand" "")]
+		       (match_operand 2 "const_<bitimm>_operand" "")]
 		     UNSPEC_LSX_VBITREVI))]
   "ISA_HAS_LSX"
   "vbitrevi.<lsxfmt>\t%w0,%w1,%2"

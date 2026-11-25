@@ -54,7 +54,7 @@ FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
 
 FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         StartScope, EndScope, GetScope, GetCurrentScope,
-                        GetModuleScope,
+                        GetModuleScope, GetBaseModule,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
                         GetExported,
                         IsDefImp, IsModule,
@@ -99,6 +99,7 @@ FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         IsEmptyWord, NoOfItemsInStackWord ;
 
 IMPORT M2Error ;
+IMPORT M2StackSpell ;
 
 
 CONST
@@ -236,6 +237,8 @@ BEGIN
    StartScope(ModuleSym) ;
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingDefinitionModule()) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
+   M2StackSpell.Push (ModuleSym) ;
    PushT(name) ;
    M2Error.EnterDefinitionScope (name)
 END PCStartBuildDefModule ;
@@ -265,6 +268,8 @@ BEGIN
    Assert(CompilingDefinitionModule()) ;
    CheckForUnknownInModule (tokno) ;
    EndScope ;
+   M2StackSpell.Pop ;
+   M2StackSpell.Pop ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
    IF NameStart#NameEnd
@@ -305,7 +310,9 @@ BEGIN
    Assert(IsDefImp(ModuleSym)) ;
    Assert(CompilingImplementationModule()) ;
    PushTtok(name, tok) ;
-   M2Error.EnterImplementationScope (name)
+   M2Error.EnterImplementationScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
+   M2StackSpell.Push (ModuleSym)
 END PCStartBuildImpModule ;
 
 
@@ -333,6 +340,8 @@ BEGIN
    Assert(CompilingImplementationModule()) ;
    CheckForUnknownInModule (tokno) ;
    EndScope ;
+   M2StackSpell.Pop ;
+   M2StackSpell.Pop ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
    IF NameStart#NameEnd
@@ -378,7 +387,9 @@ BEGIN
    Assert(CompilingProgramModule()) ;
    Assert(NOT IsDefImp(ModuleSym)) ;
    PushTtok(name, tok) ;
-   M2Error.EnterProgramScope (name)
+   M2Error.EnterProgramScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
+   M2StackSpell.Push (ModuleSym)
 END PCStartBuildProgModule ;
 
 
@@ -416,7 +427,9 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
-   M2Error.LeaveErrorScope
+   M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop ;
+   M2StackSpell.Pop
 END PCEndBuildProgModule ;
 
 
@@ -448,7 +461,9 @@ BEGIN
    Assert(NOT IsDefImp(ModuleSym)) ;
    SetCurrentModule(ModuleSym) ;
    PushTtok(name, tok) ;
-   M2Error.EnterModuleScope (name)
+   M2Error.EnterModuleScope (name) ;
+   M2StackSpell.Push (GetBaseModule ()) ;
+   M2StackSpell.Push (ModuleSym)
 END PCStartBuildInnerModule ;
 
 
@@ -486,7 +501,9 @@ BEGIN
       FlushErrors
    END ;
    SetCurrentModule(GetModuleScope(GetCurrentModule())) ;
-   M2Error.LeaveErrorScope
+   M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop ;
+   M2StackSpell.Pop
 END PCEndBuildInnerModule ;
 
 
@@ -628,7 +645,8 @@ BEGIN
    Assert (IsProcedure (ProcSym)) ;
    PushTtok (ProcSym, tok) ;
    StartScope (ProcSym) ;
-   M2Error.EnterProcedureScope (name)
+   M2Error.EnterProcedureScope (name) ;
+   M2StackSpell.Push (ProcSym)
 END PCStartBuildProcedure ;
 
 
@@ -672,7 +690,8 @@ BEGIN
       FlushErrors
    END ;
    EndScope ;
-   M2Error.LeaveErrorScope
+   M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop
 END PCEndBuildProcedure ;
 
 
@@ -694,7 +713,10 @@ END PCEndBuildProcedure ;
 
 PROCEDURE PCEndBuildForward ;
 BEGIN
-   PopN (2)
+   PopN (2) ;
+   EndScope ;
+   M2Error.LeaveErrorScope ;
+   M2StackSpell.Pop
 END PCEndBuildForward ;
 
 
@@ -728,7 +750,8 @@ BEGIN
    THEN
       PopT (ProcSym) ;
       PopT (NameStart) ;
-      EndScope
+      EndScope ;
+      M2StackSpell.Pop
    END
 END PCBuildProcedureHeading ;
 
@@ -1839,7 +1862,10 @@ BEGIN
       RETURN( FALSE )
    ELSE
       WITH e^.econvert DO
-         IF isTypeResolved(totype)
+         IF totype = NulSym
+         THEN
+            RETURN( FALSE )
+         ELSIF isTypeResolved(totype)
          THEN
             assignType(e, totype) ;
             RETURN( TRUE )

@@ -44,16 +44,18 @@ namespace __detail
   template<typename _BiIter, bool _Trivial = is_trivially_copyable<_BiIter>::value>
     struct _ExecutorFrame;
 
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   /**
    * @brief Takes a regex and an input string and does the matching.
    *
    * The %_Executor class has two modes: DFS mode and BFS mode, controlled
    * by the function parameter %__search_mode.
    */
+  enum class _Search_mode : unsigned char { _Bfs = 0, _Dfs = 1 };
+
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
     class _Executor
     {
-      enum class _Search_mode : unsigned char { _BFS = 0, _DFS = 1 };
       enum class _Match_mode : unsigned char { _Exact, _Prefix };
 
     public:
@@ -81,12 +83,12 @@ namespace __detail
 	_M_start(_M_nfa._M_start()),
 	_M_visited_states(nullptr),
 	_M_flags(__flags),
-	_M_search_mode(__use_dfs ? _Search_mode::_DFS : _Search_mode::_BFS)
+	_M_search_mode(__use_dfs ? _Search_mode::_Dfs : _Search_mode::_Bfs)
       {
 	using namespace regex_constants;
 	if (__flags & match_prev_avail) // ignore not_bol and not_bow
 	  _M_flags &= ~(match_not_bol | match_not_bow);
-	if (_M_search_mode == _Search_mode::_BFS)
+	if (_M_search_mode == _Search_mode::_Bfs)
 	  _M_visited_states = new bool[_M_nfa.size()];
       }
 
@@ -106,6 +108,28 @@ namespace __detail
       _M_search_from_first()
       {
 	_M_current = _M_begin;
+	// Fast reject for DFS prefix search.  regex_search and
+	// regex_token_iterator try the pattern at each possible starting
+	// position.  If the regex can only start with a digit, running the full
+	// DFS executor at a space, letter, or punctuation character only builds
+	// frames to discover the first match state rejects that character.
+	//
+	// Example: for the IPv4 pattern
+	//   (?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\.){3}...
+	// a current input character of 'x' cannot match any first consuming
+	// state.  _M_maybe_start_match returns false and this starting position
+	// is skipped.  At '2' it returns true, because at least one branch
+	// might match, so the normal executor still decides the complete
+	// result.
+	//
+	// This is intentionally disabled for backreferences.  Pruning the
+	// search space for DFS reduces the number of frames we build and the
+	// time to find an actual match.
+	if (_M_search_mode == _Search_mode::_Dfs
+	    && !_M_nfa._M_has_backref
+	    && _M_current != _M_end
+	    && !_M_maybe_start_match(_M_start, 0))
+	  return false;
 	return _M_main(_Match_mode::_Prefix);
       }
 
@@ -113,52 +137,62 @@ namespace __detail
       _M_search();
 
     private:
-      void
+      _StateIdT
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
-      void
+      _StateIdT
+      _M_match_simple_repeat_body(_StateIdT, _StateIdT);
+
+      template<_Search_mode __search_mode>
+      _StateIdT
       _M_handle_repeat(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_subexpr_begin(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_subexpr_end(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_line_begin_assertion(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_line_end_assertion(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_word_boundary(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_subexpr_lookahead(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_match(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_backref(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_accept(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_alternative(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_node(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	void
       _M_dfs(_Match_mode __match_mode, _StateIdT __start);
 
       bool
       _M_main(_Match_mode __match_mode)
       {
-	if (_M_search_mode == _Search_mode::_DFS)
+	if (_M_search_mode == _Search_mode::_Dfs)
 	  return _M_main_dfs(__match_mode);
 	else
 	  return _M_main_bfs(__match_mode);
@@ -166,6 +200,9 @@ namespace __detail
 
       bool
       _M_main_dfs(_Match_mode __match_mode);
+
+      bool
+      _M_maybe_start_match(_StateIdT, size_t);
 
       bool
       _M_main_bfs(_Match_mode __match_mode);
@@ -247,7 +284,7 @@ namespace __detail
 	return (_M_re._M_automaton->_M_options() & __m) == __m;
       }
 
-      bool
+      inline bool
       _M_visited(_StateIdT __i)
       {
 	if (_M_visited_states)
@@ -283,6 +320,7 @@ namespace __detail
       // Do we have a solution so far?
       bool                                                  _M_has_sol;
     };
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
  ///@} regex-detail
 } // namespace __detail

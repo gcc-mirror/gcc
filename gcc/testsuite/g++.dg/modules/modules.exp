@@ -363,6 +363,7 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 	foreach std $std_list {
 	    global module_cmis
 	    set module_cmis {}
+	    set module_do {"compile" "P"}
 	    verbose "Testing $nshort $std" 1
 	    dg-test $test "$std" $DEFAULT_MODFLAGS
 	    if { [lindex $module_do 1] == "N" } {

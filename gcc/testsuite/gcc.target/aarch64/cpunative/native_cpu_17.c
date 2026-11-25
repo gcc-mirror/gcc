@@ -7,6 +7,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-assembler {\.arch armv8-a\+dotprod\+crc\+crypto\+sve2\n} } } */
+/* { dg-final { scan-assembler {\.arch armv9-a\+crc\+crypto\+noflagm\+nolse\+nordma\+nofp16fml\+nojscvt\+norcpc\+nofrintts\+nosb\+nopredres\+nossbs\+nopauth\n} } } */
 
 /* Test a normal looking procinfo.  */

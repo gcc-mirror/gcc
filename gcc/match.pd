@@ -2247,14 +2247,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 #if GIMPLE
  /* Fold ((x + y) >> 1 into IFN_AVG_FLOOR (x, y) if x and y are vectors in
-    which each element is known to have at least one leading zero bit.  */
+    which x + y cannot wrap: each element is known to have at least one
+    leading zero bit, or two if the type is signed and its overflow is
+    defined, since the sum of two nonnegative values can then wrap to a
+    negative one.  */
 (simplify
  (rshift (plus:cs @0 @1) integer_onep)
  (if (VECTOR_TYPE_P (type)
-      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type, OPTIMIZE_FOR_BOTH)
-      && wi::clz (get_nonzero_bits (@0)) > 0
-      && wi::clz (get_nonzero_bits (@1)) > 0)
-  (IFN_AVG_FLOOR @0 @1)))
+      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type,
+					 OPTIMIZE_FOR_BOTH))
+  (with
+   {
+     int min_clz = (TYPE_UNSIGNED (type) || TYPE_OVERFLOW_UNDEFINED (type)
+		    ? 1 : 2);
+   }
+   (if (wi::clz (get_nonzero_bits (@0)) >= min_clz
+	&& wi::clz (get_nonzero_bits (@1)) >= min_clz)
+    (IFN_AVG_FLOOR @0 @1)))))
 #endif
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
@@ -10358,14 +10367,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_COND_FNMA @3 @0 @1 @2 @4))
   (simplify
    (fmas @3 @0 @1 (negate @2) @4)
-   (IFN_COND_FMS @0 @1 @2 @4))
+   (IFN_COND_FMS @3 @0 @1 @2 @4))
   (simplify
    (fmas:c @3 (negate @0) @1 (negate @2) @4)
    (IFN_COND_FNMS @3 @0 @1 @2 @4))
   (simplify
    (negate (fmas@3 @4 @0 @1 @2 @5))
    (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
-    (IFN_COND_FNMS @4 @0 @1 @2 @5))))
+    (IFN_COND_FNMS @4 @0 @1 @2 (negate @5)))))
 
  (simplify
   (IFN_COND_FMS:c @3 (negate @0) @1 @2 @4)
@@ -10377,9 +10386,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_COND_FMS:c @3 (negate @0) @1 (negate @2) @4)
   (IFN_COND_FNMA @3 @0 @1 @2 @4))
  (simplify
-  (negate (IFN_FMS@3 @4 @0 @1 @2 @5))
+  (negate (IFN_COND_FMS@3 @4 @0 @1 @2 @5))
    (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
-    (IFN_COND_FNMA @4 @0 @1 @2 @5)))
+    (IFN_COND_FNMA @4 @0 @1 @2 (negate @5))))
 
  (simplify
   (IFN_COND_FNMA:c @3 (negate @0) @1 @2 @4)
@@ -10393,7 +10402,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (negate (IFN_COND_FNMA@3 @4 @0 @1 @2 @5))
   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
-   (IFN_COND_FMS @4 @0 @1 @2 @5)))
+   (IFN_COND_FMS @4 @0 @1 @2 (negate @5))))
 
  (simplify
   (IFN_COND_FNMS:c @3 (negate @0) @1 @2 @4)
@@ -10407,7 +10416,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (negate (IFN_COND_FNMS@3 @4 @0 @1 @2 @5))
   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
-   (IFN_COND_FMA @4 @0 @1 @2 @5))))
+   (IFN_COND_FMA @4 @0 @1 @2 (negate @5)))))
 
 /* CLZ simplifications.  */
 (for clz (CLZ)
@@ -11801,7 +11810,12 @@ and,
 	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
 		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
-	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@5), sel2);
+	 /* Give the new mask ssizetype elements, as the vectorizer does:
+	    the element type of VCST1 can be too narrow to index both a
+	    and b.  */
+	 op0
+	   = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+				       sel2);
      }
      (if (op0)
       (view_convert (vec_perm @2 @3 { op0; }))))))))
@@ -11865,7 +11879,12 @@ and,
 		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
-	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+	   /* Give the new mask ssizetype elements, as the vectorizer does:
+	      the element type of d's mask can be too narrow to index both
+	      inputs.  */
+	   op0
+	     = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+					 sel2);
        }
        (if (op0)
 	(switch
@@ -11926,7 +11945,12 @@ and,
 		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
-	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+	   /* Give the new mask ssizetype elements, as the vectorizer does:
+	      the element type of d's mask can be too narrow to index both
+	      inputs.  */
+	   op0
+	     = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+					 sel2);
        }
        (if (op0)
 	(switch

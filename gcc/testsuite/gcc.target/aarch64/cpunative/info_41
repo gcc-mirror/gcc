@@ -1,0 +1,9 @@
+processor	: 0
+BogoMIPS	: 100.00
+Features	: fp asimd atomics crc32 asimdrdm paca pacg lrcpc fcma jscvt asimdfhm asimddp flagm ilrcpc sb ssbs frint flagm2 fphp asimdhp sve sve2
+CPU implementer	: 0xfe
+CPU architecture: 8
+CPU variant	: 0x0
+CPU part	: 0xd08
+CPU revision	: 2
+

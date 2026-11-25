@@ -10,12 +10,10 @@ BEGIN
       SysClock.GetClock (dt) ;
       IF SysClock.CanSetClock ()
       THEN
-         STextIO.WriteString ("success we can set the clock") ; STextIO.WriteLn ;
-         SysClock.SetClock (dt)
+         STextIO.WriteString ("we can set the clock, but we won't in the testsuite") ; STextIO.WriteLn
       ELSE
          STextIO.WriteString ("unable to set the clock") ; STextIO.WriteLn
       END
-      ; SysClock.SetClock (dt)
    ELSE
       STextIO.WriteString ("unable to get the clock") ; STextIO.WriteLn
    END

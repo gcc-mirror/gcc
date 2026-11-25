@@ -260,7 +260,8 @@ LT_INIT
 AC_LIBTOOL_DLOPEN
 
 AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
-
+AC_PYTHON_INTERPRETER([>= '3.0'])
+AM_CONDITIONAL([HAVE_PYTHON_INTERPRETER], [test x$ax_python_interpreter_found = xyes])
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
 
@@ -303,6 +304,8 @@ AC_PROG_CC
 m4_rename_force([real_PRECIOUS],[_AC_ARG_VAR_PRECIOUS])
 
 AC_SUBST(CFLAGS)
+GCC_PICFLAG
+AC_SUBST([PICFLAG])
 
 AC_DEFUN([GM2_UNDEF],[
   $as_echo "#undef HAVE_$1" >>confdefs.h
