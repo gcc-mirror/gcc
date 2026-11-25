@@ -1,3 +1,419 @@
+2026-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* doc/analyzer.texi: Update for changes in expected dumps.
+
+2026-11-24  Xuanyu Chen  <xan9xxx@gmail.com>
+
+	PR analyzer/106283
+	* doc/invoke.texi: Add closefrom to the list of file descriptor
+	functions recognized by -fanalyzer.
+
+2026-11-24  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* dwarf2codeview.cc (get_type_num_struct): Do not defer
+	declaration-only parents.
+
+2026-11-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* simplify-rtx.cc (simplify_unsigned_cmp_minmax): New function.
+	(simplify_context::simplify_binary_operation_1): For AND/IOR, call
+	simplify_unsigned_cmp_minmax.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/128992
+	* config/sparc/sparc.cc (compute_fp_layout): Take into account the
+	offset of the field in the slot.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/128920
+	* varasm.cc (assemble_real): In the reverse storage order case,
+	deal with modes smaller than 4 bytes.
+
+2026-11-24  Michael Meissner  <meissner@linux.ibm.com>
+
+	* common/config/rs6000/rs6000-common.cc (rs6000_handle_option): Add
+	-mdebug=extra{1,2,3,4} and -mdebug=<n>.
+	* config.gcc (powerpc*-*-*): Add float16.o as an extra object file.  Add
+	support for the configuration option --with-powerpc-float16.
+	* config/rs6000/altivec.md (VM): Add support for V8HFmode and
+	V8BFmode.
+	(VM2): Likewise.
+	(VI_char): Likewise.
+	(VI_scalar): Likewise.
+	(VI_unit): Likewise.
+	(VP_small): Likewise.
+	(VP_small_lc): Likewise.
+	(VU_char): Likewise.
+	* config/rs6000/constraints.md (eZ): New constraint for -0.0.
+	* config/rs6000/float16.cc: New support file for _Float16 and __bf16
+	support.
+	* config/rs6000/float16.md: New machine description for 16-bit floating
+	point support.
+	* config/rs6000/predicates.md (easy_fp_constant): Add support for HFmode
+	and BFmode constants.
+	(easy_vector_constant): Add support for V8HFmode and V8BFmode to load up
+	the vector -0.0 constant.
+	(minus_zero_constant): New predicate.
+	(fp16_xxspltiw_constant): Likewise.
+	(bfloat16_to_v4sf_operand): Likewise.
+	* config/rs6000/rs6000-builtin.cc (rs6000_type_string): Add support for
+	both 16-bit floating point types.
+	(rs6000_init_builtins): Create the bfloat16_type_node if needed.
+	* config/rs6000/rs6000-c.cc (rs6000_target_modify_macros): Define
+	__FLOAT16__ and __BFLOAT16__ if 16-bit floating pont is enabled.  Define
+	__FLOAT16_HW__ for power9 which has hardware conversions for _Float16.
+	Define __BFLOAT16_HW__ for power10 which has hardware conversions for
+	__bf16.
+	* config/rs6000/rs6000-call.cc (init_cumulative_args): Print more debug
+	information if -mdebug=arg.
+	* config/rs6000/rs6000-cpus.def (POWERPC_MASKS): Add -mfloat16.
+	* config/rs6000/rs6000-modes.def (HFmode, V4HFmode, V8HFmode): Add modes.
+	(BFmode, V4BFmode, V8BFmode): Likewise.
+	* config/rs6000/rs6000-p8swap.cc (rs6000_gen_stvx): Remove #ifdef for
+	the HAVE_V8HFmode macro.  Add support for V8BFmode.
+	(rs6000_gen_lvx): Likewise.
+	(replace_swapped_load_constant): Likewise.
+	* config/rs6000/rs6000-protos.h (vec_const_128bit_type): Add mode field
+	to detect initializing both 16-bit floating constants.
+	(enum fp16_operation): New enumeration.
+	(fp16_vectorization): New declaration.
+	(bfloat16_operation_as_v4sf): Likewise.
+	(bfloat16_to_v4sf_p): Likewise.
+	(bfloat16_to_v4sf_split): Likewise.
+	* config/rs6000/rs6000.cc (POWERPC_FLOAT16_DEFAULT): On little endian
+	Linux, enable bot 16-bit floating point modes as a default if there
+	wasn't an explicit configuration option.
+	(rs6000_hard_regno_mode_ok_uncached): Add support for all 16-bit
+	floating point modes.
+	(rs6000_modes_tieable_p): Likewise.
+	(DEBUG_FMT_X): New macro.
+	(DEBUG_FMT_WX): Make field 13 characters, not 12.
+	(rs6000_debug_reg_global): Print information about 16-bit floating point
+	if -mdebug=reg.  Print the various -mdebug=<xxx> options.  Print additional
+	information for all floating point modes.
+	(rs6000_setup_reg_addr_masks): Add support for all 16-bit floating point
+	modes.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_option_override_internal): Add support for -mfloat16.
+	(easy_altivec_constant): Add support for both 16-bit floating point
+	modes.
+	(xxspltib_constant_p): Likewise.
+	(output_vec_const_move): Add support for 16-bit vector floating point
+	modes.
+	(rs6000_expand_vector_init): Likewise.
+	(rs6000_expand_vector_set): Likewise.
+	(rs6000_expand_vector_extract): Likewise.
+	(rs6000_split_vec_extract_var): Likewise.
+	(reg_offset_addressing_ok_p): Add support for 16-bit scalar and vector
+	floating point modes.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(legitimate_lo_sum_address_p): Likewise.
+	(rs6000_const_vec): Add support for 16-bit vector floating point modes.
+	(rs6000_emit_move): Likewise.
+	(rs6000_secondary_reload_simple_move): Add support for 16-bit scalar
+	floating point modes.
+	(rs6000_preferred_reload_class): Add support for 16-bit scalar and
+	vector floating point modes.
+	(rs6000_can_change_mode_class): Add support for 16-bit scalar floating
+	point modes.
+	(rs6000_output_move_128bit): Add support for 16-bit vector floating
+	point modes.
+	(rs6000_load_constant_and_splat): Add support for 16-bit scalar floating
+	point modes.
+	(rs6000_scalar_mode_supported_p): Likewise.
+	(rs6000_libgcc_floating_mode_supported_p): Likewise.
+	(rs6000_floatn_mode): Likewise.
+	(opt_vars): Add -mfloat16.
+	(constant_fp_to_128bit_vector): Add support for 16-bit scalar floating
+	point modes.
+	(vec_const_128bit_to_bytes): Initialize mode field.
+	(constant_generates_xxspltiw): Add support for 16-bit scalar floating
+	point modes.
+	* config/rs6000/rs6000.h (MASK_DEBUG_*): Add -mdebug=<xxx> options.
+	(TARGET_DEBUG_*): Likewise.
+	(FP16_SCALAR_MODE_P): New macro.
+	(FP16_VECTOR_MODE_P): Likewise.
+	(TARGET_BFLOAT16_HW): Likewise.
+	(TARGET_FLOAT16_HW): Likewise.
+	(TARGET_FLOAT16_MIN_HARDWARE): Likewise.
+	(ALTIVEC_VECTOR_MODE): Add support for 16-bit vector floating point
+	modes.
+	* config/rs6000/rs6000.md (FMOVE128_GPR iterator): Likewise.
+	(wd attribute): Add support for all 16-bit floating point modes.
+	(du_or_d attribute): Likewise.
+	(BOOL_128 iterator): Likewise.
+	(BOOL_REGS_OUTPUT attribute): Likewise.
+	(BOOL_REGS_OP1 attribute): Likewise.
+	(BOOL_REGS_OP2 attribute): Likewise.
+	(BOOL_REGS_UNARY attribute): Likewise.
+	(RELOAD attribute): Likewise.
+	(toplevel): Include float16.md.
+	* config/rs6000/rs6000.opt (-mfloat16): New option.
+	(-mfloat16-bf-v4sf): Likewise.
+	(-mfloat16-debug1): Likewise.
+	(-mfloat16-debug2): Likewise.
+	* config/rs6000/t-rs6000 (float16.o): Build float16.o.
+	* config/rs6000/vector.md (VEC_L iterator): Add 16-bit floating point
+	vector modes.
+	(VEC_M attribute): Likewise.
+	(VEC_E attribute): Likewise.
+	(VEC_base attribute): Likewise.
+	(VEC_base_l attribute): Likewise.
+	* config/rs6000/vsx.md (VECTOR_16BIT iterator): New iterator.
+	(VSX_L iterator): Add 16-bit vector floating point modes.
+	(VSX_M iterator): Likewise.
+	(VSX_XXBR attribute): Likewise.
+	(VSm attribute): Likewise.
+	(VSr attribute): Likewise.
+	(VSisa attribute): Likewise.
+	(??r attribute): Likewise.
+	(nW attribute): Likewise.
+	(VSv attribute): Likewise.
+	(VSX_EXTRACT_I attribute): Likewise.
+	(VSX_EXTRACT_I2 attribute): Likewise.
+	(VSX_EXTRACT_I4 attribute): Likewise.
+	(VSX_EXTRACT_WIDTH attribute): Likewise.
+	(VSX_EXTRACT_PREDICATE attribute): Likewise.
+	(VSX_EX attribute): Likewise.
+	(VM3 iterator): Likewise.
+	(VM3_char attribute): Likewise.
+	(vsx_le_perm_load_<mode>): Rename from vsx_le_perm_load_v8hi and add
+	v8bf and v8hf modes.
+	(vsx_le_perm_store_<mode>): Rename from vsx_le_perm_store_v8hi and add
+	v8bf and v8hf modes.
+	(define_splits for v8hi): Add v8bf and v8hf modes.
+	(vsx_ld_elemrev_<mode>): Rename from vsx_ld_elemrev_v8hi, and add v8bf
+	and v8hf modes.
+	(vsx_ld_elemrev_<mode>): Rename from vsx_ld_elemrev_v8hi, and add v8bf
+	and v8hf modes.
+	(vsx_ld_elemrev_<mode>_internal): Rename from
+	vsx_ld_elemrev_v8hi_internal, and add v8bf and v8hf modes.
+	(vsx_st_elemrev_<mode>): Rename from vsx_st_elemrev_v8hi, and add v8bf
+	and v8hf modes.
+	(vsx_st_elemrev_<mode>_internal): Rename from
+	vsx_st_elemrev_v8hi_internal, and add v8bf and v8hf modes.
+	(vsx_lxvd2x8_le_<MODE>): Rename from vsx_lxvd2x8_le_V8HI, and add v8bf
+	and v8hf modes.
+	(vsx_extract_<mode>_store_p9): Add 16-bit vector floating point modes.
+	(vsx_extract_<mode>_p8): Likewise.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Document -mfloat16.
+	* doc/md.texi (PowerPC and IBM RS6000 constraints): Document eZ.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	* tree-vect-generic.cc (expand_vector_divmod): Do not return early
+	for a signed divisor element of -1.
+
+2026-11-24  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/126294
+	* match.pd: Simplify (t * (C + 1)) / C to t + t / C and, for
+	exact_div, (t * (C - 1)) / C to t - t / C, and
+	(t * (2^k + 1)) >> k to t + (t >> k), when the multiplication
+	has a single use and does not overflow.
+
+2026-11-24  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/126311
+	* match.pd ((t * u) / v): Reduce integer constants u and v by
+	their greatest common divisor if gcd(u, v) > 1.
+
+2026-11-24  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (one_cmpl<mode>2<exec>): Rename ...
+	(one_cmpl<mode>2): ... to this.
+	(one_cmpl<mode>2_exec): New insn and split.
+
+2026-11-24  Michele Dionisio  <michele.dionisio@gmail.com>
+	    Claude Opus 5.5  <noreply@anthropic.com>
+
+	* tree-ssa-forwprop.cc (simplify_bit_insert_chain): New function.
+	(pass_forwprop::execute): Call it for BIT_INSERT_EXPR.
+
+2026-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128482
+	PR tree-optimization/125652
+	PR tree-optimization/121370
+	* tree-chrec.h (build_polynomial_chrec): Return
+	chrec_dont_know when CHREC_RIGHT overflowed.  Moved
+	from ...
+	* tree-chrec.cc (chrec_fold_plus_poly_poly): ... here.
+	* tree-scalar-evolution.cc (scev_dfs::add_to_evolution_1): ...
+	and here.
+
+2026-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128714
+	* tree-vectorizer.h (vect_copy_ref_info): Take stmt_vec_info
+	as source.
+	* tree-vect-data-refs.cc (vect_copy_ref_info): Likewise.
+	Before copying restrict info verify it is consistent across
+	a group.
+	(vect_setup_realignment): Adjust.
+	* tree-vect-stmts.cc (vectorizable_scan_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_store): Likewise.
+
+2026-11-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR bootstrap/128972
+	* configure.ac: Skip the gmp.h check when GENERATOR_FILE is defined.
+	* configure: Regenerate.
+
+2026-11-24  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	PR tree-optimization/112628
+	* match.pd (~X cmp -Y): New pattern.
+
+2026-11-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Simplify (and (xor A 1) B) to (and not (A) B) when B is a 0/1 value.
+
+2026-11-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.opt.urls: Regenerate.
+
+2026-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128960
+	* config/i386/i386.opt (x_ix86_branch_cost)
+	(x_ix86_force_align_arg_pointer, x_ix86_stack_protector_guard):
+	Remove TargetSave entries.
+	(mbranch-cost=, mstackrealign, mstack-protector-guard=): Add Save.
+	* config/i386/i386-options.cc (ix86_function_specific_save)
+	(ix86_function_specific_restore): Do not copy x_ix86_branch_cost,
+	x_ix86_force_align_arg_pointer and x_ix86_stack_protector_guard.
+
+2026-11-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-cores.def (sifive-p870-d): Add erratum
+	SIFIVE_MAL_9174.
+	* config/riscv/riscv-errata.def (SIFIVE_MAL_9174): New erratum.
+	(sifive-mal-9191): New alias.
+	* config/riscv/riscv.md (index_load_overlap): New attribute.
+	(enabled): Disable index_load_overlap alternatives for MAL-9174.
+	* config/riscv/riscv.opt (mfix-sifive-mal-9174): New option.
+	(mfix-sifive-mal-9191): New alias.
+	* config/riscv/vector.md
+	(@pred_indexed_<order>load<mode>_same_eew): Add early-clobber
+	alternatives and set index_load_overlap.
+	(@pred_indexed_<order>load<mode>_x2_smaller_eew): Set
+	index_load_overlap.
+	(@pred_indexed_<order>load<mode>_x4_smaller_eew): Likewise.
+	(@pred_indexed_<order>load<mode>_x8_smaller_eew): Likewise.
+	* doc/install.texi (--with-errata): List sifive-mal-9174 and
+	sifive-mal-9191.
+	* doc/invoke.texi (RISC-V Options): Document -mfix-sifive-mal-9174
+	and -mfix-sifive-mal-9191.
+
+2026-11-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.gcc (riscv*-*-*): Handle --with-errata.
+	* config/riscv/riscv-cores.def (RISCV_CORE_ERRATUM): New.
+	* config/riscv/riscv-errata.def: New file.
+	* config/riscv/riscv-opts.h (enum riscv_erratum): New.
+	(RISCV_ERRATUM_MASK, RISCV_ERRATUM_P): New.
+	* config/riscv/riscv.cc (riscv_errata): New variable.
+	(riscv_cpu_errata): New function.
+	(riscv_default_errata): New function.
+	(riscv_resolve_errata): New function.
+	(riscv_can_inline_p): Do not inline functions with different errata.
+	(riscv_override_options_internal): Set riscv_errata.
+	* config/riscv/riscv.h (riscv_errata): Declare.
+	* doc/install.texi (--with-errata): Document.
+
+2026-11-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/128969
+	* omp-low.cc (scan_sharing_clauses): Reorder 'if' blocks to handle
+	allocatable components of global variables.
+
+2026-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (Wdeprecated-octal-literal): Document.
+
+2026-11-24  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR other/122601
+	* doc/md.texi (cmls@var{m}4, cmls_conj@var{m}4): Document that
+	the product is subtracted from operand 3.
+
+2026-11-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* df.h (df_update_exit_block_uses): Return bool.
+	* df-scan.cc (df_update_exit_block_uses): Return true if the exit
+	block uses changed.
+	(df_update_entry_exit_and_calls): Rescan only sibling calls, and
+	only if the exit block uses changed.
+	* stack-ptr-mod.cc (pass_stack_ptr_mod::execute): Call
+	df_update_entry_exit_and_calls instead of df_update_exit_block_uses.
+
+2026-11-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* config/i386/i386.cc (ix86_ira_loop_region_flatten_cost): New
+	function.
+	(TARGET_IRA_LOOP_REGION_FLATTEN_COST): Define.
+
+2026-11-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* target.def (ira_loop_region_flatten_cost): New hook.
+	* doc/tm.texi.in (TARGET_IRA_LOOP_REGION_FLATTEN_COST): New hook.
+	* doc/tm.texi: Regenerate.
+	* ira-int.h (struct ira_loop_tree_node): Add
+	call_crossing_pressure.
+	(ira_flatten_cost_p): Declare.
+	* ira-lives.cc (process_bb_node_lives): Compute
+	call_crossing_pressure.
+	* ira-build.cc (ira_flatten_cost_p): New variable.
+	(init_loop_tree_node): Clear call_crossing_pressure.
+	(create_loop_tree_nodes): Likewise.
+	(region_call_freq): New function.
+	(region_ref_p): New function.
+	(flatten_cost_keep_p): New function.
+	(mark_low_pressure_loop_for_removal): New function.
+	(mark_loops_for_removal): Use it to mark the subloops first, and
+	do not report a kept loop as low pressure when the loop limit
+	removes it.
+	(ira_build): Set ira_flatten_cost_p.
+
+2026-11-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-vsetvl.cc
+	(pre_vsetvl::compute_vsetvl_def_data): Free temporary AVL bitmaps.
+
+2026-11-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::m_raw_attr_str): Remove.
+
+2026-11-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/128959
+	* config/riscv/riscv-target-attr.cc
+	(riscv_target_attr_parser::~riscv_target_attr_parser): New destructor.
+	(riscv_target_attr_parser::parse_arch): Clear the deleted subset pointer.
+
+2026-11-24  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/riscv-vector-costs.cc (costs::add_stmt_cost): Normalize
+	count for store-lanes.
+	* config/riscv/riscv.cc (rvv_vls_vector_cost): Update
+	segment_permute_{2-8}.
+	(rvv_vla_vector_cost): Likewise.
+
+2026-11-24  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* coverage.cc (coverage_obj_fn): Mark the function information
+	read-only.
+	(coverage_obj_finish): Mark the array of pointers to the function
+	information read-only.
+
 2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
 
 	* dwarf2codeview.cc (write_custom_types): Use switch_to_section.

@@ -1,3 +1,19 @@
+2026-11-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/128969
+	* testsuite/libgomp.fortran/map-static-alloc-comp-1.f90: New test.
+
+2026-11-24  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (GOMP_RUNTIME_USM): Minor wording tweaks,
+	@ref to nvptx.
+	* plugin/plugin-nvptx.c (using_usm): Remove global var.
+	(is_integrated_apu): Remove (was commented out).
+	(GOMP_OFFLOAD_get_dev_caps): Update comment and check for
+	'integrated' attribute to return GOMP_OFFLOAD_CAP_APU_SHARED_MEM.
+	(GOMP_OFFLOAD_is_accessible_ptr): Check at call time whether
+	the GPU supports unified-shared memory.
+
 2026-11-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* plugin/plugin-nvptx.c (cuDeviceGetUuid, cuDeviceGetUuid_v2):

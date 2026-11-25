@@ -1,3 +1,10 @@
+2026-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (struct cpp_options): Add
+	cpp_warn_deprecated_octal_literal member.
+	(enum cpp_warning_reason): Add CPP_W_DEPRECATED_OCTAL_LITERAL.
+	* expr.cc (cpp_classify_number): Emit -Wdeprecated-octal-literal.
+
 2026-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	P0085R5

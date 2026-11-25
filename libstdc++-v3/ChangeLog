@@ -1,3 +1,19 @@
+2026-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (std::__detail::__to_chars_8): Use
+	conditionally 0o prefixed literals instead of 0 prefixed ones
+	or rewrite into decimal.
+	* include/bits/fs_fwd.h (std::filesystem::perms): Temporarily ignore
+	-Wdeprecated-octal-literal warning.
+	* include/experimental/bits/fs_fwd.h
+	(std::experimental::filesystem::perms): Likewise.
+	* testsuite/std/time/format/pr120114.cc: Expect extra warning for
+	C++29.
+	* testsuite/20_util/to_chars/constexpr.cc (test_base8): Use
+	conditionally 0o prefixed literals instead of 0 prefixed ones.
+	* testsuite/23_containers/mdspan/layouts/stride_neg.cc: Replace
+	00 with 0.
+
 2026-11-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/version.def (clmul): Bump FTM to 202611.

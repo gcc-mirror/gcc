@@ -1,3 +1,20 @@
+2026-11-24  Ata Borla  <chessy.gnu.org@gmail.com>
+
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::insert_type_by_node_id):
+	deleted for unused
+	(TypeCheckContext::lookup_type_by_node_id): deleted for unused
+
+2026-11-24  Enes Cevik  <enes@nsvke.com>
+
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::gate):
+	Improve error format.
+
+2026-11-24  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-intrinsic.cc (intrinsics): Add missing entries for
+	ATOMIC_CXCHG*_FAIL* intrinsics.
+	* typecheck/rust-hir-type-check-intrinsic.cc (intrinsic_rules): Likewise.
+
 2026-11-14  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
 
 	* checks/errors/rust-hir-pattern-analysis.cc (lower_pattern): Lower

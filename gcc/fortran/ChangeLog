@@ -1,3 +1,48 @@
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/45129
+	* gfortran.h (gfc_st_label): Add output_width_checked.
+	* invoke.texi (-Wformat-width): Document.
+	(-Wall): List -Wformat-width.
+	* io.cc (checking_width_only): New.
+	(next_char_not_space): Skip the tab warning when it is set.
+	(format_asterisk): Initialize output_width_checked.
+	(f_min_width, check_real_width): New.
+	(format_check_kind): New enum.
+	(check_format): Add a format_check_kind argument.  Skip the width
+	warnings for FMT_CHECK_DECL and the other warnings for
+	FMT_CHECK_WIDTH.  Warn with -Wformat-width when a D, E, EN, ES, F
+	or G field width on output is too small for its digits.
+	(check_format_string): Add a format_check_kind argument.  For
+	FMT_CHECK_WIDTH, suppress errors and skip the check for trailing
+	characters.
+	(gfc_match_format): Pass FMT_CHECK_DECL.
+	(gfc_resolve_dt): With -Wformat-width, recheck a labeled FORMAT
+	with FMT_CHECK_WIDTH the first time it is used for output.
+	* lang.opt (Wformat-width): New.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128735
+	* trans-stmt.cc (trans_associate_var): Copy the class container of
+	a class array associate name back to the selector only for SELECT
+	RANK.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128316
+	* parse.cc (accept_statement): For a labeled END statement after a
+	CONTAINS section, define the label in the host namespace with its
+	source location, for any host program unit.  Likewise for END
+	MODULE and END SUBMODULE.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128976
+	* expr.cc (gfc_check_vardef_context): For INTENT(IN), test the
+	POINTER attribute of the dummy argument, which for a SELECT TYPE
+	temporary is the selector.
+
 2026-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/128936

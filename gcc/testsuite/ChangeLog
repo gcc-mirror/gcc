@@ -1,3 +1,261 @@
+2026-11-24  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/DRs/dr3121.C: New test.
+	* g++.dg/DRs/dr3160.C: New test.
+	* g++.dg/DRs/dr3163.C: New test.
+	* g++.dg/DRs/dr3192.C: New test.
+	* g++.dg/DRs/dr3194.C: New test.
+	* g++.dg/DRs/dr3195.C: New test.
+	* g++.dg/DRs/dr3197.C: New test.
+
+2026-11-24  Xuanyu Chen  <xan9xxx@gmail.com>
+
+	PR analyzer/106283
+	* gcc.dg/analyzer/fd-closefrom-1.c: New test.
+	* gcc.dg/analyzer/fd-closefrom-2.c: New test.
+	* gcc.dg/analyzer/fd-closefrom-3.c: New test.
+	* gcc.dg/analyzer/fd-closefrom-4.c: New test.
+	* gcc.dg/analyzer/fd-closefrom-5.c: New test.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/45129
+	* gfortran.dg/pr45129.f90: New test.
+
+2026-11-24  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/core/core-diagnostics.exp (core-diagnostics): Print the diff
+	and the update hint instead of only logging them.
+
+2026-11-24  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/core/regen-core-expected.sh: New script.
+	* rust/core/core-diagnostics.exp: Mention it when the output
+	differs.
+
+2026-11-24  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/feature_rust_attri0.rs: Correct expected error.
+	* rust/compile/lang_feature_gate.rs: Correct expected error.
+
+2026-11-24  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/atomic_compare_exchange.rs: Add new tests for the
+	missing atomic intrinics.
+
+2026-11-24  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	* g++.dg/debug/codeview/nested-decl-parent-1.C: New test.
+
+2026-11-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* gcc.target/riscv/zbb-minmax-cmp-uns-1.c: New test.
+	* gcc.target/riscv/zbb-minmax-cmp-uns-2.c: New test.
+	* gcc.target/riscv/zbb-minu-leu-1.c: New test.
+	* gcc.target/riscv/zbb-minu-leu-2.c: New test.
+	* gcc.target/riscv/zbb-minu-leu-3.c: New test.
+	* gcc.target/riscv/zbb-minu-leu-4.c: New test.
+
+2026-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/128302
+	* gcc.dg/builtin-clear-padding-4.c: Declare c3 and c4 on targets
+	without _BitInt support or where __BITINT_MAXWIDTH__ < 65535.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/20261124-1.c: New test.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: New test.
+
+2026-11-24  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/bf16-1.c: New target test.
+	* gcc.target/powerpc/bf16-2.c: Likewise.
+	* gcc.target/powerpc/bf16-3.c: Likewise.
+	* gcc.target/powerpc/bf16-4.c: Likewise.
+	* gcc.target/powerpc/bf16-5.c: Likewise.
+	* gcc.target/powerpc/float16-1.c: Likewise.
+	* gcc.target/powerpc/float16-2.c: Likewise.
+	* gcc.target/powerpc/float16-3.c: Likewise.
+	* lib/target-supports.exp (check_ppc_float16_hw_available): New target
+	supports for _Float16 and __bf16 support.
+	(check_ppc_float16_runtime_available): Likewise.
+	(check_ppc_bfloat16_hw_available): Likewise.
+	(check_ppc_bfloat16_runtime_available): Likewise.
+	(is-effective-target): Add new _Float16 and __bf16 targets.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/vect/veclower/vec-div-neg-pow2-2.c: New test.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/analyzer/taint-read-offset-1.c (test_6, test_7): Expect
+	"upper-bounds" in the warning again.
+	(test_8): Remove xfail.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* c-c++-common/analyzer/stdarg-va-copy-cast-1.c: New test.
+
+2026-11-24  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/126294
+	* gcc.dg/tree-ssa/pr126294.c: New test.
+	* gcc.dg/tree-ssa/pr126294-2.c: New test.
+
+2026-11-24  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/126311
+	* gcc.dg/tree-ssa/pr126311.c: New test.
+	* gcc.dg/torture/pr126311.c: New test.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128735
+	* gfortran.dg/pr128735.f90: New test.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128316
+	* gfortran.dg/label_6.f90: New test.
+	* gfortran.dg/label_7.f90: New test.
+	* gfortran.dg/label_8.f90: New test.
+
+2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128976
+	* gfortran.dg/pr128976.f90: New test.
+
+2026-11-24  Michele Dionisio  <michele.dionisio@gmail.com>
+	    Claude Opus 5.5  <noreply@anthropic.com>
+
+	* gcc.dg/tree-ssa/forwprop-45.c: New test.
+	* gcc.dg/tree-ssa/forwprop-46.c: New test.
+
+2026-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128482
+	PR tree-optimization/125652
+	PR tree-optimization/121370
+	* gcc.dg/torture/pr128482-1.c: New testcase.
+	* gcc.dg/torture/pr128482-2.c: Likewise.
+	* gcc.dg/torture/pr128482-3.c: Likewise.
+
+2026-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128714
+	* gcc.dg/vect/bb-slp-pr128714.c: New testcase.
+
+2026-11-24  Sendao Yan  <yansendao@126.com>
+
+	* gcc.target/aarch64/sve2/acle/general/firstp.c: Add -save-temps.
+	* gcc.target/aarch64/sve2/acle/general/lastp.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilelt_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilele_1.c: Likewise.
+
+2026-11-24  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	PR tree-optimization/112628
+	* gcc.dg/torture/pr112628.c: New test.
+	* gcc.dg/tree-ssa/pr112628-2.c: New test.
+	* gcc.dg/tree-ssa/pr112628.c: New test.
+	* gcc.dg/tree-ssa/pr112628-3.c: New test.
+	* c-c++-common/ubsan/pr112628.c: New test.
+
+2026-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128747
+	PR tree-optimization/128943
+	* gcc.dg/torture/pr128747.c: New testcase.
+
+2026-11-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* gcc.target/riscv/zbb-andn-xor1-1.c: New test.
+	* gcc.target/riscv/zbb-andn-xor1-2.c: New test.
+	* gcc.target/riscv/zbb-andn-xor1-3.c: New test.
+	* gcc.target/riscv/zbb-andn-xor1-4.c: New test.
+	* gcc.target/aarch64/bic-1.c: Adjust expected output.
+
+2026-11-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128960
+	* gcc.target/i386/pr128960-1.c: New test.
+	* gcc.target/i386/pr128960-2.c: Ditto.
+
+2026-11-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-1.c: New test.
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-2.c: New test.
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-3.c: New test.
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-4.c: New test.
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-5.c: New test.
+	* gcc.target/riscv/rvv/base/sifive-mal-9174-6.c: New test.
+
+2026-11-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/Wdeprecated-octal-literal-1.c: New test.
+	* c-c++-common/Wdeprecated-octal-literal-2.c: New test.
+	* c-c++-common/Wdeprecated-octal-literal-3.c: New test.
+	* c-c++-common/Wdeprecated-octal-literal-4.c: New test.
+	* c-c++-common/Wdeprecated-octal-literal-5.c: New test.
+	* c-c++-common/Wdeprecated-octal-literal-6.c: New test.
+	* c-c++-common/Wprio-ctor-dtor.c: Expect extra warning for C++29.
+	* c-c++-common/gomp/doacross-6.c: Likewise.
+	* c-c++-common/analyzer/deref-before-check-pr108455-git-pack-revindex.c:
+	Use 0 instead of 00.
+	* c-c++-common/analyzer/stdarg-pr111289-int.c: Expect extra warning for
+	C++29.
+	* g++.dg/ubsan/pr80349.C: Add -Wno-deprecated-octal-literal to
+	dg-options.
+	* g++.dg/ext/va-arg-pack-len-1.C: Likewise.
+	* g++.dg/ext/va-arg-pack-len-2.C: Likewise.
+	* g++.dg/cpp1y/digit-sep.C: Add -Wno-deprecated-octal-literal as
+	dg-additional-options for C++29.
+	* g++.dg/cpp1y/digit-sep-neg.C: Expect extra warnings for C++29.
+	* g++.dg/warn/pr13358-4.C: Likewise.
+	* g++.dg/warn/pr13358-3.C: Likewise.
+	* g++.dg/cpp0x/udlit-raw-op.C: Likewise.
+	* g++.dg/cpp0x/udlit-raw-length.C: Likewise.
+	* g++.dg/vect/pr98064.cc: Add -Wno-deprecated-octal-literal to
+	dg-additional-options.
+	* g++.dg/vect/pr95297.cc: Likewise.
+	* g++.old-deja/g++.niklas/t119.C: Expect extra warning for C++29.
+	* g++.old-deja/g++.law/enum2.C: Add -Wno-deprecated-octal-literal to
+	dg-options.
+	* g++.old-deja/g++.other/mutable1.C: Add -Wno-deprecated-octal-literal
+	as dg-additional-options for C++29.
+	* g++.old-deja/g++.mike/p811.C: Add -Wno-deprecated-octal-literal to
+	dg-options.
+
+2026-11-24  Hongyu Wang  <hongyu.wang@intel.com>
+
+	* gcc.target/i386/ira-loop-region-flatten-1.c: New test.
+	* gcc.target/i386/ira-loop-region-flatten-2.c: Likewise.
+	* gcc.target/i386/ira-loop-region-flatten-3.c: Likewise.
+	* gcc.target/i386/ira-loop-region-flatten-4.c: Likewise.
+	* gcc.target/i386/ira-loop-region-flatten-5.c: Likewise.
+	* gcc.target/i386/ira-loop-region-flatten-6.c: Likewise.
+
+2026-11-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/target-attr-invalid-xlen-32.c: New test.
+	* gcc.target/riscv/target-attr-invalid-xlen-64.c: New test.
+
+2026-11-24  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* gcc.target/riscv/rvv/autovec/partial/slp-1.c: Remove xfail on
+	.VEC_PERM.
+	* gcc.target/riscv/rvv/autovec/partial/slp-3.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/partial/slp-5.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/zve64d-1.c: Adjust expectation.
+	* gcc.target/riscv/rvv/autovec/zve64f-1.c: Likewise.
+
 2026-11-23  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
 
 	* g++.dg/debug/codeview/eh-indirect-1.C: New test.

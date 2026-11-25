@@ -1,3 +1,76 @@
+2026-11-24  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config.host (powerpc*-*-linux*): Add HF/BF emulation functions to
+	PowerPC libgcc.
+	* config/rs6000/float16-eqbf2.c: New file.
+	* config/rs6000/float16-extendbfdf2.c: Likewise.
+	* config/rs6000/float16-fixbfdi.c: Likewise.
+	* config/rs6000/float16-fixbfsi.c: Likewise.
+	* config/rs6000/float16-fixbfti.c: Likewise.
+	* config/rs6000/float16-fixhfti.c: Likewise.
+	* config/rs6000/float16-fixunsbfdi.c: Likewise.
+	* config/rs6000/float16-fixunsbfsi.c: Likewise.
+	* config/rs6000/float16-fixunsbfti.c: Likewise.
+	* config/rs6000/float16-fixunshfti.c: Likewise.
+	* config/rs6000/float16-floattibf.c: Likewise.
+	* config/rs6000/float16-floattihf.c: Likewise.
+	* config/rs6000/float16-floatuntibf.c: Likewise.
+	* config/rs6000/float16-floatuntihf.c: Likewise.
+	* config/rs6000/sfp-machine.h (_FP_NANFRAC_H): New macro.
+	(_FP_NANFRAC_B): Likewise.
+	(_FP_NANSIGN_H): Likewise.
+	(_FP_NANSIGN_B): Likewise.
+	(DFtype2): Add HF/BF emulation function declarations.
+	(SFtype2): Likewise.
+	(DItype2): Likewise.
+	(UDItype2): Likewise.
+	(SItype2): Likewise.
+	(USItype2): Likewise.
+	(TItype2): Likewise.
+	(UTItype2): Likewise.
+	(HFtype2): Likewise.
+	(__eqhf2): Likewise.
+	(__extendhfdf2): Likewise.
+	(__extendhfsf2): Likewise.
+	(__fixhfdi): Likewise.
+	(__fixhfsi): Likewise.
+	(__fixunshfdi): Likewise.
+	(__fixunshfsi): Likewise.
+	(__floatdihf): Likewise.
+	(__floatsihf): Likewise.
+	(__floatundihf): Likewise.
+	(__floatunsihf): Likewise.
+	(__truncdfhf2): Likewise.
+	(__truncsfhf2): Likewise.
+	(__fixhfti): Likewise.
+	(__fixunshfti): Likewise.
+	(__floattihf): Likewise.
+	(__floatuntihf): Likewise.
+	(BFtype2): Likewise.
+	(__eqbf2): Likewise.
+	(__extendbfsf2): Likewise.
+	(__extendbfdf2): Likewise.
+	(__fixbfdi): Likewise.
+	(__fixbfsi): Likewise.
+	(__fixunsbfdi): Likewise.
+	(__fixunsbfsi): Likewise.
+	(__floatdibf): Likewise.
+	(__floatsibf): Likewise.
+	(__floatundibf): Likewise.
+	(__floatunsibf): Likewise.
+	(__truncdfbf2): Likewise.
+	(__truncsfbf2): Likewise.
+	(__fixbfti): Likewise.
+	(__fixunsbfti): Likewise.
+	(__floattibf): Likewise.
+	(__floatuntibf): Likewise.
+	(__truncbfhf2): Likewise.
+	(__trunchfbf2): Likewise.
+	* config/rs6000/t-float16: New file.
+	* configure.ac (powerpc*-*-linux*): Check if the PowerPC compiler
+	supports _Float16 and __bf16 types.
+	* configure: Regenerate.
+
 2026-11-21  Olivier Hainque  <hainque@adacore.com>
 
 	* config/i386/cygwin.S (__alloca, __x86_64__): Remove cfi_ macro

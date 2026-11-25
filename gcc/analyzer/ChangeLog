@@ -1,3 +1,133 @@
+2026-11-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc
+	(analyzer_state_graph::make_node_id): Replace cases for
+	RK_GLOBALS, RK_CODE, RK_STACK, RK_HEAP, and RK_THREAD_LOCAL with
+	a case handling RK_MEMORY_SPACE.
+	(get_node_properties_kind_for_memory_space): New.
+	(analyzer_state_graph::make_memspace_state_node): Drop redudant
+	"enum".
+	(analyzer_state_graph::create_state_node): Replace cases for
+	RK_GLOBALS, RK_CODE, RK_STACK, RK_HEAP, and RK_THREAD_LOCAL with
+	a case handling RK_MEMORY_SPACE.
+	* call-summary.cc
+	(call_summary_replay::convert_region_from_summary_1): Likewise.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Pass memory_space
+	values to initializers for the various memory_space nodes.
+	* region-model-manager.h (region_model_manager::get_stack_region):
+	Convert return type from stack_region to memory_space_region.
+	(region_model_manager::get_heap_region): Convert return type from
+	heap_region to memory_space_region.
+	(region_model_manager::get_code_region): Convert return type from
+	code_region to memory_space_region.
+	(region_model_manager::get_globals_region): Convert return type
+	from globals_region to memory_space_region.
+	(region_model_manager::m_stack_region): Convert from stack_region
+	to memory_space_region.
+	(region_model_manager::m_heap_region): Convert from heap_region
+	to memory_space_region.
+	(region_model_manager::m_code_region): Convert from code_region to
+	memory_space_region.
+	(region_model_manager::m_globals_region): Convert from
+	globals_region to memory_space_region.
+	(region_model_manager::m_thread_local_region): Convert from
+	thread_local_region to m_thread_local_region.
+	* region-model-reachability.cc (reachable_regions::init_cluster):
+	Replace check for base_reg's parent being RK_GLOBALS with a check
+	for the region's memory space being memory_space::globals.
+	* region-model.cc (region_model::get_representative_path_var_1):
+	Replace cases for RK_GLOBALS, RK_CODE, RK_HEAP, RK_STACK, and
+	RK_THREAD_LOCAL with a case for RK_MEMORY_SPACE.
+	* region.cc (get_dump_name): New.
+	(region::get_memory_space): Replace cases for RK_GLOBALS, RK_CODE,
+	RK_STACK, and RK_HEAP with a case for RK_MEMORY_SPACE.  It looks
+	like previously we didn't propely handle RK_THREAD_LOCAL and would
+	have returned memory_space::unknown for this case.
+	(region::can_have_initial_svalue_p): Add missing case for
+	memory_space::thread_local_.
+	(class frame_region): Update comment.
+	(globals_region::dump_to_pp): Replace with...
+	(memory_space_region::dump_to_pp): ...this.
+	(globals_region::print_region_for_dump_widget_label): Replace
+	with...
+	(memory_space_region::print_region_for_dump_widget_label):
+	...this.
+	(globals_region::accept_node_visitor): Replace with...
+	(memory_space_region::accept_node_visitor): ...this.
+	(globals_region::to_json): Replace with...
+	(memory_space_region::to_json): ...this.
+	(globals_region::make_markup_node): Replace with...
+	(memory_space_region::make_markup_node): ...this.
+	(class code_region): Drop.
+	(class stack_region): Drop.
+	(class heap_region): Drop.
+	(class thread_local_region): Drop.
+	* region.h (get_dump_name): New decl.
+	(enum region_kind): Replace RK_GLOBALS, RK_CODE, RK_STACK,
+	RK_HEAP, and RK_THREAD_LOCAL with RK_MEMORY_SPACE.
+	(class region): Update leading comment to reflect changes in class
+	hierarchy.
+	(class space_region): Replace with...
+	(class memory_space_region): ...this.
+	(class frame_region): Inherit directly from region, rather than
+	from the now-defunct space_region.
+	(class globals_region): Delete.
+	(is_a_helper <const globals_region *>::test): Delete.
+	(class code_region): Delete.
+	(is_a_helper <const code_region *>::test): Delete.
+	(function_region::function_region): Convert parent from
+	code_region to memory_space_region.
+	(class stack_region): Delete.
+	(is_a_helper <const stack_region *>::test): Delete.
+	(class heap_region): Delete.
+	(is_a_helper <const heap_region *>::test): Delete.
+	(class thread_local_region): Delete.
+	(is_a_helper <const thread_local_region *>::test): Delete.
+	(errno_region::errno_region): Convert parent from
+	thread_local_region to region.
+	* store.cc (store::eval_alias): Replace cases for RK_CODE,
+	RK_GLOBALS, RK_HEAP, RK_STACK, and RK_THREAD_LOCAL with  a case
+	for RK_MEMORY_SPACE.
+	(store::get_implicit_contents):  Replace check for base_reg's
+	parent being RK_GLOBALS with a check for the region's memory space
+	being memory_space::globals.
+	(store::replay_call_summary_cluster): Replace cases for
+	RK_GLOBALS, RK_CODE, RK_STACK, RK_HEAP, and RK_THREAD_LOCAL with
+	case for RK_MEMORY_SPACE.
+	* store.h: Update leading comment for changes in expected dumps.
+
+2026-11-24  Xuanyu Chen  <xan9xxx@gmail.com>
+
+	PR analyzer/106283
+	* sm-fd.cc (class kf_closefrom): New.
+	(register_known_fd_functions): Register "closefrom".
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* region-model.cc (region_model::get_representative_tree): Also
+	strip top-level casts after calling fixup_tree_for_diagnostic.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* sm-taint.cc (region_model::check_region_for_taint): Use the type
+	of the representative tree for same-width casts of the offset.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* region-model.cc (is_any_cast_p): Compare the main variants of
+	the lhs and rhs types.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* varargs.cc (get_va_copy_arg): Only undo casts that give a
+	pointer type.
+
+2026-11-24  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* ops.cc (switch_case_op::apply_constraints): Handle widening
+	cast of enum with -fshort-enums.
+
 2026-11-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* constraint-manager.cc (equiv_class::make_dump_widget): Update
