@@ -1436,6 +1436,7 @@ gori_compute::has_edge_range_p (tree name, edge e)
 bool
 gori_compute::edge_range_p (vrange &r, edge e, tree name, range_query &q)
 {
+  static bool recomputing = false;
   unsigned idx;
 
   if ((e->flags & m_not_executable_flag))
@@ -1482,8 +1483,9 @@ gori_compute::edge_range_p (vrange &r, edge e, tree name, range_query &q)
       return res;
     }
   // If NAME isn't exported, check if it can be recomputed.
-  else if (may_recompute_p (name, e))
+  else if (!recomputing && may_recompute_p (name, e))
     {
+      recomputing = true;
       gimple *def_stmt = SSA_NAME_DEF_STMT (name);
 
       if ((idx = tracer.header ("recomputation")))
@@ -1496,6 +1498,7 @@ gori_compute::edge_range_p (vrange &r, edge e, tree name, range_query &q)
       fold_range (r, def_stmt, e, &q);
       if (idx)
 	tracer.trailer (idx, "recomputation", true, name, r);
+      recomputing = false;
       return true;
     }
   return false;
