@@ -2907,7 +2907,14 @@ canon_reg (rtx x, rtx_insn *insn)
 
 	    if (validate_subreg (GET_MODE (x), GET_MODE (inner),
 				 inner, SUBREG_BYTE (x)))
-	      validate_change (insn, &SUBREG_REG (x), inner, 1);
+	      {
+		/* This is going to re-use the existing SUBREG
+		   expression, but the substitution may make the
+		   previously known promotion state invalid.  */
+		validate_change (insn, &SUBREG_REG (x), inner, 1);
+		if (GET_CODE (x) == SUBREG)
+		  SUBREG_PROMOTED_VAR_P (x) = 0;
+	      }
 	  }
 	return x;
       }
