@@ -216,5 +216,5 @@ gimple_match_ctx (tree)
 static inline bool
 gimple_match_no_overflow_p (tree_code, tree type, tree, tree, tree)
 {
-  return TYPE_OVERFLOW_UNDEFINED (type);
+  return TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type);
 }
