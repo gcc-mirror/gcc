@@ -1,3 +1,268 @@
+2026-11-24  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-11-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* plugin/plugin-gcn.c (struct isa_occupancy): New.
+	(isa_occupancy): New.
+	(kernel_waves_per_cu): New.
+	(run_kernel): Use kernel_waves_per_cu to limit threads/workers.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* loop.c (GOMP_loop_static_worksharing): Remove parameter.
+	* parallel.c (GOMP_loop_static_worksharing): Delete old version.
+	* single.c (GOMP_single_copy_wait): gomp_team_barrier_wait doesn't need
+	the team_id.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-5.c: New test.
+	* testsuite/libgomp.c-c++-common/target-simd-reduction-complex-1.c:
+	New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/libgomp-gcn.h (struct kernargs_abi): Add
+	omp_thread_limit.
+	* config/gcn/target.c (GOMP_teams4): Do not let thread_limit exceed
+	the number of threads launched.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): In "simt" mode, take
+	thread_limit_var from the kernel arguments.
+	* plugin/plugin-gcn.c (omp_simt_kernel_p): New function.
+	(parse_target_attributes): Add KERNEL parameter.  Count threads in
+	lanes for "simt" mode kernels.
+	(run_kernel): Convert a "simt" mode kernel's thread count from lanes
+	to wavefronts, and pass it in the kernel arguments.
+	(GOMP_OFFLOAD_run): Pass the kernel to parse_target_attributes.
+	(GOMP_OFFLOAD_async_run): Likewise.
+	* testsuite/libgomp.c/interop-hsa.c (main): Initialize
+	omp_thread_limit.
+	* testsuite/libgomp.c-c++-common/simt-gcn-num-threads-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-thread-limit-amdgcn-1.c: New
+	test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-4.c: New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/libgomp-gcn.h (DEFAULT_GCN_SIMT_STACK_SIZE): New.
+	* libgomp.texi (AMD Radeon (GCN)): Document the "simt" mode default
+	stack size.
+	* plugin/plugin-gcn.c (struct hsa_kernel_description): Add simt_mode.
+	(GCN_KERNEL_SIMD_MODE, GCN_KERNEL_SIMT_DIRECTED_MODE)
+	(GCN_KERNEL_SIMT_MODE): New enum values.
+	(simt_stack_size): New variable.
+	(round_stack_size): New function, split out from ...
+	(init_environment_variables): ... here.  Set simt_stack_size from
+	GCN_STACK_SIZE too, and round it.
+	(configure_ephemeral_memories): Use simt_stack_size for "simt" mode
+	kernels.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-3.c: New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-loop-default-schedule-amdgcn-1.c:
+	New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.map (GOMP_6.0.2): Add GOMP_single_copy_wait.
+	* libgomp_g.h (GOMP_single_copy_wait): Declare.
+	* single.c (GOMP_single_copy_wait): New function.
+	* testsuite/libgomp.c-c++-common/simt-single-copyprivate-amdgcn-1.c:
+	New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* alloc.c (gomp_simt_max): New function.
+	(gomp_aligned_alloc_lanes, gomp_aligned_free_lanes): New functions.
+	* config/accel/mutex.h (gomp_mutex_lock, gomp_mutex_unlock): Access
+	the mutex from the first lane only.
+	* config/gcn/bar.c (gomp_team_barrier_wait_end): Skip s_barrier if
+	the barrier has only one thread.
+	* config/gcn/bar.h (gomp_barrier_wait_start)
+	(gomp_barrier_wait_final_start): Count the wavefront in the first
+	lane only, and give the result to every lane.
+	* config/gcn/team.c: Update the file comment.
+	(__gcn_simt_mode): New variable.
+	(gomp_gcn_enter_kernel): In SIMT builds, take a simt_mode parameter
+	and store it in __gcn_simt_mode.  Count the nthreads and thread_limit
+	ICVs in OpenMP threads.  Rename threadid and numthreads to
+	wavefrontid and numwavefronts.
+	(gomp_simt_lane_in_team_p): New function.
+	(gomp_master_progress): New function.
+	(gomp_thread_start): Rename to ...
+	(gomp_wavefront_start): ... this.  Reset the idle limit whenever the
+	master wavefront makes progress.  In "simt" mode, call the team
+	function in SIMT mode, in the lanes that belong to the team.
+	(gomp_simt_launch_master): New function.
+	(gomp_team_start): Return early in all but the first lane.  In SIMT
+	builds, count the team's wavefronts.
+	* iter.c (gomp_iter_simt_lanes_alloc): New function.
+	(gomp_iter_static_next): Use the per-lane ranges of a nested SIMT
+	team.  Use OpenMP thread numbers and counts.  Make the lanes of a
+	wavefront agree on the static trip.
+	(gomp_iter_dynamic_next_locked, gomp_iter_dynamic_next)
+	(gomp_iter_guided_next_locked, gomp_iter_guided_next): Use the
+	per-lane ranges of a nested SIMT team.
+	* iter_ull.c (gomp_iter_ull_static_next): Use the per-lane ranges of
+	a nested SIMT team.  Use OpenMP thread numbers and counts.  Make the
+	lanes of a wavefront agree on the static trip.
+	(gomp_iter_ull_dynamic_next_locked, gomp_iter_ull_dynamic_next)
+	(gomp_iter_ull_guided_next_locked, gomp_iter_ull_guided_next): Use
+	the per-lane ranges of a nested SIMT team.
+	* libgomp.h: Include limits.h.
+	(LIBGOMP_SIMT, SIMT_MODE_P, FIRST_LANE_P, SIMT_VOTE_ANY)
+	(SIMT_BROADCAST_FIRST_LANE, SIMT_LANE_ID, SIMT_LANES): New macros.
+	(gomp_aligned_alloc_lanes, gomp_aligned_free_lanes): Declare, or
+	define as gomp_aligned_alloc and gomp_aligned_free.
+	(struct gomp_work_share): Add simt_lane_ranges.
+	(struct gomp_team): Add omp_nthreads.
+	(GOMP_SIMT_LANES_P, GOMP_SIMT_LANE_TEAMS_P, GOMP_TID_TO_OMP_TID_AT)
+	(GOMP_TID_TO_OMP_TID, OMP_TID_TO_GOMP_TID, GOMP_TEAM_OMP_NTHR)
+	(OMP_NTHR_TO_GOMP_NTHR, LAUNCH_MASTER_THREAD): New macros.
+	(gomp_simt_launch_master, gomp_iter_simt_lanes_alloc): Declare.
+	(gomp_iter_simt_lanes_init, gomp_iter_ull_simt_lanes_next)
+	(gomp_iter_simt_lanes_next, gomp_iter_simt_lanes_next_one): New
+	functions.
+	(GOMP_ITER_SIMT_LANES_P): New macro.
+	* loop.c (gomp_loop_init): Record each lane's bounds in a nested SIMT
+	team.  Use the OpenMP thread count.
+	(gomp_loop_ordered_dynamic_next): Make the lanes agree on the result.
+	(gomp_parallel_loop_start): Initialize the work share in the first
+	lane only, then record each lane's bounds in a nested SIMT team.
+	(GOMP_parallel_loop_static, GOMP_parallel_loop_dynamic)
+	(GOMP_parallel_loop_guided, GOMP_parallel_loop_runtime)
+	(GOMP_parallel_loop_nonmonotonic_dynamic)
+	(GOMP_parallel_loop_nonmonotonic_guided)
+	(GOMP_parallel_loop_nonmonotonic_runtime)
+	(GOMP_parallel_loop_maybe_nonmonotonic_runtime): Use
+	LAUNCH_MASTER_THREAD.
+	(GOMP_loop_static_worksharing, GOMP_loop_static_worksharing_start):
+	Use OpenMP thread numbers and counts.
+	* loop_ull.c (gomp_loop_ull_init): Record each lane's bounds in a
+	nested SIMT team.  Use the OpenMP thread count.
+	(gomp_loop_ull_ordered_dynamic_next): Make the lanes agree on the
+	result.
+	* ordered.c (gomp_ordered_first, gomp_ordered_last)
+	(gomp_ordered_next, gomp_ordered_static_init)
+	(gomp_ordered_static_next, gomp_ordered_sync): Return early in all
+	but the first lane.
+	(gomp_doacross_init, gomp_doacross_ull_init): Likewise.  Use one
+	static schedule entry per OpenMP thread.
+	(GOMP_doacross_post, GOMP_doacross_wait, GOMP_doacross_ull_post)
+	(GOMP_doacross_ull_wait): Use OpenMP thread numbers and counts.
+	* parallel.c (gomp_resolve_num_threads): Return 1 for a nested team
+	in SIMT mode.  Read thread_limit_var once.
+	(GOMP_parallel_end): Use the OpenMP thread count.
+	(GOMP_parallel): Use LAUNCH_MASTER_THREAD.
+	(GOMP_parallel_reductions): Likewise.  Free the taskgroup with
+	gomp_aligned_free_lanes.
+	(GOMP_has_masked_thread_num, GOMP_has_masked_thread_num_with_end)
+	(omp_get_num_threads, omp_get_thread_num, omp_get_team_size): Use
+	OpenMP thread numbers and counts.
+	(omp_get_ancestor_thread_num): Likewise, except for the initial
+	thread.
+	* sections.c (gomp_sections_init): Record each lane's range in a
+	nested SIMT team.
+	(GOMP_sections_start, GOMP_sections2_start, GOMP_sections_next): Use
+	the per-lane ranges of a nested SIMT team.
+	(GOMP_parallel_sections_start): Initialize the work share in the first
+	lane only, then record each lane's range in a nested SIMT team.
+	(GOMP_parallel_sections): Likewise.  Use LAUNCH_MASTER_THREAD.
+	* single.c (GOMP_single_start, GOMP_single_start_with_end): Let only
+	the first lane compete for the construct, except in a nested SIMT
+	team, where every lane executes it.
+	* task.c (gomp_taskgroup_init): Split out ...
+	(gomp_taskgroup_init_at): ... this new function.
+	(GOMP_REDUCTION_LANES_ALLOCATOR): New macro.
+	(gomp_reduction_register): Add a LANES parameter, to allocate the
+	private copies of all the lanes together.
+	(gomp_create_artificial_team): Return early in all but the first lane.
+	(GOMP_taskgroup_reduction_register): Use the OpenMP thread count.
+	Update the gomp_reduction_register call.
+	(GOMP_taskgroup_reduction_unregister): Free lane allocations with
+	gomp_aligned_free_lanes.
+	(GOMP_task_reduction_remap): Use the OpenMP thread number.
+	(gomp_parallel_reduction_register): Allocate the taskgroup with
+	gomp_aligned_alloc_lanes, and pass SIMT_MODE_P to
+	gomp_reduction_register.
+	(gomp_workshare_task_reduction_register): Use the OpenMP thread count.
+	Update the gomp_reduction_register call.
+	* team.c (gomp_new_team): Return NULL in all but the first lane.  In
+	SIMT builds, allocate per wavefront, and record the OpenMP thread
+	count in omp_nthreads.
+	(gomp_team_end): Return early in all but the first lane.
+	* work.c (gomp_init_work_share): Initialize simt_lane_ranges.
+	(gomp_fini_work_share): Free simt_lane_ranges.
+	(gomp_work_share_start): Rename to ...
+	(gomp_work_share_start_1): ... this, and make it static.
+	(gomp_work_share_start): New function.  Call gomp_work_share_start_1
+	in the first lane only, and give the result to every lane.
+	(gomp_work_share_end, gomp_work_share_end_nowait): Return early in
+	all but the first lane.
+	(gomp_work_share_end_cancel): Free the last work share from the first
+	lane only.
+	* testsuite/libgomp.c-c++-common/simt-ancestor-thread-num-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-idle-waves-amdgcn-1.c: New test.
+	* testsuite/libgomp.c-c++-common/simt-loop-ull-static-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/simt-nested-active-level-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-nested-parallel-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/simt-nested-parallel-for-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-nested-sections-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/simt-parallel-reductions-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-parallel-reductions-amdgcn-2.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-task-reduction-remap-amdgcn-1.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/simt-team-size-amdgcn-1.c: New test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-1.c: New test.
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-2.c: New
+	test.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.h (team_malloc): Add SIMT variant of the asm.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	Revert:
+	2026-10-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.h (team_malloc): Add SIMT variant of the asm.
+
+2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	Revert:
+	2026-11-13  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-1.c: New test.
+	* testsuite/libgomp.c-c++-common/simt-reduction-amdgcn-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-1.c: New
+	test.
+	* testsuite/libgomp.oacc-c-c++-common/simt-reduction-amdgcn-2.c: New
+	test.
+
 2026-11-08  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	Backported from master:
