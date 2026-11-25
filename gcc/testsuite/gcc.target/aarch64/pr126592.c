@@ -1,6 +1,6 @@
 /* { dg-do run { target arm_v8_3a_complex_neon_hw } } */
 /* { dg-require-effective-target aarch64_little_endian } */
-/* { dg-options "-O3 -march=armv8.3-a" } */
+/* { dg-options "-O3 -march=armv8.3-a -save-temps" } */
 
 #define N 64
 double a[N], b[N], c[N];

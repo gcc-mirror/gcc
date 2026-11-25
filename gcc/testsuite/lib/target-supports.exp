@@ -8174,18 +8174,18 @@ proc check_effective_target_arm_v8_2a_dotprod_neon_hw { } {
 
 	  #ifdef __ARM_ARCH_ISA_A64
 	  asm ("udot %0.2s, %1.8b, %2.8b"
-	       : "=w"(results)
+	       : "+w"(results)
 	       : "w"(a), "w"(b)
 	       : /* No clobbers.  */);
 
 	  #else
 	  asm ("vudot.u8 %P0, %P1, %P2"
-	       : "=w"(results)
+	       : "+w"(results)
 	       : "w"(a), "w"(b)
 	       : /* No clobbers.  */);
 	  #endif
 
-	  return (results[0] == 8 && results[1] == 24) ? 1 : 0;
+	  return (results[0] == 8 && results[1] == 24) ? 0 : 1;
 	}
     } [add_options_for_arm_v8_2a_dotprod_neon ""]]
 }
@@ -8210,19 +8210,19 @@ proc check_effective_target_arm_v8_2a_i8mm_neon_hw { } {
 
 	  #ifdef __ARM_ARCH_ISA_A64
 	  asm ("usdot %0.2s, %1.8b, %2.8b"
-	       : "=w"(results)
+	       : "+w"(results)
 	       : "w"(a), "w"(b)
 	       : /* No clobbers.  */);
 
 	  #else
 	  asm ("vusdot.u8 %P0, %P1, %P2"
-	       : "=w"(results)
+	       : "+w"(results)
 	       : "w"(a), "w"(b)
 	       : /* No clobbers.  */);
 	  #endif
 
 	  return (vget_lane_u32 (results, 0) == 8
-		  && vget_lane_u32 (results, 1) == 24) ? 1 : 0;
+		  && vget_lane_u32 (results, 1) == 24) ? 0 : 1;
 	}
     } [add_options_for_arm_v8_2a_i8mm ""]]
 }
@@ -14587,9 +14587,10 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
 	main (void)
 	{
 
-	  float32x2_t results = {-4.0,5.0};
+	  /* A zero addend makes the result independent of lane order.  */
+	  float32x2_t results;
 	  float32x2_t a = {1.0,3.0};
-	  float32x2_t b = {2.0,5.0};
+	  float32x2_t b = {0.0,0.0};
 
 	  #ifdef __ARM_ARCH_ISA_A64
 	  asm ("fcadd %0.2s, %1.2s, %2.2s, #90"
@@ -14604,7 +14605,7 @@ proc check_effective_target_arm_v8_3a_complex_neon_hw { } {
 	       : /* No clobbers.  */);
 	  #endif
 
-	  return (results[0] == 8 && results[1] == 24) ? 0 : 1;
+	  return (results[0] == 1 && results[1] == 3) ? 0 : 1;
 	}
     } [add_options_for_arm_v8_3a_complex_neon ""]]
 }
