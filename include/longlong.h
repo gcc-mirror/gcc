@@ -578,29 +578,8 @@ extern UDItype __umulsidi3 (USItype, USItype);
   __asm__ ("xma.hu %0 = %2, %3, f0\n\txma.l %1 = %2, %3, f0"		\
 	   : "=&f" (ph), "=f" (pl)					\
 	   : "f" (m0), "f" (m1))
-#define count_leading_zeros(count, x)					\
-  do {									\
-    UWtype _x = (x), _y, _a, _c;					\
-    __asm__ ("mux1 %0 = %1, @rev" : "=r" (_y) : "r" (_x));		\
-    __asm__ ("czx1.l %0 = %1" : "=r" (_a) : "r" (-_y | _y));		\
-    _c = (_a - 1) << 3;							\
-    _x >>= _c;								\
-    if (_x >= 1 << 4)							\
-      _x >>= 4, _c += 4;						\
-    if (_x >= 1 << 2)							\
-      _x >>= 2, _c += 2;						\
-    _c += _x >> 1;							\
-    (count) =  W_TYPE_SIZE - 1 - _c;					\
-  } while (0)
-/* similar to what gcc does for __builtin_ffs, but 0 based rather than 1
-   based, and we don't need a special case for x==0 here */
-#define count_trailing_zeros(count, x)					\
-  do {									\
-    UWtype __ctz_x = (x);						\
-    __asm__ ("popcnt %0 = %1"						\
-	     : "=r" (count)						\
-	     : "r" ((__ctz_x-1) & ~__ctz_x));				\
-  } while (0)
+#define count_leading_zeros(count, x) ((count) = __builtin_clzll (x))
+#define count_trailing_zeros(count, x) ((count) = __builtin_ctzll (x))
 #define UMUL_TIME 14
 #endif
 
