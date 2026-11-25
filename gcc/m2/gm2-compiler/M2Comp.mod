@@ -59,6 +59,18 @@ IMPORT PCSymBuild ;
 IMPORT DynamicStrings ;
 IMPORT M2Diagnostic ;
 
+(* The remaining imports are necessary for the -fm2-whole-program build
+   to ensure that all modules are present.  *)
+
+IMPORT M2Defaults ;
+IMPORT Environment ;
+IMPORT Args ;
+IMPORT TimeString ;
+IMPORT FpuIO ;
+IMPORT M2StateCheck ;
+IMPORT P2SymBuild ;
+IMPORT P3SymBuild ;
+
 FROM M2Batch IMPORT GetSource, GetModuleNo, GetDefinitionModuleFile, GetModuleFile,
                     AssociateModule, AssociateDefinition, MakeImplementationSource,
                     MakeProgramSource ;

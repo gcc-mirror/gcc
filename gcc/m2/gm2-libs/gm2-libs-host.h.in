@@ -1,5 +1,7 @@
 /* gm2-libs-host.h.in.  Generated from config-host.ac by autoheader.  */
 
+#ifndef GM2_LIBS_HOST_H
+#define GM2_LIBS_HOST_H
 /* Define to one of `_getb67', `GETB67', `getb67' for Cray-2 and Cray-YMP
    systems. This function is required for `alloca.c' support on those systems.
    */
@@ -258,24 +260,6 @@
 /* Define to 1 if you have the `write' function. */
 #undef HAVE_WRITE
 
-/* Define to the address where bug reports for this package should be sent. */
-#undef PACKAGE_BUGREPORT
-
-/* Define to the full name of this package. */
-#undef PACKAGE_NAME
-
-/* Define to the full name and version of this package. */
-#undef PACKAGE_STRING
-
-/* Define to the one symbol short name of this package. */
-#undef PACKAGE_TARNAME
-
-/* Define to the home page for this package. */
-#undef PACKAGE_URL
-
-/* Define to the version of this package. */
-#undef PACKAGE_VERSION
-
 /* Define to the type of arg 1 for `select'. */
 #undef SELECT_TYPE_ARG1
 
@@ -307,3 +291,4 @@
 
 /* Define to `unsigned int' if <sys/types.h> does not define. */
 #undef size_t
+#endif

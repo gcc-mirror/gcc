@@ -486,7 +486,6 @@ PROCEDURE CreateQualident (stopset0: SetOfStop0;
 			   stopset2: SetOfStop2) ;
 VAR
    name    : Name ;
-   sym,
    init,
    ip1     : CARDINAL ;
    tok,

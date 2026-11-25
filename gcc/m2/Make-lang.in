@@ -34,7 +34,8 @@ else
 CM2DEP=
 endif
 
-GM2_1 = ./gm2 -B./m2/stage1 -g -fm2-g $(CM2DEP)
+GM2_1 = ./gm2 -B./m2/stage1 -B./ -g -fm2-g $(CM2DEP)
+GM2_1_WHOLE_PROGRAM_DEBUG = ./gm2 -B./m2/stage1 -B./ -B../lto-plugin/.libs/ -g -fm2-g -fm2-whole-program -O0 -fsources
 
 GM2_FOR_TARGET = $(STAGE_CC_WRAPPER) ./gm2 -B./ -B$(build_tooldir)/bin/ -L$(objdir)/../ld $(TFLAGS)
 
@@ -515,6 +516,10 @@ GM2_LIBS_BOOT     = m2/gm2-compiler-boot/gm2.a \
                     m2/gm2-libs-boot/libgm2.a \
                     $(GM2-BOOT-O)
 
+GM2_LIBS_C_OBJS   = $(GM2-LIBS-CC:%.cc=m2/gm2-libs/%.o) \
+                    $(GM2-LIBS-C:%.c=m2/gm2-libs/%.o)
+
+
 m2_OBJS = $(GM2_C_OBJS) m2/gm2-gcc/rtegraph.o \
 	m2/gm2-compiler-boot/m2flex.o \
 	$(BUILD-LIBS-BOOT) $(BUILD-COMPILER-BOOT) $(MC_LIBS)
@@ -533,6 +538,87 @@ m2/stage2/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o \
                               $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
                               $(BACKENDLIBS) $(LIBSTDCXX) -lm
 	@$(call LINK_PROGRESS,$(INDEX.m2),end)
+
+
+m2/debug/cc1gm2.o: m2/gm2-compiler/P0SyntaxCheck.mod \
+    m2/gm2-compiler/P1Build.mod \
+    m2/gm2-compiler/P2Build.mod \
+    m2/gm2-compiler/P3Build.mod \
+    m2/gm2-compiler/PCBuild.mod \
+    m2/gm2-compiler/PHBuild.mod
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	$(GM2_1_WHOLE_PROGRAM_DEBUG) -c -o $@ \
+	   $(srcdir)/m2/gm2-compiler/M2Comp.mod \
+           -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs \
+           -I$(srcdir)/m2/gm2-libs-pim-common -I$(srcdir)/m2/gm2-gcc \
+           -I$(srcdir)/m2/gm2-libiberty \
+           -Im2/gm2-compiler -Im2/gm2-libs \
+           -Im2/gm2-libs-pim-common -Im2/gm2-gcc
+
+m2-debug: m2/debug/cc1gm2$(exeext)
+
+# This builds debug/cc1gm2 using -fm2-whole-program.  The build is
+# very very slow but it allows a cc1gm2 to be compiled with uniform
+# options across all modula-2 source files with one invocation of gm2.
+# See the rule: m2/debug/cc1gm2.o.
+# It can be useful for debugging functional behavior (using -O0)
+# without disrupting an existing build (based on -O2).
+
+m2/debug/cc1gm2$(exeext): m2/stage1/cc1gm2$(exeext) m2/gm2-compiler/m2flex.o \
+                            $(GM2_C_OBJS) $(BACKEND) $(LIBDEPS) \
+                            m2/gm2-gcc/rtegraph.o $(M2RTE_PLUGIN_SO) \
+                            m2/debug/cc1gm2.o \
+                            m2/gm2-libs/UnixArgs.o \
+                            m2/gm2-libs/dtoa.o \
+                            m2/gm2-libs/ldtoa.o \
+                            m2/gm2-libs/Selective.o \
+                            m2/gm2-libs/SysExceptions.o \
+                            m2/gm2-libs/cgetopt.o \
+                            m2/gm2-libs/choosetemp.o \
+                            m2/gm2-libs/errno.o \
+                            m2/gm2-libs/host.o \
+                            m2/gm2-libs/termios.o \
+                            m2/gm2-libs/wrapc.o
+	-test -d $(@D) || $(mkinstalldirs) $(@D)
+	+$(LLINKER) $(ALL_CFLAGS) $(LDFLAGS) -o $@ \
+	   m2/debug/cc1gm2.o \
+           $(GM2_C_OBJS) m2/gm2-compiler/m2flex.o \
+           attribs.o \
+           $(GM2_LIBS_C_OBJS) \
+           $(BACKEND) $(LIBS) m2/gm2-gcc/rtegraph.o \
+           $(BACKENDLIBS) $(LIBSTDCXX) -lm
+	@$(call LINK_PROGRESS,$(INDEX.m2),end)
+
+
+m2/gm2-libs/UnixArgs.o: $(srcdir)/m2/gm2-libs-ch/UnixArgs.cc | m2/gm2-libs-boot/$(SRC_PREFIX)UnixArgs.h $(GM2-LIBS-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c -DIN_GCC $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) \
+         $(MC_BOOT_INCLUDES) $(INCLUDES) $< -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-libs/dtoa.o: $(srcdir)/m2/gm2-libs-ch/dtoa.cc | $(GM2-LIBS-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) $(MC_BOOT_INCLUDES) \
+          $(INCLUDES) $< -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-libs/ldtoa.o: $(srcdir)/m2/gm2-libs-ch/ldtoa.cc | $(GM2-LIBS-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) $(MC_BOOT_INCLUDES) \
+          $(INCLUDES) $< -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-libs/choosetemp.o: m2/gm2-libs-ch/choosetemp.c | m2/gm2-libiberty/Gchoosetemp.h $(GM2-LIBS-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) $(MC_BOOT_INCLUDES) \
+         -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
+	$(POSTCOMPILE)
+
+m2/gm2-libs/termios.o: $(srcdir)/m2/gm2-libs-ch/termios.c | $(BUILD-LIBS-BOOT-H) $(GM2-LIBS-BOOT-H)
+	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
+	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) $(MC_SRC_FLAGS) $(MC_BOOT_INCLUDES) \
+          $(INCLUDES) $< -o $@
+	$(POSTCOMPILE)
 
 
 # The objects contained in GM2_SRC_GEN_OBJ should not be rebuilt if the headers
@@ -1658,15 +1744,15 @@ m2/gm2-libiberty/$(SRC_PREFIX)%.h: $(srcdir)/m2/gm2-libiberty/%.def $(MCDEPS)
 
 # The rules to build objects in gm2-compiler and gm2-libs directories.
 
-m2/gm2-compiler/%.o: | $(srcdir)/m2/gm2-compiler/%.mod
+m2/gm2-compiler/%.o: $(srcdir)/m2/gm2-compiler/%.mod
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(GM2_1) $(GM2_FLAGS) -c -I$(srcdir)/m2/gm2-compiler -I$(srcdir)/m2/gm2-libs -I$(srcdir)/m2/gm2-gcc -I$(srcdir)/m2/gm2-libiberty $< -o $@
 	$(POSTCOMPILE)
 
-m2/gm2-compiler/m2flex.o: | m2/gm2-compiler/m2flex.c m2/gm2-libs/gm2-libs-host.h $(TIMEVAR_H)
+m2/gm2-compiler/m2flex.o: m2/gm2-compiler/m2flex.c | $(BUILD-BOOT-H) $(TIMEVAR_H)
 	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
 	$(COMPILER) $(CM2DEP) -c -g $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
-          $(GM2GCC) -Im2/gm2-compiler-boot -Im2/gm2-libs-boot $< -o $@
+          $(GM2GCC) $(INCLUDES) $(GM2_BOOT_INCLUDES) m2/gm2-compiler/m2flex.c -o $@
 	$(POSTCOMPILE)
 
 m2/gm2-compiler/%.o: m2/gm2-compiler/%.mod
@@ -1847,11 +1933,6 @@ m2/gm2-libs/%.o: $(srcdir)/m2/gm2-libs-ch/%.cc m2/gm2-libs/gm2-libs-host.h
 	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot $(INCLUDES) $< -o $@
 	$(POSTCOMPILE)
 
-m2/gm2-libs/choosetemp.o: m2/gm2-libs-ch/choosetemp.c m2/gm2-libiberty/Gchoosetemp.h m2/gm2-libs/gm2-libs-host.h
-	-test -d $(@D)/$(DEPDIR) || $(mkinstalldirs) $(@D)/$(DEPDIR)
-	$(CXX) $(CM2DEP) -c $(CFLAGS) $(GM2_PICFLAGS) -Im2/gm2-libs -I$(srcdir)/m2 -Im2 -I. -Im2/gm2-libs-boot -Im2/gm2-libiberty -I$(srcdir)/m2/gm2-libiberty/ $(INCLUDES) $< -o $@
-	$(POSTCOMPILE)
-
 m2/gm2-libs-boot/libgm2.a: | m2/boot-bin/mc$(exeext) $(BUILD-LIBS-BOOT)
 	-test -d $(@D) || $(mkinstalldirs) $(@D)
 	$(AR) cr $@ $(GM2-LIBS-BOOT-MODS:%.mod=m2/gm2-libs-boot/%.o) \
@@ -1908,6 +1989,16 @@ check-gm2-local: $(GM2TESTSUITEDIR)/site.exp
 	   TCL_LIBRARY=`cd .. ; cd ${srcdir}/../tcl/library ; ${PWD_COMMAND}` ; \
 	    export TCL_LIBRARY ; fi ; \
 	$(RUNTEST) --tool gm2 --directory testsuite/m2/pim/pass)
+
+
+check-m2-debug: check-gm2-debug
+check_m2_debug: check-gm2-debug
+
+.PHONY: check-gm2-debug
+check-gm2-debug: m2/debug/cc1gm2
+	if [ ! -f m2/debug/cc1$(exeext) ] ; then cp cc1$(exeext) m2/debug ; fi
+	rm -f cc1gm2$(exeext)
+	$(MAKE) check-m2 RUNTESTFLAGS="--tool_opts='-B`${PWD_COMMAND}`/m2/debug'"
 
 BUILD-PGE-O = \
    m2/pge-boot/GArgs.o \
