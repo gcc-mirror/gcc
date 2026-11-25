@@ -5629,8 +5629,14 @@ vectorizable_conversion (vec_info *vinfo,
 	  tree lhs = gimple_get_lhs (vect_orig_stmt (stmt_info)->stmt);
 	  stmt_vec_info use_stmt_info
 	    = lhs ? loop_vinfo->lookup_single_use (lhs) : NULL;
+	  stmt_vec_info reduc_def;
 	  if (use_stmt_info
-	      && STMT_VINFO_REDUC_DEF (use_stmt_info))
+	      && (reduc_def = STMT_VINFO_REDUC_DEF (use_stmt_info))
+	      /* Avoid any kind of conditional or masked reduction.  */
+	      && STMT_VINFO_REDUC_TYPE (reduc_def) == TREE_CODE_REDUCTION
+	      && STMT_VINFO_REDUC_CODE (reduc_def).is_tree_code ()
+	      && !needs_fold_left_reduction_p
+		    (TREE_TYPE (lhs), STMT_VINFO_REDUC_CODE (reduc_def)))
 	    evenodd_ok = true;
 	}
       if (supportable_widening_operation (code, vectype_out, vectype_in,
