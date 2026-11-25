@@ -1,5 +1,6 @@
 /* { dg-lto-options {{ -O3 -flto -fdump-tree-optimized }} } */
 /* { dg-lto-do link } */
+/* { dg-require-linker-plugin "" } */
 
 /* The point of this test is to propagate the constant into the assume body in
    the other file, infer the value range for 'x', evaluate bar to 0, meaning

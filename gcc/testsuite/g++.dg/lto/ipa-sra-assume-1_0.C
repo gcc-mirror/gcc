@@ -1,5 +1,6 @@
 /* { dg-lto-do link } */
 /* { dg-lto-options {{ -O2 -fno-inline -fipa-sra -fdump-ipa-sra-details -fdump-tree-optimized -flto }} } */
+/* { dg-require-linker-plugin "" } */
 
 #include "../ipa/ipa-sra-assume.C"
 
