@@ -4956,7 +4956,7 @@ get_computation_cost (struct ivopts_data *data, struct iv_use *use,
 
   /* Turn a + i * (-c) into a - i * c.  */
   if (ratio < 0 && comp_inv && !integer_zerop (comp_inv))
-    aratio = -ratio;
+    aratio = -(unsigned HOST_WIDE_INT) ratio;
   else
     aratio = ratio;
 
