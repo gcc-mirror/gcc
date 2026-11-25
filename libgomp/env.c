@@ -1322,7 +1322,7 @@ parse_affinity (bool ignore)
 /* These are reminders to add new allocators to parse_allocator.  */
 _Static_assert (GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc);
 _Static_assert (GOMP_OMPX_PREDEF_ALLOC_MAX == ompx_gnu_managed_mem_alloc);
-_Static_assert (GOMP_OMP_PREDEF_MEMSPACE_MAX == omp_low_lat_mem_space);
+_Static_assert (GOMP_OMP_PREDEF_MEMSPACE_MAX == omp_cgroup_mem_space);
 _Static_assert (GOMP_OMPX_PREDEF_MEMSPACE_MAX == ompx_gnu_managed_mem_space);
 
 /* Parse the OMP_ALLOCATOR environment variable and return the value.  */
@@ -1365,6 +1365,7 @@ parse_allocator (const char *env, const char *val, void *const params[])
   C (omp_const_mem_space, true)
   C (omp_high_bw_mem_space, true)
   C (omp_low_lat_mem_space, true)
+  C (omp_cgroup_mem_space, true)
   C (ompx_gnu_managed_mem_space, true)
 #undef C
   else
@@ -1481,6 +1482,8 @@ parse_allocator (const char *env, const char *val, void *const params[])
 	case omp_const_mem_space: *ret = omp_const_mem_alloc; break;
 	case omp_high_bw_mem_space: *ret = omp_high_bw_mem_alloc; break;
 	case omp_low_lat_mem_space: *ret = omp_low_lat_mem_alloc; break;
+	case omp_cgroup_mem_space: *ret = omp_cgroup_mem_alloc; break;
+	case ompx_gnu_managed_mem_space: *ret = ompx_gnu_managed_mem_alloc; break;
 	default: __builtin_unreachable ();
       }
   while (isspace ((unsigned char) *val))
@@ -2018,6 +2021,9 @@ omp_display_env (int verbose)
   fprintf (stderr, "  [host] OMP_ALLOCATOR = '");
   switch (gomp_def_allocator)
     {
+/* These are reminders to add new allocators here as well.  */
+_Static_assert (GOMP_OMP_PREDEF_ALLOC_MAX == omp_thread_mem_alloc);
+_Static_assert (GOMP_OMPX_PREDEF_ALLOC_MAX == ompx_gnu_managed_mem_alloc);
 #define C(v) case v: fputs (#v, stderr); break;
     C (omp_default_mem_alloc)
     C (omp_large_cap_mem_alloc)
@@ -2027,6 +2033,8 @@ omp_display_env (int verbose)
     C (omp_cgroup_mem_alloc)
     C (omp_pteam_mem_alloc)
     C (omp_thread_mem_alloc)
+    C (ompx_gnu_pinned_mem_alloc)
+    C (ompx_gnu_managed_mem_alloc)
 #undef C
     /* For an OMP_ALLOCATOR with traits, '' will be output.  */
     default:

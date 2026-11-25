@@ -50,7 +50,7 @@
 static void *
 gcn_memspace_alloc (omp_memspace_handle_t memspace, size_t size)
 {
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool = FLAT_HEAP_PTR;
 
@@ -67,7 +67,7 @@ gcn_memspace_alloc (omp_memspace_handle_t memspace, size_t size)
 static void *
 gcn_memspace_calloc (omp_memspace_handle_t memspace, size_t size)
 {
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool = FLAT_HEAP_PTR;
 
@@ -83,7 +83,7 @@ gcn_memspace_calloc (omp_memspace_handle_t memspace, size_t size)
 static void
 gcn_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size)
 {
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool = FLAT_HEAP_PTR;
 
@@ -97,7 +97,7 @@ static void *
 gcn_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 			size_t oldsize, size_t size)
 {
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool = FLAT_HEAP_PTR;
 
@@ -119,13 +119,14 @@ gcn_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
 {
   /* Disallow use of low-latency memory when it must be accessible by
      all threads.  */
-  if (memspace == omp_low_lat_mem_space
+  if ((memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
       && access == omp_atv_all)
     return false;
 
   /* Otherwise, standard memspaces are accepted, even when we don't have
      anything special to do with them, and non-standard memspaces are assumed
-     to need explicit support.  */
+     to need explicit support.
+     Note that ompx_gnu_managed_mem_space is not supported on the device. */
   return (memspace <= GOMP_OMP_PREDEF_MEMSPACE_MAX);
 }
 

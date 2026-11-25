@@ -403,7 +403,7 @@ enum gomp_map_kind
 #define GOMP_OMPX_PREDEF_ALLOC_MAX	201
 
 /* Predefined memspace value ranges.  */
-#define GOMP_OMP_PREDEF_MEMSPACE_MAX	4
+#define GOMP_OMP_PREDEF_MEMSPACE_MAX	5
 #define GOMP_OMPX_PREDEF_MEMSPACE_MIN	200
 #define GOMP_OMPX_PREDEF_MEMSPACE_MAX	200
 

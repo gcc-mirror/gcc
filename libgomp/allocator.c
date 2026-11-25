@@ -115,7 +115,7 @@ _Static_assert (GOMP_OMP_PREDEF_ALLOC_PTEAM == omp_pteam_mem_alloc,
 _Static_assert (GOMP_OMP_PREDEF_ALLOC_THREAD == omp_thread_mem_alloc,
 		"GOMP_OMP_PREDEF_ALLOC_THREAD == omp_thread_mem_alloc");
 
-#define omp_max_predefined_mem_space omp_low_lat_mem_space
+#define omp_max_predefined_mem_space omp_cgroup_mem_space
 #define ompx_gnu_min_predefined_mem_space ompx_gnu_managed_mem_space
 #define ompx_gnu_max_predefined_mem_space ompx_gnu_managed_mem_space
 
@@ -177,9 +177,9 @@ static const omp_memspace_handle_t predefined_omp_alloc_mapping[] = {
   omp_const_mem_space,     /* omp_const_mem_alloc. */
   omp_high_bw_mem_space,   /* omp_high_bw_mem_alloc. */
   omp_low_lat_mem_space,   /* omp_low_lat_mem_alloc. */
-  omp_low_lat_mem_space,   /* omp_cgroup_mem_alloc (implementation defined). */
-  omp_low_lat_mem_space,   /* omp_pteam_mem_alloc (implementation defined). */
-  omp_low_lat_mem_space,   /* omp_thread_mem_alloc (implementation defined). */
+  omp_cgroup_mem_space,    /* omp_cgroup_mem_alloc. */
+  omp_cgroup_mem_space,    /* omp_pteam_mem_alloc (implementation defined). */
+  omp_cgroup_mem_space,    /* omp_thread_mem_alloc (implementation defined). */
 };
 static const omp_memspace_handle_t predefined_ompx_gnu_alloc_mapping[] = {
   omp_default_mem_space,   /* ompx_gnu_pinned_mem_alloc. */

@@ -62,7 +62,7 @@ nvptx_memspace_alloc (omp_memspace_handle_t memspace, size_t size)
 #if __PTX_ISA_VERSION_MAJOR__ > 4					\
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Low-latency memory is not available before PTX 4.1.  */
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool;
       asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r" (shared_pool));
@@ -83,7 +83,7 @@ nvptx_memspace_calloc (omp_memspace_handle_t memspace, size_t size)
 #if __PTX_ISA_VERSION_MAJOR__ > 4					\
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Low-latency memory is not available before PTX 4.1.  */
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool;
       asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r" (shared_pool));
@@ -104,7 +104,7 @@ nvptx_memspace_free (omp_memspace_handle_t memspace, void *addr, size_t size)
 #if __PTX_ISA_VERSION_MAJOR__ > 4					\
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Low-latency memory is not available before PTX 4.1.  */
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool;
       asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r" (shared_pool));
@@ -123,7 +123,7 @@ nvptx_memspace_realloc (omp_memspace_handle_t memspace, void *addr,
 #if __PTX_ISA_VERSION_MAJOR__ > 4 \
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Low-latency memory is not available before PTX 4.1.  */
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     {
       char *shared_pool;
       asm ("cvta.shared.u64\t%0, __nvptx_lowlat_pool;" : "=r" (shared_pool));
@@ -152,18 +152,19 @@ nvptx_memspace_validate (omp_memspace_handle_t memspace, unsigned access)
     || (__PTX_ISA_VERSION_MAJOR__ == 4 && __PTX_ISA_VERSION_MINOR >= 1)
   /* Disallow use of low-latency memory when it must be accessible by
      all threads.  */
-  if (memspace == omp_low_lat_mem_space
+  if ((memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
       && access == omp_atv_all)
     return false;
 #else
   /* Low-latency memory is not available before PTX 4.1.  */
-  if (memspace == omp_low_lat_mem_space)
+  if (memspace == omp_low_lat_mem_space || memspace == omp_cgroup_mem_space)
     return false;
 #endif
 
   /* Otherwise, standard memspaces are accepted, even when we don't have
      anything special to do with them, and non-standard memspaces are assumed
-     to need explicit support.  */
+     to need explicit support.
+     Note that ompx_gnu_managed_mem_space is not supported on the device. */
   return (memspace <= GOMP_OMP_PREDEF_MEMSPACE_MAX);
 }
 

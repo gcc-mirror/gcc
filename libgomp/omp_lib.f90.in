@@ -182,6 +182,8 @@
         integer (omp_memspace_handle_kind), &
                  parameter :: omp_low_lat_mem_space = 4
         integer (omp_memspace_handle_kind), &
+                 parameter :: omp_cgroup_mem_space = 5
+        integer (omp_memspace_handle_kind), &
                  parameter :: ompx_gnu_managed_mem_space = 200
         integer, parameter :: omp_initial_device = -1
         integer, parameter :: omp_invalid_device = -4

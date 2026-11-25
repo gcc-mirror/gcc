@@ -7802,9 +7802,9 @@ GCC supports the following predefined allocators and predefined memory spaces:
 @item omp_const_mem_alloc       @tab omp_const_mem_space
 @item omp_high_bw_mem_alloc     @tab omp_high_bw_mem_space
 @item omp_low_lat_mem_alloc     @tab omp_low_lat_mem_space
-@item omp_cgroup_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
-@item omp_pteam_mem_alloc       @tab omp_low_lat_mem_space (implementation defined)
-@item omp_thread_mem_alloc      @tab omp_low_lat_mem_space (implementation defined)
+@item omp_cgroup_mem_alloc      @tab omp_cgroup_mem_space
+@item omp_pteam_mem_alloc       @tab omp_cgroup_mem_space (implementation defined)
+@item omp_thread_mem_alloc      @tab omp_cgroup_mem_space (implementation defined)
 @item ompx_gnu_pinned_mem_alloc @tab omp_default_mem_space (GNU extension)
 @item ompx_gnu_managed_mem_alloc @tab ompx_gnu_managed_mem_space (GNU extension)
 @end multitable
@@ -7900,8 +7900,9 @@ For the memory spaces, the following applies:
 @itemize
 @item @code{omp_default_mem_space} is supported
 @item @code{omp_const_mem_space} maps to @code{omp_default_mem_space}
-@item @code{omp_low_lat_mem_space} is only available on supported devices,
-      and maps to @code{omp_default_mem_space} otherwise.
+@item @code{omp_low_lat_mem_space} and @code{omp_cgroup_mem_space} are only
+      available on supported devices, and maps to @code{omp_default_mem_space}
+      otherwise.
 @item @code{omp_large_cap_mem_space} maps to @code{omp_default_mem_space},
       unless the memkind library is available
 @item @code{omp_high_bw_mem_space} maps to @code{omp_default_mem_space},
@@ -8072,7 +8073,8 @@ The implementation remark:
       rounded up to an odd multiple of 4 kiB (so the default becomes 36 kiB)
       because placing the stacks at a large power-of-two stride harms memory
       performance.
-@item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
+@item Low-latency memory (@code{omp_low_lat_mem_space}) and contention-group
+      memory (@code{omp_cgroup_mem_space}) are supported when the
       the @code{access} trait is set to @code{cgroup}.  The default pool size
       is automatically scaled to share the 64 kiB LDS memory between the number
       of teams configured to run on each compute-unit, but may be adjusted at
@@ -8255,7 +8257,8 @@ The implementation remark:
       possibly leaving only the initial device (``host fallback'').
 @item The default per-warp stack size is 128 kiB; see also @code{-msoft-stack}
       in the GCC manual.
-@item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
+@item Low-latency memory (@code{omp_low_lat_mem_space}) and contention-group
+      memory (@code{omp_cgroup_mem_space}) are supported when the
       the @code{access} trait is set to @code{cgroup}, and libgomp has
       been built for PTX ISA version 4.1 or higher (such as in GCC's
       default configuration).  @c -mptx=4.1
