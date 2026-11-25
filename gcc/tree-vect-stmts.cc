@@ -5484,7 +5484,7 @@ vectorizable_conversion (vec_info *vinfo,
 
   /* _BitInt values are not sign-/zero-extended to mode precision.  */
   if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
-      && TREE_CODE (rhs_type) == BITINT_TYPE
+      && BITINT_TYPE_P (rhs_type)
       && !type_has_mode_precision_p (rhs_type))
     {
       if (dump_enabled_p ())
@@ -10005,7 +10005,7 @@ vectorizable_load (vec_info *vinfo,
   bool type_mode_padding_p
     = TYPE_PRECISION (scalar_type) < GET_MODE_PRECISION (GET_MODE_INNER (mode));
 
-  if (TREE_CODE (scalar_type) == BITINT_TYPE
+  if (BITINT_TYPE_P (scalar_type)
       && !type_has_mode_precision_p (scalar_type))
     {
       if (dump_enabled_p ())
@@ -12603,7 +12603,7 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   /* We cannot compare non-mode precision _BitInt types.  Unlike bool
      or bit-precision INTEGER_TYPE the padding bit values are target
      dependent and possibly undefined.  */
-  if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
+  if (BITINT_TYPE_P (TREE_TYPE (rhs1))
       && !type_has_mode_precision_p (TREE_TYPE (rhs1)))
     return false;
 
