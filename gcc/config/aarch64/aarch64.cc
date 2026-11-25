@@ -3218,12 +3218,12 @@ aarch64_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
       cc_mode = CCmode;
       cc_reg = gen_rtx_REG (cc_mode, CC_REGNUM);
 
-      rtx x_lo = operand_subword (x, 0, 0, TImode);
-      rtx y_lo = operand_subword (y, 0, 0, TImode);
+      rtx x_lo = force_lowpart_subreg (DImode, x, TImode);
+      rtx y_lo = force_lowpart_subreg (DImode, y, TImode);
       emit_set_insn (cc_reg, gen_rtx_COMPARE (cc_mode, x_lo, y_lo));
 
-      rtx x_hi = operand_subword (x, 1, 0, TImode);
-      rtx y_hi = operand_subword (y, 1, 0, TImode);
+      rtx x_hi = force_highpart_subreg (DImode, x, TImode);
+      rtx y_hi = force_highpart_subreg (DImode, y, TImode);
       emit_insn (gen_ccmpccdi (cc_reg, cc_reg, x_hi, y_hi,
 			       gen_rtx_EQ (cc_mode, cc_reg, const0_rtx),
 			       GEN_INT (AARCH64_EQ)));
