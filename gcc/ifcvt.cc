@@ -3507,6 +3507,7 @@ noce_try_cond_arith (noce_if_info *if_info)
   rtx_insn *seq;
   rtx_code op;
   machine_mode mode = GET_MODE (if_info->x);
+  rtx a_val = if_info->a;
 
   /* Scalar integral modes are only supported here.
      Could support scalar floating point but that
@@ -3515,10 +3516,32 @@ noce_try_cond_arith (noce_if_info *if_info)
   if (!SCALAR_INT_MODE_P (mode))
     return false;
 
+  /* Even if the block is not simple it can have
+     an extraneous copy which can be traced back to
+     the definition and the value of 'a' can be
+     computed and copied from there.  For this we
+     require that there are exactly 2 non debug
+     non note insns in then_bb one a copy and the other
+     its definition.  We also check the pattern of
+     def matches def_set so as to not drop a clobber.  */
   if (!noce_simple_bbs (if_info))
-    return false;
+    {
+      rtx_insn *def = prev_nonnote_nondebug_insn_bb (if_info->insn_a);
+      rtx def_set = def ? single_set (def) : NULL_RTX;
 
-  a = copy_rtx (if_info->a);
+	if (!def_set
+	    || !REG_P (SET_DEST (def_set))
+	    || !rtx_equal_p (SET_DEST (def_set), if_info->a)
+	    || PATTERN (def) != def_set
+	    || first_active_insn (if_info->then_bb) != def
+	    || (if_info->else_bb && !if_info->else_simple)
+	    || !REG_P (if_info->orig_x))
+	  return false;
+
+      a_val = SET_SRC (def_set);
+    }
+
+  a = copy_rtx (a_val);
   b = copy_rtx (if_info->b);
   rtx a_arith = noce_cond_arith_operation (a);
   rtx b_arith = noce_cond_arith_operation (b);
