@@ -1,3 +1,9 @@
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/128920
+	* varasm.cc (assemble_real): In the reverse storage order case,
+	deal with modes smaller than 4 bytes.
+
 2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:

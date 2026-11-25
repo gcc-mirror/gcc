@@ -1,3 +1,7 @@
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: New test.
+
 2026-11-23  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:
