@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-psabi" } */
 
 /* A single insert into a one-element vector overwrites the whole vector,
    it used to ICE in simple_dce_from_worklist when the vector was a

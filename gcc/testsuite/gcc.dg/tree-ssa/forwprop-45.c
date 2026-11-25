@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -Wno-psabi -fdump-tree-optimized" } */
+/* { dg-additional-options "-msse2" { target ia32 } } */
 
 /* A chain of BIT_INSERT_EXPRs that writes every element of a vector, or
    that starts from a constant or a CONSTRUCTOR, is turned into a single
@@ -59,7 +60,7 @@ partial_ctor (int a, int b, int c)
 }
 
 /* { dg-final { scan-tree-dump-not "BIT_INSERT_EXPR" "optimized" } } */
-/* { dg-final { scan-tree-dump-times "= {c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\)}" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "= {a_\[0-9\]+\\(D\\), b_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), d_\[0-9\]+\\(D\\)}" 2 "optimized" } } */
-/* { dg-final { scan-tree-dump "= \[{\]1, a_\[0-9\]+\\(D\\), 3, b_\[0-9\]+\\(D\\)}" "optimized" } } */
-/* { dg-final { scan-tree-dump "= {c_\[0-9\]+\\(D\\), a_\[0-9\]+\\(D\\), b_\[0-9\]+\\(D\\), a_\[0-9\]+\\(D\\)}" "optimized" } } */
+/* { dg-final { scan-tree-dump-times "= {c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\)}" 2 "optimized" { target { i?86-*-* x86_64-*-* aarch64-*-* } } } } */
+/* { dg-final { scan-tree-dump-times "= {a_\[0-9\]+\\(D\\), b_\[0-9\]+\\(D\\), c_\[0-9\]+\\(D\\), d_\[0-9\]+\\(D\\)}" 2 "optimized" { target { i?86-*-* x86_64-*-* aarch64-*-* } }  } } */
+/* { dg-final { scan-tree-dump "= \[{\]1, a_\[0-9\]+\\(D\\), 3, b_\[0-9\]+\\(D\\)}" "optimized" { target { i?86-*-* x86_64-*-* aarch64-*-* } }  } } */
+/* { dg-final { scan-tree-dump "= {c_\[0-9\]+\\(D\\), a_\[0-9\]+\\(D\\), b_\[0-9\]+\\(D\\), a_\[0-9\]+\\(D\\)}" "optimized" { target { i?86-*-* x86_64-*-* aarch64-*-* } }  } } */
