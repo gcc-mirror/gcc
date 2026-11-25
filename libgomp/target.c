@@ -144,6 +144,12 @@ gomp_get_default_device ()
 {
   gomp_init_targets_once ();
   struct gomp_task_icv *icv = gomp_icv (false);
+  /* gomp_init_targets_once sets the global default-device-var ICV, when
+     target-offload-var is 'mandatory'. However, it fails to set any nested
+     ICV. Thus, do it here as fallback.  */
+  if (icv->default_device_var == INT_MIN
+      && gomp_target_offload_var == GOMP_TARGET_OFFLOAD_MANDATORY)
+    icv->default_device_var = gomp_global_icv.default_device_var;
   return icv->default_device_var;
 }
 
@@ -5109,9 +5115,8 @@ omp_target_free (void *device_ptr, int device_num)
 void *
 gomp_managed_alloc (size_t size)
 {
-  struct gomp_task_icv *icv = gomp_icv (false);
-  struct gomp_device_descr *devicep = resolve_device (icv->default_device_var,
-						      false);
+  struct gomp_device_descr *devicep
+    = resolve_device (gomp_get_default_device (), false);
   if (devicep == NULL)
     return NULL;
 
@@ -5129,9 +5134,8 @@ gomp_managed_free (void *device_ptr)
   if (device_ptr == NULL)
     return;
 
-  struct gomp_task_icv *icv = gomp_icv (false);
-  struct gomp_device_descr *devicep = resolve_device (icv->default_device_var,
-						      false);
+  struct gomp_device_descr *devicep
+    = resolve_device (gomp_get_default_device (), false);
   if (devicep == NULL)
     gomp_fatal ("attempted to free managed memory at %p, but the default "
 		"device is set to the host device", device_ptr);
@@ -6956,5 +6960,13 @@ gomp_target_init (void)
 static void
 gomp_target_init (void)
 {
+  /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+  if (gomp_global_icv.default_device_var == INT_MIN)
+    {
+       struct gomp_icv_list *none;
+       none = gomp_get_initial_icv_item (GOMP_DEVICE_NUM_FOR_NO_SUFFIX);
+       gomp_global_icv.default_device_var = omp_invalid_device;
+       none->icvs.default_device_var = omp_invalid_device;
+    }
 }
 #endif /* PLUGIN_SUPPORT */

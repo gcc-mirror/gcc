@@ -46,8 +46,13 @@ omp_get_default_device (void)
 {
   struct gomp_task_icv *icv = gomp_icv (false);
   if (icv->default_device_var == INT_MIN)
-    /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
-    gomp_init_targets_once ();
+    {
+      /* This implies OMP_TARGET_OFFLOAD=mandatory.  */
+      gomp_init_targets_once ();
+      /* This can happen when a nested ICV has been created before
+	 any device has been initialized.  */
+      icv->default_device_var = gomp_global_icv.default_device_var;
+    }
   return icv->default_device_var;
 }
 
