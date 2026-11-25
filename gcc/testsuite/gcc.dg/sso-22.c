@@ -1,4 +1,5 @@
-/* PR debug/128920 */
+/* PR middle-end/128920 */
+
 /* { dg-do run } */
 /* { dg-options "-std=c23" }
 /* { dg-require-effective-target float16 } */
