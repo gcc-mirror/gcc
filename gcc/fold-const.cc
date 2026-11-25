@@ -9155,6 +9155,18 @@ fold_view_convert_vector_encoding (tree type, tree expr)
 
   poly_uint64 type_units = TYPE_VECTOR_SUBPARTS (type);
   poly_uint64 expr_units = TYPE_VECTOR_SUBPARTS (expr_type);
+
+  /* Vectors with container padding (such as AVX512 2-lane or 4-lane masks
+     where TYPE_SIZE is 8 bits but only 2 or 4 bits are used) cannot be
+     represented safely by operating directly on the vector encoding.
+     Let the general VIEW_CONVERT handling cope with that case.  */
+  if (VECTOR_BOOLEAN_TYPE_P (type)
+      && maybe_ne (type_bits, type_units * TYPE_PRECISION (TREE_TYPE (type))))
+    return NULL_TREE;
+  if (VECTOR_BOOLEAN_TYPE_P (expr_type)
+      && maybe_ne (expr_bits, expr_units * TYPE_PRECISION (TREE_TYPE (expr_type))))
+    return NULL_TREE;
+
   unsigned int type_elt_bits = vector_element_size (type_bits, type_units);
   unsigned int expr_elt_bits = vector_element_size (expr_bits, expr_units);
 
