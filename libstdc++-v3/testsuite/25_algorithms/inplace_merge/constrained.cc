@@ -16,6 +16,10 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++20 } }
+// Sorting 10 elements never runs __unguarded_insertion_sort, but once it is
+// inlined the loop is analysed and reported as overflowing the iterator of a
+// long long iota_view.
+// { dg-additional-options "-Wno-aggressive-loop-optimizations" { target { ! int128 } } }
 
 #include <algorithm>
 #include <ranges>
