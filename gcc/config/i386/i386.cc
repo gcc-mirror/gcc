@@ -2280,7 +2280,8 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
 
 enum psabi_change
 {
-  PSABI_ZERO_WIDTH_BITFIELD = 1 << 0
+  PSABI_ZERO_WIDTH_BITFIELD = 1 << 0,
+  PSABI_UNALIGNED_MEMBER = 1 << 1
 };
 
 /* State of the classification, shared by all recursive calls.  */
@@ -2312,6 +2313,27 @@ psabi_new_behavior_p (classify_state &state, unsigned int change)
 
   state.seen |= change;
   return true;
+}
+
+/* Return true if a member of type TYPE at bit offset BIT_POS violates
+   the psABI rule that an object containing unaligned fields has class
+   MEMORY.  The alignment of scalar members is checked at the leaves of
+   classify_argument, but that check is skipped for an aggregate whose
+   only fields are bit-fields, and for _BitInt(N) with N > 32, whose WORDS
+   includes the bit offset.  Check the offset against the alignment of
+   the member's type for aggregates and _BitInt here, and for an array of
+   them against the alignment of its element type.
+
+   Use the natural alignment of the type, like the check of scalar members
+   does with the mode alignment, and not the alignment of a variant that
+   the aligned attribute of a typedef has raised or lowered.  */
+
+static bool
+misaligned_member_p (tree type, HOST_WIDE_INT bit_pos)
+{
+  type = TYPE_MAIN_VARIANT (strip_array_types (type));
+  return ((AGGREGATE_TYPE_P (type) || BITINT_TYPE_P (type))
+	  && bit_pos % TYPE_ALIGN (type) != 0);
 }
 
 /* Classify the argument of type TYPE and mode MODE.
@@ -2431,13 +2453,21 @@ classify_argument (machine_mode mode, const_tree type,
 			    }
 			  continue;
 			}
+
+		      HOST_WIDE_INT member_pos
+			= int_bit_position (field) + bit_offset;
+
+		      if (misaligned_member_p (TREE_TYPE (field), member_pos)
+			  && (psabi_new_behavior_p
+			      (state, PSABI_UNALIGNED_MEMBER)))
+			return 0;
+
 		      num = classify_argument (TYPE_MODE (type), type,
-					       subclasses,
-					       (int_bit_position (field)
-						+ bit_offset) % 512,
+					       subclasses, member_pos % 512,
 					       state);
 		      if (!num)
 			return 0;
+
 		      pos = (int_bit_position (field)
 			     + (bit_offset % 64)) / 8 / 8;
 		      for (i = 0; i < num && (i + pos) < words; i++)
@@ -2515,6 +2545,12 @@ classify_argument (machine_mode mode, const_tree type,
 
 		  if (TREE_TYPE (field) == error_mark_node)
 		    continue;
+
+		  /* Members of a packed union can be misaligned.  */
+		  if (!DECL_BIT_FIELD (field)
+		      && misaligned_member_p (TREE_TYPE (field), bit_offset)
+		      && psabi_new_behavior_p (state, PSABI_UNALIGNED_MEMBER))
+		    return 0;
 
 		  num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
 					   TREE_TYPE (field), subclasses,
@@ -2826,6 +2862,12 @@ inform_psabi_change (unsigned int change)
 		"the ABI of passing C structures with zero-width bit-fields"
 		" has changed in GCC %{12.1%}", url);
       }
+      break;
+
+    case PSABI_UNALIGNED_MEMBER:
+      inform (input_location,
+	      "the ABI of passing structures and unions with unaligned"
+	      " members has changed in GCC 17.1");
       break;
 
     default:
