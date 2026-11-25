@@ -6740,6 +6740,18 @@ users:
   - Xi Ruoyao
   inactive_email:
   - xry111@mengyan1223.wang
+- sn: Xie
+  cn: Zhiheng Xie
+  email:
+  - xiezhiheng@huawei.com
+  - xiezhiheng@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: xiezhiheng
+  aliases:
+  - xiezhiheng
+  DCO:
+  - xiezhiheng@huawei.com
 - sn: Xing
   cn: Mingjie Xing
   email:
