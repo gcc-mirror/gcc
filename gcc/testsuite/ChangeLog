@@ -1,3 +1,36 @@
+2026-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/128106
+	* g++.dg/ipa/pr128106.C: New test.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: New test.
+
+2026-11-24  Sendao Yan  <yansendao@126.com>
+
+	* gcc.target/aarch64/sve2/acle/general/whilelt_1.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/general/whilele_1.c: Likewise.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/torture/pr128080.c: Skip at -O0.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128080
+	* gcc.dg/torture/pr128080.c: New test.
+	* gcc.dg/torture/pr128080-2.c: New test.
+
 2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
 
 	Backported from master:

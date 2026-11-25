@@ -1,3 +1,27 @@
+2026-11-24  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/128106
+	* ipa-sra.cc (scan_expr_access): Add a check that the formal parameter
+	being passed in a call has index fitting an unsigned char.
+
+2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR middle-end/128920
+	* varasm.cc (assemble_real): In the reverse storage order case,
+	deal with modes smaller than 4 bytes.
+
+2026-11-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128080
+	* match.pd (vec_perm (vec_perm) merges): Give the new mask
+	ssizetype elements.
+
 2026-11-23  Igor Shevlyakov  <igor@tachyum.com>
 
 	Backported from master:
