@@ -4537,9 +4537,17 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  {
 	    rtx x = i ? op1 : op0;
 	    rtx y = i ? op0 : op1;
+
+	    /* When WORD_REGISTER_OPERATIONS is true, we need to know the
+	       nonzero bits in WORD_MODE rather than MODE.  */
+	    scalar_int_mode tmode = as_a <scalar_int_mode> (int_mode);
+	    if (WORD_REGISTER_OPERATIONS
+		&& GET_MODE_BITSIZE (tmode) < BITS_PER_WORD)
+	      tmode = word_mode;
+
 	    if (GET_CODE (x) == XOR
 		&& XEXP (x, 1) == CONST1_RTX (mode)
-		&& (nonzero_bits (y, int_mode) & ~HOST_WIDE_INT_1U) == 0)
+		&& (nonzero_bits (y, tmode) & ~HOST_WIDE_INT_1U) == 0)
 	      return simplify_gen_binary (AND, mode,
 					  simplify_gen_unary (NOT, mode,
 							      XEXP (x, 0),
