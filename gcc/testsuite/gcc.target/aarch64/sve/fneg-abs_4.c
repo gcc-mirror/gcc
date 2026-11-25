@@ -6,7 +6,7 @@
 
 /*
 ** negabs:
-**	orr	z0.d, z0.d, #-9223372036854775808
+**	orr	z0.d, z0.d, #?-9223372036854775808
 **	ret
 */
 double negabs (double x)
@@ -20,7 +20,7 @@ double negabs (double x)
 
 /*
 ** negabsf:
-**	orr	z0.s, z0.s, #-2147483648
+**	orr	v0.4s, #?128, lsl #?24
 **	ret
 */
 float negabsf (float x)
