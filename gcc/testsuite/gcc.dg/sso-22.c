@@ -1,8 +1,8 @@
 /* PR debug/128920 */
-
 /* { dg-do run } */
 /* { dg-options "-std=c23" }
 /* { dg-require-effective-target float16 } */
+/* { dg-add-options float16 } */
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
 struct __attribute__((scalar_storage_order("big-endian"))) S
