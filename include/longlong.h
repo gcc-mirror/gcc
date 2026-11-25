@@ -1068,6 +1068,22 @@ extern UDItype __umulsidi3 (USItype, USItype);
 #ifdef __riscv_mul
 #define __umulsidi3(u,v) ((UDWtype)(UWtype)(u) * (UWtype)(v))
 #define __muluw3(a, b) ((UWtype)(a) * (UWtype)(b))
+/* soft-fp does not define UDWtype, so do not use __umulsidi3 here.  */
+#if W_TYPE_SIZE == 32
+#define umul_ppmm(w1, w0, u, v) \
+  do {									\
+    UDItype __ll = (UDItype) (USItype) (u) * (USItype) (v);		\
+    (w1) = (USItype) (__ll >> 32);					\
+    (w0) = (USItype) __ll;						\
+  } while (0)
+#elif W_TYPE_SIZE == 64 && __riscv_xlen == 64
+#define umul_ppmm(w1, w0, u, v) \
+  do {									\
+    __uint128_t __ll = (__uint128_t) (UDItype) (u) * (UDItype) (v);	\
+    (w1) = (UDItype) (__ll >> 64);					\
+    (w0) = (UDItype) __ll;						\
+  } while (0)
+#endif
 #else
 #if __riscv_xlen == 32
   #define MULUW3 "call __mulsi3"
@@ -1088,7 +1104,6 @@ extern UDItype __umulsidi3 (USItype, USItype);
                   : "ra", "a2", "a3"); \
     __op0; \
   })
-#endif /* __riscv_mul */
 #define umul_ppmm(w1, w0, u, v) \
   do { \
     UWtype __x0, __x1, __x2, __x3; \
@@ -1112,6 +1127,7 @@ extern UDItype __umulsidi3 (USItype, USItype);
     (w1) = __x3 + __ll_highpart (__x1); \
     (w0) = __ll_lowpart (__x1) * __ll_B + __ll_lowpart (__x0); \
   } while (0)
+#endif /* __riscv_mul */
 #endif /* __riscv */
 
 #if defined(__sh__) && W_TYPE_SIZE == 32
