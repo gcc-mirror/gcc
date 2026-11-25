@@ -11715,7 +11715,7 @@ signed_or_unsigned_type_for (int unsignedp, tree type)
   else
     return NULL_TREE;
 
-  if (TREE_CODE (type) == BITINT_TYPE)
+  if (BITINT_TYPE_P (type))
     return build_bitint_type (bits, unsignedp);
   return build_nonstandard_integer_type (bits, unsignedp);
 }
