@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target c++17 }
-// { dg-options "-O2 -Wuninitialized -Wsystem-headers" }
+// { dg-options "-O2 -Wuninitialized -Wsystem-headers -Wno-deprecated-octal-literal" }
 
 #include <memory>
 #include <variant>
