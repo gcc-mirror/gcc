@@ -1,3 +1,10 @@
+2026-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/128941
+	* decl2.cc (maybe_make_one_only): Turn the consteval_only_p
+	assert into a condition and return early if it's true.
+	(mark_needed): Likewise.
+
 2026-11-22  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	PR target/128734

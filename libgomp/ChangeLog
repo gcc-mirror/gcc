@@ -1,3 +1,42 @@
+2026-11-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* allocator.c (omp_max_predefined_mem_space): Set to
+	omp_cgroup_mem_space.
+	(predefined_omp_alloc_mapping): Use omp_cgroup_mem_space
+	for cgroup/pteams/thread allocator.
+	* config/gcn/allocator.c (gcn_memspace_alloc, gcn_memspace_calloc,
+	gcn_memspace_free, gcn_memspace_realloc, gcn_memspace_validate):
+	Handle omp_cgroup_mem_space like omp_low_lat_mem_space.
+	* config/nvptx/allocator.c (gcn_memspace_alloc, gcn_memspace_calloc,
+	gcn_memspace_free, gcn_memspace_realloc, gcn_memspace_validate):
+	Likewise.
+	* env.c (parse_allocator): Add omp_cgroup_mem_space and
+	fix ompx_gnu_managed_mem_space.
+	(omp_display_env): Handle ompx_gnu_pinned_mem_alloc and
+	ompx_gnu_managed_mem_alloc.
+	* libgomp.texi (Memory allocation, amdgcn, nvptx): Update
+	for added omp_cgroup_mem_space.
+	* omp.h.in (omp_memspace_handle_t): Add omp_cgroup_mem_space.
+	* omp_lib.f90.in (omp_cgroup_mem_space): New parameter.
+	* omp_lib.h.in (omp_cgroup_mem_space): New parameter.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_memspace_validate):
+	Handle omp_cgroup_mem_space like omp_low_lat_mem_space.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_memspace_validate):
+	Likewise.
+
+2026-11-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* icv-device.c (omp_get_default_device): Handle a nonglobal
+	ICV with uninitialized default-device-var ICV.
+	* target.c (gomp_get_default_device): Likewise.
+	(gomp_managed_alloc, gomp_managed_free): Call
+	omp_get_default_device instead of getting it from the ICV.
+	(gomp_target_init): For !PLUGIN_SUPPORT, set default-device
+	ICV to omp_invalid_device for mandatory (i.e. MIN_INT).
+	* testsuite/libgomp.c/target-56.c: New test.
+	* testsuite/libgomp.c/target-57.c: New test.
+	* testsuite/libgomp.c/target-57a.c: New test.
+
 2026-11-24  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/128969

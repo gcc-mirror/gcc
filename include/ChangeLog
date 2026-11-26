@@ -1,3 +1,26 @@
+2026-11-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gomp-constants.h (GOMP_OMP_PREDEF_MEMSPACE_MAX): Bump for
+	omp_cgroup_mem_space.
+
+2026-11-25  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h [__riscv && __riscv_mul] (umul_ppmm): New, using a
+	double-word multiply.
+	[__riscv && !__riscv_mul] (umul_ppmm): Define only without M.
+
+2026-11-25  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h [__ia64 && W_TYPE_SIZE == 64] (count_leading_zeros):
+	Use __builtin_clzll.
+	(count_trailing_zeros): Use __builtin_ctzll.
+
+2026-11-25  Matt Turner  <mattst88@gmail.com>
+
+	* longlong.h [(__sparc__ && __arch64__ || __sparcv9)
+	&& W_TYPE_SIZE == 64] (sub_ddmmss): Remove "%" from the ah and
+	al constraints.
+
 2026-11-22  Nick Alcock  <nix@esperi.org.uk>
 
 	PR bootstrap/127914

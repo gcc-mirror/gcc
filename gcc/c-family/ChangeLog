@@ -1,3 +1,11 @@
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/128184
+	* c-common.cc (atomic_bitint_fetch_using_cas_loop): For
+	__atomic_fetch_nand, __atomic_nand_fetch, __sync_fetch_and_nand
+	and __sync_nand_and_fetch use ~(*ptr & value) rather than
+	(~*ptr) & value.
+
 2026-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wdeprecated-octal-literal): New warning.

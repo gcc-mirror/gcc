@@ -1,3 +1,17 @@
+2026-11-25  Evgeny Karpov  <evgeny.karpov@arm.com>
+
+	* config.host: Update.
+	* config/i386/cygming-crtbegin.c: Move to...
+	* config/mingw/cygming-crtbegin.c: ...here.
+	* config/i386/cygming-crtend.c: Move to...
+	* config/mingw/cygming-crtend.c: ...here.
+	* config/i386/t-cygming: Move to...
+	* config/mingw/t-cygming: ...here.
+	* config/i386/t-slibgcc-cygming: Move to...
+	* config/mingw/t-slibgcc-cygming: ...here.
+	* config/i386/t-slibgcc-mingw: Move to...
+	* config/mingw/t-slibgcc-mingw: ...here.
+
 2026-11-24  Michael Meissner  <meissner@linux.ibm.com>
 
 	* config.host (powerpc*-*-linux*): Add HF/BF emulation functions to

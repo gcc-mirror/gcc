@@ -1,3 +1,195 @@
+2026-11-25  Souradipto Das  <souradiptodas6@gmail.com>
+
+	PR rtl-optimization/122335
+	* gcc.target/riscv/pr122335-1.c : New Test.
+	* gcc.target/riscv/pr122335-2.c : New Test which failed on v1.
+
+2026-11-25  Vincent Li  <v.li62442@gmail.com>
+
+	* jit.dg/all-non-failing-tests.h: Include test-indirect-jump.c.
+	* jit.dg/test-error-block-address-global-init.c: New test.
+	* jit.dg/test-error-indirect-jump.c: New test.
+	* jit.dg/test-indirect-jump.c: New test.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR testsuite/129037
+	* gcc.target/aarch64/sve/fneg-abs_4.c (negabs, negabsf): Expect
+	the same code as fneg-abs_2.c.
+
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128997
+	* gcc.dg/torture/pr128997.c: New test.
+
+2026-11-25  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/128941
+	* g++.dg/reflect/value17.C: New test.
+	* g++.dg/reflect/value18.C: New test.
+
+2026-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128921
+	* gcc.target/i386/pr128921-1.c: New test.
+	* gcc.target/i386/pr128921-2.c: Ditto.
+	* gcc.target/i386/pr128921-3.c: Ditto.
+	* gcc.target/i386/pr128921-4.c: Ditto.
+	* gcc.target/i386/pr128921-5.c: Ditto.
+	* gcc.target/i386/pr128921-6.c: Ditto.
+	* gcc.target/i386/pr128921-7.c: Ditto.
+	* gcc.target/i386/pr128921-8.c: Ditto.
+	* gcc.target/i386/pr128921-9.c: Ditto.
+	* gcc.target/i386/pr128921-10.c: Ditto.
+	* gcc.target/i386/pr128921-11.c: Ditto.
+	* gcc.target/i386/pr128921-12.c: Ditto.
+	* gcc.target/i386/pr128921-13.c: Ditto.
+	* gcc.target/i386/pr128921-14.c: Ditto.
+	* gcc.target/i386/pr128921-15.c: Ditto.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/128184
+	* gcc.dg/bitint-149.c: New test.
+
+2026-11-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128460
+	PR middle-end/128912
+	* gcc.dg/dfp/pr128460.c: New test.
+	* gcc.dg/torture/pr128912.c: New test.
+
+2026-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129015
+	* gcc.dg/vect/vect-pr129015-1.c: New testcase.
+	* gcc.dg/vect/vect-pr129015-2.c: Likewise.
+
+2026-11-25  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/109112
+	PR ipa/128813
+	* g++.dg/lto/ipa-cp-assume_0.C: Add dg-require-linker-plugin.
+	* g++.dg/lto/ipa-sra-assume-1_0.C: Likewise.
+
+2026-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128923
+	* g++.dg/vect/pr128923.cc: New testcase.
+	* gcc.dg/vect/bb-slp-pr128923-2.c: Likewise.
+	* gcc.dg/vect/bb-slp-pr128923-3.c: Likewise.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/tree-ssa/forwprop-45.c: Add -Wno-psabi to dg-options.  Add
+	-msse2 as dg-additional-options for ia32.  Guard scan-tree-dump{,-times}
+	on x86 or aarch64 as known targets supporting vectors.
+	* gcc.dg/tree-ssa/forwprop-46.c: Add -Wno-psabi to dg-options.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+	    Tamar Christina  <Tamar.Christina@arm.com>
+
+	PR target/128762
+	* gcc.dg/pr128762.c: New test.
+
+2026-11-25  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/aarch64/sve/const_vector_zero_tail_1.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_10.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_10_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_11.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_11_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_12.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_13.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_14.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_15.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_16.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_17.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_18.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_19.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_1_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_2.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_20.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_21.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_21_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_22.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_2_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_3.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_3_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_4.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_4_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_5.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_5_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_6.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_6_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_7.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_7_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_8.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_8_run.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_9.c,
+	gcc.target/aarch64/sve/const_vector_zero_tail_9_run.c:
+	New tests.
+
+2026-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: Fix incorrect PR reference.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128865
+	* gcc.dg/bitint-151.c: New test.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR testsuite/129017
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_2a_dotprod_neon_hw): Accumulate into
+	a zeroed RESULTS and fail unless the result is {8, 24}.
+	(check_effective_target_arm_v8_2a_i8mm_neon_hw): Likewise.
+	(check_effective_target_arm_v8_3a_complex_neon_hw): Use a zero
+	addend and expect the first operand.
+	* gcc.target/aarch64/pr126592.c: Add -save-temps.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR target/64897
+	* gcc.dg/tree-ssa/pr64897.c: New test.
+	* gcc.dg/tree-ssa/pr64897-2.c: New test.
+	* gcc.dg/tree-ssa/pr64897-3.c: New test.
+	* gcc.dg/tree-ssa/pr64897-4.c: New test.
+	* gcc.dg/tree-ssa/pr64897-5.c: New test.
+	* gcc.dg/tree-ssa/pr64897-6.c: New test.
+	* gcc.dg/tree-ssa/pr64897-7.c: New test.
+	* gcc.dg/torture/pr64897.c: New test.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* gcc.target/i386/builtin-fabs-2.c: Do not check register numbers.
+	* gcc.target/i386/fabsneg-2.c: Read other variables than written.
+	* gcc.target/i386/fabsneg-3.c: New test.
+	* gcc.target/i386/fabsneg-4.c: New test.
+	* gcc.target/i386/fabsneg-5.c: New test.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/sso-22.c: Add dg-add-options float16 directive.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR tree-optimization/129007
+	* gcc.dg/vect/pr129007.c: New test.
+	* gcc.target/aarch64/pr129007-1.c: New test.
+	* gcc.target/aarch64/pr129007-2.c: New test.
+
+2026-11-25  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128760
+	PR c/128518
+	* gcc.dg/pr128760.c: New test.
+	* gcc.dg/pr128518.c: Add dg-effective-target.
+	* gcc.dg/pr128518-2.c: New test.
+	* gcc.dg/Wreturn-nested-4.c: New test.
+
 2026-11-24  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/DRs/dr3121.C: New test.

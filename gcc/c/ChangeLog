@@ -1,3 +1,16 @@
+2026-11-25  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/128760
+	PR c/128518
+	* c-decl.cc (start_decl, start_function): Set DECL_STATIC_CHAIN
+	for nested functions.
+	(finish_finish): Clear DECL_STATIC_CHAIN if not needed.
+	* c-parser.cc (c_parser_declaration_or_fndef): Do not set
+	DECL_STATIC_CHAIN.
+	* c-typeck.cc (function_to_pointer_conversion,mark_decl_used):
+	Use DECL_STATIC_CHAIN instead of C_FUNC_NONLOCAL_CONTEXT.
+	(merge_decls): Add assertion.
+
 2026-11-17  Vineet Gupta  <vineet.gupta@linux.dev>
 
 	PR c/128789

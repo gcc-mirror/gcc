@@ -1,3 +1,36 @@
+2026-11-25  Vincent Li  <v.li62442@gmail.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_39): Document.
+	* docs/topics/functions.rst (gcc_jit_block_get_address): Document.
+	(gcc_jit_block_end_with_indirect_jump): Document.
+	* jit-playback.cc (playback::block::get_address): New method.
+	(playback::block::add_indirect_jump): New method.
+	* jit-playback.h (playback::block::get_address): New method.
+	(playback::block::add_indirect_jump): New method.
+	* jit-recording.cc (recording::block::get_address): New method.
+	(recording::block::end_with_indirect_jump): New method.
+	(recording::get_block_address::replay_into): New method.
+	(recording::get_block_address::make_debug_string): New method.
+	(recording::get_block_address::write_reproducer): New method.
+	(recording::indirect_jump::replay_into): New method.
+	(recording::indirect_jump::get_successor_blocks): New method.
+	(recording::indirect_jump::make_debug_string): New method.
+	(recording::indirect_jump::write_reproducer): New method.
+	* jit-recording.h (class get_block_address): New class.
+	(class indirect_jump): New class.
+	(recording::block::get_address): New method.
+	(recording::block::end_with_indirect_jump): New method.
+	* libgccjit.cc (gcc_jit_block_get_address): New entrypoint.
+	(gcc_jit_block_end_with_indirect_jump): New entrypoint.
+	* libgccjit.exports: Add gcc_jit_block_get_address and
+	gcc_jit_block_end_with_indirect_jump.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_block_get_address): New macro.
+	(LIBGCCJIT_HAVE_gcc_jit_block_end_with_indirect_jump): New macro.
+	(gcc_jit_block_get_address): New declaration.
+	(gcc_jit_block_end_with_indirect_jump): New declaration.
+	* libgccjit.map (LIBGCCJIT_ABI_39): Add gcc_jit_block_get_address and
+	gcc_jit_block_end_with_indirect_jump.
+
 2026-11-13  Guillaume Gomez  <contact@guillaume-gomez.fr>
 
 	* dummy-frontend.cc (handle_cold_attribute, handle_format_arg_attribute)

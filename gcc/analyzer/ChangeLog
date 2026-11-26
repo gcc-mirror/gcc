@@ -1,3 +1,164 @@
+2026-11-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc
+	(analyzer_state_graph::make_node_id): Update for replacement of
+	memory_space_region::get_concrete_memory_space with
+	region::get_memory_space.
+	(analyzer_state_graph::create_state_node): Likewise.
+	* common.h (class cluster_region): New forward decl.
+	* kf.cc (kf_strtok::kf_strtok): Update for change to
+	private_region ctor.
+	* region-model-manager.cc
+	(region_model_manager::region_model_manager): Update
+	m_errno_region initializer for change to indirection in
+	memory_space_region ctor.
+	(region_model_manager::get_region_for_fndecl): Update for change
+	in indirection in function_region ctor.
+	(region_model_manager::get_region_for_label): Likewise for
+	label_region ctor.
+	(region_model_manager::get_region_for_global): Likewise for
+	decl_region ctor.
+	(region_model_manager::get_field_region): Likewise for
+	field_region ctor.
+	(region_model_manager::get_element_region): Likewise for
+	element_region ctor.
+	(region_model_manager::get_offset_region): Likewise for
+	offset_region ctor.
+	(region_model_manager::get_sized_region): Likewise for
+	sized_region ctor.
+	(region_model_manager::get_cast_region): Likewise for cast_region
+	ctor.
+	(region_model_manager::get_frame_region): Likewise for
+	frame_region ctor.
+	(region_model_manager::get_symbolic_region): Likewise for
+	symbolic_region ctor.
+	(region_model_manager::get_region_for_string): Likewise for
+	string_region ctor.
+	(region_model_manager::get_bit_range): Likewise for
+	bit_range_region ctor.
+	(region_model_manager::get_var_arg_region): Likewise for
+	var_arg_region ctor.
+	(get_region_for_unexpected_tree_code): Likewise for unknown_region
+	ctor.
+	(get_or_create_region_for_heap_alloc): Likewise for
+	heap_allocated_region ctor.
+	(region_model_manager::create_region_for_alloca): Update for
+	alloca_region ctor now taking a reference rather than a pointer.
+	* region-model-reachability.cc (reachable_regions::add):
+	Strengthen type of "base_reg" to cluster_region.
+	* region.cc (region::get_base_region): Delete in favor of trivial
+	accessor in region.h.
+	(region::base_region_p): Likewise.
+	(region::get_memory_space): Likewise.
+	(region::region): Add params "cluster_reg" and "mem_space" and use
+	them to initialize m_cluster_reg and m_mem_space.
+	(frame_region::get_region_for_local): Update for decl_region ctor
+	now taking a reference rather than a pointer.
+	(memory_space_region::dump_to_pp): Update for move of m_mem_space
+	to class region.
+	(memory_space_region::print_region_for_dump_widget_label):
+	Likewise.
+	(memory_space_region::make_markup_node): Likewise.
+	(class function_region): Update comment.
+	(root_region::root_region): Update for new region ctor params
+	"cluster_reg" and "mem_space".
+	(symbolic_region::symbolic_region): Convert "parent" param from a
+	pointer into a reference.  Update for inheriting from
+	cluster_region.
+	(class decl_region): Update comment.
+	(class heap_allocated_region): Likewise.
+	(class alloca_region): Likewise.
+	(class string_region): Likewise.
+	(class var_arg_region): Likewise.
+	(class errno_region): Likewise.
+	(class private_region): Likewise.
+	(class unknown_region): Likewise.
+	* region.h (class region): Update leading comment for changes
+	in class hierarchy, and add an example of the object hierarchy.
+	(region::get_base_region): Strengthen return type from region to
+	cluster_region, and convert to a trivial field accessor.
+	(region::get_cluster_region): New synonym for the above.
+	(region::get_memory_space): Convert to a trivial field accessor.
+	(region::region): Add params "cluster_reg" and "mem_space".
+	(region::m_parent): Add comment.
+	(region::m_cluster_reg): New field.
+	(region::m_mem_space): New field.
+	(class memory_space_region): Add note to leading comment.
+	(memory_space_region::memory_space_region): Update for new
+	region ctor params "cluster_reg" and "mem_space".  Drop
+	initialization of field m_mem_space, as this is now in the region
+	superclass.
+	(memory_space_region::get_concrete_memory_space): Drop.
+	(memory_space_region::m_mem_space): Drop.
+	(frame_region::frame_region): Convert "parent" param from a
+	pointer into a reference.  Update for new region ctor params
+	"cluster_reg" and "mem_space".
+	(class cluster_region): New.
+	(region::base_region_p): New trivial inline reimplementation.
+	(class function_region): Inherit from cluster_region rather than
+	region.
+	(function_region::function_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class label_region): Inherit from cluster_region rather than
+	region.
+	(label_region::label_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class symbolic_region): Inherit from cluster_region rather than
+	region.
+	(symbolic_region::symbolic_region): Convert "parent" param to
+	reference.
+	(class decl_region): Inherit from cluster_region rather than
+	region.
+	(decl_region::decl_region): Convert "parent" param from a pointer
+	into a reference, and update for inheriting from cluster_region.
+	(field_region::field_region): Convert "parent" param from a pointer
+	into a reference.  Update for new region ctor params
+	"cluster_reg" and "mem_space".
+	(element_region::element_region): Likewise.
+	(offset_region::offset_region): Likewise.
+	(sized_region::sized_region): Likewise.
+	(cast_region::cast_region): Likewise.
+	(class heap_allocated_region): Inherit from cluster_region rather
+	than region.
+	(heap_allocated_region::heap_allocated_region): Convert "parent"
+	param from a pointer into a reference, and update for inheriting
+	from cluster_region.
+	(class alloca_region): Inherit from cluster_region rather than
+	region.
+	(alloca_region::alloca_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class string_region): Inherit from cluster_region rather than
+	region.
+	(string_region::string_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(bit_range_region::bit_range_region): Convert "parent" param from
+	a pointer into a reference.  Update for new region ctor params
+	"cluster_reg" and "mem_space".
+	(class var_arg_region): Inherit from cluster_region rather than
+	region.
+	(var_arg_region::var_arg_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class errno_region): Inherit from cluster_region rather than
+	region.
+	(errno_region::errno_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class private_region): Inherit from cluster_region rather than
+	region.
+	(private_region::private_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+	(class unknown_region): Inherit from cluster_region rather than
+	region.
+	(unknown_region::unknown_region): Convert "parent" param from a
+	pointer into a reference, and update for inheriting from
+	cluster_region.
+
 2026-11-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* ana-state-to-diagnostic-state.cc

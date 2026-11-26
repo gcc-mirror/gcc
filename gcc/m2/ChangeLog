@@ -1,3 +1,36 @@
+2026-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_1): Add -B./.
+	(GM2_1_WHOLE_PROGRAM_DEBUG): Added.
+	(GM2_LIBS_C_OBJS): Added.
+	(m2/debug/cc1gm2.o): New rule.
+	(m2-debug): Ditto.
+	(m2/debug/cc1gm2$(exeext)): Ditto.
+	(m2/gm2-libs/UnixArgs.o): Ditto.
+	(m2/gm2-libs/dtoa.o): Ditto.
+	(m2/gm2-libs/ldtoa.o): Ditto.
+	(m2/gm2-libs/choosetemp.o): Ditto.
+	(m2/gm2-libs/termios.o): Ditto.
+	(m2/gm2-compiler/%.o): Rewrite.
+	(m2/gm2-compiler/m2flex.o): Rewrite.
+	(m2/gm2-libs/choosetemp.o): Remove.
+	(check-gm2-debug): New rule.
+	* gm2-compiler/M2Comp.mod (M2Defaults): Import.
+	(Environment): Import.
+	(Args): Import.
+	(TimeString): Import.
+	(FpuIO): Import.
+	(M2StateCheck): Import.
+	(P2SymBuild): Import.
+	(P3SymBuild): Import.
+	* gm2-compiler/PCBuild.bnf (CreateQualident): Remove sym.
+	* gm2-libs/gm2-libs-host.h.in (PACKAGE_BUGREPORT): Remove.
+	(PACKAGE_NAME): Ditto.
+	(PACKAGE_STRING): Ditto.
+	(PACKAGE_TARNAME): Ditto.
+	(PACKAGE_URL): Ditto.
+	(PACKAGE_VERSION): Ditto.
+
 2026-11-18  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/128683

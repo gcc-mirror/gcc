@@ -1,3 +1,165 @@
+2026-11-25  Souradipto Das  <souradiptodas6@gmail.com>
+
+	PR rtl-optimization/122335
+	* ifcvt.cc (noce_try_cond_arith): Made the function look through a copy insn
+	given the conditions passed.
+
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128997
+	* cse.cc (canon_reg): Clear SUBREG_PROMOTED_VAR_P after substituting
+	into a SUBREG expression.
+
+2026-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128921
+	* config/i386/i386.cc (enum psabi_change)
+	<PSABI_UNALIGNED_MEMBER>: New.
+	(misaligned_member_p): New function.
+	(inform_psabi_change): Handle PSABI_UNALIGNED_MEMBER.
+	(classify_argument): Return 0 for a union member, or for a record
+	member, for which misaligned_member_p returns true.
+
+2026-11-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (enum psabi_change): New.
+	(struct classify_state): Ditto.
+	(psabi_new_behavior_p): New function.
+	(classify_argument): Replace zero_width_bitfields argument with
+	classify_state.  Call psabi_new_behavior_p for zero-width
+	bit-fields.
+	(inform_psabi_change): New function.
+	(classify_argument wrapper): Classify again with the old behavior
+	of each pending change and call inform_psabi_change for the
+	changes that alter the classification.
+
+2026-11-25  Evgeny Karpov  <evgeny.karpov@arm.com>
+
+	* config/i386/cygming.h (TARGET_ASM_ASSEMBLE_VISIBILITY): Rename.
+	* config/i386/i386-protos.h (i386_pe_assemble_visibility): Remove.
+	* config/mingw/winnt.cc (i386_pe_assemble_visibility): Rename.
+	(mingw_pe_assemble_visibility): Rename.
+	* config/mingw/winnt.h (mingw_pe_assemble_visibility): Add.
+
+2026-11-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/128460
+	PR middle-end/128912
+	* real.cc (real_exact_conversion_p): New function.
+	* real.h (real_exact_conversion_p): Declare.
+	* match.pd (two conversions in a row): Require the intermediate
+	float type to exactly represent the inner type in the float
+	sub-rules.
+
+2026-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129015
+	* tree-vect-stmts.cc (vectorizable_conversion): Only
+	allow actual not in-order tree code reductions for even/odd widening
+	multiplication.
+
+2026-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128923
+	* tree-vect-slp.cc (force_split_matches): Clear leading
+	entries in matches[].
+	(vect_build_slp_tree_2): Delay soft-failing
+	to leaf nodes.  Avoid swapping operands on to-be soft-failed
+	nodes and never build those from scalars.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+	    Tamar Christina  <Tamar.Christina@arm.com>
+
+	PR target/128762
+	* config/aarch64/aarch64.cc (aarch64_gen_compare_reg): Use
+	force_lowpart_subreg/force_highpart_subreg instead of operand_subword.
+
+2026-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129012
+	* tree-ssa-loop-ivopts.cc (get_computation_cost): Negate
+	ratio in unsigned HOST_WIDE_INT.
+
+2026-11-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR target/128998
+	* config/aarch64/aarch64.cc (aarch64_vector_costs::add_stmt_cost):
+	Treat vec_deconstruct as one vec_to_scalar per vector lane.
+	(aarch64_vector_costs::count_ops): Make the vec_deconstruct case
+	unreachable.
+
+2026-11-25  Christopher Bazley  <chris.bazley@arm.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_expand_sve_const_vector_zero_tail): New function that
+	tries to expand a CONST_VECTOR that is encoded as N patterns,
+	each pattern comprising a pair of elements in which the second
+	element is zero.
+	(aarch64_expand_sve_const_vector): Try calling
+	aarch64_expand_sve_const_vector_zero_tail if each pattern
+	comprises a pair of elements, and only use the existing
+	aarch64_expand_sve_const_vector_sel function as a fallback.
+	(aarch64_v16_mode): New function that chooses V2QImode or fails.
+	(aarch64_v32_mode): New function that chooses V2HFmode,
+	V2BFmode, V2HImode, V4QImode, or fails.
+	(aarch64_simd_container_mode): Return via aarch64_v16_mode or
+	aarch64_v32_mode if the passed-in vector width is known to be 16
+	or 32 bits respectively.
+
+2026-11-25  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* config/aarch64/tuning_models/hip12.h: Tune function_align
+	and loop_align.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-vect-stmts.cc (vectorizable_conversion, vectorizable_load,
+	vectorizable_comparison_1): Use BITINT_TYPE_P macro instead of
+	comparing TREE_CODE to BITINT_TYPE.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128865
+	* tree.cc (signed_or_unsigned_type_for): Test BITINT_TYPE_P (type)
+	rather than TREE_CODE (type) == BITINT_TYPE whether to call
+	build_bitint_type.
+
+2026-11-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* lra-assigns.cc (live_pseudos_reg_renumber): Update comment.
+	(find_hard_regno_for_1): Ignore pseudos in live_hard_reg_pseudos
+	that live_pseudos_reg_renumber marks as unassigned.
+	(spill_for): Spill and restore the candidates of a trial only in
+	live_pseudos_reg_renumber.  Stop collecting reload and inheritance
+	pseudos once there are too many.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR target/64897
+	* match.pd ((T)((I)x & ~signbit) -> abs (x)): New simplification,
+	also folding ^ signbit to -x and | signbit to -abs (x).
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Emit a
+	negative constant sign as NEG of ABS with a USE of the mask.
+	* config/i386/i386.md (*<code><mode>2_mem): New
+	define_insn_and_split.
+	(*nabs<mode>2_mem): Likewise.
+
+2026-11-25  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR tree-optimization/129007
+	* tree-vect-slp-patterns.cc (complex_fms_pattern::matches): Take
+	the operands of the multiplication from the right elements of
+	res_ops.
+
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Use WORD_MODE on WORD_REGISTER_OPERATIONS targets when the given
+	mode is less than a word.
+
 2026-11-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* doc/analyzer.texi: Update for changes in expected dumps.
