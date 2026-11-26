@@ -23,8 +23,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "rtl.h"
 
-static void free_list (rtx *, rtx *);
-
 /* Functions for maintaining cache-able lists of EXPR_LIST and INSN_LISTs.  */
 
 /* An INSN_LIST containing all INSN_LISTs allocated but currently unused.  */
@@ -37,8 +35,9 @@ static GTY ((deletable)) rtx unused_expr_list;
    or DEPS_LIST nodes.  This is to be used only on lists that consist
    exclusively of nodes of one type only.  This is only called by
    free_EXPR_LIST_list, free_INSN_LIST_list and free_DEPS_LIST_list.  */
+template <typename T>
 static void
-free_list (rtx *listp, rtx *unused_listp)
+free_list (T **listp, rtx *unused_listp)
 {
   rtx link, prev_link;
 
@@ -148,7 +147,7 @@ free_EXPR_LIST_list (rtx_expr_list **listp)
 {
   if (*listp == 0)
     return;
-  free_list ((rtx *)listp, &unused_expr_list);
+  free_list (listp, &unused_expr_list);
 }
 
 /* This function will free up an entire list of INSN_LIST nodes.  */
@@ -157,25 +156,25 @@ free_INSN_LIST_list (rtx_insn_list **listp)
 {
   if (*listp == 0)
     return;
-  free_list ((rtx *)listp, &unused_insn_list);
+  free_list (listp, &unused_insn_list);
 }
 
 /* Make a copy of the INSN_LIST list LINK and return it.  */
 rtx_insn_list *
 copy_INSN_LIST (rtx_insn_list *link)
 {
-  rtx_insn_list *new_queue;
-  rtx_insn_list **pqueue = &new_queue;
+  rtx new_queue;
+  rtx *pqueue = &new_queue;
 
   for (; link; link = link->next ())
     {
       rtx_insn *x = link->insn ();
       rtx_insn_list *newlink = alloc_INSN_LIST (x, NULL);
       *pqueue = newlink;
-      pqueue = (rtx_insn_list **)&XEXP (newlink, 1);
+      pqueue = &XEXP (newlink, 1);
     }
   *pqueue = NULL;
-  return new_queue;
+  return safe_as_a <rtx_insn_list *> (new_queue);
 }
 
 /* Duplicate the INSN_LIST elements of COPY and prepend them to OLD.  */
@@ -213,7 +212,9 @@ free_INSN_LIST_node (rtx ptr)
 void
 remove_free_INSN_LIST_elem (rtx_insn *elem, rtx_insn_list **listp)
 {
-  free_INSN_LIST_node (remove_list_elem (elem, (rtx *)listp));
+  rtx list = *listp;
+  free_INSN_LIST_node (remove_list_elem (elem, &list));
+  *listp = safe_as_a <rtx_insn_list *> (list);
 }
 
 /* Remove and free the first node in the INSN_LIST pointed to by LISTP.  */
@@ -223,7 +224,7 @@ remove_free_INSN_LIST_node (rtx_insn_list **listp)
   rtx_insn_list *node = *listp;
   rtx_insn *elem = node->insn ();
 
-  remove_list_node ((rtx *)listp);
+  *listp = node->next ();
   free_INSN_LIST_node (node);
 
   return elem;
@@ -236,7 +237,7 @@ remove_free_EXPR_LIST_node (rtx_expr_list **listp)
   rtx_expr_list *node = *listp;
   rtx elem = XEXP (node, 0);
 
-  remove_list_node ((rtx *)listp);
+  *listp = node->next ();
   free_EXPR_LIST_node (node);
 
   return elem;
