@@ -1,3 +1,31 @@
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128910
+	* cse.cc (exp_equiv_p): Return false for SUBREGs that have different
+	promotion states.
+
+2026-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/127967
+	* ipa-prop.cc (ipcp_modif_dom_walker::before_dom_children): Add a
+	check that bit_offset aligns to byte boundary.
+	(ipcp_get_aggregate_const): Likewise and also add bounds checks.
+
+2026-11-25  Hugo Sales  <hugo@hsal.es>
+
+	Backported from master:
+	2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* ipa-cp.cc (cgraph_edge_brings_all_contexts_for_node): New function.
+	(perhaps_add_new_callers): Use it.
+
 2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/128920

@@ -1,3 +1,35 @@
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128910
+	* gcc.dg/torture/pr128910.c: New test.
+
+2026-11-25  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/127967
+	* gcc.dg/ipa/pr127967.c: New test.
+
+2026-11-25  Hugo Sales  <hugo@hsal.es>
+
+	Backported from master:
+	2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* g++.dg/ipa/pr127917.C: New test.
+
+2026-11-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/sso-22.c: Fix incorrect PR reference.
+
+2026-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/sso-22.c: Add dg-add-options float16 directive.
+
 2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/sso-22.c: New test.
