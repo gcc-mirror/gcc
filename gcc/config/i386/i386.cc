@@ -2342,11 +2342,19 @@ misaligned_member_p (tree type, HOST_WIDE_INT bit_pos)
    should be passed in memory, 0 is returned. As a special case for zero
    sized containers, classes[0] will be NO_CLASS and 1 is returned.
 
-   BIT_OFFSET is used internally for handling records and specifies offset
-   of the offset in bits modulo 512 to avoid overflow cases.
+   BIT_OFFSET is used internally when classifying aggregates (records,
+   arrays and unions).  It is the position of TYPE, in bits, from the start
+   of the outermost object being classified, taken modulo 512 to avoid
+   overflow cases.  It is 0 for the outermost type.
 
-   See the x86-64 PS ABI for details.
-*/
+   CLASSES is indexed relative to the first eightbyte of TYPE.  When
+   computing which eightbytes a field or element occupies, only
+   BIT_OFFSET % 64 (the misalignment of TYPE within its first eightbyte)
+   is added to its position, because whole eightbytes are accounted for by
+   the caller when it merges the returned classes.  Alignment checks and
+   the recursive classification of members use the full BIT_OFFSET.
+
+   See the x86-64 PS ABI for details.  */
 
 static int
 classify_argument (machine_mode mode, const_tree type,
@@ -2395,19 +2403,29 @@ classify_argument (machine_mode mode, const_tree type,
       switch (TREE_CODE (type))
 	{
 	case RECORD_TYPE:
-	  /* And now merge the fields of structure.  */
+	  /* Merge the classes of the fields of the structure.  */
 	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
-		  int num;
+		  tree field_type = TREE_TYPE (field);
 
-		  if (TREE_TYPE (field) == error_mark_node)
+		  if (field_type == error_mark_node)
 		    continue;
 
-		  /* Bitfields are always classified as integer.  Handle them
-		     early, since later code would consider them to be
-		     misaligned integers.  */
+		  /* Bit position of FIELD relative to the first
+		     eightbyte of TYPE, keeping only the misalignment
+		     within an eightbyte.  */
+		  HOST_WIDE_INT field_rel_bitpos
+		    = bit_offset % 64 + int_bit_position (field);
+
+		  /* Index of the first eightbyte of
+		     TYPE that FIELD occupies.  */
+		  int first_word = field_rel_bitpos / 64;
+
+		  /* Bitfields are always classified as integer.
+		     Handle them early, since later code would
+		     consider them to be misaligned integers.  */
 		  if (DECL_BIT_FIELD (field))
 		    {
 		      if (integer_zerop (DECL_SIZE (field)))
@@ -2419,26 +2437,26 @@ classify_argument (machine_mode mode, const_tree type,
 			      (state, PSABI_ZERO_WIDTH_BITFIELD))
 			    continue;
 			}
-		      for (i = (int_bit_position (field)
-				+ (bit_offset % 64)) / 8 / 8;
-			   i < ((int_bit_position (field) + (bit_offset % 64))
-			        + tree_to_shwi (DECL_SIZE (field))
-				+ 63) / 8 / 8; i++)
+
+		      HOST_WIDE_INT field_bitsize
+			= tree_to_shwi (DECL_SIZE (field));
+
+		      /* Merge INTEGER into every eightbyte the bit-field
+			 touches, rounding the end up to a whole eightbyte.  */
+		      for (i = first_word;
+			   i < CEIL (field_rel_bitpos + field_bitsize, 64);
+			   i++)
 			classes[i]
 			  = merge_classes (X86_64_INTEGER_CLASS, classes[i]);
 		    }
 		  else
 		    {
-		      int pos;
-
-		      type = TREE_TYPE (field);
-
 		      /* Flexible array member is ignored.  */
-		      if (TYPE_MODE (type) == BLKmode
-			  && TREE_CODE (type) == ARRAY_TYPE
-			  && TYPE_SIZE (type) == NULL_TREE
-			  && TYPE_DOMAIN (type) != NULL_TREE
-			  && (TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+		      if (TYPE_MODE (field_type) == BLKmode
+			  && TREE_CODE (field_type) == ARRAY_TYPE
+			  && TYPE_SIZE (field_type) == NULL_TREE
+			  && TYPE_DOMAIN (field_type) != NULL_TREE
+			  && (TYPE_MAX_VALUE (TYPE_DOMAIN (field_type))
 			      == NULL_TREE))
 			{
 			  static bool warned;
@@ -2454,25 +2472,27 @@ classify_argument (machine_mode mode, const_tree type,
 			  continue;
 			}
 
-		      HOST_WIDE_INT member_pos
-			= int_bit_position (field) + bit_offset;
+		      /* Position of FIELD, in bits, from the start
+			 of the outermost object being classified.  */
+		      HOST_WIDE_INT member_bitpos
+			= bit_offset + int_bit_position (field);
 
-		      if (misaligned_member_p (TREE_TYPE (field), member_pos)
+		      if (misaligned_member_p (field_type, member_bitpos)
 			  && (psabi_new_behavior_p
 			      (state, PSABI_UNALIGNED_MEMBER)))
 			return 0;
 
-		      num = classify_argument (TYPE_MODE (type), type,
-					       subclasses, member_pos % 512,
-					       state);
+		      int num = classify_argument (TYPE_MODE (field_type),
+						   field_type, subclasses,
+						   member_bitpos % 512,
+						   state);
 		      if (!num)
 			return 0;
 
-		      pos = (int_bit_position (field)
-			     + (bit_offset % 64)) / 8 / 8;
-		      for (i = 0; i < num && (i + pos) < words; i++)
-			classes[i + pos]
-			  = merge_classes (subclasses[i], classes[i + pos]);
+		      for (i = 0; i < num && (first_word + i) < words; i++)
+			classes[first_word + i]
+			  = merge_classes (subclasses[i],
+					   classes[first_word + i]);
 		    }
 		}
 	    }
@@ -2481,13 +2501,15 @@ classify_argument (machine_mode mode, const_tree type,
 	case ARRAY_TYPE:
 	  /* Arrays are handled as small records.  The psABI classifies each
 	     element, so classify every element at its actual offset and merge
-	     the classes of the elements sharing an eightbyte.  The classes of
-	     the first element don't describe the other elements when the
-	     element size is not a multiple of a word, e.g. when the element
-	     has padding ignored by the classification, such as from a
-	     zero-width bit-field.  */
+	     the classes of the elements sharing an eightbyte.  Classifying
+	     only the first element is not enough when the element size is not
+	     a multiple of a word: the elements then sit at different offsets
+	     within their eightbytes, and padding that the classification
+	     ignores (for example from a zero-width bit-field) shifts the
+	     layout.  */
 	  {
 	    tree elt_type = TREE_TYPE (type);
+
 	    HOST_WIDE_INT elt_bytes = int_size_in_bytes (elt_type);
 
 	    if (elt_bytes < 0)
@@ -2502,61 +2524,77 @@ classify_argument (machine_mode mode, const_tree type,
 	    /* A zero-sized array is classified by classifying one element.  */
 	    HOST_WIDE_INT nelts = bytes > 0 ? bytes / elt_bytes : 1;
 
+	    HOST_WIDE_INT elt_bitsize = elt_bytes * BITS_PER_UNIT;
+
 	    for (HOST_WIDE_INT k = 0; k < nelts; k++)
 	      {
-		int elt_offset = k * elt_bytes * BITS_PER_UNIT;
-		int pos = (elt_offset + (bit_offset % 64)) / 8 / 8;
+		/* Position of element K, in bits, from the start of the
+		   outermost object being classified.  */
+		HOST_WIDE_INT elt_bitpos = bit_offset + k * elt_bitsize;
+
 		int num = classify_argument (TYPE_MODE (elt_type), elt_type,
-					     subclasses,
-					     (bit_offset + elt_offset) % 512,
+					     subclasses, elt_bitpos % 512,
 					     state);
 		if (!num)
 		  return 0;
 
-		/* The partial classes are now full classes.  */
+		/* The partial classes are now full classes, unless the
+		   whole array (BYTES, not just one element) is a single
+		   scalar of that size.  */
 		if (subclasses[0] == X86_64_SSESF_CLASS && bytes != 4)
 		  subclasses[0] = X86_64_SSE_CLASS;
 		if (subclasses[0] == X86_64_SSEHF_CLASS && bytes != 2)
 		  subclasses[0] = X86_64_SSE_CLASS;
 		if (subclasses[0] == X86_64_INTEGERSI_CLASS
-		    && !((bit_offset % 64) == 0 && bytes == 4))
+		    && !(bit_offset % 64 == 0 && bytes == 4))
 		  subclasses[0] = X86_64_INTEGER_CLASS;
 
-		for (i = 0; i < num && (i + pos) < words; i++)
+		/* Bit position of element K relative to the first
+		   eightbyte of the array, keeping only the misalignmen
+		   within an eightbyte.  */
+		HOST_WIDE_INT elt_rel_bitpos
+		  = bit_offset % 64 + k * elt_bitsize;
+
+		/* Index of the first eightbyte of
+		   the array that element K occupies.  */
+		int first_word = elt_rel_bitpos / 64;
+
+		for (i = 0; i < num && (first_word + i) < words; i++)
 		  {
-		    classes[i + pos]
-		      = merge_classes (subclasses[i], classes[i + pos]);
-		    if (classes[i + pos] == X86_64_MEMORY_CLASS)
+		    classes[first_word + i]
+		      = merge_classes (subclasses[i], classes[first_word + i]);
+		    if (classes[first_word + i] == X86_64_MEMORY_CLASS)
 		      return 0;
 		  }
 	      }
 
 	    break;
 	  }
+
 	case UNION_TYPE:
 	case QUAL_UNION_TYPE:
-	  /* Unions are similar to RECORD_TYPE but offset is always 0.
-	     */
+	  /* Unions are similar to RECORD_TYPE but offset is always 0.  */
 	  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
 	    {
 	      if (TREE_CODE (field) == FIELD_DECL)
 		{
-		  int num;
+		  tree field_type = TREE_TYPE (field);
 
-		  if (TREE_TYPE (field) == error_mark_node)
+		  if (field_type == error_mark_node)
 		    continue;
 
 		  /* Members of a packed union can be misaligned.  */
 		  if (!DECL_BIT_FIELD (field)
-		      && misaligned_member_p (TREE_TYPE (field), bit_offset)
+		      && misaligned_member_p (field_type, bit_offset)
 		      && psabi_new_behavior_p (state, PSABI_UNALIGNED_MEMBER))
 		    return 0;
 
-		  num = classify_argument (TYPE_MODE (TREE_TYPE (field)),
-					   TREE_TYPE (field), subclasses,
-					   bit_offset, state);
+		  int num = classify_argument (TYPE_MODE (field_type),
+					       field_type, subclasses,
+					       bit_offset, state);
 		  if (!num)
 		    return 0;
+
 		  for (i = 0; i < num && i < words; i++)
 		    classes[i] = merge_classes (subclasses[i], classes[i]);
 		}
