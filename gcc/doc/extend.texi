@@ -18136,6 +18136,46 @@ of the full result, i.e. @code{0x2220220U}.
 
 @enddefbuiltin
 
+@defbuiltin{@var{type} __builtin_bitcompressg (@var{type} @var{x}, @var{type} @var{m})}
+
+This type-generic built-in function returns bit compression (sometimes
+called parallel bit extract) of @var{x} using mask @var{m}.
+@var{type} may be any unsigned integral type.
+For each set bit in @var{m} the corresponding bit in @var{x} is tightly
+packed in the least significant bits of the result.  The bit corresponding
+to least significant set bit of @var{m} is the least significant bit of the
+result.
+
+@smallexample
+  unsigned int x = 0xa96e, m = 0x5fb3;
+  unsigned int r = __builtin_bitcompressg (x, m);
+@end smallexample
+
+@var{r} will be set to @code{0x12a}.
+
+@enddefbuiltin
+
+@defbuiltin{@var{type} __builtin_bitexpandg (@var{type} @var{x}, @var{type} @var{m})}
+
+This type-generic built-in function returns bit expansion (sometimes
+called parallel bit deposit) of @var{x} using mask @var{m}.
+@var{type} may be any unsigned integral type.
+For each set bit in @var{m} a bit from @var{x} starting with least
+significant bit is shifted into the position of the bit in @var{m} and
+bitwise ored into the result.  This is inverse operation for
+@code{__builtin_compressg}, except that bits not set in @var{m} are cleared.
+So @code{__builtin_expandg (__builtin_compressg (@var{x}, @var{m}), @var{m})}
+is always equal to @code{@var{x} & @var{m}}.
+
+@smallexample
+  unsigned int x = 0x12a, m = 0x5fb3;
+  unsigned int r = __builtin_bitexpandg (x, m);
+@end smallexample
+
+@var{r} will be set to @code{0x922}.
+
+@enddefbuiltin
+
 @defbuiltin{@var{type} __builtin_speculation_safe_value (@var{type} @var{val}, @var{type} @var{failval})}
 
 This built-in function can be used to help mitigate against unsafe

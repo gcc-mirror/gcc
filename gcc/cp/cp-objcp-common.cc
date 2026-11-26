@@ -572,6 +572,8 @@ names_builtin_p (const char *name)
   switch (C_RID_CODE (id))
     {
     case RID_ADDRESSOF:
+    case RID_BUILTIN_BITCOMPRESSG:
+    case RID_BUILTIN_BITEXPANDG:
     case RID_BUILTIN_BITREVERSEG:
     case RID_BUILTIN_BSWAPG:
     case RID_BUILTIN_CLMULG:

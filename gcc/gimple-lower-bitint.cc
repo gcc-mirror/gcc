@@ -3350,7 +3350,9 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
   if (gimple_store_p (stmt))
     {
       unlink_stmt_vdef (stmt);
-      release_ssa_name (gimple_vdef (stmt));
+      if (tree vdef = gimple_vdef (stmt))
+	if (TREE_CODE (vdef) == SSA_NAME)
+	  release_ssa_name (vdef);
       gsi_remove (&m_gsi, true);
     }
   if (eq_p)
@@ -6842,7 +6844,9 @@ bitint_large_huge::lower_stmt (gimple *stmt)
 	      handled:
 		m_gsi = gsi_for_stmt (stmt);
 		unlink_stmt_vdef (stmt);
-		release_ssa_name (gimple_vdef (stmt));
+		if (tree vdef = gimple_vdef (stmt))
+		  if (TREE_CODE (vdef) == SSA_NAME)
+		    release_ssa_name (vdef);
 		gsi_remove (&m_gsi, true);
 		return;
 	      case MULT_EXPR:
@@ -7482,6 +7486,282 @@ arith_overflow_arg_kind (gimple *stmt)
   return ret;
 }
 
+/* Lower a call to __builtin_bitcompressg (ARG0, ARG1) or
+   __builtin_bitexpandg (ARG0, ARG1) for large/huge _BitInt types.  */
+
+static void
+lower_bitcompress_bitexpand (gimple *stmt)
+{
+  location_t loc = gimple_location (stmt);
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  tree lhs = gimple_call_lhs (stmt);
+  gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+  internal_fn ifn = gimple_call_internal_fn (stmt);
+  gcc_assert (ifn == IFN_BITCOMPRESS || ifn == IFN_BITEXPAND);
+  tree type = TREE_TYPE (arg0);
+  unsigned prec = TYPE_PRECISION (type);
+  unsigned log2prec = ceil_log2 (prec);
+  if (!lhs)
+    {
+      gsi_remove (&gsi, true);
+      return;
+    }
+  calculate_dominance_info (CDI_DOMINATORS);
+  /* Based on "Compress, or Generalized Extract" in Hacker's Delight:
+     T
+     bitcompressg (T x, T m)
+     {
+       int prec = __builtin_popcountg ((T) ~(T) 0);
+       x &= m;
+       T mk = ~m << 1;
+       for (int i = 1; i < prec; i <<= 1)
+	 {
+	   T mp = mk;
+	   for (int j = 1; j < prec; j <<= 1)
+	     mp ^= mp << j;
+	   T mv = mp & m;
+	   m = (m ^ mv) | (mv >> i);
+	   T t = x & mv;
+	   x = (x ^ t) | (t >> i);
+	   mk = mk & ~mp;
+	 }
+       return x;
+     }
+     and based on "Expand, or Generalized Insert" in Hacker's Delight:
+     T
+     bitexpandg (T x, T m)
+     {
+       int prec = __builtin_popcountg ((T) ~(T) 0);
+       int log2prec = ceil_log2 (prec);
+       T m0 = m;
+       T mk = ~m << 1;
+       T array[log2prec];
+       for (int i = 0; i < log2prec; i++)
+	 {
+	   T mp = mk;
+	   for (int j = 1; j < prec; j <<= 1)
+	     mp ^= mp << j;
+	   T mv = mp & m;
+	   array[i] = mv;
+	   m = (m ^ mv) | (mv >> (1 << i));
+	   mk = mk & ~mp;
+	 }
+       for (int i = log2prec - 1; i >= 0; i--)
+	 {
+	   T mv = array[i];
+	   T t = x << (((T) 1) << i);
+	   x = (x & ~mv) | (t & mv);
+	 }
+       return x & m0;
+     }  */
+  tree x = arg0;
+  tree m = arg1;
+  gimple *g;
+  if (TREE_CODE (x) != SSA_NAME || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (x))
+    {
+      x = make_ssa_name (type);
+      g = gimple_build_assign (x, arg0);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+  if (TREE_CODE (m) != SSA_NAME || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (m))
+    {
+      m = make_ssa_name (type);
+      g = gimple_build_assign (m, arg1);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+  tree m0 = m;
+  tree array = NULL_TREE;
+  if (ifn == IFN_BITCOMPRESS)
+    {
+      g = gimple_build_assign (make_ssa_name (type),
+			       BIT_AND_EXPR, x, m);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      x = gimple_assign_lhs (g);
+    }
+  else
+    {
+      tree atype = build_array_type_nelts (type, log2prec);
+      array = create_tmp_var (atype);
+    }
+  g = gimple_build_assign (make_ssa_name (type), BIT_NOT_EXPR, m);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  tree mk = make_ssa_name (type);
+  g = gimple_build_assign (mk, LSHIFT_EXPR, gimple_assign_lhs (g),
+			   build_int_cst (unsigned_type_node, 1));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  edge preheader_edge, latch_edge, exit_edge;
+  auto create_loop_after
+    = [] (basic_block bb, gimple *g, edge *e1, edge *e2, edge *e3) {
+    *e1 = split_block (bb, g);
+    *e2 = split_block ((*e1)->dest, (gimple *) NULL);
+    *e3 = make_edge ((*e1)->dest, (*e1)->dest, EDGE_TRUE_VALUE);
+    (*e3)->probability = profile_probability::very_unlikely ();
+    (*e2)->flags = EDGE_FALSE_VALUE;
+    (*e2)->probability = (*e3)->probability.invert ();
+    gimple_stmt_iterator gsi = gsi_after_labels ((*e1)->dest);
+    class loop *loop = alloc_loop ();
+    loop->header = (*e1)->dest;
+    add_loop (loop, (*e1)->src->loop_father);
+    return gsi;
+  };
+  auto add_loop_phi = [] (tree init, tree *next, edge e1, edge e3) {
+    tree res = make_ssa_name (TREE_TYPE (init));
+    gphi *phi = create_phi_node (res, e1->dest);
+    add_phi_arg (phi, init, e1, UNKNOWN_LOCATION);
+    *next = make_ssa_name (TREE_TYPE (init));
+    add_phi_arg (phi, *next, e3, UNKNOWN_LOCATION);
+    return res;
+  };
+  gsi = create_loop_after (gimple_bb (g), g, &preheader_edge,
+			   &exit_edge, &latch_edge);
+  tree i_next, m_next, mk_next, x_next = NULL_TREE;
+  tree i = add_loop_phi (build_int_cst (integer_type_node,
+					ifn == IFN_BITCOMPRESS),
+			 &i_next, preheader_edge, latch_edge);
+  m = add_loop_phi (m, &m_next, preheader_edge, latch_edge);
+  mk = add_loop_phi (mk, &mk_next, preheader_edge, latch_edge);
+  if (ifn == IFN_BITCOMPRESS)
+    x = add_loop_phi (x, &x_next, preheader_edge, latch_edge);
+  gsi = create_loop_after (gsi_bb (gsi), NULL, &preheader_edge,
+			   &exit_edge, &latch_edge);
+  tree j_next, mp_next;
+  tree j = add_loop_phi (build_int_cst (integer_type_node, 1), &j_next,
+			 preheader_edge, latch_edge);
+  tree mp = add_loop_phi (mk, &mp_next, preheader_edge, latch_edge);
+  g = gimple_build_assign (make_ssa_name (type), LSHIFT_EXPR, mp, j);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (mp_next, BIT_XOR_EXPR, mp, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (j_next, PLUS_EXPR, j, j);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_cond (LT_EXPR, j_next,
+			 build_int_cst (integer_type_node, prec),
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gsi = gsi_after_labels (exit_edge->dest);
+  mp = mp_next;
+  tree mv = make_ssa_name (type);
+  g = gimple_build_assign (mv, BIT_AND_EXPR, mp, m);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  tree shiftcnt = i;
+  if (ifn == IFN_BITEXPAND)
+    {
+      tree aref = build4 (ARRAY_REF, type, array, i, NULL_TREE, NULL_TREE);
+      g = gimple_build_assign (aref, mv);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      shiftcnt = make_ssa_name (integer_type_node);
+      g = gimple_build_assign (shiftcnt, LSHIFT_EXPR, integer_one_node, i);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+  tree tem = make_ssa_name (type);
+  g = gimple_build_assign (tem, BIT_XOR_EXPR, m, mv);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type), RSHIFT_EXPR, mv, shiftcnt);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (m_next, BIT_IOR_EXPR, tem, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  if (ifn == IFN_BITCOMPRESS)
+    {
+      tree t = make_ssa_name (type);
+      g = gimple_build_assign (t, BIT_AND_EXPR, x, mv);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      tem = make_ssa_name (type);
+      g = gimple_build_assign (tem, BIT_XOR_EXPR, x, t);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (make_ssa_name (type), RSHIFT_EXPR, t, shiftcnt);
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+      g = gimple_build_assign (x_next, BIT_IOR_EXPR, tem, gimple_assign_lhs (g));
+      gimple_set_location (g, loc);
+      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+    }
+  g = gimple_build_assign (make_ssa_name (type), BIT_NOT_EXPR, mp);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (mk_next, BIT_AND_EXPR, mk, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (i_next, PLUS_EXPR, i,
+			   ifn == IFN_BITCOMPRESS ? i : integer_one_node);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_cond (LT_EXPR, i_next,
+			 build_int_cst (integer_type_node,
+					ifn == IFN_BITCOMPRESS
+					? prec : log2prec),
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gsi = gsi_for_stmt (stmt);
+  if (ifn == IFN_BITCOMPRESS)
+    {
+      g = gimple_build_assign (lhs, x_next);
+      gimple_set_location (g, loc);
+      gsi_replace (&gsi, g, true);
+      return;
+    }
+  gsi = create_loop_after (gsi_bb (gsi), NULL, &preheader_edge,
+			   &exit_edge, &latch_edge);
+  i = add_loop_phi (build_int_cst (integer_type_node, log2prec - 1),
+		    &i_next, preheader_edge, latch_edge);
+  x = add_loop_phi (x, &x_next, preheader_edge, latch_edge);
+  tree aref = build4 (ARRAY_REF, type, array, i, NULL_TREE, NULL_TREE);
+  mv = make_ssa_name (type);
+  g = gimple_build_assign (mv, aref);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  shiftcnt = make_ssa_name (integer_type_node);
+  g = gimple_build_assign (shiftcnt, LSHIFT_EXPR, integer_one_node, i);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  tree t = make_ssa_name (type);
+  g = gimple_build_assign (t, LSHIFT_EXPR, x, shiftcnt);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type), BIT_NOT_EXPR, mv);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  tem = make_ssa_name (type);
+  g = gimple_build_assign (tem, BIT_AND_EXPR, x, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (make_ssa_name (type), BIT_AND_EXPR, t, mv);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (x_next, BIT_IOR_EXPR, tem, gimple_assign_lhs (g));
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_assign (i_next, PLUS_EXPR, i, integer_minus_one_node);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  g = gimple_build_cond (GE_EXPR, i_next, integer_zero_node,
+			 NULL_TREE, NULL_TREE);
+  gimple_set_location (g, loc);
+  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+  gsi = gsi_for_stmt (stmt);
+  g = gimple_build_assign (lhs, BIT_AND_EXPR, x_next, m0);
+  gimple_set_location (g, loc);
+  gsi_replace (&gsi, g, true);
+}
+
 /* Entry point for _BitInt(N) operation lowering during optimization.  */
 
 static unsigned int
@@ -7889,6 +8169,12 @@ gimple_lower_bitint (void)
 				       real, gimple_assign_lhs (g));
 	      gimple_set_location (g, loc);
 	      gsi_replace (&gsi, g, true);
+	    }
+	  else if (gimple_call_internal_p (stmt, IFN_BITCOMPRESS)
+		   || gimple_call_internal_p (stmt, IFN_BITEXPAND))
+	    {
+	      first_large_huge = 0;
+	      lower_bitcompress_bitexpand (stmt);
 	    }
 	  else if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (s)
 		   && is_gimple_call (stmt)

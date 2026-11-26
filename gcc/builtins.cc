@@ -10779,6 +10779,31 @@ fold_build_builtin_clmulg (location_t loc, tree arg1, tree arg2, tree arg3)
   return build2_loc (loc, COMPOUND_EXPR, type, store, intres);
 }
 
+/* Fold __builtin_bitcompressg (arg1, arg2) or
+   __builtin_bitexpandg (arg1, arg2) into IFN_BITCOMPRESS or IFN_BITEXPAND
+   internal call.  */
+
+tree
+fold_build_builtin_bitcompressg_bitexpandg (location_t loc, internal_fn ifn,
+					    tree arg1, tree arg2)
+{
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg1));
+  if (TREE_CODE (arg1) == INTEGER_CST
+      && !TREE_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == INTEGER_CST
+      && !TREE_OVERFLOW (arg2))
+    {
+      unsigned prec = TYPE_PRECISION (type);
+      wide_int res;
+      if (ifn == IFN_BITCOMPRESS)
+	res = wi::bit_compress (wi::to_wide (arg1), wi::to_wide (arg2), prec);
+      else
+	res = wi::bit_expand (wi::to_wide (arg1), wi::to_wide (arg2), prec);
+      return wide_int_to_tree (type, res);
+    }
+  return build_call_expr_internal_loc (loc, ifn, type, 2, arg1, arg2);
+}
+
 /* Fold a call to __builtin_FILE to a constant string.  */
 
 static inline tree

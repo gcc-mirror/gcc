@@ -143,6 +143,9 @@ extern tree fold_builtin_constant_p (tree);
 extern tree fold_build_builtin_bswapg_bitreverseg (location_t, internal_fn,
 						   tree);
 extern tree fold_build_builtin_clmulg (location_t, tree, tree, tree);
+extern tree fold_build_builtin_bitcompressg_bitexpandg (location_t,
+							internal_fn,
+							tree, tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);

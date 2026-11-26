@@ -3988,6 +3988,10 @@ namespace wi
 
   wide_int bit_repeat (const wide_int_ref &, unsigned int);
   wide_int clmul (const wide_int_ref &, const wide_int_ref &, unsigned int);
+  wide_int bit_compress (const wide_int_ref &, const wide_int_ref &,
+			 unsigned int);
+  wide_int bit_expand (const wide_int_ref &, const wide_int_ref &,
+		       unsigned int);
 }
 
 /* Return a PRECISION-bit integer in which the low WIDTH bits are set

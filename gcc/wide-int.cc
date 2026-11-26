@@ -2461,6 +2461,65 @@ wi::clmul (const wide_int_ref &x, const wide_int_ref &y, unsigned int prec)
   return r;
 }
 
+/* Compute bit compression of X using mask M with precision PREC.
+   Based on "Compress, or Generalized Extract" in Hacker's Delight.  */
+
+wide_int
+wi::bit_compress (const wide_int_ref &x, const wide_int_ref &m,
+		  unsigned int prec)
+{
+  wide_int r = wi::bit_and (x, m);
+  wide_int mk = wi::lshift (wi::bit_not (m), 1);
+  wide_int mm = wide_int::from (m, prec, UNSIGNED);
+  for (unsigned int i = 1; i < prec; i <<= 1)
+    {
+      wide_int mp = mk;
+      for (unsigned int j = 1; j < prec; j <<= 1)
+	mp = wi::bit_xor (mp, wi::lshift (mp, j));
+      wide_int mv = wi::bit_and (mp, mm);
+      mm = wi::bit_or (wi::bit_xor (mm, mv), wi::lrshift (mv, i));
+      wide_int t = wi::bit_and (r, mv);
+      r = wi::bit_or (wi::bit_xor (r, t), wi::lrshift (t, i));
+      mk = wi::bit_and_not (mk, mp);
+    }
+  return r;
+}
+
+/* Compute bit expansion of X using mask M with precision PREC.
+   Based on "Expand, or Generalized Insert" in Hacker's Delight.  */
+
+wide_int
+wi::bit_expand (const wide_int_ref &x, const wide_int_ref &m,
+		unsigned int prec)
+{
+  if (prec == 1)
+    return wi::bit_and (x, m);
+  unsigned log2_prec = ceil_log2 (prec);
+  wide_int m0 = wide_int::from (m, prec, UNSIGNED);
+  wide_int mk = wi::lshift (wi::bit_not (m), 1);
+  wide_int mm = wide_int::from (m, prec, UNSIGNED);
+  wide_int r = wide_int::from (x, prec, UNSIGNED);
+  auto_vec<wide_int, 16> vec (log2_prec);
+  for (unsigned int i = 0; i < log2_prec; ++i)
+    {
+      wide_int mp = mk;
+      for (unsigned int j = 1; j < prec; j <<= 1)
+	mp = wi::bit_xor (mp, wi::lshift (mp, j));
+     wide_int mv = wi::bit_and (mp, mm);
+     vec.safe_push (mv);
+      mm = wi::bit_or (wi::bit_xor (mm, mv), wi::lrshift (mv, 1U << i));
+      mk = wi::bit_and_not (mk, mp);
+    }
+  for (int i = log2_prec - 1; i >= 0; --i)
+    {
+      wide_int mv = vec.last ();
+      vec.pop ();
+      wide_int t = wi::lshift (r, 1U << i);
+      r = wi::bit_or (wi::bit_and_not (r, mv), wi::bit_and (t, mv));
+    }
+  return wi::bit_and (r, m0);
+}
+
 /*
  * Private utilities.
  */

@@ -433,6 +433,8 @@ const struct c_common_resword c_common_reswords[] =
   { "__auto_type",	RID_AUTO_TYPE,	D_CONLY },
   { "__builtin_addressof", RID_ADDRESSOF, D_CXXONLY },
   { "__builtin_assoc_barrier", RID_BUILTIN_ASSOC_BARRIER, 0 },
+  { "__builtin_bitcompressg", RID_BUILTIN_BITCOMPRESSG, 0 },
+  { "__builtin_bitexpandg", RID_BUILTIN_BITEXPANDG, 0 },
   { "__builtin_bitreverseg", RID_BUILTIN_BITREVERSEG, 0 },
   { "__builtin_bit_cast", RID_BUILTIN_BIT_CAST, D_CXXONLY },
   { "__builtin_bswapg", RID_BUILTIN_BSWAPG, 0 },

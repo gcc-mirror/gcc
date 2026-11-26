@@ -13550,6 +13550,8 @@ c_parser_postfix_expression (c_parser *parser)
 	    break;
 	  }
 	case RID_BUILTIN_BSWAPG:
+	case RID_BUILTIN_BITCOMPRESSG:
+	case RID_BUILTIN_BITEXPANDG:
 	case RID_BUILTIN_BITREVERSEG:
 	case RID_BUILTIN_CLMULG:
 	  {
@@ -13557,6 +13559,7 @@ c_parser_postfix_expression (c_parser *parser)
 	    location_t close_paren_loc;
 	    internal_fn ifn;
 	    const char *name;
+	    unsigned minarg = 1, maxarg = 1;
 	    switch (c_parser_peek_token (parser)->keyword)
 	      {
 	      case RID_BUILTIN_BSWAPG:
@@ -13570,6 +13573,20 @@ c_parser_postfix_expression (c_parser *parser)
 	      case RID_BUILTIN_CLMULG:
 		ifn = IFN_CLMUL;
 		name = "__builtin_clmulg";
+		minarg = 2;
+		maxarg = 3;
+		break;
+	      case RID_BUILTIN_BITCOMPRESSG:
+		ifn = IFN_BITCOMPRESS;
+		name = "__builtin_bitcompressg";
+		minarg = 2;
+		maxarg = 2;
+		break;
+	      case RID_BUILTIN_BITEXPANDG:
+		ifn = IFN_BITEXPAND;
+		name = "__builtin_bitexpandg";
+		minarg = 2;
+		maxarg = 2;
 		break;
 	      default:
 		gcc_unreachable ();
@@ -13584,8 +13601,7 @@ c_parser_postfix_expression (c_parser *parser)
 	      }
 
 	    const unsigned nargs = vec_safe_length (cexpr_list);
-	    if (nargs < (ifn == IFN_CLMUL ? 2 : 1)
-		|| nargs > (ifn == IFN_CLMUL ? 3 : 1))
+	    if (nargs < minarg || nargs > maxarg)
 	      {
 		error_at (loc, "wrong number of arguments to %qs", name);
 		expr.set_error ();
@@ -13642,7 +13658,7 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 	    arg = c_fully_fold (arg, false, NULL);
-	    if (ifn == IFN_CLMUL)
+	    if (ifn != IFN_BSWAP && ifn != IFN_BITREVERSE)
 	      {
 		arg_p = &(*cexpr_list)[1];
 		*arg_p = convert_lvalue_to_rvalue (loc, *arg_p, true, true);
@@ -13711,7 +13727,13 @@ c_parser_postfix_expression (c_parser *parser)
 			break;
 		      }
 		  }
-		expr.value = fold_build_builtin_clmulg (loc, arg, arg2, arg3);
+		if (ifn == IFN_CLMUL)
+		  expr.value = fold_build_builtin_clmulg (loc, arg, arg2,
+							  arg3);
+		else
+		  expr.value
+		    = fold_build_builtin_bitcompressg_bitexpandg (loc, ifn,
+								  arg, arg2);
 	      }
 	    else
 	      expr.value = fold_build_builtin_bswapg_bitreverseg (loc, ifn,

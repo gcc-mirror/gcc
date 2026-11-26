@@ -916,6 +916,25 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 		return ret;
 	      }
 	    break;
+	  case IFN_BITCOMPRESS:
+	  case IFN_BITEXPAND:
+	    if (ret == GS_OK)
+	      {
+		location_t loc = EXPR_LOCATION (*expr_p);
+		internal_fn ifn = CALL_EXPR_IFN (*expr_p);
+		tree arg1 = CALL_EXPR_ARG (*expr_p, 0);
+		tree arg2 = CALL_EXPR_ARG (*expr_p, 1);
+		tree r = fold_build_builtin_bitcompressg_bitexpandg (loc, ifn,
+								     arg1,
+								     arg2);
+		if (TREE_CODE (r) == CALL_EXPR
+		    && !CALL_EXPR_FN (r)
+		    && CALL_EXPR_IFN (r) == ifn)
+		  break;
+		*expr_p = r;
+		return ret;
+	      }
+	    break;
 	  default:
 	    break;
 	  }

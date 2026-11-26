@@ -4115,12 +4115,20 @@ write_expression (tree expr)
 	  else
 	    switch (CALL_EXPR_IFN (expr))
 	      {
-	      /* Calls to __builtin_bswapg/__builtin_bitreverseg/__builtin_clmulg
-		 are parsed as IFN_BSWAP/IFN_BITREVERSE/IFN_CLMUL calls because
-		 we don't have those builtins but instead keywords.  Pretend
-		 they are builtin function template.  */
+	      /* Calls to __builtin_bswapg, __builtin_bitreverseg,
+		 __builtin_clmulg, __builtin_bitcompressg or
+		 __builtin_bitexpandg are parsed as IFN_BSWAP,
+		 IFN_BITREVERSE, IFN_CLMUL, IFN_BITCOMPRESS or IFN_BITEXPAND
+		 calls because we don't have those builtins but instead
+		 keywords.  Pretend they are builtin function template.  */
 	      case IFN_BSWAP:
 		write_source_name (get_identifier ("__builtin_bswapg"));
+		break;
+	      case IFN_BITCOMPRESS:
+		write_source_name (get_identifier ("__builtin_bitcompressg"));
+		break;
+	      case IFN_BITEXPAND:
+		write_source_name (get_identifier ("__builtin_bitexpandg"));
 		break;
 	      case IFN_BITREVERSE:
 		write_source_name (get_identifier ("__builtin_bitreverseg"));

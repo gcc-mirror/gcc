@@ -8728,6 +8728,8 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
     case RID_BUILTIN_OPERATOR_NEW:
     case RID_BUILTIN_OPERATOR_DELETE:
     case RID_BUILTIN_BSWAPG:
+    case RID_BUILTIN_BITCOMPRESSG:
+    case RID_BUILTIN_BITEXPANDG:
     case RID_BUILTIN_BITREVERSEG:
     case RID_BUILTIN_CLMULG:
       {
@@ -8864,6 +8866,18 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 	  case RID_BUILTIN_CLMULG:
 	    postfix_expression
 	      = build_x_clmulg (loc, vec, tf_warning_or_error);
+	    break;
+
+	  case RID_BUILTIN_BITCOMPRESSG:
+	    postfix_expression
+	      = build_x_bitcompressg_bitexpandg (loc, IFN_BITCOMPRESS,
+						 vec, tf_warning_or_error);
+	    break;
+
+	  case RID_BUILTIN_BITEXPANDG:
+	    postfix_expression
+	      = build_x_bitcompressg_bitexpandg (loc, IFN_BITEXPAND,
+						 vec, tf_warning_or_error);
 	    break;
 
 	  default:

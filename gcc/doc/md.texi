@@ -5440,6 +5440,54 @@ Neither @samp{clmul@var{m}3} nor @samp{clmul_widen@var{m}3} has to
 handle all operand values.  They may @code{FAIL}, in which case the
 compiler falls back to another expansion.
 
+@mdindex bitcompress@var{m}3
+@item @samp{bitcompress@var{m}3}
+Perform bit compression (parallel bit extract) of operands 1 and 2
+and store result in operand 0.  All three operands have the same scalar
+integer mode @var{m}, and the operands are treated as unsigned.
+This is equivalent to the C code:
+@smallexample
+unsigned_type r = 0;
+for (int i = 0, j = 0; i < width; i++)
+  @{
+    bool mask_bit = (op1 >> i) & 1;
+    r |= (mask_bit & (op0 >> i)) << j;
+    j += mask_bit;
+  @}
+op0 = r;
+@end smallexample
+where @code{width} is the bit size of mode @var{m}.  A pattern in
+mode @var{m} is also used for narrower operations, by zero extending
+the operands to mode @var{m}.
+
+@samp{bitcompress@var{m}3} does not have to handle all operand values.
+They may @code{FAIL}, in which case the compiler falls back to another
+expansion.
+
+@mdindex bitexpand@var{m}3
+@item @samp{bitexpand@var{m}3}
+Perform bit expansion (parallel bit deposit) of operands 1 and 2
+and store result in operand 0.  All three operands have the same scalar
+integer mode @var{m}, and the operands are treated as unsigned.
+This is equivalent to the C code:
+@smallexample
+unsigned_type r = 0;
+for (int i = 0, j = 0; i < width; i++)
+  @{
+    bool mask_bit = (op1 >> i) & 1;
+    r |= (mask_bit & (op0 >> j)) << i;
+    j += mask_bit;
+  @}
+op0 = r;
+@end smallexample
+where @code{width} is the bit size of mode @var{m}.  A pattern in
+mode @var{m} is also used for narrower operations, by zero extending
+the operands to mode @var{m}.
+
+@samp{bitexpand@var{m}3} does not have to handle all operand values.
+They may @code{FAIL}, in which case the compiler falls back to another
+expansion.
+
 @mdindex neg@var{m}2
 @mdindex ssneg@var{m}2
 @mdindex usneg@var{m}2

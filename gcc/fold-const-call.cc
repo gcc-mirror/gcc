@@ -1808,6 +1808,14 @@ fold_const_call_sss (wide_int *result, combined_fn fn,
       *result = wi::clmul (arg0, arg1, precision);
       return true;
 
+    case CFN_BITCOMPRESS:
+      *result = wi::bit_compress (arg0, arg1, precision);
+      return true;
+
+    case CFN_BITEXPAND:
+      *result = wi::bit_expand (arg0, arg1, precision);
+      return true;
+
     default:
       return false;
     }

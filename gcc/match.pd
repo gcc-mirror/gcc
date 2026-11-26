@@ -14346,3 +14346,49 @@ and,
    (if (min_prec0 + min_prec1 - 1 <= TYPE_PRECISION (TREE_TYPE (@0)))
     (complex (IFN_CLMUL @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))))
 #endif
+
+(for bitopcall (IFN_BITCOMPRESS IFN_BITEXPAND)
+ (simplify
+  (bitopcall @0 zero_one_valued_p@1)
+   (bit_and @0 @1))
+#if GIMPLE
+ (simplify
+  (bitopcall @0 @1)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (with { tree optype = TREE_TYPE (@0);
+	   unsigned int min_prec1 = TYPE_PRECISION (optype);
+	   int_range_max vr1;
+	   tree ntype = NULL_TREE;
+	   if (gimple_match_range_of_expr (vr1, @1) && !vr1.undefined_p ())
+	     min_prec1 = wi::min_precision (vr1.upper_bound (), UNSIGNED);
+	   if (TYPE_MODE (optype) != BLKmode
+	       && optab_handler (bitopcall == CFN_BITCOMPRESS
+				 ? bitcompress_optab : bitexpand_optab,
+				 TYPE_MODE (optype)) != CODE_FOR_nothing)
+	     min_prec1 = TYPE_PRECISION (optype);
+	   if (min_prec1 < TYPE_PRECISION (optype))
+	     {
+	       ntype = lang_hooks.types.type_for_size (min_prec1, 1);
+	       if (ntype && TYPE_PRECISION (ntype)
+		   >= TYPE_PRECISION (optype))
+		 ntype = NULL_TREE;
+	       else if (ntype == NULL_TREE && BITINT_TYPE_P (optype))
+		 {
+		   struct bitint_info info;
+		   if (targetm.c.bitint_type_info (min_prec1, &info))
+		     {
+		       /* Prefer bit-precise integers with precisions
+			  in multiplies of limb precision.  */
+		       unsigned limb_prec
+			 = GET_MODE_PRECISION (as_a <scalar_int_mode>
+					       (info.limb_mode));
+		       min_prec1 = ROUND_UP (min_prec1, limb_prec);
+		       if (min_prec1 < TYPE_PRECISION (optype))
+			 ntype = build_bitint_type (min_prec1, 1);
+		     }
+		 }
+	     } }
+    (if (ntype)
+     (convert (bitopcall (convert:ntype @0) (convert:ntype @1)))))))
+#endif
+)

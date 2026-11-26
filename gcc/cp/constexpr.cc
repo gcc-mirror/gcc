@@ -3787,6 +3787,34 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 	return wide_int_to_tree (TREE_TYPE (t), lo);
       }
 
+    case IFN_BITCOMPRESS:
+    case IFN_BITEXPAND:
+      {
+	tree args[2] = {};
+	for (int i = 0; i < call_expr_nargs (t); ++i)
+	  {
+	    args[i] = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, i),
+						    vc_prvalue, non_constant_p,
+						    overflow_p, jump_target);
+	    if (*jump_target)
+	      return NULL_TREE;
+	    if (*non_constant_p)
+	      return t;
+	  }
+	location_t loc = cp_expr_loc_or_input_loc (t);
+	if (TREE_CODE (args[0]) != INTEGER_CST
+	    || TREE_CODE (args[1]) != INTEGER_CST)
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc, "call to internal function %qE", t);
+	    *non_constant_p = true;
+	    return t;
+	  }
+	return fold_build_builtin_bitcompressg_bitexpandg (loc,
+							   CALL_EXPR_IFN (t),
+							   args[0], args[1]);
+      }
+
     case IFN_VEC_CONVERT:
       {
 	tree arg = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
@@ -12802,6 +12830,8 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		case IFN_BSWAP:
 		case IFN_BITREVERSE:
 		case IFN_CLMUL:
+		case IFN_BITCOMPRESS:
+		case IFN_BITEXPAND:
 		  bail = false;
 		  break;
 

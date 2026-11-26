@@ -1128,6 +1128,38 @@ instruction pattern for integer and integer vector modes.
 The @code{IFN_POPCOUNT} internal function directly maps to the @code{popcount}
 instruction pattern for integer and integer vector modes.
 
+@cindex @code{IFN_BSWAP} internal function
+@item @samp{IFN_BSWAP}
+The @code{IFN_BSWAP} internal function directly maps to the @code{bswap}
+instruction pattern for integer modes with libgcc or inline fallback.
+
+@cindex @code{IFN_BITREVERSE} internal function
+@item @samp{IFN_BITREVERSE}
+The @code{IFN_BITREVERSE} internal function directly maps to the
+@code{bitreverse} instruction pattern for integer modes with inline
+fallback.
+
+@cindex @code{IFN_CLMUL} internal function
+@item @samp{IFN_CLMUL}
+The @code{IFN_CLMUL} internal function directly maps to the @code{clmul}
+instruction pattern for integer modes with inline fallback.
+
+@cindex @code{IFN_CLMUL_WIDEN} internal function
+@item @samp{IFN_CLMUL_WIDEN}
+The @code{IFN_CLMUL_WIDEN} internal function directly maps to the
+@code{clmul_widen} instruction pattern for integer modes with inline fallback.
+Return type is @code{COMPLEX_TYPE}.
+
+@cindex @code{IFN_BITCOMPRESS} internal function
+@item @samp{IFN_BITCOMPRESS}
+The @code{IFN_BITCOMPRESS} internal function directly maps to the
+@code{bitcompress} instruction pattern for integer modes with inline fallback.
+
+@cindex @code{IFN_BITEXPAND} internal function
+@item @samp{IFN_BITEXPAND}
+The @code{IFN_BITEXPAND} internal function directly maps to the
+@code{bitexpand} instruction pattern for integer modes with inline fallback.
+
 @end table
 
 @node Other Internal Functions

@@ -7280,6 +7280,78 @@ build_x_clmulg (location_t loc, vec<tree, va_gc> *args,
     }
   return exp;
 }
+
+/* Build __builtin_bitcompressg (ARG1, ARG2) or
+   __builtin_bitexpandg (ARG1, ARG2).  */
+tree
+build_x_bitcompressg_bitexpandg (location_t loc, internal_fn ifn,
+				 vec<tree, va_gc> *args,
+				 tsubst_flags_t complain)
+{
+  const char *name
+    = (ifn == IFN_BITCOMPRESS
+       ? "__builtin_bitcompressg" : "__builtin_bitexpandg");
+  if (args->length () != 2)
+    {
+      if (complain & tf_error)
+	error_at (loc, "wrong number of arguments to %qs", name);
+      return error_mark_node;
+    }
+  tree arg1 = (*args)[0];
+  tree arg2 = (*args)[1];
+  if (error_operand_p (arg1) || error_operand_p (arg2))
+    return error_mark_node;
+  if (type_dependent_expression_p (arg1)
+      || type_dependent_expression_p (arg2))
+    {
+      tree exp = build_min_nt_call_vec (NULL, args);
+      CALL_EXPR_IFN (exp) = ifn;
+      return exp;
+    }
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg1));
+  if (!INTEGRAL_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "%qs operand not an integral type", name);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == ENUMERAL_TYPE)
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument %u in call to function "
+		       "%qs has enumerated type", 1, name);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument %u in call to function "
+		       "%qs has boolean type", 1, name);
+      return error_mark_node;
+    }
+  if (!TYPE_UNSIGNED (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument 1 in call to function "
+		       "%qs has signed type", name);
+      return error_mark_node;
+    }
+  if (!same_type_p (type, TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))
+    {
+      if (complain & tf_error)
+	error_at (loc, "arguments 1 and 2 to function %qs "
+		       "have different types %qT and %qT",
+		  name, type, TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
+      return error_mark_node;
+    }
+  tree exp = build_call_expr_internal_loc (loc, ifn, type, 2, arg1, arg2);
+  if (processing_template_decl)
+    {
+      exp = build_min_non_dep_call_vec (exp, NULL, args);
+      CALL_EXPR_IFN (exp) = ifn;
+    }
+  return exp;
+}
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
    of pointer PTROP and integer INTOP.  */
