@@ -12,6 +12,6 @@ fms_out (_Complex float *__restrict d, _Complex float *__restrict c,
     d[i] = c[i] - a[i] * b[i];
 }
 
-/* { dg-final { scan-tree-dump "add new stmt: \[^\n\r]*COMPLEX_FMS \\(" "vect" { xfail arm*-*-* } } } */
+/* { dg-final { scan-tree-dump "add new stmt: \[^\n\r]*COMPLEX_FMS \\(" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Found COMPLEX_FMS_CONJ" "vect" } } */
 /* { dg-final { scan-tree-dump-not "Found COMPLEX_MUL" "vect" } } */
