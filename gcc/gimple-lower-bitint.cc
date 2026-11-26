@@ -6409,11 +6409,11 @@ bitint_large_huge::lower_clmul (tree obj, gimple *stmt)
   insert_before (g);
   if (bitint_big_endian)
     {
-      g = gimple_build_assign (make_ssa_name (sizetype), MINUS_EXPR, p, idx3);
+      g = gimple_build_assign (make_ssa_name (sizetype), MINUS_EXPR, idx3, p);
       insert_before (g);
       idx3 = gimple_assign_lhs (g);
       idx4 = make_ssa_name (sizetype);
-      g = gimple_build_assign (idx4, MINUS_EXPR, p, idx);
+      g = gimple_build_assign (idx4, MINUS_EXPR, idx, p);
       insert_before (g);
     }
   g = gimple_build_assign (make_ssa_name (sizetype), NEGATE_EXPR, i);
