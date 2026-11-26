@@ -1956,6 +1956,7 @@ read_x (st_parameter_dt *dtp, size_t n)
 	      else if (q2 != EOF) /* Oops, seek back.  */
 		fbuf_seek (dtp->u.p.current_unit, -1, SEEK_CUR);
 	    }
+	  dtp->u.p.current_unit->strm_pos += dtp->u.p.sf_seen_eor;
 	  goto done;
 	}
       n++;

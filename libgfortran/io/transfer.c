@@ -556,13 +556,16 @@ read_block_form (st_parameter_dt *dtp, size_t *nbytes)
       (dtp->u.p.current_unit->flags.access == ACCESS_SEQUENTIAL ||
        dtp->u.p.current_unit->flags.access == ACCESS_STREAM))
     {
+      int prev_seen_eor = dtp->u.p.sf_seen_eor;
+
       if (is_internal_unit (dtp))
 	source = read_sf_internal (dtp, nbytes);
       else
 	source = read_sf (dtp, nbytes);
 
+      /* Count the record terminator only on the read that consumed it.  */
       dtp->u.p.current_unit->strm_pos +=
-	(gfc_offset) (*nbytes + dtp->u.p.sf_seen_eor);
+	(gfc_offset) (*nbytes + dtp->u.p.sf_seen_eor - prev_seen_eor);
       return source;
     }
 
