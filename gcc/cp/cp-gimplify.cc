@@ -3805,6 +3805,16 @@ cp_fold (tree x, fold_flags_t flags)
 	    }
 	}
 
+      /* If either op1 or op2 or both are bit-fields, promote them now,
+	 as middle-end folding doesn't expect COND_EXPR with inconsistent
+	 types.  At this point we shouldn't care whether COND_EXPR or what
+	 it folds into is an lvalue or rvalue, after all middle-end
+	 folding doesn't differentiate that either.  */
+      if (op1 && is_bitfield_expr_with_lowered_type (op1))
+	op1 = fold_convert_loc (loc, TREE_TYPE (x), op1);
+      if (op2 && is_bitfield_expr_with_lowered_type (op2))
+	op2 = fold_convert_loc (loc, TREE_TYPE (x), op2);
+
       if (op0 == error_mark_node
 	  || op1 == error_mark_node
 	  || op2 == error_mark_node)
@@ -3815,13 +3825,6 @@ cp_fold (tree x, fold_flags_t flags)
 	x = fold_build3_loc (loc, code, TREE_TYPE (x), op0, op1, op2);
       else
 	x = fold (x);
-
-      /* A COND_EXPR might have incompatible types in branches if one or both
-	 arms are bitfields.  If folding exposed such a branch, fix it up.  */
-      if (TREE_CODE (x) != code
-	  && x != error_mark_node
-	  && !useless_type_conversion_p (TREE_TYPE (org_x), TREE_TYPE (x)))
-	x = fold_convert (TREE_TYPE (org_x), x);
 
       break;
 
