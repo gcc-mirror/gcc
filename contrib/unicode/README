@@ -79,5 +79,11 @@ The procedure to update GCC's Unicode support is the following:
       ../../libcpp/makeuname2c UnicodeData.txt NameAliases.txt \
 	> ../../libcpp/uname2c.h
 
+10: Run ./gen-printable-chars.py X.Y > ../../libcpp/printable-chars.inc
+    (for X.Y see above)
+
+11: Run ./gen-combining-chars.py X.Y > ../../libcpp/combining-chars.inc
+    (for X.Y see above)
+
 See gen_libstdcxx_unicode_data.py for instructions on updating the lookup
 tables in libstdc++.
