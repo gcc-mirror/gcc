@@ -6107,11 +6107,12 @@ expand_BITREVERSE (internal_fn fn, gcall *stmt)
 }
 
 /* Expand CLMUL (OP0, OP1) where operands are in OP_MODE and have
-   minimum unsigned precision PREC0 and PREC1.  Compute result in MODE.  */
+   minimum unsigned precision PREC0 and PREC1.  If OP_EQ, op0 and op1
+   have the same value.  Compute result in MODE.  */
 
 static rtx
 expand_clmul (machine_mode mode, machine_mode op_mode, rtx op0, rtx op1,
-	      unsigned int prec0, unsigned int prec1)
+	      unsigned int prec0, unsigned int prec1, bool op_eq)
 {
   unsigned int op_prec = GET_MODE_PRECISION (as_a <scalar_int_mode> (op_mode));
   unsigned int prec = GET_MODE_PRECISION (as_a <scalar_int_mode> (mode));
@@ -6131,6 +6132,23 @@ expand_clmul (machine_mode mode, machine_mode op_mode, rtx op0, rtx op1,
 	= GET_MODE_PRECISION (as_a <scalar_int_mode> (cmode));
       if (prec0 > this_prec || prec1 > this_prec)
 	continue;
+      if (op_eq
+	  && (prec0 + prec1 - 1 <= this_prec || prec <= this_prec)
+	  && optab_handler (bitexpand_optab, cmode) != CODE_FOR_nothing)
+	{
+	  /* Optimize clmul (x, x) using bitexpand (x, 0x55555555U)
+	     if supported in hw.  */
+	  rtx_insn *start = get_last_insn ();
+	  rtx op0c = convert_modes (cmode, op_mode, op0, 1);
+	  rtx op1c
+	    = immed_wide_int_const (wi::bit_repeat (wide_int::from (1, 2,
+								    UNSIGNED),
+						    this_prec), cmode);
+	  if (rtx res = expand_binop (cmode, bitexpand_optab, op0c, op1c,
+				      NULL_RTX, 1, OPTAB_DIRECT))
+	    return convert_modes (mode, cmode, res, 1);
+	  delete_insns_since (start);
+	}
       if (optab_handler (clmul_optab, cmode) != CODE_FOR_nothing
 	  && (prec0 + prec1 - 1 <= this_prec || prec <= this_prec))
 	{
@@ -6332,7 +6350,8 @@ expand_CLMUL (internal_fn, gcall *stmt)
   unsigned int prec1 = get_min_precision (arg1, UNSIGNED);
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  rtx res = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+  rtx res = expand_clmul (mode, mode, op0, op1, prec0, prec1,
+			  operand_equal_p (arg0, arg1, 0));
   if (TYPE_PRECISION (TREE_TYPE (arg0)) < GET_MODE_PRECISION (mode))
     {
       rtx mask
@@ -6365,6 +6384,7 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
   rtx op1 = expand_normal (arg1);
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx bitint_mask = NULL_RTX;
+  bool op_eq = operand_equal_p (arg0, arg1, 0);
   if (type_prec != prec)
     bitint_mask
       = immed_wide_int_const (wi::mask (type_prec, false, prec), mode);
@@ -6372,7 +6392,7 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
     {
       /* The whole product fits in MODE.  For a type narrower than MODE
 	 the bits above its precision are the high half.  */
-      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1, op_eq);
       rtx reshi = const0_rtx;
       if (prec0 + prec1 - 1 > type_prec)
 	reshi = expand_shift (RSHIFT_EXPR, mode, reslo, type_prec, NULL_RTX, 1);
@@ -6406,7 +6426,7 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
   if (GET_MODE_2XWIDER_MODE (mode).exists (&wmode)
       && targetm.scalar_mode_supported_p (wmode))
     {
-      rtx res = expand_clmul (wmode, mode, op0, op1, prec0, prec1);
+      rtx res = expand_clmul (wmode, mode, op0, op1, prec0, prec1, op_eq);
       rtx reslo = convert_modes (mode, wmode, res, 1);
       if (bitint_mask)
 	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
@@ -6426,13 +6446,13 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
       || (prec == 2 * UNITS_PER_WORD
 	  && optab_handler (bitreverse_optab, word_mode) != CODE_FOR_nothing))
     {
-      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1, op_eq);
       if (bitint_mask)
 	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
       write_complex_part (target, reslo, false, true);
       rtx revx = expand_unop (mode, bitreverse_optab, op0, NULL_RTX, 1);
       rtx revy = expand_unop (mode, bitreverse_optab, op1, NULL_RTX, 1);
-      rtx reshi = expand_clmul (mode, mode, revx, revy, prec, prec);
+      rtx reshi = expand_clmul (mode, mode, revx, revy, prec, prec, op_eq);
       reshi = expand_unop (mode, bitreverse_optab, reshi, NULL_RTX, 1);
       if (bitint_mask)
 	reshi = expand_and (mode, reshi, bitint_mask, NULL_RTX);
@@ -6457,16 +6477,16 @@ expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
   rtx x1 = expand_shift (RSHIFT_EXPR, mode, op0, hprec, NULL_RTX, 1);
   rtx y0 = expand_binop (mode, and_optab, op1, mask, NULL_RTX, 1, olw);
   rtx y1 = expand_shift (RSHIFT_EXPR, mode, op1, hprec, NULL_RTX, 1);
-  rtx l = expand_clmul (mode, mode, x0, y0, hprec, hprec);
+  rtx l = expand_clmul (mode, mode, x0, y0, hprec, hprec, op_eq);
   rtx t0 = expand_binop (mode, xor_optab, x0, x1, NULL_RTX, 1, olw);
   rtx t1 = expand_binop (mode, xor_optab, y0, y1, NULL_RTX, 1, olw);
-  rtx m = expand_clmul (mode, mode, t0, t1, hprec, hprec);
+  rtx m = expand_clmul (mode, mode, t0, t1, hprec, hprec, op_eq);
   rtx h;
   if (prec0 <= hprec || prec1 <= hprec)
     h = const0_rtx;
   else
     h = expand_clmul (mode, mode, x1, y1, MIN (hprec, prec0 - hprec),
-		      MIN (hprec, prec1 - hprec));
+		      MIN (hprec, prec1 - hprec), op_eq);
   t0 = expand_binop (mode, xor_optab, l, h, NULL_RTX, 1, olw);
   m = expand_binop (mode, xor_optab, m, t0, NULL_RTX, 1, olw);
   t0 = expand_shift (LSHIFT_EXPR, mode, m, hprec, NULL_RTX, 1);
