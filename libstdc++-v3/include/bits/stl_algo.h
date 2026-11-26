@@ -3847,7 +3847,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return __f; // N.B. [alg.foreach] says std::move(f) but it's redundant.
     }
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L // __cpp_lib_parallel_algorithm but not hosted-only
   /**
    *  @brief Apply a function to every element of a sequence.
    *  @ingroup non_mutating_algorithms

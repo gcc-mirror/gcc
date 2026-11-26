@@ -266,7 +266,7 @@ namespace __detail
     }
 #endif // __cpp_lib_interpolate
 
-#if __cplusplus >= 201703L
+#if __cplusplus >= 201703L // __cpp_lib_parallel_algorithm but not hosted-only
   /// @addtogroup numeric_ops
   /// @{
 
