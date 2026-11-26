@@ -9285,8 +9285,17 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 		     iterate because of that we track whether a PHI
 		     was CSEd to with GF_PLF_1.  */
 		  bool phival_changed;
-		  if ((phival_changed = visit_phi (gsi.phi (),
-						   &inserted, false))
+		  tree res = PHI_RESULT (gsi.phi ());
+		  tree oldval = VN_INFO (res)->valnum;
+		  phival_changed = visit_phi (gsi.phi (), &inserted, false);
+		  /* Only detect the change, do not commit it.  Committing
+		     it would make PHIs earlier in the destination block see
+		     the new value of this PHI when we re-visit them, letting
+		     one PHI cycle advance a step ahead of equivalent ones
+		     which then are never discovered equivalent.  */
+		  if (phival_changed)
+		    VN_INFO (res)->valnum = oldval;
+		  if (phival_changed
 		      || (inserted && gimple_plf (gsi.phi (), GF_PLF_1)))
 		    {
 		      if (!phival_changed
