@@ -2280,8 +2280,9 @@ merge_classes (enum x86_64_reg_class class1, enum x86_64_reg_class class2)
 
 enum psabi_change
 {
-  PSABI_ZERO_WIDTH_BITFIELD = 1 << 0,
-  PSABI_UNALIGNED_MEMBER = 1 << 1
+  PSABI_FLEXIBLE_ARRAY_STRUCT = 1 << 0,
+  PSABI_ZERO_WIDTH_BITFIELD = 1 << 1,
+  PSABI_UNALIGNED_MEMBER = 1 << 2
 };
 
 /* State of the classification, shared by all recursive calls.  */
@@ -2313,6 +2314,18 @@ psabi_new_behavior_p (classify_state &state, unsigned int change)
 
   state.seen |= change;
   return true;
+}
+
+/* Return true if TYPE is a flexible array member type.  */
+
+static bool
+flexible_array_p (const_tree type)
+{
+  return (TYPE_MODE (type) == BLKmode
+	  && TREE_CODE (type) == ARRAY_TYPE
+	  && TYPE_SIZE (type) == NULL_TREE
+	  && TYPE_DOMAIN (type) != NULL_TREE
+	  && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) == NULL_TREE);
 }
 
 /* Return true if a member of type TYPE at bit offset BIT_POS violates
@@ -2452,25 +2465,10 @@ classify_argument (machine_mode mode, const_tree type,
 		  else
 		    {
 		      /* Flexible array member is ignored.  */
-		      if (TYPE_MODE (field_type) == BLKmode
-			  && TREE_CODE (field_type) == ARRAY_TYPE
-			  && TYPE_SIZE (field_type) == NULL_TREE
-			  && TYPE_DOMAIN (field_type) != NULL_TREE
-			  && (TYPE_MAX_VALUE (TYPE_DOMAIN (field_type))
-			      == NULL_TREE))
-			{
-			  static bool warned;
-
-			  if (!warned && warn_psabi)
-			    {
-			      warned = true;
-			      inform (input_location,
-				      "the ABI of passing struct with"
-				      " a flexible array member has"
-				      " changed in GCC 4.4");
-			    }
-			  continue;
-			}
+		      if (flexible_array_p (field_type)
+			  && (psabi_new_behavior_p
+			      (state, PSABI_FLEXIBLE_ARRAY_STRUCT)))
+			continue;
 
 		      /* Position of FIELD, in bits, from the start
 			 of the outermost object being classified.  */
@@ -2891,6 +2889,12 @@ inform_psabi_change (unsigned int change)
 {
   switch (change)
     {
+    case PSABI_FLEXIBLE_ARRAY_STRUCT:
+      inform (input_location,
+	      "the ABI of passing struct with a flexible array member"
+	      " has changed in GCC 4.4");
+      break;
+
     case PSABI_ZERO_WIDTH_BITFIELD:
       {
 	const char *url
