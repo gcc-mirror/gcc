@@ -2177,20 +2177,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 				     : OMP_CLAUSE_DEFAULT_PRIVATE);
 	      }
 	}
-      if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
-	{
-	  /* The point here is to not sanitize static initializers.  */
-	  bool no_sanitize_p = wtd->no_sanitize_p;
-	  wtd->no_sanitize_p = true;
-	  for (tree decl = BIND_EXPR_VARS (stmt);
-	       decl;
-	       decl = DECL_CHAIN (decl))
-	    if (VAR_P (decl)
-		&& TREE_STATIC (decl)
-		&& DECL_INITIAL (decl))
-	      cp_walk_tree (&DECL_INITIAL (decl), cp_genericize_r, data, NULL);
-	  wtd->no_sanitize_p = no_sanitize_p;
-	}
       if (flag_reflection)
 	/* Adjust consteval-only vars in BIND_EXPR_VARS so that REFLECT_EXPR
 	   doesn't leak into the ME.  */
@@ -2213,6 +2199,20 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	      }
 	    p = &DECL_CHAIN (*p);
 	  }
+      if (sanitize_flags_p (SANITIZE_NULL | SANITIZE_ALIGNMENT | SANITIZE_VPTR))
+	{
+	  /* The point here is to not sanitize static initializers.  */
+	  bool no_sanitize_p = wtd->no_sanitize_p;
+	  wtd->no_sanitize_p = true;
+	  for (tree decl = BIND_EXPR_VARS (stmt);
+	       decl;
+	       decl = DECL_CHAIN (decl))
+	    if (VAR_P (decl)
+		&& TREE_STATIC (decl)
+		&& DECL_INITIAL (decl))
+	      cp_walk_tree (&DECL_INITIAL (decl), cp_genericize_r, data, NULL);
+	  wtd->no_sanitize_p = no_sanitize_p;
+	}
       wtd->bind_expr_stack.safe_push (stmt);
       cp_walk_tree (&BIND_EXPR_BODY (stmt),
 		    cp_genericize_r, data, NULL);
