@@ -415,7 +415,8 @@ c_fully_fold_internal (tree expr, bool in_init, bool *maybe_const_operands,
 	  && TREE_CODE (TREE_TYPE (orig_op1)) == INTEGER_TYPE
 	  && c_inhibit_evaluation_warnings == 0)
 	{
-	  if (tree_int_cst_sgn (op1) < 0)
+	  if (tree_int_cst_sgn (op1) < 0
+	      && !warning_suppressed_p (expr, OPT_Wshift_count_negative))
 	    warning_at (loc, OPT_Wshift_count_negative,
 			(code == LSHIFT_EXPR
 			 ? G_("left shift count is negative")

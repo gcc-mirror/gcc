@@ -13527,12 +13527,15 @@ c_parser_postfix_expression (c_parser *parser)
 		|| (stdc_rid == C_BUILTIN_STDC_BIT_CEIL && integer_onep (arg)))
 	      expr.value = build_int_cst (type, 0);
 	    else
-	      expr.value
-		= build2_loc (loc, LSHIFT_EXPR, type,
-			      build_int_cst (type,
-					     (stdc_rid
-					      == C_BUILTIN_STDC_BIT_CEIL
-					      ? 2 : 1)), expr.value);
+	      {
+		expr.value
+		  = build2_loc (loc, LSHIFT_EXPR, type,
+				build_int_cst (type,
+					       (stdc_rid
+						== C_BUILTIN_STDC_BIT_CEIL
+						? 2 : 1)), expr.value);
+		suppress_warning (expr.value, OPT_Wshift_count_negative);
+	      }
 	    if (stdc_rid == C_BUILTIN_STDC_BIT_CEIL)
 	      expr.value = build3_loc (loc, COND_EXPR, type,
 				       build2_loc (loc, LE_EXPR,
