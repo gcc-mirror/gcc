@@ -3697,8 +3697,10 @@ loop_niter_by_eval (class loop *loop, edge exit)
     return chrec_dont_know;
 
   cmp = gimple_cond_code (cond);
+  op[0] = gimple_cond_lhs (cond);
+  op[1] = gimple_cond_rhs (cond);
   if (exit->flags & EDGE_TRUE_VALUE)
-    cmp = invert_tree_comparison (cmp, false);
+    cmp = invert_tree_comparison (cmp, HONOR_NANS (op[0]));
 
   switch (cmp)
     {
@@ -3708,8 +3710,6 @@ loop_niter_by_eval (class loop *loop, edge exit)
     case GE_EXPR:
     case LT_EXPR:
     case LE_EXPR:
-      op[0] = gimple_cond_lhs (cond);
-      op[1] = gimple_cond_rhs (cond);
       break;
 
     default:
