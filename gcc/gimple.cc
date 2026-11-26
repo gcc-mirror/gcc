@@ -326,7 +326,7 @@ gimple_build_call_valist (tree fn, unsigned nargs, va_list ap)
    Build the basic components of a GIMPLE_CALL statement to internal
    function FN with NARGS arguments.  */
 
-static inline gcall *
+gcall *
 gimple_build_call_internal_1 (enum internal_fn fn, unsigned nargs)
 {
   gcall *s

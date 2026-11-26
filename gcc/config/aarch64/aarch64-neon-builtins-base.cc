@@ -238,13 +238,16 @@ one_element_vector_type_p (tree type)
    is cast back to the expected singleton vector type.  */
 static tree
 build_ifn_call (gimple_folder &f, internal_fn ifn, tree ret_type,
-		vec<tree> &args)
+		const array_slice<const tree> args)
 {
-  for (auto &arg : args)
-    if (one_element_vector_type_p (TREE_TYPE (arg)))
-      arg = f.force_val (build_cast (TREE_TYPE (TREE_TYPE (arg)), arg));
-
-  auto call = gimple_build_call_internal_vec (ifn, args);
+  unsigned i = 0, nargs = args.size ();
+  auto call = gimple_build_call_internal_1 (ifn, nargs);
+  for (tree arg : args)
+    {
+      if (one_element_vector_type_p (TREE_TYPE (arg)))
+	arg = f.force_val (build_cast (TREE_TYPE (TREE_TYPE (arg)), arg));
+      gimple_call_set_arg (call, i++, arg);
+    }
   gimple_seq_add_stmt_without_update (&f.stmts, call);
 
   if (!one_element_vector_type_p (ret_type))
@@ -260,6 +263,16 @@ build_ifn_call (gimple_folder &f, internal_fn ifn, tree ret_type,
       gimple_call_set_lhs (call, ret);
       return build_vec_dup (ret_type, ret);
     }
+}
+
+/* Convenience overload to allow passing ARGS as a braced list without creating
+    an intermediate array variable.  */
+static tree
+build_ifn_call (gimple_folder &f, internal_fn ifn, tree ret_type,
+		const std::initializer_list<const tree> args)
+{
+  return build_ifn_call (f, ifn, ret_type,
+			 array_slice<const tree> (args.begin (), args.size ()));
 }
 
 /* Base class for all function expanders.
@@ -729,10 +742,8 @@ struct gimple_narrow_saturate : public gimple_function_base
       arg = f.force_val (
 	fold_build2 (MAX_EXPR, arg_type, arg, build_zero_cst (arg_type)));
 
-    auto_vec<tree> ifn_args{};
-    ifn_args.safe_push (arg);
     auto truncated
-      = f.force_val (build_ifn_call (f, IFN_SAT_TRUNC, trunc_type, ifn_args));
+      = f.force_val (build_ifn_call (f, IFN_SAT_TRUNC, trunc_type, {arg}));
     auto ret = high_p ? build_combine (f, src, truncated) : truncated;
     return gimple_build_assign (f.lhs (), ret);
   }
@@ -1362,11 +1373,7 @@ build_abs_diff (gimple_folder &f, tree lhs, tree rhs)
     return fold_build1 (ABS_EXPR, type,
 			f.force_val (fold_build2 (MINUS_EXPR, type, lhs, rhs)));
 
-  auto ret = build_var (type);
-  auto call = gimple_build_call_internal (IFN_ABD, 2, lhs, rhs);
-  gimple_seq_add_stmt_without_update (&f.stmts, call);
-  gimple_call_set_lhs (call, ret);
-  return ret;
+  return build_ifn_call (f, IFN_ABD, type, {lhs, rhs});
 }
 
 template<bool accumulate>
@@ -1493,12 +1500,8 @@ struct gimple_fused_mla : public gimple_function_base
 	break;
       }
 
-    auto_vec<tree> args{};
-    args.safe_push (lhs);
-    args.safe_push (rhs);
-    args.safe_push (acc);
-    auto ret
-      = build_ifn_call (f, negate ? IFN_FNMA : IFN_FMA, f.ret_type, args);
+    auto ret = build_ifn_call (f, negate ? IFN_FNMA : IFN_FMA, f.ret_type,
+			       {lhs, rhs, acc});
     return this->maybe_optimization_barrier (f, ret);
   }
 };
@@ -1564,11 +1567,9 @@ struct gimple_reduce_minmax : public gimple_function_base
     if (FLOAT_TYPE_P (f.ret_type))
       return nullptr;
 
-    auto_vec<tree> args{};
-    args.safe_push (arg);
     auto ifn = min_p ? IFN_REDUC_MIN : IFN_REDUC_MAX;
     return gimple_build_assign (f.lhs (),
-				build_ifn_call (f, ifn, f.ret_type, args));
+				build_ifn_call (f, ifn, f.ret_type, {arg}));
   }
 };
 
@@ -1752,20 +1753,16 @@ struct gimple_load_store_interleaved : public gimple_function_base
     if (load_p)
       {
 	/* lhs = VIEW_CONVERT (.LOAD_LANES (*ptr)) */
-	auto array = build_var (array_type);
-	auto call = gimple_build_call_internal (IFN_LOAD_LANES, 1, deref);
-	gimple_seq_add_stmt_without_update (&f.stmts,call);
-	gimple_call_set_lhs (call, array);
-	return gimple_build_assign (f.lhs (), build_cast (tuple_type, array));
+	auto call = build_ifn_call (f, IFN_LOAD_LANES, array_type, {deref});
+	return gimple_build_assign (f.lhs (), build_cast (tuple_type, call));
       }
     else
       {
 	/* *ptr = .STORE_LANES (tuple.val) */
 	auto tuple = gimple_call_arg (f.call, 1);
 	auto array = build_tuple_get_array (tuple);
-	auto call = gimple_build_call_internal (IFN_STORE_LANES, 1, array);
-	gimple_call_set_lhs (call, deref);
-	return call;
+	auto call = build_ifn_call (f, IFN_STORE_LANES, array_type, {array});
+	return gimple_build_assign (f.lhs (), build_cast (tuple_type, call));
       }
   }
 };
