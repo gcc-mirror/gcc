@@ -5558,7 +5558,16 @@ set_ssa_val_to (tree from, tree to)
 
   gcc_checking_assert (to != NULL_TREE
 		       && ((TREE_CODE (to) == SSA_NAME
-			    && (to == from || SSA_VAL (to) == to))
+			    && (to == from || SSA_VAL (to) == to
+				/* PHIs in a block are value-numbered in
+				   parallel, a PHI result in the same block
+				   as FROM we CSE to still has the previous
+				   iteration value number which might not be
+				   VARYING.  */
+				|| (is_a <gphi *> (SSA_NAME_DEF_STMT (from))
+				    && is_a <gphi *> (SSA_NAME_DEF_STMT (to))
+				    && (gimple_bb (SSA_NAME_DEF_STMT (from))
+					== gimple_bb (SSA_NAME_DEF_STMT (to))))))
 			   || is_gimple_min_invariant (to)));
 
   if (from != to)
@@ -8639,67 +8648,95 @@ process_bb (rpo_elim &avail, basic_block bb,
 
   /* Value-number all defs in the basic-block.  */
   if (!skip_phis)
-    for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	 gsi_next (&gsi))
-      {
-	gphi *phi = gsi.phi ();
-	tree res = PHI_RESULT (phi);
-	vn_ssa_aux_t res_info = VN_INFO (res);
-	if (!bb_visited)
+    {
+      /* PHIs are executed in parallel so value-number all of them
+	 based on the values of their arguments before committing any
+	 new value.  Otherwise a PHI argument flowing in over a backedge
+	 that is the result of a PHI visited earlier in the same block
+	 sees its new value while one that is the result of a PHI visited
+	 later does not.  That lets one PHI cycle advance a step ahead of
+	 an equivalent one, depending on the order of the PHIs, and
+	 iteration then fails to discover the equivalence or oscillates
+	 between CSEing to different cycles.  */
+      auto_vec<tree, 16> phi_vals;
+      if (!bb_visited)
+	for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
 	  {
+	    gphi *phi = gsi.phi ();
+	    vn_ssa_aux_t res_info = VN_INFO (PHI_RESULT (phi));
 	    gcc_assert (!res_info->visited);
 	    res_info->valnum = VN_TOP;
 	    res_info->visited = true;
 	  }
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  vn_ssa_aux_t res_info = VN_INFO (PHI_RESULT (phi));
+	  tree oldval = res_info->valnum;
+	  /* When not iterating force backedge values to varying.  */
+	  visit_stmt (phi, !iterate_phis);
+	  phi_vals.safe_push (res_info->valnum);
+	  res_info->valnum = oldval;
+	}
 
-	/* When not iterating force backedge values to varying.  */
-	visit_stmt (phi, !iterate_phis);
-	if (virtual_operand_p (res))
-	  continue;
+      unsigned phi_idx = 0;
+      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree res = PHI_RESULT (phi);
+	  vn_ssa_aux_t res_info = VN_INFO (res);
+	  /* Commit the new PHI value.  */
+	  res_info->valnum = phi_vals[phi_idx++];
+	  if (virtual_operand_p (res))
+	    continue;
 
-	/* Eliminate */
-	/* The interesting case is gcc.dg/tree-ssa/pr22230.c for correctness
-	   how we handle backedges and availability.
-	   And gcc.dg/tree-ssa/ssa-sccvn-2.c for optimization.  */
-	tree val = res_info->valnum;
-	if (res != val && !iterate && eliminate)
-	  {
-	    if (tree leader = avail.eliminate_avail (bb, res))
-	      {
-		if (leader != res
-		    /* Preserve loop-closed SSA form.  */
-		    && (! lc_phi_nodes
-			|| is_gimple_min_invariant (leader)))
-		  {
-		    if (dump_file && (dump_flags & TDF_DETAILS))
-		      {
-			fprintf (dump_file, "Replaced redundant PHI node "
-				 "defining ");
-			print_generic_expr (dump_file, res);
-			fprintf (dump_file, " with ");
-			print_generic_expr (dump_file, leader);
-			fprintf (dump_file, "\n");
-		      }
-		    avail.eliminations++;
+	  /* Eliminate */
+	  /* The interesting case is gcc.dg/tree-ssa/pr22230.c for correctness
+	     how we handle backedges and availability.
+	     And gcc.dg/tree-ssa/ssa-sccvn-2.c for optimization.  */
+	  tree val = res_info->valnum;
+	  if (res != val && !iterate && eliminate)
+	    {
+	      if (tree leader = avail.eliminate_avail (bb, res))
+		{
+		  if (leader != res
+		      /* Preserve loop-closed SSA form.  */
+		      && (! lc_phi_nodes
+			  || is_gimple_min_invariant (leader)))
+		    {
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{
+			  fprintf (dump_file, "Replaced redundant PHI node "
+				   "defining ");
+			  print_generic_expr (dump_file, res);
+			  fprintf (dump_file, " with ");
+			  print_generic_expr (dump_file, leader);
+			  fprintf (dump_file, "\n");
+			}
+		      avail.eliminations++;
 
-		    if (may_propagate_copy (res, leader))
-		      {
-			/* Schedule for removal.  */
-			avail.to_remove.safe_push (phi);
-			continue;
-		      }
-		    /* ???  Else generate a copy stmt.  */
-		  }
-	      }
-	  }
-	/* Only make defs available that not already are.  But make
-	   sure loop-closed SSA PHI node defs are picked up for
-	   downstream uses.  */
-	if (lc_phi_nodes
-	    || res == val
-	    || ! avail.eliminate_avail (bb, res))
-	  avail.eliminate_push_avail (bb, res);
-      }
+		      if (may_propagate_copy (res, leader))
+			{
+			  /* Schedule for removal.  */
+			  avail.to_remove.safe_push (phi);
+			  continue;
+			}
+		      /* ???  Else generate a copy stmt.  */
+		    }
+		}
+	    }
+	  /* Only make defs available that not already are.  But make
+	     sure loop-closed SSA PHI node defs are picked up for
+	     downstream uses.  */
+	  if (lc_phi_nodes
+	      || res == val
+	      || ! avail.eliminate_avail (bb, res))
+	    avail.eliminate_push_avail (bb, res);
+	}
+    }
 
   /* For empty BBs mark outgoing edges executable.  For non-empty BBs
      we do this when processing the last stmt as we have to do this
