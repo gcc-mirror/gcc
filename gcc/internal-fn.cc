@@ -6213,25 +6213,36 @@ expand_clmul (machine_mode mode, machine_mode op_mode, rtx op0, rtx op1,
 	     shift and most significant bit of the constant should be
 	     set.  */
 	  rtx x = convert_modes (mode, op_mode, op0, 1);
-	  rtx res = gen_reg_rtx (mode);
+	  rtx res = gen_reg_rtx (mode), tem;
 	  emit_move_insn (res, x);
-	  rtx i = gen_reg_rtx (TYPE_MODE (integer_type_node));
-	  emit_move_insn (i, const1_rtx);
-	  rtx_code_label *loop_label = gen_label_rtx ();
-	  emit_label (loop_label);
-	  rtx tem = expand_variable_shift (LSHIFT_EXPR, mode, res,
+	  if (cnt > 2)
+	    {
+	      rtx i = gen_reg_rtx (TYPE_MODE (integer_type_node));
+	      emit_move_insn (i, const1_rtx);
+	      rtx_code_label *loop_label = gen_label_rtx ();
+	      emit_label (loop_label);
+	      tem = expand_variable_shift (LSHIFT_EXPR, mode, res,
 					   make_tree (integer_type_node, i),
 					   NULL_RTX, 1);
-	  tem = expand_binop (mode, xor_optab, res, tem, res, 1, olw);
-	  if (tem != res)
-	    emit_move_insn (res, tem);
-	  tem = expand_binop (GET_MODE (i), add_optab, i, i, i, 1, olw);
-	  if (tem != res)
-	    emit_move_insn (i, tem);
-	  do_compare_rtx_and_jump (i, gen_int_mode (cnt, GET_MODE (i)),
-				   LTU, true, GET_MODE (i), NULL_RTX, NULL,
-				   loop_label,
-				   profile_probability::very_likely ());
+	      tem = expand_binop (mode, xor_optab, res, tem, res, 1, olw);
+	      if (tem != res)
+		emit_move_insn (res, tem);
+	      tem = expand_binop (GET_MODE (i), add_optab, i, i, i, 1, olw);
+	      if (tem != res)
+		emit_move_insn (i, tem);
+	      do_compare_rtx_and_jump (i, gen_int_mode (cnt, GET_MODE (i)),
+				       LTU, true, GET_MODE (i), NULL_RTX, NULL,
+				       loop_label,
+				       profile_probability::very_likely ());
+	    }
+	  else if (cnt == 2)
+	    {
+	      /* For M 2 we don't need a loop, unroll the loop manually.  */
+	      tem = expand_shift (LSHIFT_EXPR, mode, res, 1, NULL_RTX, 1);
+	      tem = expand_binop (mode, xor_optab, res, tem, res, 1, olw);
+	      if (tem != res)
+		emit_move_insn (res, tem);
+	    }
 	  if (tz)
 	    {
 	      tem = expand_shift (LSHIFT_EXPR, mode, res, tz, res, 1);
