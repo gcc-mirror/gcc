@@ -1,3 +1,12 @@
+2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-11-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128910
+	* cse.cc (exp_equiv_p): Return false for SUBREGs that have different
+	promotion states.
+
 2026-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR middle-end/128920
