@@ -1,3 +1,12 @@
+2026-11-25  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-07-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125819
+	* reflect.cc (namespace_members_of): Skip
+	DECL_IS_UNDECLARED_BUILTIN decls.
+
 2026-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
