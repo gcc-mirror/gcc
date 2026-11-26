@@ -2187,6 +2187,22 @@ is_a_helper <gimple_statement_with_ops *>::test (gimple *gs)
   return gimple_has_ops (gs);
 }
 
+template <>
+template <>
+inline bool
+is_a_helper <const gimple_statement_with_ops_base *>::test (const gimple *gs)
+{
+  return gimple_has_ops (gs);
+}
+
+template <>
+template <>
+inline bool
+is_a_helper <gimple_statement_with_ops_base *>::test (gimple *gs)
+{
+  return gimple_has_ops (gs);
+}
+
 /* Return true if GIMPLE statement G has memory operands.  */
 
 inline bool
@@ -2216,8 +2232,8 @@ is_a_helper <gimple_statement_with_memory_ops *>::test (gimple *gs)
 inline struct use_optype_d *
 gimple_use_ops (const gimple *g)
 {
-  const gimple_statement_with_ops *ops_stmt =
-    dyn_cast <const gimple_statement_with_ops *> (g);
+  const gimple_statement_with_ops_base *ops_stmt =
+    dyn_cast <const gimple_statement_with_ops_base *> (g);
   if (!ops_stmt)
     return NULL;
   return ops_stmt->use_ops;
@@ -2229,8 +2245,8 @@ gimple_use_ops (const gimple *g)
 inline void
 gimple_set_use_ops (gimple *g, struct use_optype_d *use)
 {
-  gimple_statement_with_ops *ops_stmt =
-    as_a <gimple_statement_with_ops *> (g);
+  gimple_statement_with_ops_base *ops_stmt =
+    as_a <gimple_statement_with_ops_base *> (g);
   ops_stmt->use_ops = use;
 }
 
