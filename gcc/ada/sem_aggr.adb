@@ -2079,7 +2079,7 @@ package body Sem_Aggr is
                   In_Assoc : constant Boolean :=
                     Nkind (Parent (Expr)) in N_Component_Association
                                            | N_Iterated_Component_Association;
-                  New_Expr : constant Node_Id := Copy_Separate_Tree (Expr);
+                  New_Expr : constant Node_Id := New_Copy_Tree (Expr);
 
                begin
                   Set_Parent (New_Expr, Parent (Expr));
@@ -4526,7 +4526,7 @@ package body Sem_Aggr is
                if Inside_A_Generic then
                   Expr := Expression (Assoc);
                else
-                  Expr := Copy_Separate_Tree (Expression (Assoc));
+                  Expr := New_Copy_Tree (Expression (Assoc));
                end if;
                Set_Parent (Expr, Assoc);
                Preanalyze_And_Resolve (Expr, Component_Type (Typ));
