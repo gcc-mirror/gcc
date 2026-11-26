@@ -557,7 +557,40 @@ gfc_omp_allocatable_p (tree decl)
     type = TREE_TYPE (type);
 
   if (GFC_DESCRIPTOR_TYPE_P (type)
-      && GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE)
+      && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ALLOCATABLE
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE))
+    return true;
+
+  if (gfc_class_container_kind (type) == 'a')
+    return true;
+
+  return false;
+}
+
+
+/* Return true if the DECL is for a pointer array or scalar.  */
+
+bool
+gfc_omp_pointer_p (tree decl)
+{
+  if (!DECL_P (decl))
+    return false;
+
+  if (GFC_DECL_GET_SCALAR_POINTER (decl))
+    return true;
+
+  tree type = TREE_TYPE (decl);
+  if (gfc_omp_privatize_by_reference (decl))
+    type = TREE_TYPE (type);
+
+  if (GFC_DESCRIPTOR_TYPE_P (type)
+      && (GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_POINTER_CONT
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_POINTER
+	  || GFC_TYPE_ARRAY_AKIND (type) == GFC_ARRAY_ASSUMED_RANK_POINTER_CONT))
+    return true;
+
+  if (gfc_class_container_kind (type) == 'p')
     return true;
 
   return false;
@@ -2712,21 +2745,25 @@ bool
 gfc_omp_scalar_p (tree decl, bool ptr_alloc_ok)
 {
   tree type = TREE_TYPE (decl);
-  if (TREE_CODE (type) == REFERENCE_TYPE)
+
+  if (gfc_omp_privatize_by_reference (decl))
     type = TREE_TYPE (type);
-  if (TREE_CODE (type) == POINTER_TYPE)
+
+  if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
+      || GFC_DECL_GET_SCALAR_POINTER (decl))
     {
-      if (GFC_DECL_GET_SCALAR_ALLOCATABLE (decl)
-	  || GFC_DECL_GET_SCALAR_POINTER (decl))
-	{
-	  if (!ptr_alloc_ok)
-	    return false;
-	  type = TREE_TYPE (type);
-	}
-      if (GFC_ARRAY_TYPE_P (type)
-	  || GFC_CLASS_TYPE_P (type))
+      if (!ptr_alloc_ok)
 	return false;
+      if (POINTER_TYPE_P (type) && !VOID_TYPE_P (TREE_TYPE (type)))
+	type = TREE_TYPE (type);
+      /* Special case: pointer/allocatable dummy argument to an ENTRY
+	 function, but only if not optional - as the optional case is
+	 already handled by 'gfc_omp_privatize_by_reference' returning 'true'. */
+      if (POINTER_TYPE_P (type) && !VOID_TYPE_P (TREE_TYPE (type)))
+	type = TREE_TYPE (type);
     }
+  if (GFC_ARRAY_TYPE_P (type) || GFC_CLASS_TYPE_P (type))
+    return false;
   if ((TREE_CODE (type) == ARRAY_TYPE || TREE_CODE (type) == INTEGER_TYPE)
       && TYPE_STRING_FLAG (type))
     return false;

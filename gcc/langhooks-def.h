@@ -96,6 +96,7 @@ extern tree lhd_omp_map_array_section (location_t, tree);
 struct gimplify_omp_ctx;
 extern void lhd_omp_firstprivatize_type_sizes (struct gimplify_omp_ctx *,
 					       tree);
+extern bool lhd_omp_pointer_p (tree);
 extern bool lhd_omp_scalar_p (tree, bool);
 extern tree *lhd_omp_get_decl_init (tree);
 extern void lhd_omp_finish_decl_inits ();
@@ -290,6 +291,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   lhd_omp_extract_mapper_directive
 #define LANG_HOOKS_OMP_MAP_ARRAY_SECTION lhd_omp_map_array_section
 #define LANG_HOOKS_OMP_ALLOCATABLE_P hook_bool_tree_false
+#define LANG_HOOKS_OMP_POINTER_P lhd_omp_pointer_p
 #define LANG_HOOKS_OMP_SCALAR_P lhd_omp_scalar_p
 #define LANG_HOOKS_OMP_SCALAR_TARGET_P hook_bool_tree_false
 #define LANG_HOOKS_OMP_GET_DECL_INIT lhd_omp_get_decl_init
@@ -332,6 +334,7 @@ extern tree lhd_unit_size_without_reusable_padding (tree);
   LANG_HOOKS_OMP_EXTRACT_MAPPER_DIRECTIVE, \
   LANG_HOOKS_OMP_MAP_ARRAY_SECTION, \
   LANG_HOOKS_OMP_ALLOCATABLE_P, \
+  LANG_HOOKS_OMP_POINTER_P, \
   LANG_HOOKS_OMP_SCALAR_P, \
   LANG_HOOKS_OMP_SCALAR_TARGET_P, \
   LANG_HOOKS_OMP_GET_DECL_INIT, \

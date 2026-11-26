@@ -98,24 +98,25 @@ end
 ! { dg-final { scan-tree-dump-times "map\\(alloc:strxa \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(alloc:\\*strxp \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(alloc:strxp \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:1\\\] \\*\\) str1parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:5\\\] \\*\\) str5parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:\\.strxparr\\\] \\*\\) strxparr\\.data \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(struct t\\\[0:\\\] \\*\\) dtparr\\.data \\\[pointer assign, bias: 0\\\]\\)" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:1\\\] \\*\\) str1parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:5\\\] \\*\\) str5parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:\\.strxparr\\\] \\*\\) strxparr\\.data \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parr\\.data \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(always_pointer:\\(struct t\\\[0:\\\] \\*\\) dtparr\\.data \\\[pointer assign, bias: 0\\\]\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:aarr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:arr \\\[len:" 1 "gimple" } }
 
-! { dg-final { scan-tree-dump-times "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:\\.strxparr\\\] \\*\\) strxparr\\.data \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:5\\\] \\*\\) str5parr\\.data \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:1\\\] \\*\\) str1parr\\.data \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parr\\.data \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:\\*\\(struct t\\\[0:\\\] \\*\\) dtparr\\.data \\\[len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-not "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:\\.strxparr\\\] \\*\\) strxparr\\.data \\\[len:" "gimple" } }
+! { dg-final { scan-tree-dump-not "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:5\\\] \\*\\) str5parr\\.data \\\[len:" "gimple" } }
+! { dg-final { scan-tree-dump-not "map\\(to:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:1\\\] \\*\\) str1parr\\.data \\\[len:" "gimple" } }
+! { dg-final { scan-tree-dump-not "map\\(to:\\*\\(integer\\(kind=4\\)\\\[0:\\\] \\*\\) parr\\.data \\\[len:" "gimple" } }
+! { dg-final { scan-tree-dump-not "map\\(to:\\*\\(struct t\\\[0:\\\] \\*\\) dtparr\\.data \\\[len:" "gimple" } }
 
 ! { dg-final { scan-tree-dump-times "map\\(to:dtaarr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:dtarr \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:dt \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:dtparr \\\[pointer set, len:" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(to:dtparr \\\[pointer set, len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(dtparr\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*aii \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:\\.strxaarr\\\] \\* restrict\\) strxaarr\\.data \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*\\(character\\(kind=1\\)\\\[0:\\\]\\\[1:5\\\] \\* restrict\\) str5aarr\\.data \\\[len:" 1 "gimple" } }
@@ -126,20 +127,25 @@ end
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*str1a \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*str5a \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(tofrom:\\*strxa \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:parr \\\[pointer set, len:" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(to:parr \\\[pointer set, len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(parr\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str1aarr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str1arr \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str1 \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:str1parr \\\[pointer set, len:" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(to:str1parr \\\[pointer set, len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(str1parr\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str5aarr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str5arr \\\[len:" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:str5 \\\[len:" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:str5parr \\\[pointer set, len:" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(to:str5parr \\\[pointer set, len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(str5parr\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxaarr \\\[len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:strxaarr \\\[pointer set, len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxa \\\[len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxparr \\\[len:" 2 "gimple" } }
-! { dg-final { scan-tree-dump-times "map\\(to:strxparr \\\[pointer set, len:" 2 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(strxparr\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "map\\(to:strxparr \\\[pointer set, len:" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(strxparr\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "map\\(to:\\.strxp \\\[len:" 2 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-2\\) thread_limit\\(0\\) defaultmap\\(alloc\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-2\\) thread_limit\\(0\\) defaultmap\\(alloc:scalar\\) defaultmap\\(to:aggregate\\) defaultmap\\(tofrom:allocatable\\) defaultmap\\(firstprivate:pointer\\)" 1 "gimple" } }

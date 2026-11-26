@@ -276,10 +276,9 @@ end
 
 end
 
-! FIXME/xfail: Optional scalars wrongly classified, PR fortran/100991
-! { dg-final { scan-tree-dump-times "firstprivate\\(ii1\\)" 3 "gimple" { xfail *-*-* } } }
-! { dg-final { scan-tree-dump-not "firstprivate\\(et1\\)" "gimple" { xfail *-*-* } } }
-! { dg-final { scan-tree-dump-not "firstprivate\\(ei1\\)" "gimple" { xfail *-*-* } } }
+! { dg-final { scan-tree-dump-times "firstprivate\\(ii1\\)" 3 "gimple" } }
+! { dg-final { scan-tree-dump-not "firstprivate\\(et1\\)" "gimple" } }
+! { dg-final { scan-tree-dump-not "firstprivate\\(ei1\\)" "gimple" } }
 
 ! { dg-final { scan-tree-dump-times "firstprivate\\(ea1\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "firstprivate\\(ea2\\)" 1 "gimple" } }

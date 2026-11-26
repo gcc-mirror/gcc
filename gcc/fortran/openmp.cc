@@ -3028,6 +3028,7 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      enum gfc_omp_defaultmap behavior;
 	      gfc_omp_defaultmap_category category
 		= OMP_DEFAULTMAP_CAT_UNCATEGORIZED;
+	      bool optional = false;
 	      if (gfc_match ("alloc ") == MATCH_YES)
 		behavior = OMP_DEFAULTMAP_ALLOC;
 	      else if (gfc_match ("tofrom ") == MATCH_YES)
@@ -3048,15 +3049,31 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		{
 		  gfc_error ("Expected ALLOC, TO, FROM, TOFROM, FIRSTPRIVATE, "
 			     "PRESENT, NONE or DEFAULT at %C");
-		  break;
+		  goto error;
 		}
 	      if (')' == gfc_peek_ascii_char ())
 		;
 	      else if (gfc_match (": ") != MATCH_YES)
-		break;
+		{
+		  gfc_error ("Expected %<)%> or %<:%> at %C");
+		  goto error;
+		}
 	      else
 		{
-		  if (gfc_match ("scalar ") == MATCH_YES)
+		  if (gfc_match ("optional ") == MATCH_YES)
+		    {
+		      optional = true;
+		      if (')' == gfc_peek_ascii_char ())
+			category = OMP_DEFAULTMAP_CAT_ALL;
+		      else if (gfc_match (", ") != MATCH_YES)
+			{
+			  gfc_error ("Expected %<)%> or %<,%> at %C");
+			  goto error;
+			}
+		    }
+		  if (category == OMP_DEFAULTMAP_CAT_ALL)
+		    ;
+		  else if (gfc_match ("scalar ") == MATCH_YES)
 		    category = OMP_DEFAULTMAP_CAT_SCALAR;
 		  else if (gfc_match ("aggregate ") == MATCH_YES)
 		    category = OMP_DEFAULTMAP_CAT_AGGREGATE;
@@ -3068,9 +3085,23 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    category = OMP_DEFAULTMAP_CAT_ALL;
 		  else
 		    {
-		      gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE, "
-				 "POINTER or ALL at %C");
-		      break;
+		      if (!optional)
+			gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE, "
+				   "POINTER, ALL, or OPTIONAL at %C");
+		      else
+			gfc_error ("Expected SCALAR, AGGREGATE, ALLOCATABLE, "
+				   "POINTER, or ALL at %C");
+		      goto error;
+		    }
+		  if (!optional && gfc_match (", ") == MATCH_YES)
+		    {
+		      if (gfc_match ("optional ") == MATCH_YES)
+			optional = true;
+		      else
+			{
+			  gfc_error ("Expected OPTIONAL at %C");
+			  goto error;
+			}
 		    }
 		}
 	      for (int i = 0; i < OMP_DEFAULTMAP_CAT_NUM; ++i)
@@ -3111,7 +3142,13 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      c->defaultmap[category] = behavior;
 	      if (gfc_match (")") != MATCH_YES)
-		break;
+		{
+		  gfc_error ("Expected %<)%> at %C");
+		  goto error;
+		}
+	      if (optional)
+		sorry_at (gfc_get_location (&gfc_current_locus),
+			   "%<optional%> modifier is not supported yet");
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_DEFAULT)

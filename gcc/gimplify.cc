@@ -9288,10 +9288,7 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 		    gdmk = GDMK_SCALAR_TARGET;
 		  else if (lang_hooks.decls.omp_scalar_p (decl, false))
 		    gdmk = GDMK_SCALAR;
-		  else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
-			   || (TREE_CODE (TREE_TYPE (decl)) == REFERENCE_TYPE
-			       && (TREE_CODE (TREE_TYPE (TREE_TYPE (decl)))
-				   == POINTER_TYPE)))
+		  else if (lang_hooks.decls.omp_pointer_p (decl))
 		    gdmk = GDMK_POINTER;
 		  else
 		    gdmk = GDMK_AGGREGATE;

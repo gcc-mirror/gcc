@@ -367,6 +367,10 @@ struct lang_hooks_for_decls
      implicit mapping).  */
   bool (*omp_allocatable_p) (tree decl);
 
+  /* Return true if DECL is a pointer variable (for the purpose of
+     implicit mapping).  */
+  bool (*omp_pointer_p) (tree decl);
+
   /* Return true if DECL is a scalar variable (for the purpose of
      implicit firstprivatization). If 'ptr_or', pointers and
      allocatables are also permitted.  */

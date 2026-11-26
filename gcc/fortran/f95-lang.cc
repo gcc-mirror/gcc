@@ -155,6 +155,7 @@ gfc_get_sarif_source_language (const char *)
 #undef LANG_HOOKS_OMP_DEEP_MAPPING_P
 #undef LANG_HOOKS_OMP_DEEP_MAPPING_CNT
 #undef LANG_HOOKS_OMP_ALLOCATABLE_P
+#undef LANG_HOOKS_OMP_POINTER_P
 #undef LANG_HOOKS_OMP_SCALAR_TARGET_P
 #undef LANG_HOOKS_OMP_SCALAR_P
 #undef LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR
@@ -199,6 +200,7 @@ gfc_get_sarif_source_language (const char *)
 #define LANG_HOOKS_OMP_DEEP_MAPPING_P		gfc_omp_deep_mapping_p
 #define LANG_HOOKS_OMP_DEEP_MAPPING_CNT		gfc_omp_deep_mapping_cnt
 #define LANG_HOOKS_OMP_ALLOCATABLE_P		gfc_omp_allocatable_p
+#define LANG_HOOKS_OMP_POINTER_P		gfc_omp_pointer_p
 #define LANG_HOOKS_OMP_SCALAR_P			gfc_omp_scalar_p
 #define LANG_HOOKS_OMP_SCALAR_TARGET_P		gfc_omp_scalar_target_p
 #define LANG_HOOKS_OMP_DISREGARD_VALUE_EXPR	gfc_omp_disregard_value_expr

@@ -698,6 +698,20 @@ lhd_omp_map_array_section (location_t, tree)
   return error_mark_node;
 }
 
+/* Return true if DECL is a pointer variable (for the purpose of
+   implicit mapping).  */
+
+bool
+lhd_omp_pointer_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+  if (TREE_CODE (type) == POINTER_TYPE
+      || (TREE_CODE (type) == REFERENCE_TYPE
+	  && (TREE_CODE (TREE_TYPE (type)) == POINTER_TYPE)))
+    return true;
+  return false;
+}
+
 /* Return true if DECL is a scalar variable (for the purpose of
    implicit firstprivatization & mapping). Only if alloc_ptr_ok
    are allocatables and pointers accepted. */

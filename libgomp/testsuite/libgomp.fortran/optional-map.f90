@@ -79,7 +79,7 @@ subroutine sub2(ii, ival, iarr, iptr, iparr)
   value :: ival
   integer :: err(1) ! otherwise, implied defaultmap is firstprivate
   err(1) = 42
-  !$omp target  ! automatic mapping with implied defaultmap(tofrom) 
+  !$omp target defaultmap(tofrom:scalar) ! automatic mapping with implied defaultmap(tofrom)
   if (present(ii)) then
     ii = iptr + ival
     iarr = iparr
