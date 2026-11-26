@@ -1215,6 +1215,9 @@ riscv_subset_list::check_conflict_ext ()
 	error_at (*m_loc, "%<-march=%s%>: zcd conflicts with zcmp", m_arch);
     }
 
+  if (lookup ("zclsd") && lookup ("zcf"))
+    error_at (*m_loc, "%<-march=%s%>: zclsd conflicts with zcf", m_arch);
+
   if ((lookup ("v") || lookup ("zve32x")
 	 || lookup ("zve64x") || lookup ("zve32f")
 	 || lookup ("zve64f") || lookup ("zve64d")
