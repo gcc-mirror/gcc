@@ -4238,6 +4238,7 @@ shuffle_bswap_pattern (struct expand_vec_perm_d *d)
 	 for both the bswap64 and bswap32, but take shift and or (7 insn)
 	 for bswap16.
        */
+      gcc_fallthrough ();
     default:
       return false;
     }
