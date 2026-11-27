@@ -7762,6 +7762,44 @@ lower_bitcompress_bitexpand (gimple *stmt)
   gsi_replace (&gsi, g, true);
 }
 
+/* Return true if given the current large_huge.m_names bitmap it is planned
+   to merge STMT lowering with lowering of some
+   {PLUS,MINUS,NEGATE,LSHIFT}_EXPR.  */
+
+static bool
+requires_upwards_2limb (struct bitint_large_huge &large_huge, gimple *stmt)
+{
+  if (!mergeable_op (stmt) && !gimple_assign_cast_p (stmt))
+    return false;
+  switch (gimple_assign_rhs_code (stmt))
+    {
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case NEGATE_EXPR:
+    case LSHIFT_EXPR:
+      /* These all require m_upwards_2limb.  */
+      return true;
+    default:
+      break;
+    }
+  for (unsigned i = 0; i < gimple_num_ops (stmt) - 1; ++i)
+    {
+      tree rhs = gimple_assign_rhs1_ptr (stmt)[i];
+      if (gimple_assign_rhs_code (stmt) == VIEW_CONVERT_EXPR)
+	rhs = TREE_OPERAND (rhs, 0);
+      if (TREE_CODE (rhs) != SSA_NAME
+	  || !BITINT_TYPE_P (TREE_TYPE (rhs))
+	  || bitint_precision_kind (TREE_TYPE (rhs)) < bitint_prec_large
+	  || gimple_bb (SSA_NAME_DEF_STMT (rhs)) != gimple_bb (stmt)
+	  || (large_huge.m_names
+	      && bitmap_bit_p (large_huge.m_names, SSA_NAME_VERSION (rhs))))
+	continue;
+      if (requires_upwards_2limb (large_huge, SSA_NAME_DEF_STMT (rhs)))
+	return true;
+    }
+  return false;
+}
+
 /* Entry point for _BitInt(N) operation lowering during optimization.  */
 
 static unsigned int
@@ -8271,11 +8309,11 @@ gimple_lower_bitint (void)
 	    }
 	}
     }
-  for (i = first_large_huge; i < num_ssa_names; ++i)
+
+  auto maybe_optimize_ssa_name
+    = [&has_large_huge, &has_large_huge_parm_result, &large_huge,
+       &loop_init_done] (tree s, bool force = false)
     {
-      tree s = ssa_name (i);
-      if (s == NULL)
-	continue;
       tree type = TREE_TYPE (s);
       if (TREE_CODE (type) == COMPLEX_TYPE)
 	type = TREE_TYPE (type);
@@ -8285,9 +8323,11 @@ gimple_lower_bitint (void)
 	  use_operand_p use_p;
 	  gimple *use_stmt;
 	  has_large_huge = true;
+	  if (force)
+	    goto force_name;
 	  if (optimize
 	      && optimizable_arith_overflow (SSA_NAME_DEF_STMT (s)))
-	    continue;
+	    return false;
 	  /* Ignore large/huge _BitInt SSA_NAMEs which have single use in
 	     the same bb and could be handled in the same loop with the
 	     immediate use.  */
@@ -8299,10 +8339,10 @@ gimple_lower_bitint (void)
 	      if (mergeable_op (SSA_NAME_DEF_STMT (s)))
 		{
 		  if (mergeable_op (use_stmt))
-		    continue;
+		    return false;
 		  tree_code cmp_code = comparison_op (use_stmt, NULL, NULL);
 		  if (cmp_code == EQ_EXPR || cmp_code == NE_EXPR)
-		    continue;
+		    return false;
 		  if (gimple_assign_cast_p (use_stmt))
 		    {
 		      tree lhs = gimple_assign_lhs (use_stmt);
@@ -8313,13 +8353,19 @@ gimple_lower_bitint (void)
 			  && (TREE_CODE (TREE_TYPE (lhs)) != INTEGER_TYPE
 			      || (TYPE_PRECISION (TREE_TYPE (lhs))
 				  <= MAX_FIXED_MODE_SIZE)))
-			continue;
+			{
+			  if (BITINT_TYPE_P (TREE_TYPE (lhs))
+			      && (bitint_precision_kind (TREE_TYPE (lhs))
+				  >= bitint_prec_large))
+			    return false;
+			  return true;
+			}
 		    }
 		  else if (gimple_store_p (use_stmt)
 			   && is_gimple_assign (use_stmt)
 			   && !gimple_has_volatile_ops (use_stmt)
 			   && !stmt_ends_bb_p (use_stmt))
-		    continue;
+		    return false;
 		}
 	      if (gimple_assign_cast_p (SSA_NAME_DEF_STMT (s)))
 		{
@@ -8330,7 +8376,7 @@ gimple_lower_bitint (void)
 		      if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 			  && !POINTER_TYPE_P (TREE_TYPE (rhs1))
 			  && gimple_store_p (use_stmt))
-			continue;
+			return false;
 		    }
 		  if (INTEGRAL_TYPE_P (TREE_TYPE (rhs1))
 		      && ((is_gimple_assign (use_stmt)
@@ -8365,7 +8411,7 @@ gimple_lower_bitint (void)
 			    if (!BITINT_TYPE_P (TREE_TYPE (rhs1))
 				|| (bitint_precision_kind (TREE_TYPE (rhs1))
 				    < bitint_prec_large))
-			      continue;
+			      return true;
 			    /* Uses which use handle_operand_addr can't
 			       deal with nested casts.  */
 			    if (TREE_CODE (rhs1) == SSA_NAME
@@ -8398,11 +8444,11 @@ gimple_lower_bitint (void)
 		      if (!BITINT_TYPE_P (TREE_TYPE (rhs1))
 			  || (bitint_precision_kind (TREE_TYPE (rhs1))
 			      < bitint_prec_large))
-			continue;
+			return true;
 		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
 			   >= TYPE_PRECISION (TREE_TYPE (s)))
 			  && mergeable_op (use_stmt))
-			continue;
+			return false;
 		      /* Prevent merging a widening non-mergeable cast
 			 on result of some narrower mergeable op
 			 together with later mergeable operations.  E.g.
@@ -8417,9 +8463,10 @@ gimple_lower_bitint (void)
 			  || !has_single_use (rhs1)
 			  || (gimple_bb (SSA_NAME_DEF_STMT (rhs1))
 			      != gimple_bb (SSA_NAME_DEF_STMT (s)))
-			  || !mergeable_op (SSA_NAME_DEF_STMT (rhs1))
-			  || gimple_store_p (use_stmt))
-			continue;
+			  || !mergeable_op (SSA_NAME_DEF_STMT (rhs1)))
+			return true;
+		      if (gimple_store_p (use_stmt))
+			return false;
 		      if ((TYPE_PRECISION (TREE_TYPE (rhs1))
 			   < TYPE_PRECISION (TREE_TYPE (s)))
 			  && gimple_assign_cast_p (SSA_NAME_DEF_STMT (rhs1)))
@@ -8438,7 +8485,7 @@ gimple_lower_bitint (void)
 				  || (gimple_bb (SSA_NAME_DEF_STMT (rhs2))
 				      != gimple_bb (SSA_NAME_DEF_STMT (s)))
 				  || !mergeable_op (SSA_NAME_DEF_STMT (rhs2)))
-				continue;
+				return false;
 			    }
 			}
 		    }
@@ -8458,7 +8505,7 @@ gimple_lower_bitint (void)
 			  if (optimizable_arith_overflow (g))
 			    {
 			      if (gimple_assign_rhs_code (ds) == IMAGPART_EXPR)
-				continue;
+				return false;
 			      if (gimple_store_p (use_stmt))
 				{
 				  /* Punt if the cast use of IMAGPART_EXPR stmt
@@ -8527,7 +8574,7 @@ gimple_lower_bitint (void)
 			if (TREE_CODE (lhs) == COMPONENT_REF
 			    && DECL_BIT_FIELD_TYPE (TREE_OPERAND (lhs, 1)))
 			  break;
-			continue;
+			return false;
 		      }
 		    break;
 		  default:
@@ -8549,7 +8596,7 @@ gimple_lower_bitint (void)
 			if (TREE_CODE (lhs) == COMPONENT_REF
 			    && DECL_BIT_FIELD_TYPE (TREE_OPERAND (lhs, 1)))
 			  break;
-			continue;
+			return false;
 		      }
 		    break;
 		  default:
@@ -8560,7 +8607,7 @@ gimple_lower_bitint (void)
 	  /* Also ignore uninitialized uses.  */
 	  if (SSA_NAME_IS_DEFAULT_DEF (s)
 	      && (!SSA_NAME_VAR (s) || VAR_P (SSA_NAME_VAR (s))))
-	    continue;
+	    return false;
 
 	force_name:
 	  if (!large_huge.m_names)
@@ -8711,7 +8758,26 @@ gimple_lower_bitint (void)
 		has_large_huge = true;
 	    }
 	}
+      return false;
+    };
+  auto_vec<tree, 16> ssa_names_to_reconsider;
+  for (i = first_large_huge; i < num_ssa_names; ++i)
+    {
+      tree s = ssa_name (i);
+      if (s == NULL)
+	continue;
+      /* Try to prevent cases where single use of s in the same bb is
+	 something unimplementable by m_upwards_2limb (so something not
+	 handleable by lower_mergeable_stmt or lower_addsub_overflow or
+	 lower_bit_query) but is supposed to be merged with something which
+	 relies on m_upwards_2limb (handle_plus_minus, handle_lshift).  */
+      if (maybe_optimize_ssa_name (s)
+	  && requires_upwards_2limb (large_huge, SSA_NAME_DEF_STMT (s)))
+	ssa_names_to_reconsider.safe_push (s);
     }
+  for (tree s : ssa_names_to_reconsider)
+    if (requires_upwards_2limb (large_huge, SSA_NAME_DEF_STMT (s)))
+      maybe_optimize_ssa_name (s, true);
 
   if (large_huge.m_names || has_large_huge)
     {
