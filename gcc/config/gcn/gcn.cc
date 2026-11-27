@@ -4757,6 +4757,10 @@ gcn_init_libfuncs (void)
   set_optab_libfunc (sdivmod_optab, DImode, "__divmoddi4");
   set_optab_libfunc (udivmod_optab, DImode, "__udivmoddi4");
 
+  /* The SIMD vector implementations are unsuitable for SIMT.  */
+  if (flag_simt_mode)
+    return;
+
   set_optab_libfunc (sdiv_optab, V2QImode, "__divv2qi3");
   set_optab_libfunc (udiv_optab, V2QImode, "__udivv2qi3");
   set_optab_libfunc (smod_optab, V2QImode, "__modv2qi3");
