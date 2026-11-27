@@ -7983,6 +7983,13 @@ gimple_lower_bitint (void)
 		  first_large_huge = 0;
 		  location_t loc = gimple_location (stmt);
 		  gsi = gsi_for_stmt (stmt);
+		  tree lhs = gimple_assign_lhs (stmt);
+		  if (has_zero_uses (lhs))
+		    {
+		      gsi_remove (&gsi, true);
+		      release_ssa_name (lhs);
+		      break;
+		    }
 		  tree rhs1 = gimple_assign_rhs1 (stmt);
 		  tree type = TREE_TYPE (rhs1);
 		  tree n = gimple_assign_rhs2 (stmt), m;
@@ -8035,7 +8042,6 @@ gimple_lower_bitint (void)
 		  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 		  gimple_set_location (g, loc);
 		  tree op2 = gimple_assign_lhs (g);
-		  tree lhs = gimple_assign_lhs (stmt);
 		  if (!TYPE_UNSIGNED (type))
 		    {
 		      g = gimple_build_assign (make_ssa_name (TREE_TYPE (op1)),
@@ -8059,6 +8065,12 @@ gimple_lower_bitint (void)
 		first_large_huge = 0;
 		gsi = gsi_for_stmt (stmt);
 		tree lhs = gimple_assign_lhs (stmt);
+		if (has_zero_uses (lhs))
+		  {
+		    gsi_remove (&gsi, true);
+		    release_ssa_name (lhs);
+		    break;
+		  }
 		tree rhs1 = gimple_assign_rhs1 (stmt), rhs2 = NULL_TREE;
 		location_t loc = gimple_location (stmt);
 		if (rhs_code == ABS_EXPR)
