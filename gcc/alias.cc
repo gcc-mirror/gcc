@@ -767,6 +767,11 @@ reference_alias_ptr_type_1 (tree *t)
 	   && ref_all_alias_ptr_type_p (TREE_TYPE (TREE_OPERAND (inner, 1))))
     return TREE_TYPE (TREE_OPERAND (inner, 1));
 
+  /* Pick up the outermost object that we could have a pointer to.  */
+  tree tem = component_uses_parent_alias_set_from (*t);
+  if (tem)
+    *t = tem;
+
   /* If the innermost reference is a MEM_REF that has a
      conversion embedded treat it like a VIEW_CONVERT_EXPR above,
      using the memory access type for determining the alias-set.  */
@@ -787,12 +792,6 @@ reference_alias_ptr_type_1 (tree *t)
       if (TREE_CODE (inner) == MEM_REF)
 	return alias_ptrtype;
     }
-
-  /* Otherwise, pick up the outermost object that we could have
-     a pointer to.  */
-  tree tem = component_uses_parent_alias_set_from (*t);
-  if (tem)
-    *t = tem;
 
   return NULL_TREE;
 }
