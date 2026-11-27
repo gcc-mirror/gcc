@@ -14406,6 +14406,9 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
 		  if (TREE_VEC_LENGTH (vec))
 		    memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
 			    TREE_VEC_LENGTH (vec) * sizeof (tree));
+		  else
+		    /* Mark empty binding as read to prevent unused warning.  */
+		    mark_exp_read (TREE_VEC_ELT (arg_pack, 0));
 		  arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
 		  ARGUMENT_PACK_ARGS (arg_pack) = vec;
 		}
