@@ -3001,4 +3001,14 @@
 #endif /* !defined(__cpp_lib_clmul) */
 #undef __glibcxx_want_clmul
 
+#if !defined(__cpp_lib_structural_types)
+# if (__cplusplus >  202302L) && (__has_cpp_attribute(__gnu__::__structural_type__))
+#  define __glibcxx_structural_types 202611L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_structural_types)
+#   define __cpp_lib_structural_types 202611L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_structural_types) */
+#undef __glibcxx_want_structural_types
+
 #undef __glibcxx_want_all

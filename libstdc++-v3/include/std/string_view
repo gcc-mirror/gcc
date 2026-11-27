@@ -45,6 +45,7 @@
 #define __glibcxx_want_string_contains
 #define __glibcxx_want_string_subview
 #define __glibcxx_want_string_view
+#define __glibcxx_want_structural_types
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L
@@ -110,7 +111,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *  @endcode
    */
   template<typename _CharT, typename _Traits = std::char_traits<_CharT>>
-    class basic_string_view
+    class _GLIBCXX_STRUCTURAL basic_string_view
     {
       static_assert(!is_array_v<_CharT>);
       static_assert(is_trivially_copyable_v<_CharT>

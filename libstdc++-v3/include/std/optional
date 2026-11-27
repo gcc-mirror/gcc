@@ -40,6 +40,7 @@
 #define __glibcxx_want_constrained_equality
 #define __glibcxx_want_constexpr_exceptions
 #define __glibcxx_want_hardened_optional
+#define __glibcxx_want_structural_types
 #include <bits/version.h>
 
 #ifdef __cpp_lib_optional // C++ >= 17
@@ -781,7 +782,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     * @brief Class template for optional values.
     */
   template<typename _Tp>
-    class optional
+    class _GLIBCXX_STRUCTURAL optional
     : private _Optional_base<_Tp>,
       private _Enable_copy_move<
 	// Copy constructor.

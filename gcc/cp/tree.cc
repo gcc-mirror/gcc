@@ -5402,20 +5402,27 @@ structural_type_p (tree t, bool explain)
 	explain_non_literal_class (t);
       return false;
     }
+  int structural_type_attr = -1;
   for (tree m = next_aggregate_field (TYPE_FIELDS (t)); m;
        m = next_aggregate_field (DECL_CHAIN (m)))
     {
       if (TREE_PRIVATE (m) || TREE_PROTECTED (m))
 	{
-	  if (explain)
+	  if (structural_type_attr == -1)
+	    structural_type_attr = !!lookup_attribute ("structural_type",
+						       TYPE_ATTRIBUTES (t));
+	  if (!structural_type_attr)
 	    {
-	      if (DECL_FIELD_IS_BASE (m))
-		inform (location_of (m), "base class %qT is not public",
-			TREE_TYPE (m));
-	      else
-		inform (location_of (m), "%qD is not public", m);
+	      if (explain)
+		{
+		  if (DECL_FIELD_IS_BASE (m))
+		    inform (location_of (m), "base class %qT is not public",
+			    TREE_TYPE (m));
+		  else
+		    inform (location_of (m), "%qD is not public", m);
+		}
+	      return false;
 	    }
-	  return false;
 	}
       if (DECL_MUTABLE_P (m))
 	{
@@ -5435,6 +5442,21 @@ structural_type_p (tree t, bool explain)
 	}
     }
   return true;
+}
+
+/* Handle the [[gnu::structural_type]] attribute.  */
+
+static tree
+handle_structural_type_attribute (tree *node, tree name, tree, int,
+				  bool *no_add_attrs)
+{
+  if (!CLASS_TYPE_P (*node))
+    {
+      warning (OPT_Wattributes, "%qE attribute can only be applied to "
+	       "class types", name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
 }
 
 /* Partially handle the C++11 [[carries_dependency]] attribute.
@@ -5654,6 +5676,8 @@ static const attribute_spec cxx_gnu_attributes[] =
     handle_gnu_no_specializations_attribute, NULL },
   { "trivial_abi", 0, 0, false, true, false, true,
     handle_gnu_trivial_abi_attribute, NULL },
+  { "structural_type", 0, 0, false, true, false, false,
+    handle_structural_type_attribute, NULL }
 };
 // clang-format on
 

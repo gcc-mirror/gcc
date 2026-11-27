@@ -32038,6 +32038,18 @@ template <> int foo <int> () @{ return 43; @} // Error
 @};
 @end smallexample
 
+@cindex @code{structural_type} type attribute
+@item structural_type
+The @code{structural_type} attribute can be applied to a class type.
+It overrides for the given type the definition of structural types
+in C++ [temp.param], so that it doesn't require that all base classes
+and non-static data members are public.  All other requirements on
+structural types are kept intact, so the class types still have to be
+literal class types with no mutable non-static data members and that
+all base classes and non-static data members have structural types or
+arrays thereof.  This attribute is primarily meant for standard library
+class templates which are declared to be structural types by fiat
+in C++26.
 @end table
 
 @node Function Multiversioning

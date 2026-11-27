@@ -2717,6 +2717,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = structural_types;
+  values = {
+    v = 202611;
+    cxxmin = 26;
+    extra_cond = "__has_cpp_attribute(__gnu__::__structural_type__)";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

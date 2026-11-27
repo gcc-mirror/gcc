@@ -940,6 +940,14 @@ namespace __gnu_cxx
 # define _GLIBCXX_EXPLICIT_THIS_PARAMETER 202110L
 #endif
 
+// Which class types are by fiat structural in C++26 despite containing
+// private/protected bases or non-static data members.
+#if __cplusplus > 202302L && __has_cpp_attribute(__gnu__::__structural_type__)
+# define _GLIBCXX_STRUCTURAL [[__gnu__::__structural_type__]]
+#else
+# define _GLIBCXX_STRUCTURAL
+#endif
+
 // Mark code that should be ignored by the compiler, but seen by Doxygen.
 #define _GLIBCXX_DOXYGEN_ONLY(X)
 

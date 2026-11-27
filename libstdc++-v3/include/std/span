@@ -41,6 +41,7 @@
 #define __glibcxx_want_span
 #define __glibcxx_want_span_initializer_list
 #define __glibcxx_want_hardened_span
+#define __glibcxx_want_structural_types
 #include <bits/version.h>
 
 #ifdef __cpp_lib_span // C++ >= 20 && concepts
@@ -73,7 +74,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline constexpr bool __is_std_array<std::array<_Tp, _Num>> = true;
 
     template<size_t _Extent>
-      class __extent_storage
+      class _GLIBCXX_STRUCTURAL __extent_storage
       {
       public:
 	// Used for runtime sizes that must satisfy the precondition.
@@ -97,7 +98,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<>
-      class __extent_storage<dynamic_extent>
+      class _GLIBCXX_STRUCTURAL __extent_storage<dynamic_extent>
       {
       public:
 	[[__gnu__::__always_inline__]]
@@ -120,7 +121,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   } // namespace __detail
 
   template<typename _Type, size_t _Extent = dynamic_extent>
-    class span
+    class _GLIBCXX_STRUCTURAL span
     {
       template<size_t _Offset, size_t _Count>
 	static constexpr size_t

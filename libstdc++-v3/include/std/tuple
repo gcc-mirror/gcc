@@ -54,6 +54,7 @@
 #define __glibcxx_want_ranges_zip
 #define __glibcxx_want_tuple_like
 #define __glibcxx_want_constrained_equality
+#define __glibcxx_want_structural_types
 #include <bits/version.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -239,7 +240,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    * (which contains the @c Tail).
    */
   template<size_t _Idx, typename _Head, typename... _Tail>
-    struct _Tuple_impl<_Idx, _Head, _Tail...>
+    struct _GLIBCXX_STRUCTURAL _Tuple_impl<_Idx, _Head, _Tail...>
     : public _Tuple_impl<_Idx + 1, _Tail...>,
       private _Head_base<_Idx, _Head>
     {
@@ -504,7 +505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Basis case of inheritance recursion.
   template<size_t _Idx, typename _Head>
-    struct _Tuple_impl<_Idx, _Head>
+    struct _GLIBCXX_STRUCTURAL _Tuple_impl<_Idx, _Head>
     : private _Head_base<_Idx, _Head>
     {
       template<size_t, typename...> friend struct _Tuple_impl;
@@ -1950,7 +1951,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #pragma GCC diagnostic ignored "-Winvalid-specialization"
   // Explicit specialization, zero-element tuple.
   template<>
-    class tuple<>
+    class _GLIBCXX_STRUCTURAL tuple<>
     {
     public:
       // We need the default since we're going to define no-op
@@ -2029,7 +2030,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// Partial specialization, 2-element tuple.
   /// Includes construction and assignment from a pair.
   template<typename _T1, typename _T2>
-    class tuple<_T1, _T2> : public _Tuple_impl<0, _T1, _T2>
+    class _GLIBCXX_STRUCTURAL tuple<_T1, _T2>
+    : public _Tuple_impl<0, _T1, _T2>
     {
       typedef _Tuple_impl<0, _T1, _T2> _Inherited;
 

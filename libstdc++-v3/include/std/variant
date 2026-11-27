@@ -37,6 +37,7 @@
 #define __glibcxx_want_variant
 #define __glibcxx_want_constrained_equality
 #define __glibcxx_want_constexpr_exceptions
+#define __glibcxx_want_structural_types
 #include <bits/version.h>
 
 #ifdef __cpp_lib_variant // C++ >= 17
@@ -66,7 +67,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types> class tuple;
-  template<typename... _Types> class variant;
+  template<typename... _Types> class _GLIBCXX_STRUCTURAL variant;
 
   template<typename _Variant>
     struct variant_size;
