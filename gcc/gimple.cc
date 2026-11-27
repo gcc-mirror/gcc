@@ -2913,6 +2913,9 @@ gimple_get_alias_set (tree t)
      compatible types.  */
   else if (TREE_CODE (t) == ENUMERAL_TYPE)
     {
+      if (BITINT_TYPE_P (t))
+	return get_alias_set (TREE_TYPE (t));
+
       tree t1 = lang_hooks.types.type_for_size (tree_to_uhwi (TYPE_SIZE (t)),
 						false /* short-cut above */);
       return get_alias_set (t1);
