@@ -84,12 +84,12 @@ FROM NameKey IMPORT Name, MakeKey, KeyToCharStar ;
 FROM StdIO IMPORT Write ;
 FROM DynamicStrings IMPORT String, string, Length, InitString, ConCat, ConCatChar, Mark, InitStringCharStar, KillString ;
 FROM M2GenGCC IMPORT GetHighFromUnbounded, StringToChar, LValueToGenericPtr, ZConstToTypedConst ;
-FROM M2System IMPORT Address, Word, Loc, Byte, IsWordN, IsRealN, IsComplexN ;
+FROM M2System IMPORT Address, Word, Loc, Byte, IsWordN, IsComplexN ;
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2 ;
 
 FROM M2Check IMPORT ParameterTypeCompatible, ExpressionTypeCompatible, AssignmentTypeCompatible ;
 
-FROM M2Base IMPORT Nil, IsRealType, GetBaseTypeMinMax,
+FROM M2Base IMPORT Nil, IsRealGCC, GetBaseTypeMinMax,
                    Cardinal, Integer, ZType, IsComplexType,
                    IsExpressionCompatible,
                    IsParameterCompatible,
@@ -1160,8 +1160,8 @@ BEGIN
    IF GccKnowsAbout(type) AND (NOT IsPointer(type)) AND
       (NOT IsArray(type)) AND (NOT IsRecord(type)) AND
       (NOT IsRecord(type)) AND (NOT IsUnbounded(type)) AND
-      (NOT IsProcType(type)) AND (NOT IsRealType(type)) AND
-      (NOT IsRealN(type)) AND (NOT IsComplexType(type)) AND
+      (NOT IsProcType(type)) AND (NOT IsRealGCC(type)) AND
+      (NOT IsComplexType(type)) AND
       (NOT IsComplexN(type)) AND
       (type#Address) AND (NOT IsSet(type)) AND
       (type#Word) AND (type#Loc) AND (type#Byte) AND (NOT IsWordN(type))
@@ -2947,7 +2947,7 @@ BEGIN
       IF GccKnowsAbout(desLowestType) AND
          GccKnowsAbout(exprLowestType)
       THEN
-         IF IsRealType(desLowestType) AND IsRealType(exprLowestType)
+         IF IsRealGCC (desLowestType) AND IsRealGCC (exprLowestType)
          THEN
             RangeCheckReal (p, r, function, message)
          ELSE

@@ -1,0 +1,9 @@
+MODULE real32conv ;
+
+FROM SYSTEM IMPORT REAL32, REAL64 ;
+
+VAR
+   x: REAL64 ;
+BEGIN
+   x := VAL (REAL64, MIN (REAL32))
+END real32conv.

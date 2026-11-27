@@ -44,7 +44,7 @@ FROM M2GenGCC IMPORT PrepareCopyString, StringToChar ;
 FROM M2Bitset IMPORT Bitset ;
 FROM SymbolConversion IMPORT Mod2Gcc, GccKnowsAbout ;
 FROM M2Printf IMPORT printf0, printf2 ;
-FROM M2Base IMPORT MixTypes, GetBaseTypeMinMax, Char, IsRealType, IsComplexType, ZType ;
+FROM M2Base IMPORT MixTypes, GetBaseTypeMinMax, Char, IsRealGCC, IsComplexType, ZType ;
 FROM DynamicStrings IMPORT String, InitString, Mark, ConCat, Slice, InitStringCharStar, KillString, InitStringChar, string ;
 FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation ;
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaErrorStringT0,
@@ -5339,7 +5339,7 @@ BEGIN
    ELSIF IsRecord(t)
    THEN
       PushGCCRecordTree(gcc, t)
-   ELSIF IsRealType(t)
+   ELSIF IsRealGCC(t)
    THEN
       PushRealTree(gcc)
    ELSE

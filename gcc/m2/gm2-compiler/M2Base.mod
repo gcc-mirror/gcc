@@ -1114,8 +1114,7 @@ VAR
 BEGIN
    t1 := SkipType(t1) ;
    t2 := SkipType(t2) ;
-   IF (IsRealType(t1) OR IsRealN(t1)) AND
-      (IsRealType(t2) OR IsRealN(t2))
+   IF IsRealGCC (t1) AND IsRealGCC (t2)
    THEN
       mt1 := FindMetaType(t1) ;
       mt2 := FindMetaType(t2) ;
@@ -1493,6 +1492,17 @@ PROCEDURE IsRealType (t: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN( (t=Real) OR (t=LongReal) OR (t=ShortReal) OR (t=RType) )
 END IsRealType ;
+
+
+(*
+   IsRealGCC - return TRUE if type is LONGREAL, REAL, SHORTREAL or any of
+               the sized REAL types supported by GCC exported by SYSTEM.
+*)
+
+PROCEDURE IsRealGCC (type: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN IsRealType (type) OR IsRealN (type)
+END IsRealGCC ;
 
 
 (*

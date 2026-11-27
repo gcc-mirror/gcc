@@ -200,7 +200,7 @@ FROM M2Base IMPORT True, False, Boolean, Cardinal, Integer, Char,
                    IsOrd, Chr, Convert, Val, IsFloat, IsTrunc,
                    IsInt, Min, Max,
                    IsPseudoBaseProcedure, IsPseudoBaseFunction,
-                   IsMathType, IsOrdinalType, IsRealType,
+                   IsMathType, IsOrdinalType, IsRealGCC,
                    IsBaseType, GetBaseTypeMinMax, ActivationPointer ;
 
 FROM M2System IMPORT IsPseudoSystemFunction, IsPseudoSystemProcedure,
@@ -10163,7 +10163,7 @@ BEGIN
             PushTFtok (ReturnVar, Type, combinedtok)
          ELSIF IsVar (Var) OR IsConst (Var)
          THEN
-            IF IsRealType (GetSType (Var))
+            IF IsRealGCC (GetSType (Var))
             THEN
                (* build macro: CONVERT( INTEGER, Var ).  *)
                PushTFtok (ProcSym, NulSym, functok) ;

@@ -43,7 +43,7 @@ FROM M2System IMPORT Cast, IsPseudoSystemFunctionConstExpression ;
 
 FROM M2Base IMPORT MixTypes,
                    ZType, RType, Char, Boolean, Val, Max, Min, Convert,
-                   IsPseudoBaseFunction, IsRealType, IsComplexType, IsOrdinalType ;
+                   IsPseudoBaseFunction, IsRealGCC, IsComplexType, IsOrdinalType ;
 
 FROM M2Reserved IMPORT PlusTok, MinusTok, TimesTok, DivTok, ModTok,
                        DivideTok, RemTok,
@@ -1415,7 +1415,7 @@ BEGIN
    ELSIF type=Boolean
    THEN
       RETURN boolean
-   ELSIF IsRealType (type)
+   ELSIF IsRealGCC (type)
    THEN
       RETURN rtype
    ELSIF IsComplexType (type)

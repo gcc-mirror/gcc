@@ -308,6 +308,14 @@ PROCEDURE IsRealType (t: CARDINAL) : BOOLEAN ;
 
 
 (*
+   IsRealGCC - return TRUE if type is LONGREAL, REAL, SHORTREAL or any of
+               the sized REAL types supported by GCC exported by SYSTEM.
+*)
+
+PROCEDURE IsRealGCC (type: CARDINAL) : BOOLEAN ;
+
+
+(*
    IsComplexType - returns TRUE if, sym, is COMPLEX,
                    LONGCOMPLEX or SHORTCOMPLEX.
 *)

@@ -110,7 +110,7 @@ FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
 FROM M2Quiet IMPORT qprintf0 ;
 
 FROM M2Base IMPORT MixTypes, MixTypesDecl, NegateType, ActivationPointer, IsMathType,
-                   IsRealType, IsComplexType, IsBaseType,
+                   IsRealGCC, IsComplexType, IsBaseType,
                    IsOrdinalType,
                    Cardinal, Char, Integer, IsTrunc,
                    Boolean, True,
@@ -126,7 +126,7 @@ FROM DynamicStrings IMPORT string, InitString, KillString, String,
                            InitStringChar, Dup ;
 
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
-FROM M2System IMPORT Address, Word, System, TBitSize, MakeAdr, IsSystemType, IsGenericSystemType, IsRealN, IsComplexN, IsSetN, IsWordN, Loc, Byte ;
+FROM M2System IMPORT Address, Word, System, TBitSize, MakeAdr, IsSystemType, IsGenericSystemType, IsComplexN, IsSetN, IsWordN, Loc, Byte ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM SymbolConversion IMPORT AddModGcc, Mod2Gcc, GccKnowsAbout, RemoveMod2Gcc ;
 
@@ -2310,8 +2310,8 @@ BEGIN
    RETURN(
           IsSet(sym) OR
           (IsOrdinalType(sym) AND (sym#Boolean) AND (NOT IsEnumeration(sym))) OR
-          IsComplexType(sym) OR IsRealType(sym) OR
-          IsComplexN(sym) OR IsRealN(sym) OR IsSetN(sym)
+          IsComplexType(sym) OR IsRealGCC(sym) OR
+          IsComplexN(sym) OR IsSetN(sym)
          )
 END IsCoerceableParameter ;
 
@@ -2363,8 +2363,7 @@ BEGIN
       ELSE
          RETURN( BuildConvert(location, Mod2Gcc(ParamType), Mod2Gcc(actual), FALSE) )
       END
-   ELSIF IsRealType(OperandType) AND IsRealType(ParamType) AND
-      (ParamType#OperandType)
+   ELSIF IsRealGCC (OperandType) AND IsRealGCC (ParamType) AND (ParamType#OperandType)
    THEN
       (* SHORTREAL, LONGREAL and REAL conversion during parameter passing.  *)
       RETURN( BuildConvert(location, Mod2Gcc(ParamType),
@@ -4709,7 +4708,7 @@ VAR
 BEGIN
    type := GetDType (op) ;
    RETURN( IsComplexType (type) OR IsComplexN (type) OR
-           IsRealType (type) OR IsRealN (type) )
+           IsRealGCC (type) )
 END BinaryOperandRealFamily ;
 
 
@@ -6558,7 +6557,7 @@ BEGIN
                IF (GetType (expr) = NulSym) OR IsOrdinalType (SkipType (GetType (expr)))
                THEN
                   ZConstToTypedConst := GetM2ZType ()
-               ELSIF IsRealType (SkipType (GetType (expr))) OR IsRealN (SkipType (GetType (expr)))
+               ELSIF IsRealGCC (SkipType (GetType (expr)))
                THEN
                   ZConstToTypedConst := GetM2RType ()
                ELSIF IsComplexType (SkipType (GetType (expr))) OR
@@ -7414,7 +7413,7 @@ BEGIN
       IF IsSet (type)
       THEN
          RETURN( PopSetTree (tokenno) )
-      ELSIF IsRealType (type)
+      ELSIF IsRealGCC (type)
       THEN
          RETURN( PopRealTree () )
       ELSE
@@ -7478,7 +7477,7 @@ BEGIN
                      PutConstSet (result) ;
                      PushValue (result) ;
                      AddModGcc (result, PopSetTree (tokenno))
-                  ELSIF IsRealType (SkipType (type))
+                  ELSIF IsRealGCC (SkipType (type))
                   THEN
                      PushRealTree (FoldAndStrip (BuildConvert (location, tl, PopKindTree (expr, tokenno),
                                                                TRUE))) ;

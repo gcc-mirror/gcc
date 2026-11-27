@@ -146,9 +146,9 @@ FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
                    Real, LongReal, ShortReal, ZType, RType,
                    CType, Complex, LongComplex, ShortComplex,
                    Boolean, True, False, Nil,
-                   IsRealType, IsNeededAtRunTime, IsComplexType ;
+                   IsRealGCC, IsNeededAtRunTime, IsComplexType ;
 
-FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType, IsRealN,
+FROM M2System IMPORT IsPseudoSystemFunction, IsSystemType,
                      GetSystemTypeMinMax, Address, Word, Byte, Loc,
                      System, IntegerN, CardinalN, WordN, RealN, SetN, ComplexN,
 		     CSizeT, CSSizeT, COffT ;
@@ -2155,7 +2155,7 @@ BEGIN
          ELSIF IsConstructor(sym)
          THEN
             DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
-         ELSIF IsRealType (GetDType (sym)) OR IsRealN (GetDType (sym))
+         ELSIF IsRealGCC (GetDType (sym))
          THEN
             type := GetDType(sym) ;
             DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopRealTree(), TRUE))
@@ -2209,7 +2209,7 @@ BEGIN
       ELSIF IsConstructor(sym)
       THEN
          DeclareConstantFromTree(sym, PopConstructorTree(tokenno))
-      ELSIF IsRealType(GetDType(sym))
+      ELSIF IsRealGCC (GetDType(sym))
       THEN
          type := GetDType(sym) ;
          DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopRealTree(), TRUE))
