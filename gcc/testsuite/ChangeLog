@@ -1,3 +1,20 @@
+2026-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr13.ads: New test.
+	* gnat.dg/specs/aggr13_pkg.ads: New helper.
+
+2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128985
+	* gcc.target/i386/avx10_2-comibf-1.c: Adjust scan.
+	* gcc.target/i386/avx10_2-comibf-3.c: Likewise.
+	* gcc.target/i386/avx10_2-comibf-2.c: Test NaN.
+	* gcc.target/i386/avx10_2-comibf-5.c: New test.
+	* gcc.target/i386/avx10_2-comibf-6.c: Likewise.
+
 2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:

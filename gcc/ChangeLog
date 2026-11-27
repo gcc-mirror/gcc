@@ -1,3 +1,12 @@
+2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	Backported from master:
+	2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128985
+	* config/i386/i386-expand.cc (ix86_prepare_fp_compare_args):
+	Convert BFmode EQ/NE to SFmode under AVX10.2 when NaNs are honored.
+
 2026-11-25  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:
