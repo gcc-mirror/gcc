@@ -114,10 +114,9 @@ shared_memory_get_master (shared_memory_act *mem, size_t size, size_t align)
     return (shared_mem_ptr) {mem->glbl.meta->master};
   else
     {
-      ptrdiff_t loc = mem->glbl.meta->used;
       shared_mem_ptr p
 	= shared_memory_get_mem_with_alignment (mem, size, align);
-      mem->glbl.meta->master = loc;
+      mem->glbl.meta->master = p.offset;
       return p;
     }
 }
