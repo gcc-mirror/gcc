@@ -1761,8 +1761,9 @@ struct gimple_load_store_interleaved : public gimple_function_base
 	/* *ptr = .STORE_LANES (tuple.val) */
 	auto tuple = gimple_call_arg (f.call, 1);
 	auto array = build_tuple_get_array (tuple);
-	auto call = build_ifn_call (f, IFN_STORE_LANES, array_type, {array});
-	return gimple_build_assign (f.lhs (), build_cast (tuple_type, call));
+	auto call = gimple_build_call_internal (IFN_STORE_LANES, 1, array);
+	gimple_call_set_lhs (call, deref);
+	return call;
       }
   }
 };
