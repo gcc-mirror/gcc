@@ -1,3 +1,14 @@
+2026-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/129067
+	* f95-lang.cc (LANG_HOOKS_OMP_POINTER_P): Define to
+	point to gfc_omp_pointer_p.
+	* openmp.cc (gfc_match_omp_clauses): For defaultmap clause,
+	fix error diagnostic and parse-and-sorry 'optional' modifier.
+	* trans-openmp.cc (gfc_omp_pointer_p): New.
+	(gfc_omp_scalar_p): Fix bug related to optional arguments.
+	* trans.h (gfc_omp_pointer_p): New prototype.
+
 2026-11-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/45129

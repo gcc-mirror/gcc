@@ -1,3 +1,315 @@
+2026-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/129067
+	* gimplify.cc (omp_notice_variable): Call omp_pointer_p hook.
+	* langhooks-def.h (lhd_omp_pointer_p): Add, use check previously
+	in omp_notice_variable.
+	(LANG_HOOKS_OMP_POINTER_P): New, default to lhd_omp_pointer_p.
+	(lhd_omp_pointer_p): Declare.
+	* langhooks.cc (lhd_omp_pointer_p): New.
+	* langhooks.h (struct lang_hooks_for_decls): Add omp_pointer_p
+	function-pointer member.
+
+2026-11-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/128996
+	* gimple-range-gori.cc (gori_compute::has_edge_range_p): Elimintate
+	nested recomputations.
+
+2026-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (enum psabi_change): Add
+	PSABI_FLEXIBLE_ARRAY_STRUCT and renumber the other enumerators.
+	(flexible_array_p): New function.
+	(classify_argument): Use flexible_array_p and
+	psabi_new_behavior_p (PSABI_FLEXIBLE_ARRAY_STRUCT) to ignore
+	flexible array members.  Remove the static warned variable and
+	the direct inform call.
+	(inform_psabi_change): Handle PSABI_FLEXIBLE_ARRAY_STRUCT.
+
+2026-11-26  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/126385
+	* config/aarch64/aarch64-json-schema.h: Add reduc_dotprod_cost to
+	the advsimd and sve vector costs.
+	* config/aarch64/aarch64-json-tunings-parser-generated.inc
+	(parse_vec_costs_advsimd, parse_vec_costs_sve): Regenerate.
+	* config/aarch64/aarch64-json-tunings-printer-generated.inc
+	(serialize_vec_costs_advsimd, serialize_vec_costs_sve): Regenerate.
+	* config/aarch64/aarch64-protos.h (simd_vec_cost::reduc_dotprod_cost):
+	New member variable.
+	* config/aarch64/aarch64.cc (aarch64_vec_op_count::dot_prod_latency):
+	New member variable.
+	(aarch64_vec_op_count::dump): Dump it.
+	(enum aarch64_vect_cost_kind): New enum.
+	(aarch64_vect_stmt_cost): Add a kind parameter. Return
+	reduc_dotprod_cost as the latency of statements expanded as dot
+	products.
+	(aarch64_vector_costs::count_ops): Record dot_prod_latency.
+	(aarch64_vector_costs::low_iteration_count_p): New function, split
+	out from...
+	(aarch64_vector_costs::adjust_body_cost): ...here.
+	(aarch64_vector_costs::determine_suggested_unroll_factor): Take
+	dot_prod_latency into account unless low_iteration_count_p.
+	* config/aarch64/tuning_models/a64fx.h: Set reduc_dotprod_cost to 0.
+	* config/aarch64/tuning_models/ampere1.h: Set reduc_dotprod_cost to 3.
+	* config/aarch64/tuning_models/ampere1b.h: Likewise.
+	* config/aarch64/tuning_models/cortexa320.h: Set reduc_dotprod_cost
+	to 0.
+	* config/aarch64/tuning_models/cortexa57.h: Likewise.
+	* config/aarch64/tuning_models/cortexx925.h: Likewise.
+	* config/aarch64/tuning_models/exynosm1.h: Likewise.
+	* config/aarch64/tuning_models/generic.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv8_a.h: Likewise.
+	* config/aarch64/tuning_models/generic_armv9_a.h: Likewise.
+	* config/aarch64/tuning_models/hip12.h: Likewise.
+	* config/aarch64/tuning_models/neoverse512tvb.h: Likewise.
+	* config/aarch64/tuning_models/neoversen2.h: Likewise.
+	* config/aarch64/tuning_models/neoversen3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev1.h: Likewise.
+	* config/aarch64/tuning_models/neoversev2.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3.h: Likewise.
+	* config/aarch64/tuning_models/neoversev3ae.h: Likewise.
+	* config/aarch64/tuning_models/olympus.h: Likewise.
+	* config/aarch64/tuning_models/qdf24xx.h: Likewise.
+	* config/aarch64/tuning_models/thunderx.h: Likewise.
+	* config/aarch64/tuning_models/thunderx2t99.h: Likewise.
+	* config/aarch64/tuning_models/thunderx3t110.h: Likewise.
+	* config/aarch64/tuning_models/tsv110.h: Likewise.
+	* config/aarch64/tuning_models/xgene1.h: Likewise.
+	* doc/params.texi (aarch64-loop-vect-issue-rate-niters): Mention
+	the dot-product unrolling.
+
+2026-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129064
+	* tree-ssa-sccvn.cc (do_rpo_vn_1): Restore the previous value
+	of a backedge destination PHI after detecting a change.
+
+2026-11-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (@mov<mode>_exec): Use gen_load<mode>_exec_ds
+	for LDS address spaces.
+	(load<mode>_exec): Remove the LDS alternative.
+	(load<mode>_exec_ds): New insn.
+
+2026-11-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128904
+	* gimple-fold.cc: Include case-cfn-macros.h.
+	(gimple_needing_rewrite_undefined): Return true for one-argument
+	CLZ and CTZ calls with an integral argument.
+	(rewrite_to_defined_unconditional): Rewrite such calls to the
+	two-argument IFN_CLZ or IFN_CTZ with the value of the target for a
+	zero argument, or the precision of the argument, as the result for
+	zero.
+	* internal-fn.cc (expand_clz_ctz): Use the unary optab expansion
+	for a matching two-argument call only if the target has an insn for
+	the mode.
+	* tree-if-conv.cc (if_convertible_stmt_p): Set
+	need_to_rewrite_undefined for calls needing a rewrite.
+	(predicate_statements): Visit calls needing a rewrite.
+	* tree-ssa-loop-im.cc (shift_needs_mask_p): Return false for
+	statements that are not assignments.
+
+2026-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.cc (classify_argument): Document how
+	BIT_OFFSET is used and fix the wording of its description.
+	<case RECORD_TYPE>: Add FIELD_TYPE and use it instead of
+	reassigning TYPE and repeating TREE_TYPE (field).  Add
+	FIELD_REL_BITPOS and FIRST_WORD, computed once per field.  Add
+	FIELD_BITSIZE and use CEIL for the bit-field loop bound.  Rename
+	MEMBER_POS to MEMBER_BITPOS.  Remove POS and move NUM to its
+	point of use.  Use "/ 64" instead of "/ 8 / 8".
+	Reword the comment.
+	<case ARRAY_TYPE>: Add ELT_BITSIZE and ELT_BITPOS, and make the
+	latter HOST_WIDE_INT instead of int, replacing ELT_OFFSET.
+	Replace POS with ELT_REL_BITPOS and FIRST_WORD.  Use "/ 64"
+	instead of "/ 8 / 8".  Clarify the comments on the array
+	classification and on the partial class fix-ups.
+	<case UNION_TYPE>: Add FIELD_TYPE and use it instead of
+	repeating TREE_TYPE (field).  Move NUM to its point of use.
+
+2026-11-26  Dominic P  <gcc@gcc.dp11.uk>
+
+	* generic-match-head.cc (gimple_match_no_overflow_p): Return false
+	if overflow is sanitized.
+
+2026-11-26  Dominic P  <gcc@gcc.dp11.uk>
+
+	* targhooks.cc (default_ref_may_alias_errno): Also treat points-to
+	sets that contain interposable variables as possibly errno.
+
+2026-11-26  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/riscv-protos.h (struct common_vector_cost):
+	Document per-element gather/scatter costs.
+	* config/riscv/riscv-vector-costs.cc (get_lmul_cost_scaling):
+	Return 1 for vector_gather_load and vector_scatter_store.
+	(costs::adjust_stmt_cost): Pass kind to get_lmul_cost_scaling.
+	(costs::add_slp_cost): Handle VMAT_GATHER_SCATTER_IFN.
+	* config/riscv/riscv-vector-costs.h: Declare add_slp_cost.
+	* config/riscv/riscv.cc (rvv_vls_vector_cost): Update
+	gather_load_cost and scatter_store_cost.
+	(rvv_vla_vector_cost): Likewise.
+	(xt_c9501_vls_vector_cost): Likewise.
+
+2026-11-26  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/124996
+	* config/riscv/riscv-v.cc (shuffle_even_odd_patterns): Remove
+	regmode-natural-size check and clobber destinations.
+
+2026-11-26  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv-v.cc (shuffle_bswap_pattern): Use vrev8.
+	* config/riscv/vector.md: Add vbrev variants to mode_idx.
+
+2026-11-26  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Add
+	permute data parameter.
+	(vect_optimize_slp_pass::change_layout_cost): Pass null data.
+	(vect_optimize_slp_pass::internal_node_cost): Likewise.
+	(vect_optimize_slp_pass::get_result_with_layout): Likewise.
+	(vect_optimize_slp_pass::materialize): Likewise.
+	(vect_slp_analyze_node_operations): Delete node-specific data
+	after failed analysis.
+	(vect_transform_slp_perm_load_1): Add data parameter.
+	(vect_transform_slp_perm_load): Ditto.
+	(vectorizable_slp_permutation): Ditto.
+	* tree-vect-stmts.cc (get_load_store_type): Pass load_store
+	data.
+	(vectorizable_load): Record reverse constant.
+	(vectorizable_store): Ditto.
+	(vectorizable_bswap): Use vect_call_data and add bswap permute
+	to it.
+	* tree-vectorizer.h (struct vect_permute_data): New struct.
+	(struct vect_load_store_data): Add perms.
+	(struct vect_call_data): Likewise.
+	(vect_transform_slp_perm_load): Add data param.
+
+2026-11-26  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/128692
+	* config/rs6000/rs6000.md (*largetocp10): Set length to 8.
+	(*largetocp10_aix<mode>): Likewise.
+	(*largetocp10_plus): Likewise.
+	(*largetocp10_plus_aix<mode>): Likewise.
+
+2026-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129043
+	* tree-ssa-loop-niter.cc (loop_niter_by_eval): Pass
+	HONOR_NANS to invert_tree_comparison.
+
+2026-11-26  Stefan Schulze Frielinghaus  <stefansf@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_clmul): For
+	big-endian compute idx3 as older idx3 - p instead of p - idx3
+	and idx4 as idx - p instead of p - idx.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* config/s390/s390.md (clmuldi3, clmul_widendi3): New expanders.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/129023
+	* internal-fn.cc (expand_clmul): For cnt == 1, just shift
+	res left by tz, without any loop.  For cnt == 2, unroll the
+	loop by hand.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* internal-fn.cc (expand_clmul): Add OP_EQ argument.  If true,
+	attempt to optimize clmul (x, x) using bitexpand (x, 0x55555555U) if
+	the bitexpand_optab supports it.
+	(expand_CLMUL, expand_CLMUL_WIDEN): Adjust expand_clmul callers.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128459
+	* doc/extend.texi (__builtin_bitcompressg, __builtin_bitexpandg):
+	Document.
+	* doc/ifn.texi (IFN_BSWAP, IFN_BITREVERSE, IFN_CLMUL, IFN_CLMUL_WIDEN,
+	IFN_BITCOMPRESS, IFN_BITEXPAND): Document.
+	* doc/md.texi (bitcompress@var{m}3, bitexpand@var{m}3): Document.
+	* builtins.h (fold_build_builtin_bitcompressg_bitexpandg): Declare.
+	* fold-const-call.cc (fold_const_call_sss): Handle IFN_BITCOMPRESS
+	and IFN_BITEXPAND.
+	* internal-fn.h (expand_BITCOMPRESS, expand_BITEXPAND): Declare.
+	* fold-const.cc (tree_call_nonnegative_p): Handle IFN_BITCOMPRESS
+	and IFN_BITEXPAND.
+	* wide-int.cc (wi::bit_compress, wi::bit_expand): New functions.
+	* wide-int.h (wi::bit_compress, wi::bit_expand): Declare.
+	* builtins.cc (fold_build_builtin_bitcompressg_bitexpandg): New
+	function.
+	* internal-fn.def (BITCOMPRESS, BITEXPAND): New internal functions.
+	* internal-fn.cc (expand_BITCOMPRESS, expand_BITEXPAND): New functions.
+	* optabs.def (bitcompress_optab, bitexpand_optab): New optabs.
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_stmt): Handle
+	store temporarily without vdef in SSA form.
+	(lower_bitcompress_bitexpand): New function.
+	(gimple_lower_bitint): Lower IFN_BITCOMPRESS and IFN_BITEXPAND calls
+	before lowering.
+	* match.pd (.BITCOMPRESS, .BITEXPAND): New simplifications.
+	* config/i386/i386.md (bitexpand<mode>3, bitcompress<mode>3): New
+	BMI2 define_expand patterns.
+
+2026-11-26  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR target/127565
+	* config/aarch64/aarch64.md (usmulsi3): New.
+
+2026-11-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/128885
+	* simplify-rtx.cc (simplify_context::simplify_truncation): Check
+	the AND mask against the narrowed shift directly.
+
+2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128985
+	* config/i386/i386-expand.cc (ix86_prepare_fp_compare_args):
+	Convert BFmode EQ/NE to SFmode under AVX10.2 when NaNs are honored.
+
+2026-11-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* simplify-rtx.cc (simplify_context::simpify_binary_operation_1):
+	Use demorgan's law to rewrite (ior (xor A 1) (B 1)) into
+	(xor (and A B) 1) when A and B are known to be 0/1 values.
+
+2026-11-26  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.opt (mlra): New option.
+	* config/alpha/alpha.opt.urls: Regenerate.
+	* config/alpha/alpha.cc (alpha_option_override): Default alpha_lra_p
+	to TARGET_BWX when not set explicitly.
+	(alpha_use_lra_p): New function.
+	(TARGET_LRA_P): Define to it instead of hook_bool_void_false.
+
+2026-11-26  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/predicates.md (input_operand): Test lra_in_progress
+	in the CONST_INT and CONST_VECTOR cases.
+
+2026-11-26  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/ev6.md: Add bypasses between ev6_mvi and ev6_imul
+	for the cross-cluster delay.  Replace the note about modeling it
+	by duplicating the EBOX reservations.
+
+2026-11-26  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/ev6.md (ev6_itof): Correct the latency to 4.
+	Add a bypass from ev6_itof to ev6_ftoi.
+
 2026-11-25  Souradipto Das  <souradiptodas6@gmail.com>
 
 	PR rtl-optimization/122335

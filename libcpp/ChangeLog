@@ -1,3 +1,8 @@
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* combining-chars.inc: Regenerated.
+	* printable-chars.inc: Regenerated.
+
 2026-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (struct cpp_options): Add

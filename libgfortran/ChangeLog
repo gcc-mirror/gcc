@@ -1,3 +1,11 @@
+2026-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/128107
+	* io/read.c (read_x): Count the record terminator in the stream
+	position when it is consumed.
+	* io/transfer.c (read_block_form): Count the record terminator in
+	the stream position only on the read that consumes it.
+
 2026-11-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/128618

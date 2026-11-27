@@ -1,3 +1,32 @@
+2026-11-26  Ivan Lazaric  <ivan.lazaric1@gmail.com>
+
+	PR c++/128386
+	* cp-gimplify.cc (cp_genericize_r) <case BIND_EXPR>:
+	Remove consteval-only variables before sanitizer checks.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/128970
+	* cp-gimplify.cc (cp_fold) <case COND_EXPR>: If op1 and/or op2
+	are bit-fields, promote them to TREE_TYPE (x) before folding instead
+	of trying to fix it after folding.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128459
+	* parser.cc (cp_parser_postfix_expression): Handle
+	RID_BUILTIN_BITCOMPRESSG and RID_BUILTIN_BITEXPANDG.
+	* typeck.cc (build_x_bitcompressg_bitexpandg): New function.
+	* cp-tree.h (build_x_bitcompressg_bitexpandg): Declare.
+	* pt.cc (tsubst_expr): Handle IFN_BITCOMPRESS and IFN_BITEXPAND.
+	* mangle.cc (write_expression): Likewise.
+	* cp-objcp-common.cc (names_builtin_p): Handle
+	RID_BUILTIN_BITCOMPRESSG and RID_BUILTIN_BITEXPANDG.
+	* cp-gimplify.cc (cp_gimplify_expr): Handle IFN_BITCOMPRESS and
+	IFN_BITEXPAND.
+	* constexpr.cc (cxx_eval_internal_function): Likewise.
+	(potential_constant_expression_1): Likewise.
+
 2026-11-25  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/128941

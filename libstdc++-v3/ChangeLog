@@ -1,3 +1,23 @@
+2026-11-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_algo.h (for_each_n): Add comment about
+	preprocessor check not using a feature test macro.
+	* include/std/numeric (reduce, transform_reduce, exclusive_scan)
+	(inclusive_scan, transform_exclusive_scan)
+	(transform_inclusive_scan): Likewise.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128459
+	* include/std/bit (std::bit_compress): Use __builtin_bitcompressg
+	if available.
+	(std::bit_expand): Use __builtin_bitexpandg if available.
+
+2026-11-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* testsuite/25_algorithms/inplace_merge/constrained.cc: Add
+	-Wno-aggressive-loop-optimizations when __int128 is not available.
+
 2026-11-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/charconv (std::__detail::__to_chars_8): Use

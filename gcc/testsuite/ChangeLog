@@ -1,3 +1,194 @@
+2026-11-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/aggr13.ads: New test.
+	* gnat.dg/specs/aggr13_pkg.ads: New helper.
+
+2026-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/129067
+	* gfortran.dg/gomp/defaultmap-1.f90: Update dg-error.
+	* gfortran.dg/gomp/defaultmap-4.f90: Update scan-tree-dump
+	for now properly handling 'pointer'.
+	* gfortran.dg/gomp/defaultmap-11.f90: New test.
+	* gfortran.dg/gomp/defaultmap-12.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-6.f90: New test.
+	* gfortran.dg/gomp/lastprivate-conditional-7.f90: New test.
+
+2026-11-26  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/128996
+	* g++.dg/warn/Wstringop-overflow-4.C: Remove a bogus warning check.
+	* gcc.dg/pr128996.c: New
+
+2026-11-26  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	PR tree-optimization/129007
+	* gcc.dg/vect/complex/fast-math-complex-mls-outofplace-float.c:
+	Remove the xfail for arm*-*-*.
+
+2026-11-26  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr39545-1.c: Change dg-do target selector
+	to *-*-linux* && ! ia32 and drop the lp64 requirement.
+	* gcc.target/i386/pr39545-2.c: Ditto.
+
+2026-11-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR tree-optimization/128135
+	* gcc.dg/errno-5.c: xfail run on hppa64-hp-hpux11.* and guard
+	math macro usage.
+
+2026-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/128107
+	* gfortran.dg/streamio_19.f90: New test.
+
+2026-11-26  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/126385
+	* gcc.target/aarch64/ampere1-reduction-unroll-2-run.c: New test.
+	* gcc.target/aarch64/ampere1-reduction-unroll-2.c: New test.
+	* gcc.target/aarch64/ampere1-reduction-unroll-3.c: New test.
+	* gcc.target/aarch64/pr126385.c: New test.
+
+2026-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129064
+	* gcc.dg/tree-ssa/ssa-fre-119.c: New testcase.
+
+2026-11-26  Ivan Lazaric  <ivan.lazaric1@gmail.com>
+
+	PR c++/128386
+	* g++.dg/reflect/pr128386-1.C: New test.
+	* g++.dg/reflect/pr128386-2.C: New test.
+
+2026-11-26  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/simt-lds-load-1.c: New test.
+
+2026-11-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128904
+	* gcc.dg/torture/pr128904.c: New test.
+	* gcc.dg/torture/pr128904-2.c: New test.
+	* gcc.dg/torture/pr128904-3.c: New test.
+	* gcc.target/aarch64/simd/pr128904.c: New test.
+
+2026-11-26  Dominic P  <gcc@gcc.dp11.uk>
+
+	* c-c++-common/ubsan/overflow-minmax-1.c: New test.
+
+2026-11-26  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/torture/errno-alias-1.c: New test.
+	* gcc.dg/torture/errno-alias-2.c: New helper file.
+	* gcc.dg/torture/errno-alias-3.c: New test.
+
+2026-11-26  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* gcc.target/riscv/rvv/autovec/binop/vcompress-avlprop-1.c:
+	Add -mrvv-max-lmul=m1 and -fno-vect-cost-model.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-1.c:
+	Add -fno-vect-cost-model.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-2.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-9.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/gather-scatter/scatter_store_64-10.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/pr112599-2.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/pr118945-2.c: Likewise.
+
+2026-11-26  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/124996
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-evenodd.c:
+	Adjust test expectations.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-evenodd_run-1.c: New test.
+
+2026-11-26  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-perm-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-perm-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-perm-template.h: New file.
+	* gcc.target/riscv/rvv/autovec/unop/bswap-zvbb-template.h: New file.
+
+2026-11-26  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/128692
+	* gcc.target/powerpc/pr128692.c: New test.
+
+2026-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129043
+	* gcc.dg/torture/pr129043.c: New testcase.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128111
+	* gcc.target/s390/vector/builtin-clmulg-1.c: New test.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/129023
+	* c-c++-common/builtin-clmulg-5.c: New test.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/128970
+	* g++.dg/opt/pr128970.C: New test.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/128554
+	* gcc.dg/pr128554.c: New test.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-clmulg-4.c: New test.
+	* gcc.target/i386/bmi2-builtin-clmulg-4.c: New test.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128459
+	* c-c++-common/builtin-bitcompressg-1.c: New test.
+	* c-c++-common/builtin-bitcompressg-2.c: New test.
+	* c-c++-common/builtin-bitexpandg-1.c: New test.
+	* c-c++-common/builtin-bitexpandg-2.c: New test.
+	* gcc.target/i386/bmi2-builtin-bitcompressg-1.c: New test.
+	* gcc.target/i386/bmi2-builtin-bitcompressg-2.c: New test.
+	* gcc.target/i386/bmi2-builtin-bitexpandg-1.c: New test.
+	* gcc.target/i386/bmi2-builtin-bitexpandg-2.c: New test.
+	* gcc.target/i386/pclmul-builtin-bitcompressg-1.c: New test.
+	* gcc.target/i386/pclmul-builtin-bitexpandg-1.c: New test.
+
+2026-11-26  Eikansh Gupta  <eikansh.gupta@oss.qualcomm.com>
+
+	PR target/127565
+	* gcc.target/aarch64/pr127565.c: New test.
+
+2026-11-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/128885
+	* gcc.dg/torture/pr128885.c: New test.
+
+2026-11-26  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128985
+	* gcc.target/i386/avx10_2-comibf-1.c: Adjust scan.
+	* gcc.target/i386/avx10_2-comibf-3.c: Likewise.
+	* gcc.target/i386/avx10_2-comibf-2.c: Test NaN.
+	* gcc.target/i386/avx10_2-comibf-5.c: New test.
+	* gcc.target/i386/avx10_2-comibf-6.c: Likewise.
+
+2026-11-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR rtl-optimization/128767
+	* gcc.target/riscv/xor1-demorgan-1.c: New test.
+	* gcc.target/riscv/xor1-demorgan-2.c: New test.
+
 2026-11-25  Souradipto Das  <souradiptodas6@gmail.com>
 
 	PR rtl-optimization/122335

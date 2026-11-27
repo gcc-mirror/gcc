@@ -1,3 +1,12 @@
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Mention that ./gen-printable-chars.py
+	and ./gen-combining-chars.py should be run too.
+	* unicode/gen-printable-chars.py: Stop using unicodedata,
+	instead parse UnicodeData.txt in the current directory for the same
+	information.
+	* unicode/gen-combining-chars.py: Likewise.
+
 2026-11-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR modula2/128683

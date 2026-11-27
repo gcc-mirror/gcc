@@ -1,3 +1,18 @@
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/128554
+	* c-parser.cc (c_parser_postfix_expression): Suppress
+	OPT_Wshift_count_negative warnings on LSHIFT_EXPR.
+	* c-fold.cc (c_fully_fold_internal): Don't emit
+	OPT_Wshift_count_negative warning if suppressed.
+
+2026-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128459
+	* c-parser.cc (c_parser_postfix_expression): Handle
+	RID_BUILTIN_BITCOMPRESSG and RID_BUILTIN_BITEXPANDG.
+	* c-decl.cc (names_builtin_p): Likewise.
+
 2026-11-25  Martin Uecker  <uecker@tugraz.at>
 
 	PR c/128760
