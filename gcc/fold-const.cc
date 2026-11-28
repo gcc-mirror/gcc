@@ -7045,6 +7045,11 @@ fold_binary_op_with_conditional_arg (location_t loc,
   if (TREE_CODE (cond) == COND_EXPR
       || TREE_CODE (cond) == VEC_COND_EXPR)
     {
+      /* Do not sink an operation with a scalar result, such as an
+	 equality comparison of two vectors, into the arms of a
+	 VEC_COND_EXPR.  */
+      if (TREE_CODE (cond) == VEC_COND_EXPR && !VECTOR_TYPE_P (type))
+	return NULL_TREE;
       test = TREE_OPERAND (cond, 0);
       true_value = TREE_OPERAND (cond, 1);
       false_value = TREE_OPERAND (cond, 2);
