@@ -16,7 +16,7 @@ target("prefer-vector-width=512")))
 abs_512 (void)
 {
   for (int i = 0; i < 32; i++)
-    r_abs_512[i] = __builtin_fabsf16(b_512[i]);
+    r_abs_512[i] = __builtin_fabsf(b_512[i]);
 }
 
 void
@@ -33,7 +33,7 @@ check_absneg_results (__bf16 *b, __bf16 *r_abs, __bf16 *r_neg, int len)
 {
   for (int i = 0; i < len; i++)
     {
-      __bf16 expected_abs = __builtin_fabsf16(b[i]);
+      __bf16 expected_abs = __builtin_fabsf(b[i]);
       __bf16 expected_neg = -b[i];
       if (r_abs[i] != expected_abs || r_neg[i] != expected_neg)
         abort ();

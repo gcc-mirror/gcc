@@ -16,7 +16,7 @@ __attribute__((optimize ("O2"), noinline, noipa, noclone, no_icf))
 abs_128 (void)
 {
   for (int i = 0; i < 8; i++)
-    r_abs_128[i] = __builtin_fabsf16(b_128[i]);
+    r_abs_128[i] = __builtin_fabsf(b_128[i]);
 }
 
 void
@@ -32,7 +32,7 @@ __attribute__((optimize ("O2"), noinline, noipa, noclone, no_icf))
 abs_256 (void)
 {
   for (int i = 0; i < 16; i++)
-    r_abs_256[i] = __builtin_fabsf16(b_256[i]);
+    r_abs_256[i] = __builtin_fabsf(b_256[i]);
 }
 
 void
@@ -48,7 +48,7 @@ check_absneg_results (__bf16 *b, __bf16 *r_abs, __bf16 *r_neg, int len)
 {
   for (int i = 0; i < len; i++)
     {
-      __bf16 expected_abs = __builtin_fabsf16(b[i]);
+      __bf16 expected_abs = __builtin_fabsf(b[i]);
       __bf16 expected_neg = -b[i];
       if (r_abs[i] != expected_abs || r_neg[i] != expected_neg)
         abort ();
