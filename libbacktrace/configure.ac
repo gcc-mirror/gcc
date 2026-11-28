@@ -523,6 +523,22 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
 LDFLAGS=$LDFLAGS_hold])
 AM_CONDITIONAL(HAVE_BUILDID, test "$libbacktrace_cv_ld_buildid" = yes)
 
+# Check if the linker supports -Wl,-Bstatic for checking stripped object states.
+AC_CACHE_CHECK([whether the linker supports -Wl,-Bstatic],
+  [libbacktrace_cv_linker_bstatic],
+  [save_LDFLAGS="$LDFLAGS"
+   LDFLAGS="$LDFLAGS -Wl,-Bstatic"
+   AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],
+     [libbacktrace_cv_linker_bstatic=yes],
+     [libbacktrace_cv_linker_bstatic=no])
+   LDFLAGS="$save_LDFLAGS"])
+
+BSTATIC_LDFLAG=""
+if test "x$libbacktrace_cv_linker_bstatic" = xyes; then
+  BSTATIC_LDFLAG="-Wl,-Bstatic"
+fi
+AC_SUBST(BSTATIC_LDFLAG)
+
 dnl Test whether the linker supports the --compress-debug-sections=zlib-gnu
 dnl option.
 AC_CACHE_CHECK([whether --compress-debug-sections=zlib-gnu is supported],

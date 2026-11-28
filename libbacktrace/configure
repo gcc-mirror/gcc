@@ -666,6 +666,7 @@ HAVE_COMPRESSED_DEBUG_ZLIB_GABI_FALSE
 HAVE_COMPRESSED_DEBUG_ZLIB_GABI_TRUE
 HAVE_COMPRESSED_DEBUG_ZLIB_GNU_FALSE
 HAVE_COMPRESSED_DEBUG_ZLIB_GNU_TRUE
+BSTATIC_LDFLAG
 HAVE_BUILDID_FALSE
 HAVE_BUILDID_TRUE
 HAVE_ZLIB_FALSE
@@ -12055,7 +12056,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12058 "configure"
+#line 12059 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12161,7 +12162,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12164 "configure"
+#line 12165 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14373,6 +14374,43 @@ $as_echo "$libbacktrace_cv_ld_buildid" >&6; }
 else
   HAVE_BUILDID_TRUE='#'
   HAVE_BUILDID_FALSE=
+fi
+
+
+# Check if the linker supports -Wl,-Bstatic for checking stripped object states.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the linker supports -Wl,-Bstatic" >&5
+$as_echo_n "checking whether the linker supports -Wl,-Bstatic... " >&6; }
+if ${libbacktrace_cv_linker_bstatic+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  save_LDFLAGS="$LDFLAGS"
+   LDFLAGS="$LDFLAGS -Wl,-Bstatic"
+   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libbacktrace_cv_linker_bstatic=yes
+else
+  libbacktrace_cv_linker_bstatic=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+   LDFLAGS="$save_LDFLAGS"
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_linker_bstatic" >&5
+$as_echo "$libbacktrace_cv_linker_bstatic" >&6; }
+
+BSTATIC_LDFLAG=""
+if test "x$libbacktrace_cv_linker_bstatic" = xyes; then
+  BSTATIC_LDFLAG="-Wl,-Bstatic"
 fi
 
 

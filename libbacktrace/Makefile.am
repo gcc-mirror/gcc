@@ -137,7 +137,7 @@ if HAVE_OBJCOPY_STRIPDEBUG
 
 strippedtest_SOURCES = strippedtest.c testlib.c
 strippedtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O
-strippedtest_LDFLAGS = $(libbacktrace_testing_ldflags) -static -Wl,-Bstatic
+strippedtest_LDFLAGS = $(libbacktrace_testing_ldflags) -static $(BSTATIC_LDFLAG)
 strippedtest_LDADD = libbacktrace.la
 
 check_PROGRAMS += strippedtest
