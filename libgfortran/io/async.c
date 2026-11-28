@@ -179,6 +179,13 @@ async_io (void *arg)
 		  NOTE ("Received AIO_CLOSE during error condition");
 		  goto finish_thread;
 		}
+	      else if (ctq->type == AIO_DATA_TRANSFER_INIT)
+		{
+		  LOCK (&au->io_lock);
+		  free (ctq->new_pdt);
+		}
+	      else if (ctq->type == AIO_TRANSFER_ARRAY)
+		free (ctq->arg.array.desc);
 	    }
 
   	  NOTE ("Next ctq, current id: %d", au->id.low);
@@ -426,7 +433,7 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
     }
 
   LOCK (&au->lock);
-  if (i > au->id.high)
+  if (i < 0 || i >= au->id.high)
     {
       generate_error_common (cmp, LIBERROR_BAD_WAIT_ID, NULL);
       UNLOCK (&au->lock);
@@ -437,10 +444,25 @@ async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
   if (au->id.waiting < i)
     au->id.waiting = i;
   SIGNAL (&(au->work));
+  REVOKE_SIGNAL (&(au->id.done));
   WAIT_SIGNAL_MUTEX (&(au->id.done),
-		     (au->id.low >= au->id.waiting || au->empty), &au->lock);
+		     (au->id.low > au->id.waiting || au->empty), &au->lock);
   LOCK (&au->lock);
   ret = collect_async_errors (cmp, au);
+  UNLOCK (&au->lock);
+  return ret;
+}
+
+/* Assign an ID to a statement on an asynchronous unit that was
+   completed synchronously.  */
+
+int
+async_complete_id (async_unit *au)
+{
+  int ret;
+  LOCK (&au->lock);
+  ret = au->id.high++;
+  au->id.low++;
   UNLOCK (&au->lock);
   return ret;
 }
@@ -552,6 +574,14 @@ bool
 async_wait_id (st_parameter_common *cmp, async_unit *au, int i)
 {
   return false;
+}
+
+/* Do-nothing function, which will not be called.  */
+
+int
+async_complete_id (async_unit *au)
+{
+  return 0;
 }
 
 /* Do-nothing function, which will not be called.  */
