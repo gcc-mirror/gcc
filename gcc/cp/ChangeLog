@@ -1,3 +1,19 @@
+2026-11-27  Mishmish Dev  <mishmish@mishmish.dev>
+
+	PR c++/124977
+	* pt.cc (tsubst_pack_expansion): Mark the underlying structured
+	binding declaration as read when expanding an empty pack.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	P3861R1
+	* tree.cc: Implement C++26 P3861R1 - Pragmatic approach to standard
+	structural types.
+	(structural_type_p): Ignore TREE_PRIVATE or TREE_PROTECTED on bases
+	and members on class types with gnu::structural_type attribute.
+	(handle_structural_type_attribute): New function.
+	(cxx_gnu_attributes): Add entry for gnu::structural_type.
+
 2026-11-26  Ivan Lazaric  <ivan.lazaric1@gmail.com>
 
 	PR c++/128386

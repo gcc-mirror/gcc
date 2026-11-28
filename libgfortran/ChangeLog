@@ -1,3 +1,8 @@
+2026-11-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* caf/shmem/shared_memory.c (shared_memory_get_master): Store
+	the aligned offset p.offset in mem->glbl.meta->master.
+
 2026-11-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/128107

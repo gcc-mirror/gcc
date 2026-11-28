@@ -1,3 +1,88 @@
+2026-11-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/128891
+	* gm2/extensions/pass/real32conv.mod: New test.
+
+2026-11-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/39545
+	* gcc.target/i386/pr39545-3.c: New test.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/129022
+	* gcc.dg/vect/vect-pr129022-1.c: New testcase.
+	* gcc.dg/vect/vect-pr129022-2.c: Likewise.
+	* gcc.target/i386/pr129022.c: Likewise.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129064
+	* gcc.dg/tree-ssa/ssa-fre-120.c: New testcase.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128930
+	* gcc.dg/bitint-155.c: New test.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/129075
+	* g++.dg/torture/pr129075.C: New testcase.
+
+2026-11-27  Mishmish Dev  <mishmish@mishmish.dev>
+
+	PR c++/124977
+	* g++.dg/cpp26/decomp-pack-unused.C: New test.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128699
+	PR middle-end/128982
+	* gcc.dg/bitint-153.c: New test.
+	* gcc.dg/bitint-154.c: New test.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128994
+	* gcc.dg/bitint-152.c: New test.
+
+2026-11-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128527
+	* gcc.target/i386/stack-realign-leaf-1.c: New test.
+	* gcc.target/i386/stack-realign-leaf-2.c: Likewise.
+
+2026-11-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128527
+	* gcc.target/i386/pr128527-1.c: New test.
+	* gcc.target/i386/pr128527-2.c: Likewise.
+	* gcc.target/i386/pr128527-3.c: Likewise.
+	* gcc.target/i386/pr128527-4.c: Likewise.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	P3861R1
+	* g++.dg/cpp26/structural-type1.C: New test.
+	* g++.dg/ext/attr-structural-type-1.C: New test.
+	* g++.dg/ext/attr-structural-type-2.C: New test.
+
+2026-11-27  mengqinggang  <mengqinggang@loongson.cn>
+
+	* g++.dg/coroutines/pr110872.C: Add loongarch32-*-*.
+	* g++.target/loongarch/pr117575.C: Require loongarch_asx.
+	* gcc.target/loongarch/bstrins-6-32s.c: Update include path.
+	* gcc.target/loongarch/bstrins-5.c: Move to...
+	* gcc.target/loongarch/la64/bstrins-5.c: ...here.
+	* gcc.target/loongarch/bstrins-6.c: Move to...
+	* gcc.target/loongarch/la64/bstrins-6.c: ...here.
+
+2026-11-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* g++.dg/warn/Wuninitialized-pr107919-1.C,
+	g++.dg/warn/Wstringop-overflow-6.C: Add -Wno-deprecated-octal-literal.
+
 2026-11-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/aggr13.ads: New test.

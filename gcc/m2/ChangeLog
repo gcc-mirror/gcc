@@ -1,3 +1,24 @@
+2026-11-27  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/128891
+	* gm2-compiler/M2Base.def (IsRealGCC): New procedure function.
+	* gm2-compiler/M2Base.mod (IsRealGCC): Implement new procedure
+	function.
+	* gm2-compiler/M2ALU.mod (PushTypeOfTree): Replace IsRealType with
+	IsRealGCC.
+	* gm2-compiler/M2GCCDeclare.mod (TryDeclareConst): Ditto.
+	(DeclareConst): Ditto.
+	* gm2-compiler/M2GenGCC.mod (IsCoerceableParameter): Ditto.
+	(CheckConvertCoerceParameter): Ditto.
+	(BinaryOperandRealFamily): Ditto.
+	(FoldUnary): Ditto.
+	(PopKindTree): Ditto.
+	(FoldConvert): Ditto.
+	* gm2-compiler/M2Quads.mod (BuildTruncFunction): Ditto.
+	* gm2-compiler/M2Range.mod (GetMinMax): Ditto.
+	(DoCodeAssignmentExprType): Ditto.
+	* gm2-compiler/PCSymBuild.mod (TypeToMeta): Ditto.
+
 2026-11-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Make-lang.in (GM2_1): Add -B./.

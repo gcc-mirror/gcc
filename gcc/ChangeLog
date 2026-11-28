@@ -1,3 +1,105 @@
+2026-11-27  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(gimple_load_store_interleaved::fold): Replace call to
+	`build_ifn_call` with call to `gimple_build_call_internal`.
+
+2026-11-27  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (build_ifn_call):
+	Change type of `args` from `const vec<tree>&` to `const
+	array_slice<const tree>, and add overload accepting
+	`std::initializer_list<const tree>`.
+	(gimple_narrow_saturate::fold, build_abs_diff,
+	gimple_fused_mla::fold, gimple_reduce_minmax::fold,
+	gimple_load_store_interleaved::fold): Fixup calls to
+	`build_ifn_call`, or replace calls to
+	`gimple_build_call_internal` with `build_ifn_call`.
+	* gimple.cc (gimple_build_call_internal_1): Remove `static`
+	qualifier.
+	* gimple.h (gimple_build_call_internal_1): New declaration.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/129022
+	* fold-const.cc (fold_view_convert_vector_encoding): Bail
+	out on boolean vectors with padding.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/129064
+	* tree-ssa-sccvn.cc (set_ssa_val_to): Adjust checking assert
+	to allow a not yet committed value of a PHI in the same block.
+	(process_bb): Value-number PHIs in parallel, committing
+	new values after visiting all PHIs of the block.
+
+2026-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/129075
+	* alias.cc (reference_alias_ptr_type_1): First apply
+	component_uses_parent_alias_set_from, then handle
+	view-converted MEM_REFs.
+
+2026-11-27  wangzicong  <wangzicong@masscore.cn>
+
+	* config/riscv/riscv-v.cc (shuffle_bswap_pattern): Mark the
+	intentional fallthrough.
+
+2026-11-27  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* regcprop.cc (copyprop_hardreg_forward_1): Check if mode sizes
+	are ordered before calling subreg_lowpart_offset.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* gimple.cc (gimple_get_alias_set): For ENUMERAL_TYPEs with underlying
+	BITINT_TYPE, return get_alias_set on the underlying type.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128699
+	PR middle-end/128982
+	* gimple-lower-bitint.cc (requires_upwards_2limb): New function.
+	(gimple_lower_bitint): Make sure chains of mergeable_op and
+	gimple_assign_cast_p without large_huge.m_names entry which
+	include PLUS/MINUS/NEGATE/LSHIFT aren't merged into a
+	non-m_upwards_2limb outermost stmt.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/128994
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Remove rotate
+	or minmax/abs stmts with zero lhs uses instead of trying to
+	lower them.
+
+2026-11-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128527
+	* config/i386/i386.cc (ix86_finalize_stack_frame_flags): Never
+	turn on stack realignment for a leaf function with zero frame
+	size.
+
+2026-11-27  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128527
+	* config/i386/i386.cc (ix86_access_stack_p): Replace REGNO and
+	BB arguments with USE, SET_UP_BY_PROLOGUE and PROLOGUE_USED with
+	STACK_SLOT_ACCESS and HARD_STACK_SLOT_ACCESS, and
+	REG_DOMINATE_BBS_KNOWN and REG_DOMINATE_BBS with VISITED.  Add
+	CHAIN_P argument.  Check the non-jump insns defining the register
+	reaching USE with UD chains for a use of a register in
+	HARD_STACK_SLOT_ACCESS outside of memory.
+	(ix86_find_max_used_stack_alignment): Don't compute dominance
+	info.  Skip uses outside of memory address.  Update the
+	ix86_access_stack_p call.  Remove the RD and chain problems
+	afterwards.
+
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	P3861R1
+	* doc/extend.texi (structural_type): Document new
+	attribute.
+
 2026-11-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR fortran/129067

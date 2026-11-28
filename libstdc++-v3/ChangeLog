@@ -1,3 +1,29 @@
+2026-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	P3861R1
+	* include/bits/version.def (structural_types): New FTM.
+	* include/bits/version.h: Regenerate.
+	* include/bits/c++config (_GLIBCXX_STRUCTURAL): Define.
+	* include/std/string_view: Define __glibcxx_want_structural_types
+	before including bits/version.h.
+	(template<typename, typename> class basic_string_view): Add
+	_GLIBCXX_STRUCTURAL.
+	* include/std/span: Define __glibcxx_want_structural_types
+	before including bits/version.h.
+	(template<size_t> class __extent_storage,
+	template<typename, size_t class span): Add _GLIBCXX_STRUCTURAL.
+	* include/std/variant: Define __glibcxx_want_structural_types
+	before including bits/version.h.
+	(template<typename...> class variant): Add _GLIBCXX_STRUCTURAL.
+	* include/std/optional: Define __glibcxx_want_structural_types
+	before including bits/version.h.
+	(template<typename> class optional): Add _GLIBCXX_STRUCTURAL.
+	* include/std/tuple: Define __glibcxx_want_structural_types
+	before including bits/version.h.
+	(template<size_t, typename, typename...> class _Tuple_impl,
+	template<size_t, typename> class _Tuple_impl,
+	template<typename, typename> class tuple): Add _GLIBCXX_STRUCTURAL.
+
 2026-11-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_algo.h (for_each_n): Add comment about
