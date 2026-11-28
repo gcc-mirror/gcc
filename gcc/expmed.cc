@@ -1500,7 +1500,7 @@ store_split_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> (bitsize - bitsdone - thissize))
-			    & ((HOST_WIDE_INT_1 << thissize) - 1));
+			    & ((HOST_WIDE_INT_1U << thissize) - 1));
           /* Likewise, but the source is little-endian.  */
           else if (reverse)
 	    part = extract_fixed_bit_field (word_mode, value, value_mode,
@@ -1522,7 +1522,7 @@ store_split_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 	  if (CONST_INT_P (value))
 	    part = GEN_INT (((unsigned HOST_WIDE_INT) (INTVAL (value))
 			     >> bitsdone)
-			    & ((HOST_WIDE_INT_1 << thissize) - 1));
+			    & ((HOST_WIDE_INT_1U << thissize) - 1));
 	  /* Likewise, but the source is big-endian.  */
           else if (reverse)
 	    part = extract_fixed_bit_field (word_mode, value, value_mode,
